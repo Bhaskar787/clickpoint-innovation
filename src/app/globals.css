@@ -1,0 +1,232 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 252 100% 99%;
+  --foreground: 248 42% 12%;
+  --border: 248 30% 90%;
+  --accent-amber: #f58220; /* hsl(36.28deg 99.22% 50%) */
+  --accent-blue: #1b4397; /* hsl(229.05deg 68.16% 39.41%) */
+  --font-display: var(--font-poppins), "Poppins", ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-poppins), "Poppins", ui-sans-serif, system-ui, sans-serif;
+}
+
+html.dark {
+  --background: 222 47% 7%; /* #0B1120 Midnight Navy */
+  --foreground: 210 40% 98%; /* Pure White */
+  --border: 215 28% 17%;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-poppins), "Poppins", ui-sans-serif, system-ui, sans-serif;
+    @apply bg-background text-foreground transition-colors duration-300;
+  }
+}
+
+* {
+  scroll-behavior: smooth;
+  font-family: var(--font-poppins), "Poppins", ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+::selection {
+  background-color: #f58220;
+  color: white;
+}
+
+/* horizontal timeline scrollbar */
+.timeline-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+.timeline-scroll::-webkit-scrollbar-track {
+  background: #eae7fb;
+  border-radius: 999px;
+}
+.timeline-scroll::-webkit-scrollbar-thumb {
+  background: #a093f7;
+  border-radius: 999px;
+}
+
+/* -------------------------------------------------------------
+   COMPREHENSIVE DARK MODE DESIGN SYSTEM (Midnight Navy Theme)
+   ------------------------------------------------------------- */
+
+html.dark,
+html.dark body,
+html.dark main {
+  background-color: #0b1120 !important;
+  color: #ffffff;
+}
+
+/* Background overrides for cards and panels in dark mode (DO NOT force color on container children) */
+html.dark [class*="bg-white"]:not([class*="bg-white/"]):not(button) {
+  background-color: #131c31 !important;
+}
+
+html.dark .bg-white {
+  background-color: #131c31 !important;
+}
+
+html.dark [class*="bg-cloud-100"],
+html.dark .bg-cloud-100 {
+  background-color: #0f172a !important;
+}
+
+/* Midnight Dark Blue for Pill Badges & Secondary Containers */
+html.dark [class*="bg-violet-50"]:not(button):not(a),
+html.dark .bg-violet-50:not(button):not(a),
+html.dark .bg-slate-900\/80,
+html.dark .bg-slate-900\/70,
+html.dark .bg-slate-900\/60 {
+  background-color: #1a2642 !important;
+}
+
+html.dark [class*="bg-violet-100"]:not(button):not(a),
+html.dark .bg-violet-100:not(button):not(a) {
+  background-color: #1e293b !important;
+}
+
+/* Hover States in Dark Mode */
+html.dark .hover\:bg-violet-50:hover,
+html.dark .hover\:bg-violet-100:hover,
+html.dark .hover\:bg-cloud-100:hover,
+html.dark nav a:hover,
+html.dark .NavigationMenuContent a:hover {
+  background-color: #253557 !important;
+}
+
+/* Border overrides for dark mode */
+html.dark [class*="border-violet-100"],
+html.dark [class*="border-violet-200"],
+html.dark [class*="border-violet-300"] {
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+
+/* -------------------------------------------------------------
+   SOLID PROFESSIONAL TYPOGRAPHY SYSTEM (Golden Amber & Royal Blue)
+   ------------------------------------------------------------- */
+
+/* Dark Mode Base Typography */
+html.dark .text-ink:not([class*="dark:text-"]):not([class*="text-[#"]):not([class*="text-violet"]):not([class*="text-amber"]):not([class*="text-ember"]),
+html.dark [class*="text-ink"]:not([class*="dark:text-"]):not([class*="text-[#"]):not([class*="text-violet"]):not([class*="text-amber"]):not([class*="text-ember"]) {
+  color: #ffffff;
+}
+
+/* Base Headings color in dark mode */
+html.dark h1:not([class*="text-[#"]):not([class*="dark:text-"]),
+html.dark h2:not([class*="text-[#"]):not([class*="dark:text-"]),
+html.dark h3:not([class*="text-[#"]):not([class*="dark:text-"]),
+html.dark h4:not([class*="text-[#"]):not([class*="dark:text-"]),
+html.dark h5:not([class*="text-[#"]):not([class*="dark:text-"]),
+html.dark h6:not([class*="text-[#"]):not([class*="dark:text-"]) {
+  color: #ffffff;
+}
+
+/* Base Paragraphs & Subtext in dark mode */
+html.dark p:not([class*="text-[#"]):not([class*="dark:text-"]):not([class*="text-amber"]):not([class*="text-violet"]):not([class*="text-emerald"]):not([class*="text-ember"]) {
+  color: #cbd5e1;
+}
+
+/* -------------------------------------------------------------
+   GOLDEN ORANGE (#f58220) ACCENT & BRAND COLOR OVERRIDES
+   ------------------------------------------------------------- */
+
+/* Light mode explicit #f58220 text */
+html:not(.dark) [class*="text-[#f58220]"]:not([class*="text-violet"]):not([class*="text-[#1b4397]"]),
+html:not(.dark) [class*="text-[#F58220]"]:not([class*="text-violet"]):not([class*="text-[#1b4397]"]),
+html:not(.dark) .text-\[\#f58220\] {
+  color: #f58220 !important;
+}
+
+/* Dark mode explicit #f58220 text & dark:text-[#f58220] targets */
+html.dark [class*="text-[#f58220]"],
+html.dark [class*="text-[#F58220]"],
+html.dark [class*="dark:text-[#f58220]"],
+html.dark [class*="dark:text-[#F58220]"],
+html.dark .text-\[\#f58220\],
+html.dark .dark\:text-\[\#f58220\],
+html.dark .text-ember-500,
+html.dark .dark\:text-ember-500,
+html.dark .text-amber-500,
+html.dark .text-amber-400,
+html.dark .dark\:text-amber-400,
+html.dark .dark\:text-amber-500 {
+  color: #f58220 !important;
+}
+
+/* Royal Blue #1b4397 in light mode vs dark mode */
+html:not(.dark) [class*="text-[#1b4397]"]:not([class*="dark:text-"]) {
+  color: #1b4397 !important;
+}
+
+html.dark [class*="text-[#1b4397]"]:not([class*="dark:text-"]),
+html.dark [class*="text-[#1B4397]"]:not([class*="dark:text-"]),
+html.dark [class*="dark:text-[#1b4397]"],
+html.dark [class*="dark:text-[#1B4397]"] {
+  color: #60a5fa !important;
+}
+
+/* Icon & Button Color Preservation in Dark Mode (No Yellow - Crisp White & Sky Blue Accents) */
+html.dark [class*="text-amber-400"] { color: #ffffff !important; }
+html.dark [class*="dark:text-amber-400"] { color: #ffffff !important; }
+html.dark [class*="dark:text-violet-300"] { color: #c4bafb !important; }
+html.dark [class*="dark:text-violet-400"] { color: #a093f7 !important; }
+html.dark [class*="dark:text-white"] { color: #ffffff !important; }
+
+/* Navigation Dropdowns & Mega Menus in Dark Mode */
+html.dark [data-radix-navigation-menu-viewport],
+html.dark .NavigationMenuContent,
+html.dark [role="region"],
+html.dark nav [role="menu"],
+html.dark ul.w-\[660px\],
+html.dark ul.w-\[420px\],
+html.dark ul.w-\[320px\] {
+  background-color: #131c31 !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Inputs, Selects, and Textareas */
+html.dark input,
+html.dark select,
+html.dark textarea {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+html.dark option {
+  background-color: #131c31 !important;
+  color: #ffffff !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #64748b !important;
+}
+
+/* Modals & Scrolled Header in Dark Mode */
+html.dark .fixed .bg-white {
+  background-color: #131c31 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+html.dark header.bg-white\/90 {
+  background-color: rgba(11, 17, 32, 0.95) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

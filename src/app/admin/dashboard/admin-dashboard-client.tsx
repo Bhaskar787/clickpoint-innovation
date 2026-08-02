@@ -1,0 +1,1032 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Home,
+  LayoutDashboard,
+  MessageSquare,
+  ShoppingBag,
+  Briefcase,
+  Users,
+  Settings,
+  Bell,
+  Search,
+  Sun,
+  Moon,
+  LogOut,
+  ChevronLeft,
+  ChevronRight,
+  TrendingUp,
+  ArrowUpRight,
+  Sparkles,
+  BarChart3,
+  Calendar,
+  Layers,
+  ShieldCheck,
+  CheckCircle2,
+  Clock,
+  MoreVertical,
+  SlidersHorizontal,
+  Grid,
+  Menu,
+  X,
+  FileText,
+  HelpCircle,
+  FolderGit2,
+  PieChart,
+  LayoutTemplate,
+  GripVertical,
+  Edit3,
+  Eye,
+  Check,
+  Globe,
+  Sliders,
+  Cpu,
+  Milestone,
+  Building2,
+  Quote,
+  Send,
+  PanelBottom,
+  Info,
+  BookOpen,
+  Mail,
+  UserCheck,
+  Award,
+  AlertTriangle,
+} from "lucide-react";
+import { authClient } from "@/lib/auth-client";
+import { useTheme } from "@/components/common/theme-provider";
+import { toast } from "sonner";
+import AboutPageEditor from "./about-page-editor";
+import ServicesPageEditor from "./services-page-editor";
+
+interface AdminDashboardClientProps {
+  userEmail: string;
+}
+
+interface NavItem {
+  id: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  badge?: string;
+}
+
+interface NavGroup {
+  group: string;
+  items: NavItem[];
+}
+
+interface SectionBox {
+  id: string;
+  order: string;
+  name: string;
+  description: string;
+  icon: React.ComponentType<{ className?: string }>;
+  fieldsCount: number;
+  status: string;
+  category: string;
+}
+
+interface PageConfig {
+  id: string;
+  title: string;
+  subtitle: string;
+  sections: SectionBox[];
+}
+
+const RECENT_INQUIRIES = [
+  {
+    id: "INQ-9041",
+    client: "Acme Fintech Corp",
+    email: "cto@acmefintech.com",
+    service: "AI Copilot & LLM RAG",
+    budget: "$45,000",
+    rating: "5.0 ★★★★★",
+    status: "Active",
+    statusColor: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
+  },
+  {
+    id: "INQ-9042",
+    client: "MedPulse Health",
+    email: "dev@medpulse.io",
+    service: "Next.js 15 Web Platform",
+    budget: "$28,000",
+    rating: "4.9 ★★★★★",
+    status: "Pending",
+    statusColor: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30",
+  },
+  {
+    id: "INQ-9043",
+    client: "Global Logistics Ltd",
+    email: "operations@globallog.com",
+    service: "Cloud Microservices",
+    budget: "$60,000",
+    rating: "5.0 ★★★★★",
+    status: "In Progress",
+    statusColor: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30",
+  },
+  {
+    id: "INQ-9044",
+    client: "E-Com ScaleX",
+    email: "founder@ecomscalex.com",
+    service: "Mobile iOS & Android App",
+    budget: "$32,000",
+    rating: "4.8 ★★★★☆",
+    status: "Active",
+    statusColor: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
+  },
+];
+
+// Complete Page Specifications for Every Single Route in the App
+const ALL_PAGE_CONFIGS: Record<string, PageConfig> = {
+  "landing-management": {
+    id: "landing-management",
+    title: "Landing Page Content",
+    subtitle: "Configure and manage all 12 sections on the main landing page in real time",
+    sections: [
+      { id: "navbar", order: "#01", name: "Navbar & Navigation Header", description: "Manage top bar brand logo, navigation links, quick enquiry CTA button, and announcement banner.", icon: Globe, fieldsCount: 8, status: "Active", category: "Header" },
+      { id: "hero", order: "#02", name: "Hero Section", description: "Configure main hero title, animated subheadings, CTA buttons, background blueprint grid, and visual badges.", icon: Sparkles, fieldsCount: 12, status: "Active", category: "Main Banner" },
+      { id: "services", order: "#03", name: "Services Catalog Section", description: "Edit service cards (AI Engineering, Web Apps, Mobile Apps, Growth), features, icons, and service details.", icon: Layers, fieldsCount: 16, status: "Active", category: "Services" },
+      { id: "tech-stack", order: "#04", name: "Tech Stack & Tools Section", description: "Customize technology categories (Frontend, Backend, AI/ML, Cloud), framework icons, and tool badges.", icon: Cpu, fieldsCount: 14, status: "Active", category: "Technologies" },
+      { id: "growth", order: "#05", name: "Growth & Impact Metrics Section", description: "Manage key counter statistics (Project Count, Satisfaction %, Speed Multiplier) and achievement statements.", icon: TrendingUp, fieldsCount: 9, status: "Active", category: "Metrics" },
+      { id: "timeline", order: "#06", name: "Timeline & Journey Section", description: "Configure company milestone eras, milestone titles, detailed stories, and historical photos.", icon: Milestone, fieldsCount: 15, status: "Active", category: "Company Story" },
+      { id: "industries", order: "#07", name: "Industries Served Section", description: "Edit target industries (Fintech, Healthcare, E-Commerce, Logistics, EdTech) and domain-specific capabilities.", icon: Building2, fieldsCount: 10, status: "Active", category: "Sectors" },
+      { id: "case-studies", order: "#08", name: "Case Studies & Portfolio Section", description: "Manage client case studies, result metrics (+250% Growth), tech stack tags, and case study links.", icon: FolderGit2, fieldsCount: 18, status: "Active", category: "Portfolio" },
+      { id: "testimonials", order: "#09", name: "Testimonials & Reviews Section", description: "Customize client reviews, star ratings, reviewer titles, company names, and avatar profile images.", icon: Quote, fieldsCount: 12, status: "Active", category: "Social Proof" },
+      { id: "faq", order: "#10", name: "FAQ Section", description: "Configure question & answer categories (Engineering, Security, Pod Speed) and expandable accordions.", icon: HelpCircle, fieldsCount: 14, status: "Active", category: "Help & FAQ" },
+      { id: "cta", order: "#11", name: "Call To Action (CTA) Section", description: "Manage final CTA headline, consultation booking trigger, contact buttons, and background glow effects.", icon: Send, fieldsCount: 7, status: "Active", category: "Conversion" },
+      { id: "footer", order: "#12", name: "Footer Content & Links Section", description: "Configure footer logo, company bio, quick links columns, social media URLs, and copyright text.", icon: PanelBottom, fieldsCount: 11, status: "Active", category: "Footer" },
+    ],
+  },
+
+  "about-page": {
+    id: "about-page",
+    title: "About Us Page (/about)",
+    subtitle: "Manage company mission, values, leadership team, and corporate statistics",
+    sections: [
+      { id: "about-hero", order: "#01", name: "About Hero Banner", description: "Configure heading, vision subtext, background blueprint styling, and hero CTA buttons.", icon: Info, fieldsCount: 6, status: "Active", category: "Banner" },
+      { id: "about-mission", order: "#02", name: "Our Mission & Core Values", description: "Manage core philosophy, engineering standards, speed metrics, and trust commitments.", icon: ShieldCheck, fieldsCount: 10, status: "Active", category: "Philosophy" },
+      { id: "about-team", order: "#03", name: "Leadership & Engineering Team", description: "Customize team member profiles, bios, designations, photos, and LinkedIn social links.", icon: Users, fieldsCount: 16, status: "Active", category: "Team" },
+      { id: "about-stats", order: "#04", name: "Company Stats & Milestones", description: "Edit client count, years in business, total deployments, and active developer count.", icon: Award, fieldsCount: 8, status: "Active", category: "Stats" },
+    ],
+  },
+
+  "services-page": {
+    id: "services-page",
+    title: "Services Pages (/services & /services/[id])",
+    subtitle: "Configure services catalog index page and individual service detail pages (/services/[id])",
+    sections: [
+      { id: "services-hero", order: "#01", name: "Services Page Hero Banner", description: "Header title, overview text, and service category filters.", icon: Layers, fieldsCount: 7, status: "Active", category: "Banner" },
+      { id: "services-list", order: "#02", name: "Core Services Cards Catalog", description: "Edit service titles, detailed descriptions, technology pills, and feature bullet points.", icon: Cpu, fieldsCount: 20, status: "Active", category: "Catalog" },
+      { id: "services-details", order: "#03", name: "Individual Service Detail Pages", description: "Configure template settings for AI Eng, Web Dev, Mobile Apps, UI/UX, and Cloud Ops.", icon: Edit3, fieldsCount: 15, status: "Active", category: "Detail Pages" },
+    ],
+  },
+
+  "industries-page": {
+    id: "industries-page",
+    title: "Industries Pages (/industries & /industries/[id])",
+    subtitle: "Manage industry sectors page (/industries) and industry detail templates (/industries/[id])",
+    sections: [
+      { id: "ind-hero", order: "#01", name: "Industries Hero Banner", description: "Configure main page heading, industry sector overview, and quick jump navigation.", icon: Building2, fieldsCount: 6, status: "Active", category: "Banner" },
+      { id: "ind-grid", order: "#02", name: "Industry Sector Cards Grid", description: "Manage Fintech, Healthcare, E-Commerce, Logistics, and EdTech domain solutions.", icon: Grid, fieldsCount: 15, status: "Active", category: "Sectors" },
+      { id: "ind-details", order: "#03", name: "Industry Detail Page Templates", description: "Configure specialized compliance badges (HIPAA, PCI-DSS), security models, and case links.", icon: ShieldCheck, fieldsCount: 12, status: "Active", category: "Detail Pages" },
+    ],
+  },
+
+  "case-studies-page": {
+    id: "case-studies-page",
+    title: "Case Studies Page (/case-studies)",
+    subtitle: "Manage client portfolio projects, success stories, and metric result showcases",
+    sections: [
+      { id: "case-hero", order: "#01", name: "Case Studies Hero Banner", description: "Header title, client success narrative, and portfolio category filters.", icon: FolderGit2, fieldsCount: 6, status: "Active", category: "Banner" },
+      { id: "case-grid", order: "#02", name: "Featured Case Study Projects", description: "Manage project titles, client names, growth metric tags (+300% ROI), and live links.", icon: TrendingUp, fieldsCount: 18, status: "Active", category: "Portfolio" },
+      { id: "case-cta", order: "#03", name: "Portfolio Project Inquiry Trigger", description: "Configure 'Build Similar Architecture' CTA card and inquiry form.", icon: Send, fieldsCount: 5, status: "Active", category: "Conversion" },
+    ],
+  },
+
+  "journey-page": {
+    id: "journey-page",
+    title: "Company Journey Page (/journey)",
+    subtitle: "Manage company milestone timeline eras, historical achievements, and story nodes",
+    sections: [
+      { id: "journey-hero", order: "#01", name: "Journey Page Hero Banner", description: "Configure timeline heading, story introduction, and interactive era selector.", icon: Milestone, fieldsCount: 7, status: "Active", category: "Banner" },
+      { id: "journey-eras", order: "#02", name: "Historical Era Story Nodes", description: "Edit timeline years, milestone titles, detailed narratives, and photo galleries.", icon: Calendar, fieldsCount: 16, status: "Active", category: "Timeline" },
+      { id: "journey-modal", order: "#03", name: "Quick Enquiry Modal Trigger", description: "Customize timeline consultation modal fields and booking options.", icon: MessageSquare, fieldsCount: 6, status: "Active", category: "Modal" },
+    ],
+  },
+
+  "blog-page": {
+    id: "blog-page",
+    title: "Blog & Insights Pages (/blog & /blog/[slug])",
+    subtitle: "Manage blog list index page (/blog) and individual blog post articles (/blog/[slug])",
+    sections: [
+      { id: "blog-hero", order: "#01", name: "Blog Hero & Search Bar", description: "Header title, search placeholder, and topic categories (AI, Web, Growth).", icon: BookOpen, fieldsCount: 8, status: "Active", category: "Banner" },
+      { id: "blog-posts", order: "#02", name: "Article Posts Catalog", description: "Manage blog titles, slugs, author info, published dates, read times, and thumbnails.", icon: FileText, fieldsCount: 22, status: "Active", category: "Articles" },
+      { id: "blog-newsletter", order: "#03", name: "Newsletter Subscription Box", description: "Configure email capture form, subscription promise, and privacy text.", icon: Mail, fieldsCount: 5, status: "Active", category: "Newsletter" },
+    ],
+  },
+
+  "careers-page": {
+    id: "careers-page",
+    title: "Careers Page (/careers)",
+    subtitle: "Manage company culture, open job positions, and applicant application forms",
+    sections: [
+      { id: "careers-hero", order: "#01", name: "Careers Hero & Perks Section", description: "Configure hiring tagline, culture benefits (Remote, Equity, Learning), and photos.", icon: UserCheck, fieldsCount: 10, status: "Active", category: "Banner" },
+      { id: "careers-jobs", order: "#02", name: "Open Engineering Positions", description: "Edit job titles, locations (Kathmandu / Remote), experience level, and salary ranges.", icon: Briefcase, fieldsCount: 14, status: "Active", category: "Jobs" },
+      { id: "careers-apply", order: "#03", name: "Job Application Form Config", description: "Customize resume upload settings, screening questions, and HR notification email.", icon: Send, fieldsCount: 8, status: "Active", category: "Form" },
+    ],
+  },
+
+  "testimonials-page": {
+    id: "testimonials-page",
+    title: "Testimonials Page (/testimonials)",
+    subtitle: "Manage client reviews, star ratings, video testimonials, and social proof",
+    sections: [
+      { id: "test-hero", order: "#01", name: "Testimonials Hero Banner", description: "Header title, overall rating badge (4.9/5.0), and client trust metrics.", icon: Quote, fieldsCount: 6, status: "Active", category: "Banner" },
+      { id: "test-list", order: "#02", name: "Client Reviews Grid", description: "Edit review text, star ratings, reviewer names, designations, and company logos.", icon: StarIcon, fieldsCount: 15, status: "Active", category: "Reviews" },
+    ],
+  },
+
+  "faqs-page": {
+    id: "faqs-page",
+    title: "FAQs Page (/faqs)",
+    subtitle: "Manage question categories, search filters, and collapsible Q&A accordions",
+    sections: [
+      { id: "faq-hero", order: "#01", name: "FAQ Hero & Category Filter", description: "Configure header, search placeholder, and filter pills (Engineering, Billing).", icon: HelpCircle, fieldsCount: 7, status: "Active", category: "Banner" },
+      { id: "faq-items", order: "#02", name: "Question & Answer Items", description: "Edit questions, detailed answers, category tags, and expandable accordion states.", icon: MessageSquare, fieldsCount: 18, status: "Active", category: "Accordions" },
+    ],
+  },
+
+  "contact-page": {
+    id: "contact-page",
+    title: "Contact Us Page (/contact)",
+    subtitle: "Manage lead capture forms, office address, contact emails, and phone channels",
+    sections: [
+      { id: "contact-hero", order: "#01", name: "Contact Hero & Office Details", description: "Configure contact headline, physical address, email addresses, and phone numbers.", icon: Mail, fieldsCount: 9, status: "Active", category: "Contact Info" },
+      { id: "contact-form", order: "#02", name: "Inquiry Lead Form Fields", description: "Manage form fields (Name, Email, Budget, Scope), validation rules, and success messages.", icon: Send, fieldsCount: 10, status: "Active", category: "Form" },
+    ],
+  },
+
+  "not-found-page": {
+    id: "not-found-page",
+    title: "404 Error Page (not-found)",
+    subtitle: "Manage 404 page error title, graph paper blueprint grid overlay, subtext, and navigation buttons",
+    sections: [
+      { id: "404-hero", order: "#01", name: "404 Error Hero & Blueprint Grid", description: "Configure 404 title, subtitle, graph paper grid styling, and ambient background glow.", icon: AlertTriangle, fieldsCount: 6, status: "Active", category: "Error Page" },
+      { id: "404-links", order: "#02", name: "Quick Action Navigation Links", description: "Edit recommended recovery links (Home, Services, Contact, FAQs) displayed on 404 error page.", icon: Globe, fieldsCount: 8, status: "Active", category: "Navigation" },
+    ],
+  },
+};
+
+function StarIcon(props: { className?: string }) {
+  return <Award {...props} />;
+}
+
+export default function AdminDashboardClient({ userEmail }: AdminDashboardClientProps) {
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState<string>("dashboard");
+  const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
+  const [collapsed, setCollapsed] = useState<boolean>(false);
+  const [mobileOpen, setMobileOpen] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const { theme, toggleTheme } = useTheme();
+
+  // Close mobile drawer on resize to larger screens
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setMobileOpen(false);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  async function handleLogout() {
+    toast.success("Signed Out Successfully", {
+      description: "You have been logged out of your session.",
+    });
+    localStorage.removeItem("admin_user");
+    localStorage.removeItem("admin_token");
+    await authClient.signOut();
+    router.push("/admin");
+    router.refresh();
+  }
+
+  // Navigation Items Organized by Page Routes
+  const navItems: NavGroup[] = [
+    {
+      group: "DASHBOARD & ANALYTICS",
+      items: [
+        { id: "dashboard", label: "Dashboard Overview", icon: LayoutDashboard },
+        { id: "analytics", label: "Real-time Analytics", icon: BarChart3 },
+      ],
+    },
+    {
+      group: "WEBSITE PAGES (DYNAMIC CONTENT)",
+      items: [
+        { id: "landing-management", label: "Landing Page (12 Sec)", icon: LayoutTemplate, badge: "12" },
+        { id: "about-page", label: "About Us Page", icon: Info },
+        { id: "services-page", label: "Services Pages", icon: Layers },
+        { id: "industries-page", label: "Industries Pages", icon: Building2 },
+        { id: "case-studies-page", label: "Case Studies Page", icon: FolderGit2 },
+        { id: "journey-page", label: "Company Journey Page", icon: Milestone },
+        { id: "blog-page", label: "Blog Pages", icon: BookOpen },
+        { id: "careers-page", label: "Careers Page", icon: Briefcase },
+        { id: "testimonials-page", label: "Testimonials Page", icon: Quote },
+        { id: "faqs-page", label: "FAQs Page", icon: HelpCircle },
+        { id: "contact-page", label: "Contact Us Page", icon: Mail },
+        { id: "not-found-page", label: "404 Error Page", icon: AlertTriangle },
+      ],
+    },
+    {
+      group: "LEADS & INQUIRIES",
+      items: [
+        { id: "inquiries", label: "Client Inquiries", icon: MessageSquare, badge: "57 NEW" },
+      ],
+    },
+    {
+      group: "SYSTEM",
+      items: [
+        { id: "security", label: "Security Logs", icon: ShieldCheck },
+        { id: "settings", label: "System Settings", icon: Settings },
+      ],
+    },
+  ];
+
+  const currentPageConfig = ALL_PAGE_CONFIGS[activeTab];
+  const selectedSection = currentPageConfig?.sections.find((s) => s.id === selectedSectionId);
+
+  return (
+    <div className="min-h-screen bg-[#f8f9fa] dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 flex flex-col lg:flex-row transition-colors duration-200">
+      
+      {/* Mobile Drawer Overlay Backdrop */}
+      {mobileOpen && (
+        <div
+          onClick={() => setMobileOpen(false)}
+          className="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-xs lg:hidden transition-opacity"
+        />
+      )}
+
+      {/* ================= 1. SIDEBAR (Fixed Header/Footer + Scrollable Links Middle) ================= */}
+      <aside
+        className={`fixed top-0 left-0 z-50 h-screen bg-white dark:bg-[#131927] border-r border-slate-200/80 dark:border-slate-800 flex flex-col justify-between transition-all duration-300 ${
+          mobileOpen ? "translate-x-0 w-64 shadow-2xl" : "-translate-x-full lg:translate-x-0"
+        } ${collapsed ? "lg:w-20" : "lg:w-64"}`}
+      >
+        {/* FIXED TOP HEADER: Clickpoint Logo (Never Scrolls) */}
+        <div className="h-16 shrink-0 flex items-center justify-between px-4 border-b border-slate-100 dark:border-slate-800">
+          <Link href="/" className="flex items-center gap-2 overflow-hidden">
+            {!collapsed ? (
+              <Image
+                src="/images/clickpointfinal.png"
+                alt="Clickpoint Innovation"
+                width={1236}
+                height={317}
+                priority
+                className="h-8 w-auto transition-transform hover:scale-105"
+              />
+            ) : (
+              <Image
+                src="/images/fav3.png"
+                alt="Clickpoint Innovation"
+                width={100}
+                height={100}
+                priority
+                className="h-8 w-8 object-contain transition-transform hover:scale-110"
+              />
+            )}
+          </Link>
+
+          {/* Close button for Mobile Drawer */}
+          <button
+            onClick={() => setMobileOpen(false)}
+            className="lg:hidden p-1 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* SCROLLABLE MIDDLE NAVIGATION LINKS (Only this section scrolls!) */}
+        <div className="flex-1 overflow-y-auto min-h-0 py-4 px-3 space-y-6 [scrollbar-width:thin] [scrollbar-color:rgba(148,163,184,0.3)_transparent]">
+          {navItems.map((group) => (
+            <div key={group.group}>
+              {!collapsed && (
+                <p className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2 truncate">
+                  {group.group}
+                </p>
+              )}
+              <ul className="space-y-1">
+                {group.items.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeTab === item.id;
+                  return (
+                    <li key={item.id}>
+                      <button
+                        onClick={() => {
+                          setActiveTab(item.id);
+                          setSelectedSectionId(null);
+                          setMobileOpen(false);
+                        }}
+                        className={`w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold transition-all ${
+                          isActive
+                            ? "bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-800/40 shadow-xs"
+                            : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100"
+                        }`}
+                        title={collapsed ? item.label : undefined}
+                      >
+                        <Icon className="h-4 w-4 shrink-0" />
+                        {!collapsed && (
+                          <div className="flex-1 flex items-center justify-between overflow-hidden text-left">
+                            <span className="truncate">{item.label}</span>
+                            {item.badge && (
+                              <span className="ml-2 rounded-full bg-blue-100 dark:bg-blue-900/60 px-2 py-0.5 text-[9px] font-bold text-blue-700 dark:text-blue-300 shrink-0">
+                                {item.badge}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        {/* FIXED BOTTOM FOOTER: Collapse / Expand Toggle Button (Never Scrolls) */}
+        <div className="shrink-0 p-3 border-t border-slate-100 dark:border-slate-800 hidden lg:block">
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className="w-full flex items-center justify-center gap-2 rounded-xl py-2 px-3 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          >
+            {collapsed ? (
+              <ChevronRight className="h-4 w-4" />
+            ) : (
+              <>
+                <ChevronLeft className="h-4 w-4" />
+                <span>Collapsed View</span>
+              </>
+            )}
+          </button>
+        </div>
+      </aside>
+
+      {/* ================= 2. MAIN CONTENT AREA ================= */}
+      <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${collapsed ? "lg:ml-20" : "lg:ml-64"}`}>
+        
+        {/* Top Responsive Navbar Header */}
+        <header className="h-16 bg-white dark:bg-[#131927] border-b border-slate-200/80 dark:border-slate-800 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 backdrop-blur-md">
+          
+          <div className="flex items-center gap-3">
+            {/* Hamburger Button for Mobile */}
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className="lg:hidden p-2 rounded-xl text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700"
+              aria-label="Toggle navigation drawer"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+
+            {/* Search Bar */}
+            <div className="relative w-44 sm:w-72">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search page content..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#0b0f19] pl-9 pr-4 py-1.5 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              />
+            </div>
+          </div>
+
+          {/* Right Header Actions */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Theme Toggle */}
+            <button
+              onClick={(e) => toggleTheme(e)}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+              aria-label="Toggle theme"
+            >
+              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4 text-slate-700" />}
+            </button>
+
+            {/* Notifications Bell */}
+            <button className="relative flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+              <Bell className="h-4 w-4" />
+              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-blue-600 ring-2 ring-white dark:ring-[#131927]" />
+            </button>
+
+            {/* Admin Avatar & Sign Out */}
+            <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-3 border-l border-slate-200 dark:border-slate-800">
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shadow-sm shrink-0">
+                  {userEmail.substring(0, 2).toUpperCase()}
+                </div>
+                <div className="hidden md:block text-left">
+                  <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate max-w-[130px]">
+                    {userEmail}
+                  </p>
+                  <p className="text-[10px] text-slate-400 font-semibold">Super Admin</p>
+                </div>
+              </div>
+
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-1 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 px-2 sm:px-2.5 py-1.5 rounded-lg transition-colors ml-1"
+                title="Sign out"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Sign Out</span>
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {/* Dashboard Main Scrollable Content */}
+        <main className="p-4 sm:p-6 space-y-6">
+          
+          {/* TAB 1: OVERVIEW DASHBOARD */}
+          {activeTab === "dashboard" && (
+            <>
+              {/* Title Banner */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+                    Clickpoint Admin Dashboard
+                  </h1>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Here&apos;s what&apos;s going on at your business right now
+                  </p>
+                </div>
+                
+                <div className="flex items-center gap-2 self-start sm:self-auto">
+                  <button className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131927] px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-xs">
+                    <Calendar className="h-3.5 w-3.5 text-blue-600" />
+                    <span>Mar 1 - Mar 31, 2026</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Quick Metrics Bar */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 flex items-center gap-3.5 shadow-xs">
+                  <div className="h-10 w-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 font-bold">
+                    57
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-900 dark:text-slate-100">57 new inquiries</p>
+                    <p className="text-[11px] text-slate-400">Awaiting processing</p>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 flex items-center gap-3.5 shadow-xs">
+                  <div className="h-10 w-10 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 font-bold">
+                    5
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-900 dark:text-slate-100">5 proposals</p>
+                    <p className="text-[11px] text-slate-400">On hold for review</p>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 flex items-center gap-3.5 shadow-xs sm:col-span-2 lg:col-span-1">
+                  <div className="h-10 w-10 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 font-bold">
+                    15
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-900 dark:text-slate-100">15 active projects</p>
+                    <p className="text-[11px] text-slate-400">Live & in production</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Grid Charts Section */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                {/* Left 7 Columns: Total Revenue & Sales Chart */}
+                <div className="lg:col-span-7 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 shadow-xs flex flex-col justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                    <div>
+                      <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">Total Sells & Conversion</h3>
+                      <p className="text-xs text-slate-400">Payment received across all channels</p>
+                    </div>
+                    <span className="self-start sm:self-auto text-xs font-bold text-blue-600 bg-blue-50 dark:bg-blue-950/80 px-2.5 py-1 rounded-lg border border-blue-200/50 dark:border-blue-800/40">
+                      Mar 1 - 31, 2026
+                    </span>
+                  </div>
+
+                  {/* Vector SVG Area Chart */}
+                  <div className="w-full h-48 sm:h-56 my-2 relative">
+                    <svg className="w-full h-full overflow-visible" viewBox="0 0 500 200" preserveAspectRatio="none">
+                      <line x1="0" y1="40" x2="500" y2="40" stroke="currentColor" className="text-slate-100 dark:text-slate-800" strokeWidth="1" />
+                      <line x1="0" y1="90" x2="500" y2="90" stroke="currentColor" className="text-slate-100 dark:text-slate-800" strokeWidth="1" />
+                      <line x1="0" y1="140" x2="500" y2="140" stroke="currentColor" className="text-slate-100 dark:text-slate-800" strokeWidth="1" />
+
+                      <defs>
+                        <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.3" />
+                          <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.0" />
+                        </linearGradient>
+                      </defs>
+                      
+                      <path
+                        d="M 0,150 Q 75,100 150,110 T 300,50 T 420,130 L 500,100 L 500,190 L 0,190 Z"
+                        fill="url(#chartGradient)"
+                      />
+
+                      <path
+                        d="M 0,150 Q 75,100 150,110 T 300,50 T 420,130 L 500,100"
+                        fill="none"
+                        stroke="#3b82f6"
+                        strokeWidth="3"
+                      />
+
+                      <path
+                        d="M 0,160 Q 75,120 150,130 T 300,80 T 420,110 L 500,120"
+                        fill="none"
+                        stroke="#94a3b8"
+                        strokeWidth="2"
+                        strokeDasharray="4 4"
+                      />
+
+                      <circle cx="300" cy="50" r="5" fill="#3b82f6" stroke="#fff" strokeWidth="2" />
+                    </svg>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <span>01 May</span>
+                    <span>15 May</span>
+                    <span>30 May</span>
+                  </div>
+                </div>
+
+                {/* Right 5 Columns: Metrics Cards Grid */}
+                <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  
+                  {/* Card 1: Total Orders */}
+                  <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-xs font-bold text-slate-900 dark:text-white">Total Orders</h4>
+                        <span className="text-[10px] font-bold text-amber-600 bg-amber-50 dark:bg-amber-950/60 px-1.5 py-0.5 rounded">
+                          -6.8%
+                        </span>
+                      </div>
+                      <p className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white mt-2">16,247</p>
+                      <p className="text-[10px] text-slate-400">Last 7 days</p>
+                    </div>
+
+                    <div className="mt-4 flex items-end justify-between gap-1 h-12">
+                      {[40, 65, 30, 80, 50, 90, 70].map((h, idx) => (
+                        <div key={idx} className="flex-1 bg-blue-500/20 rounded-t h-full flex items-end">
+                          <div className="w-full bg-blue-500 rounded-t" style={{ height: `${h}%` }} />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Card 2: New Customers */}
+                  <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-xs font-bold text-slate-900 dark:text-white">New Customers</h4>
+                        <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded">
+                          +26.5%
+                        </span>
+                      </div>
+                      <p className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white mt-2">356</p>
+                      <p className="text-[10px] text-slate-400">Last 7 days</p>
+                    </div>
+
+                    <div className="mt-4 h-12 w-full">
+                      <svg className="w-full h-full" viewBox="0 0 100 40">
+                        <path
+                          d="M0,35 Q25,30 50,15 T100,5"
+                          fill="none"
+                          stroke="#3b82f6"
+                          strokeWidth="2"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+
+                  {/* Card 3: Top Services Radial Progress */}
+                  <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-900 dark:text-white">Top Services</h4>
+                      <p className="text-[10px] text-slate-400">Last 7 days</p>
+                    </div>
+
+                    <div className="my-3 flex items-center justify-center">
+                      <div className="relative h-20 w-20 flex items-center justify-center">
+                        <svg className="h-full w-full -rotate-90" viewBox="0 0 36 36">
+                          <path
+                            className="text-slate-100 dark:text-slate-800"
+                            strokeWidth="3.5"
+                            stroke="currentColor"
+                            fill="none"
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                          />
+                          <path
+                            className="text-blue-600"
+                            strokeDasharray="72, 100"
+                            strokeWidth="3.5"
+                            strokeLinecap="round"
+                            stroke="currentColor"
+                            fill="none"
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                          />
+                        </svg>
+                        <span className="absolute text-sm font-extrabold text-slate-900 dark:text-white">72%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card 4: Paying vs Non-paying */}
+                  <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-900 dark:text-white">Paying vs Non Paying</h4>
+                      <p className="text-[10px] text-slate-400">Last 7 days</p>
+                    </div>
+
+                    <div className="my-3 flex items-center justify-center">
+                      <div className="relative h-20 w-20 flex items-center justify-center">
+                        <svg className="h-full w-full" viewBox="0 0 36 36">
+                          <path
+                            className="text-blue-500"
+                            strokeDasharray="40, 100"
+                            strokeWidth="4"
+                            strokeLinecap="round"
+                            stroke="currentColor"
+                            fill="none"
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              {/* Data Table Section: Recent Inquiries */}
+              <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 shadow-xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900 dark:text-white">Latest Inquiries & Deals</h3>
+                    <p className="text-xs text-slate-400">Real-time incoming inquiries submitted by prospective clients</p>
+                  </div>
+
+                  <div className="flex items-center gap-2 self-start sm:self-auto">
+                    <button className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200">
+                      <SlidersHorizontal className="h-3.5 w-3.5" />
+                      <span>Filter Deals</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse min-w-[640px]">
+                    <thead>
+                      <tr className="border-b border-slate-100 dark:border-slate-800 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                        <th className="pb-3 px-3">INQUIRY ID</th>
+                        <th className="pb-3 px-3">CLIENT / PRODUCT</th>
+                        <th className="pb-3 px-3">SERVICE CATEGORY</th>
+                        <th className="pb-3 px-3">ESTIMATED BUDGET</th>
+                        <th className="pb-3 px-3">RATING</th>
+                        <th className="pb-3 px-3">STATUS</th>
+                        <th className="pb-3 px-3 text-right">ACTION</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs">
+                      {RECENT_INQUIRIES.map((item) => (
+                        <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                          <td className="py-3.5 px-3 font-mono font-bold text-blue-600 dark:text-blue-400">{item.id}</td>
+                          <td className="py-3.5 px-3">
+                            <p className="font-bold text-slate-900 dark:text-slate-100">{item.client}</p>
+                            <p className="text-[10px] text-slate-400">{item.email}</p>
+                          </td>
+                          <td className="py-3.5 px-3 font-medium text-slate-700 dark:text-slate-300">{item.service}</td>
+                          <td className="py-3.5 px-3 font-extrabold text-slate-900 dark:text-white">{item.budget}</td>
+                          <td className="py-3.5 px-3 text-amber-500 font-bold">{item.rating}</td>
+                          <td className="py-3.5 px-3">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${item.statusColor}`}>
+                              {item.status}
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-3 text-right">
+                            <button className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                              <MoreVertical className="h-4 w-4" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* DYNAMIC PAGE CONTENT MANAGEMENT VIEW (FOR ALL WEBSITE PAGES) */}
+          {currentPageConfig && activeTab !== "dashboard" && (
+            <div className="space-y-6">
+              
+              {/* Page Header Banner */}
+              <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                      <LayoutTemplate className="h-3 w-3" />
+                      Dynamic Content Engine
+                    </span>
+                    <span className="text-[10px] font-semibold text-slate-400">
+                      {currentPageConfig.sections.length} Configurable Sections
+                    </span>
+                  </div>
+                  <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+                    {currentPageConfig.title} Management
+                  </h1>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    {currentPageConfig.subtitle}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <a
+                    href={
+                      activeTab === "landing-management"
+                        ? "/"
+                        : activeTab === "about-page"
+                        ? "/about"
+                        : activeTab === "services-page"
+                        ? "/services"
+                        : activeTab === "industries-page"
+                        ? "/industries"
+                        : activeTab === "case-studies-page"
+                        ? "/case-studies"
+                        : activeTab === "journey-page"
+                        ? "/journey"
+                        : activeTab === "blog-page"
+                        ? "/blog"
+                        : activeTab === "careers-page"
+                        ? "/careers"
+                        : activeTab === "testimonials-page"
+                        ? "/testimonials"
+                        : activeTab === "faqs-page"
+                        ? "/faqs"
+                        : activeTab === "not-found-page"
+                        ? "/404"
+                        : "/contact"
+                    }
+                    target="_blank"
+                    className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80 px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  >
+                    <Eye className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                    <span>Preview Page</span>
+                  </a>
+                </div>
+              </div>
+
+              {/* Grid of Rectangle Section Cards for the selected page */}
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {currentPageConfig.sections.map((section) => {
+                  const Icon = section.icon;
+                  const isSelected = selectedSectionId === section.id;
+
+                  return (
+                    <div
+                      key={section.id}
+                      onClick={() => setSelectedSectionId(section.id)}
+                      className={`group relative rounded-2xl border p-5 cursor-pointer transition-all duration-200 flex flex-col justify-between ${
+                        isSelected
+                          ? "border-blue-600 dark:border-blue-500 bg-blue-50/40 dark:bg-blue-950/20 ring-2 ring-blue-500/20 shadow-md"
+                          : "border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-md"
+                      }`}
+                    >
+                      {/* Top Box Bar */}
+                      <div>
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-xs font-extrabold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-md">
+                              {section.order}
+                            </span>
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                              {section.category}
+                            </span>
+                          </div>
+
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            {section.status}
+                          </span>
+                        </div>
+
+                        {/* Title & Icon Header */}
+                        <div className="flex items-start gap-3.5 mb-2">
+                          <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+                            isSelected
+                              ? "bg-blue-600 text-white shadow-md shadow-blue-600/30"
+                              : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 group-hover:bg-blue-500 group-hover:text-white"
+                          }`}>
+                            <Icon className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <h3 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                              {section.name}
+                            </h3>
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 mt-1 leading-relaxed">
+                              {section.description}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Bottom Card Footer Actions */}
+                      <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+                        <span className="text-[10px] font-semibold text-slate-400">
+                          {section.fieldsCount} Configurable Fields
+                        </span>
+
+                        <div className="flex items-center gap-1 text-xs font-bold text-blue-600 dark:text-blue-400 group-hover:translate-x-1 transition-transform">
+                          <span>Configure Box</span>
+                          <ChevronRight className="h-3.5 w-3.5" />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* About Us Page Content Field Editor Component */}
+              {activeTab === "about-page" && (
+                <div className="mt-8">
+                  <AboutPageEditor
+                    sectionId={selectedSectionId}
+                    onCloseSection={() => setSelectedSectionId(null)}
+                  />
+                </div>
+              )}
+
+              {/* Services Page Content Field Editor Component */}
+              {activeTab === "services-page" && (
+                <div className="mt-8">
+                  <ServicesPageEditor
+                    sectionId={selectedSectionId}
+                    onCloseSection={() => setSelectedSectionId(null)}
+                  />
+                </div>
+              )}
+
+              {/* Selected Section Editor Drawer Placeholder for Other Pages */}
+              {activeTab !== "about-page" && activeTab !== "services-page" && selectedSection && (
+                <div className="mt-8 rounded-2xl border border-blue-500/30 bg-blue-500/5 dark:bg-blue-950/20 p-6 shadow-sm">
+                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-blue-500/20">
+                    <div className="flex items-center gap-3">
+                      <div className="h-9 w-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold">
+                        <Edit3 className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                          Configure {selectedSection.name}
+                        </h3>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          Section box selected. Ready for step-by-step content field customization.
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => setSelectedSectionId(null)}
+                      className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  </div>
+
+                  <div className="p-4 bg-white dark:bg-[#131927] rounded-xl border border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 flex items-center justify-between">
+                    <span>
+                      Box <strong className="text-blue-600 dark:text-blue-400">{selectedSection.order} ({selectedSection.name})</strong> ready for content field inputs.
+                    </span>
+                    <button className="px-3 py-1.5 rounded-lg bg-blue-600 text-white font-semibold text-xs shadow-xs hover:bg-blue-700 transition-colors">
+                      Edit Content Fields
+                    </button>
+                  </div>
+                </div>
+              )}
+
+            </div>
+          )}
+
+        </main>
+      </div>
+    </div>
+  );
+}
