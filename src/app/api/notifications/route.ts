@@ -1,11 +1,20 @@
 import { NextResponse } from "next/server";
 import { NotificationService } from "@/services/notification.service";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 // GET /api/notifications — Unified endpoint to fetch unread notifications & counts
 export async function GET() {
   try {
     const summary = await NotificationService.getUnifiedNotifications();
-    return NextResponse.json(summary);
+    return NextResponse.json(summary, {
+      headers: {
+        "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+        Pragma: "no-cache",
+        Expires: "0",
+      },
+    });
   } catch (error: any) {
     return NextResponse.json(
       { success: false, error: error.message || "Failed to fetch notifications" },

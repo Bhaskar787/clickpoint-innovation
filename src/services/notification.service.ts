@@ -5,7 +5,7 @@ import { broadcastNotification } from "@/lib/realtime-notifications";
 
 export class NotificationService {
   /**
-   * Fetch unified list of unread notifications from Testimonials & Contact Inquiries
+   * Fetch unified list of unread notifications from Testimonials, Contact Inquiries & Quick Inquiries
    */
   static async getUnifiedNotifications(): Promise<NotificationSummaryResponse> {
     try {
@@ -21,10 +21,16 @@ export class NotificationService {
         orderBy: { createdAt: "desc" },
       });
 
-      const unreadReviewsCount = dbTestimonials.length;
-      const unreadContactsCount = dbInquiries.length;
+      // 3. Fetch unread Quick Inquiries (Inquiry table with PENDING status)
+      const dbQuickInquiries = await prisma.inquiry.findMany({
+        where: { status: "PENDING" },
+        orderBy: { createdAt: "desc" },
+      });
 
-      // 3. Map Testimonials to Unified AppNotification
+      const unreadReviewsCount = dbTestimonials.length;
+      const unreadContactsCount = dbInquiries.length + dbQuickInquiries.length;
+
+      // 4. Map Testimonials to Unified AppNotification
       const reviewNotifications: AppNotification[] = dbTestimonials.map((t) => ({
         id: t.id,
         category: "REVIEW",
@@ -39,7 +45,7 @@ export class NotificationService {
         targetTab: "testimonials-page",
       }));
 
-      // 4. Map Contact Inquiries to Unified AppNotification
+      // 5. Map Contact Inquiries to Unified AppNotification
       const contactNotifications: AppNotification[] = dbInquiries.map((i) => ({
         id: i.id,
         category: "CONTACT",
@@ -53,8 +59,26 @@ export class NotificationService {
         targetTab: "contact-page",
       }));
 
-      // 5. Combine & Sort Descending by Timestamp
-      const notifications = [...reviewNotifications, ...contactNotifications].sort((a, b) => {
+      // 6. Map Quick Inquiries to Unified AppNotification
+      const quickInquiryNotifications: AppNotification[] = dbQuickInquiries.map((q) => ({
+        id: q.id,
+        category: "QUICK_INQUIRY",
+        title: "Quick Inquiry Lead",
+        clientName: q.name,
+        email: q.email,
+        subtext: q.service ? `${q.service} (${q.budget || ""})` : q.company || q.email,
+        content: q.message,
+        isRead: false,
+        createdAt: q.createdAt.toISOString(),
+        targetTab: "inquiries",
+      }));
+
+      // 7. Combine & Sort Descending by Timestamp
+      const notifications = [
+        ...reviewNotifications,
+        ...contactNotifications,
+        ...quickInquiryNotifications,
+      ].sort((a, b) => {
         const timeA = new Date(a.createdAt).getTime();
         const timeB = new Date(b.createdAt).getTime();
         return timeB - timeA;
@@ -89,6 +113,11 @@ export class NotificationService {
           where: { id },
           data: { isRead: true },
         });
+      } else if (category === "QUICK_INQUIRY") {
+        await prisma.inquiry.update({
+          where: { id },
+          data: { status: "COMPLETED" },
+        });
       } else {
         await prisma.contactInquiry.update({
           where: { id },
@@ -115,6 +144,10 @@ export class NotificationService {
         prisma.contactInquiry.updateMany({
           where: { isRead: false },
           data: { isRead: true },
+        }),
+        prisma.inquiry.updateMany({
+          where: { status: "PENDING" },
+          data: { status: "COMPLETED" },
         }),
       ]);
       return true;

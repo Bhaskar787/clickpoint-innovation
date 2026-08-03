@@ -432,7 +432,18 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
 
     checkNotifications();
 
-    // Real-time listener via BroadcastChannel
+    // Instant re-sync on window focus / tab switch
+    const handleFocus = () => checkNotifications();
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        checkNotifications();
+      }
+    };
+
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    // Real-time listener via BroadcastChannel (Same-device multi-tab fallback)
     const unsubscribe = subscribeRealtimeNotifications(() => {
       checkNotifications();
     });
@@ -453,8 +464,11 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
       } catch (e) {}
     }
 
-    const interval = setInterval(checkNotifications, 4000);
+    // 3-second rapid background poll for instant multi-device sync
+    const interval = setInterval(checkNotifications, 3000);
     return () => {
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       unsubscribe();
       if (sse) sse.close();
       clearInterval(interval);
