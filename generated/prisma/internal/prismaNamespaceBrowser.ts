@@ -61,6 +61,7 @@ export const ModelName = {
   ServicesPage: 'ServicesPage',
   IndustriesPage: 'IndustriesPage',
   ContactPage: 'ContactPage',
+  JourneyPage: 'JourneyPage',
   CaseStudy: 'CaseStudy',
   BlogPost: 'BlogPost',
   TestimonialsPage: 'TestimonialsPage',
@@ -212,6 +213,16 @@ export const ContactPageScalarFieldEnum = {
 } as const
 
 export type ContactPageScalarFieldEnum = (typeof ContactPageScalarFieldEnum)[keyof typeof ContactPageScalarFieldEnum]
+
+
+export const JourneyPageScalarFieldEnum = {
+  id: 'id',
+  content: 'content',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type JourneyPageScalarFieldEnum = (typeof JourneyPageScalarFieldEnum)[keyof typeof JourneyPageScalarFieldEnum]
 
 
 export const CaseStudyScalarFieldEnum = {

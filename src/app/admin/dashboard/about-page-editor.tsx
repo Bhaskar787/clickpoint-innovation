@@ -78,6 +78,9 @@ function FileUploadControl({
     try {
       const formData = new FormData();
       formData.append("file", file);
+      if (value) {
+        formData.append("previousUrl", value);
+      }
 
       const res = await fetch("/api/upload", {
         method: "POST",
@@ -1208,6 +1211,13 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
                     <button
                       onClick={() => {
                         const memberToDelete = member;
+                        if (memberToDelete.imageUrl) {
+                          fetch("/api/upload", {
+                            method: "DELETE",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ url: memberToDelete.imageUrl }),
+                          }).catch((err) => console.warn("Failed to delete member photo from Cloudinary:", err));
+                        }
                         const updated = formData.leadership.team.filter((m) => m.id !== member.id);
                         setFormData({
                           ...formData,

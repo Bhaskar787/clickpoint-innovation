@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { toast } from "sonner";
+import { createPortal } from "react-dom";
 import {
   Save,
   RotateCcw,
@@ -17,12 +18,19 @@ import {
   MessageSquare,
   BellRing,
   BarChart3,
+  Eye,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  Building2,
+  User,
+  Calendar,
 } from "lucide-react";
 import { DEFAULT_TESTIMONIALS_PAGE_DATA } from "@/data/default-testimonials-data";
 import { TestimonialItem, TestimonialsPageContent } from "@/types";
 
 function getInitials(name: string): string {
-  if (!name.trim()) return "U";
+  if (!name || !name.trim()) return "U";
   const parts = name.trim().split(/\s+/);
   if (parts.length >= 2) {
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
@@ -33,9 +41,11 @@ function getInitials(name: string): string {
 interface TestimonialsEditorProps {
   sectionId: string | null;
   onCloseSection?: () => void;
+  selectedItemId?: string | null;
+  onClearSelectedItem?: () => void;
 }
 
-export default function TestimonialsEditor({ sectionId, onCloseSection }: TestimonialsEditorProps) {
+export default function TestimonialsEditor({ sectionId, onCloseSection, selectedItemId, onClearSelectedItem }: TestimonialsEditorProps) {
   const [formData, setFormData] = useState<TestimonialsPageContent>(DEFAULT_TESTIMONIALS_PAGE_DATA);
   const [testimonials, setTestimonials] = useState<TestimonialItem[]>([]);
   const [filterTab, setFilterTab] = useState<"ALL" | "UNREAD" | "APPROVED">("ALL");
@@ -43,15 +53,34 @@ export default function TestimonialsEditor({ sectionId, onCloseSection }: Testim
   const [isSaving, setIsSaving] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  async function loadTestimonialsData() {
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
+  const [selectedTestimonial, setSelectedTestimonial] = useState<TestimonialItem | null>(null);
+
+  async function loadTestimonialsData(isInitial = false) {
     try {
       const res = await fetch("/api/testimonials?includePending=true");
       const json = await res.json();
       if (json.success && json.data) {
-        setFormData({
-          hero: json.data.hero || DEFAULT_TESTIMONIALS_PAGE_DATA.hero,
-          metrics: json.data.metrics || DEFAULT_TESTIMONIALS_PAGE_DATA.metrics,
-        });
+        if (isInitial) {
+          const loadedHero = json.data.hero || {};
+          const loadedMetrics: any = json.data.metrics || {};
+
+          setFormData({
+            hero: {
+              badge: loadedHero.badge || DEFAULT_TESTIMONIALS_PAGE_DATA.hero.badge,
+              title: loadedHero.title || DEFAULT_TESTIMONIALS_PAGE_DATA.hero.title,
+              subtitle: loadedHero.subtitle || DEFAULT_TESTIMONIALS_PAGE_DATA.hero.subtitle,
+            },
+            metrics: {
+              averageRating: loadedMetrics.averageRating || "4.9 / 5.0",
+              totalReviews: loadedMetrics.totalReviews || "350+",
+              satisfactionRate: loadedMetrics.satisfactionRate || "99.4%",
+              recommendationRate: loadedMetrics.recommendationRate || "98%",
+            },
+          });
+        }
 
         const list = json.data.testimonials || [];
         setTestimonials(list);
@@ -65,28 +94,57 @@ export default function TestimonialsEditor({ sectionId, onCloseSection }: Testim
   }
 
   useEffect(() => {
-    loadTestimonialsData();
+    loadTestimonialsData(true);
 
     const interval = setInterval(() => {
-      loadTestimonialsData();
-    }, 10000);
+      loadTestimonialsData(false);
+    }, 4000);
 
     return () => clearInterval(interval);
   }, []);
 
-  async function handleSaveHeader() {
+  useEffect(() => {
+    if (!selectedItemId) return;
+    const found = testimonials.find((t) => t.id === selectedItemId);
+    if (found) {
+      setSelectedTestimonial(found);
+      // mark as read when opened via notification
+      if (!found.isRead) handleMarkRead(found.id);
+    }
+    // notify parent to clear the selected id so polling/updates don't re-open it repeatedly
+    onClearSelectedItem?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedItemId, testimonials]);
+
+  async function handleSaveHeader(e: React.FormEvent) {
+    e.preventDefault();
     setIsSaving(true);
     const toastId = toast.loading("Saving Testimonials page content & metrics to database...");
+
+    const payloadToSave: TestimonialsPageContent = {
+      hero: {
+        badge: formData.hero?.badge || DEFAULT_TESTIMONIALS_PAGE_DATA.hero.badge,
+        title: formData.hero?.title || DEFAULT_TESTIMONIALS_PAGE_DATA.hero.title,
+        subtitle: formData.hero?.subtitle || DEFAULT_TESTIMONIALS_PAGE_DATA.hero.subtitle,
+      },
+      metrics: {
+        averageRating: (formData.metrics as any)?.averageRating || "4.9 / 5.0",
+        totalReviews: (formData.metrics as any)?.totalReviews || "350+",
+        satisfactionRate: (formData.metrics as any)?.satisfactionRate || "99.4%",
+        recommendationRate: (formData.metrics as any)?.recommendationRate || "98%",
+      },
+    };
 
     try {
       const res = await fetch("/api/testimonials", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payloadToSave),
       });
 
       const json = await res.json();
       if (json.success) {
+        setFormData(payloadToSave);
         toast.success("Testimonials headers & rating metrics updated successfully!", { id: toastId });
       } else {
         toast.error(json.error || "Failed to save content.", { id: toastId });
@@ -122,6 +180,9 @@ export default function TestimonialsEditor({ sectionId, onCloseSection }: Testim
             : `Unpublished review from ${item.clientName}.`,
           { id: toastId }
         );
+        if (selectedTestimonial?.id === item.id) {
+          setSelectedTestimonial({ ...selectedTestimonial, isApproved: newApprovedState, isRead: true });
+        }
         loadTestimonialsData();
       } else {
         toast.error(json.error || "Failed to update review", { id: toastId });
@@ -149,6 +210,14 @@ export default function TestimonialsEditor({ sectionId, onCloseSection }: Testim
 
     const toastId = toast.loading("Deleting review...");
     try {
+      if (item.avatarUrl) {
+        fetch("/api/upload", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: item.avatarUrl }),
+        }).catch((err) => console.warn("Failed to delete testimonial avatar from Cloudinary:", err));
+      }
+
       const res = await fetch("/api/testimonials", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -158,6 +227,7 @@ export default function TestimonialsEditor({ sectionId, onCloseSection }: Testim
       const json = await res.json();
       if (json.success) {
         toast.success(`Deleted review from ${item.clientName}`, { id: toastId });
+        if (selectedTestimonial?.id === item.id) setSelectedTestimonial(null);
         loadTestimonialsData();
       } else {
         toast.error(json.error || "Failed to delete review", { id: toastId });
@@ -168,18 +238,21 @@ export default function TestimonialsEditor({ sectionId, onCloseSection }: Testim
   }
 
   function handleMetricChange(index: number, field: "label" | "value", val: string) {
-    const updated = [...(formData.metrics || [])];
+    const list = Array.isArray(formData.metrics) ? formData.metrics : [];
+    const updated = [...list];
     updated[index] = { ...updated[index], [field]: val };
     setFormData({ ...formData, metrics: updated });
   }
 
   function handleAddMetric() {
-    const updated = [...(formData.metrics || []), { label: "New Metric", value: "100%" }];
+    const list = Array.isArray(formData.metrics) ? formData.metrics : [];
+    const updated = [...list, { label: "New Metric", value: "100%" }];
     setFormData({ ...formData, metrics: updated });
   }
 
   function handleRemoveMetric(index: number) {
-    const updated = (formData.metrics || []).filter((_, i) => i !== index);
+    const list = Array.isArray(formData.metrics) ? formData.metrics : [];
+    const updated = list.filter((_: any, i: number) => i !== index);
     setFormData({ ...formData, metrics: updated });
   }
 
@@ -188,6 +261,11 @@ export default function TestimonialsEditor({ sectionId, onCloseSection }: Testim
     if (filterTab === "APPROVED") return item.isApproved;
     return true;
   });
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredItems.length / pageSize) || 1;
+  const startIndex = (currentPage - 1) * pageSize;
+  const pageItems = filteredItems.slice(startIndex, startIndex + pageSize);
 
   const showHeroSection =
     !sectionId ||
@@ -256,7 +334,7 @@ export default function TestimonialsEditor({ sectionId, onCloseSection }: Testim
         </div>
       </div>
 
-      {/* SECTION 1: 100% DYNAMIC PAGE HEADER & RATING METRICS CONFIGURATOR */}
+      {/* SECTION 1: HERO & METRICS CONFIGURATOR */}
       {showHeroSection && (
         <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-6">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
@@ -327,7 +405,7 @@ export default function TestimonialsEditor({ sectionId, onCloseSection }: Testim
             </div>
           </div>
 
-          {/* DYNAMIC RATING METRICS BAR CONFIGURATOR */}
+          {/* RATING METRICS BAR CONFIGURATOR */}
           <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -348,7 +426,7 @@ export default function TestimonialsEditor({ sectionId, onCloseSection }: Testim
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {(formData.metrics || []).map((m, idx) => (
+              {(Array.isArray(formData.metrics) ? formData.metrics : []).map((m: any, idx: number) => (
                 <div
                   key={idx}
                   className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#0b0f19] space-y-2.5 relative group"
@@ -392,178 +470,430 @@ export default function TestimonialsEditor({ sectionId, onCloseSection }: Testim
         </div>
       )}
 
-      {/* SECTION 2: CLIENT REVIEWS GRID & MODERATION PANEL */}
+      {/* SECTION 2: TABULAR TESTIMONIALS MODERATION PANEL */}
       {showReviewsSection && (
-        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-5">
+        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-5 shadow-xs">
+          {/* Section Header Controls */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-2">
               <span className="font-mono text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">
                 #02
               </span>
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                Client Reviews Grid & Moderation Panel ({testimonials.length} Submissions)
+                Client Reviews Moderation ({testimonials.length} Submissions)
               </h3>
             </div>
 
-            {/* Moderation Filter Tabs */}
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() => setFilterTab("ALL")}
-                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
-                  filterTab === "ALL"
-                    ? "bg-violet-600 text-white shadow-xs"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
-                }`}
-              >
-                All ({testimonials.length})
-              </button>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFilterTab("ALL");
+                    setCurrentPage(1);
+                  }}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                    filterTab === "ALL"
+                      ? "bg-violet-600 text-white shadow-xs"
+                      : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+                  }`}
+                >
+                  All ({testimonials.length})
+                </button>
 
-              <button
-                type="button"
-                onClick={() => setFilterTab("UNREAD")}
-                className={`flex items-center gap-1 px-3 py-1 rounded-xl text-xs font-bold transition-all ${
-                  filterTab === "UNREAD"
-                    ? "bg-amber-500 text-white shadow-xs"
-                    : "bg-amber-500/10 text-amber-600 border border-amber-500/20"
-                }`}
-              >
-                <span>Pending / Unread</span>
-                {unreadCount > 0 && <span className="px-1.5 py-0.2 rounded-full bg-amber-600 text-white text-[10px]">{unreadCount}</span>}
-              </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFilterTab("UNREAD");
+                    setCurrentPage(1);
+                  }}
+                  className={`flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                    filterTab === "UNREAD"
+                      ? "bg-amber-500 text-white shadow-xs"
+                      : "text-amber-600 dark:text-amber-400"
+                  }`}
+                >
+                  <span>Pending</span>
+                  {unreadCount > 0 && (
+                    <span className="px-1.5 py-0.2 rounded-full bg-amber-600 text-white text-[10px]">
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
 
-              <button
-                type="button"
-                onClick={() => setFilterTab("APPROVED")}
-                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
-                  filterTab === "APPROVED"
-                    ? "bg-emerald-600 text-white shadow-xs"
-                    : "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
-                }`}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFilterTab("APPROVED");
+                    setCurrentPage(1);
+                  }}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                    filterTab === "APPROVED"
+                      ? "bg-emerald-600 text-white shadow-xs"
+                      : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+                  }`}
+                >
+                  Live ({testimonials.filter((t) => t.isApproved).length})
+                </button>
+              </div>
+
+              {/* Page Size Selector */}
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+                className="bg-slate-100 dark:bg-slate-800 border-none rounded-xl px-2 py-1 text-xs font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-violet-500"
               >
-                Approved Live ({testimonials.filter((t) => t.isApproved).length})
-              </button>
+                <option value={5}>5 per page</option>
+                <option value={10}>10 per page</option>
+                <option value={20}>20 per page</option>
+                <option value={50}>50 per page</option>
+              </select>
             </div>
           </div>
 
-          {/* Testimonial Submissions List */}
-          <div className="space-y-4">
-            {filteredItems.length === 0 ? (
-              <div className="text-center py-12 border border-dashed border-slate-300 dark:border-slate-800 rounded-2xl">
-                <MessageSquare className="h-8 w-8 text-slate-400 mx-auto mb-2" />
-                <p className="text-xs font-bold text-slate-600 dark:text-slate-400">No review submissions in this view.</p>
-              </div>
-            ) : (
-              filteredItems.map((item) => {
-                const initials = getInitials(item.clientName);
+          {/* TABULAR REVIEWS LIST */}
+          {filteredItems.length === 0 ? (
+            <div className="text-center py-12 border border-dashed border-slate-300 dark:border-slate-800 rounded-2xl">
+              <MessageSquare className="h-8 w-8 text-slate-400 mx-auto mb-2" />
+              <p className="text-xs font-bold text-slate-600 dark:text-slate-400">
+                No review submissions found in this category.
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto rounded-2xl border border-slate-200/80 dark:border-slate-800">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 dark:bg-[#0b0f19] border-b border-slate-200 dark:border-slate-800 text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    <th className="py-3 px-4">Client Details</th>
+                    <th className="py-3 px-4">Company & Role</th>
+                    <th className="py-3 px-4">Rating</th>
+                    <th className="py-3 px-4">Submitted Date</th>
+                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+                  {pageItems.map((item) => {
+                    const initials = getInitials(item.clientName);
 
-                return (
-                  <div
-                    key={item.id}
-                    onClick={() => {
-                      if (!item.isRead) handleMarkRead(item.id);
-                    }}
-                    className={`p-5 rounded-2xl border transition-all space-y-3 ${
-                      !item.isRead
-                        ? "border-amber-400 bg-amber-50/20 dark:bg-amber-950/20 ring-1 ring-amber-400/40"
-                        : item.isApproved
-                        ? "border-emerald-200 dark:border-slate-800 bg-white dark:bg-slate-900/60"
-                        : "border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40"
-                    }`}
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <div className="relative h-11 w-11 shrink-0 rounded-2xl overflow-hidden bg-gradient-to-tr from-violet-600 to-indigo-800 text-white font-extrabold text-sm flex items-center justify-center shadow-xs">
-                          {item.avatarUrl ? (
-                            <Image src={item.avatarUrl} alt={item.clientName} fill className="object-cover" />
-                          ) : (
-                            <span>{initials}</span>
-                          )}
-                        </div>
-
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h4 className="text-sm font-extrabold text-slate-900 dark:text-white">
-                              {item.clientName}
-                            </h4>
-                            {!item.isRead && (
-                              <span className="px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase tracking-wider bg-amber-500 text-white animate-pulse">
-                                New Feedback
-                              </span>
-                            )}
-                            {item.isApproved && (
-                              <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-                                Live on Website
-                              </span>
-                            )}
+                    return (
+                      <tr
+                        key={item.id}
+                        onClick={() => {
+                          if (!item.isRead) handleMarkRead(item.id);
+                          setSelectedTestimonial(item);
+                        }}
+                        className={`group transition-colors cursor-pointer ${
+                          !item.isRead
+                            ? "bg-amber-50/40 dark:bg-amber-950/20 hover:bg-amber-50/70 dark:hover:bg-amber-950/40 font-semibold"
+                            : item.isApproved
+                            ? "bg-white dark:bg-[#131927] hover:bg-slate-50/80 dark:hover:bg-slate-800/50"
+                            : "bg-slate-50/50 dark:bg-slate-900/40 hover:bg-slate-100 dark:hover:bg-slate-800/60"
+                        }`}
+                      >
+                        {/* Avatar & Name */}
+                        <td className="py-3.5 px-4">
+                          <div className="flex items-center gap-3">
+                            <div className="relative h-9 w-9 shrink-0 rounded-xl overflow-hidden bg-gradient-to-tr from-violet-600 to-indigo-800 text-white font-extrabold text-xs flex items-center justify-center ring-2 ring-slate-100 dark:ring-slate-800 shadow-xs">
+                              {item.avatarUrl ? (
+                                <Image src={item.avatarUrl} alt={item.clientName} fill className="object-cover" />
+                              ) : (
+                                <span>{initials}</span>
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-extrabold text-slate-900 dark:text-white truncate">
+                                  {item.clientName}
+                                </span>
+                                {!item.isRead && (
+                                  <span className="shrink-0 px-1.5 py-0.2 text-[9px] font-extrabold uppercase bg-amber-500 text-white rounded">
+                                    New
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                                {item.userEmail || "No email provided"}
+                              </p>
+                            </div>
                           </div>
-                          <p className="text-xs text-violet-600 dark:text-violet-400 font-semibold">
-                            {item.clientRole}, {item.company}
-                          </p>
-                        </div>
-                      </div>
+                        </td>
 
-                      {/* Right Side: Rating & Controls */}
-                      <div className="flex items-center gap-3 shrink-0">
-                        <div className="flex items-center gap-0.5 text-amber-500 bg-amber-500/10 px-2.5 py-1 rounded-xl border border-amber-500/20">
-                          {Array.from({ length: item.rating || 5 }).map((_, i) => (
-                            <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                          ))}
-                          <span className="text-xs font-extrabold ml-1 text-amber-700 dark:text-amber-300">
-                            {item.rating}.0
-                          </span>
-                        </div>
+                        {/* Company & Role */}
+                        <td className="py-3.5 px-4 font-semibold text-slate-700 dark:text-slate-300">
+                          <div>
+                            <span className="text-violet-600 dark:text-violet-400 font-bold block truncate">
+                              {item.clientRole || "Client"}
+                            </span>
+                            <span className="text-slate-500 dark:text-slate-400 text-[11px] truncate">
+                              {item.company || "Independent"}
+                            </span>
+                          </div>
+                        </td>
 
-                        {/* Approve Toggle */}
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleToggleApprove(item);
-                          }}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all shadow-xs ${
-                            item.isApproved
-                              ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                              : "bg-slate-200 dark:bg-slate-800 hover:bg-emerald-600 text-slate-700 dark:text-slate-300 hover:text-white"
-                          }`}
-                        >
-                          {item.isApproved ? <CheckCircle2 className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}
-                          <span>{item.isApproved ? "Approved (Live)" : "Approve & Publish"}</span>
-                        </button>
+                        {/* Star Rating */}
+                        <td className="py-3.5 px-4">
+                          <div className="flex items-center gap-1">
+                            <div className="flex text-amber-400">
+                              {Array.from({ length: item.rating || 5 }).map((_, i) => (
+                                <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                              ))}
+                            </div>
+                            <span className="text-[11px] font-extrabold text-slate-700 dark:text-slate-300 ml-1">
+                              {item.rating}.0
+                            </span>
+                          </div>
+                        </td>
 
-                        {/* Delete Button */}
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete(item);
-                          }}
-                          className="p-1.5 rounded-xl text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
-                          title="Delete review"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
+                        {/* Submitted Date */}
+                        <td className="py-3.5 px-4 text-slate-500 dark:text-slate-400 text-[11px] font-mono whitespace-nowrap">
+                          {item.createdAt
+                            ? new Date(item.createdAt).toLocaleDateString(undefined, {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              })
+                            : "Recently"}
+                        </td>
 
-                    {/* Review Body Statement */}
-                    <div className="p-3 rounded-xl bg-white dark:bg-[#0b0f19] border border-slate-200 dark:border-slate-800 text-xs text-slate-800 dark:text-slate-200 leading-relaxed italic">
-                      "{item.content}"
-                    </div>
+                        {/* Status */}
+                        <td className="py-3.5 px-4">
+                          {item.isApproved ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                              <CheckCircle2 className="h-3 w-3" />
+                              Live
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/10 text-amber-600 border border-amber-500/20 animate-pulse">
+                              Pending
+                            </span>
+                          )}
+                        </td>
 
-                    {/* Metadata Footer */}
-                    <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono">
-                      <span>Submitted: {item.createdAt ? new Date(item.createdAt).toLocaleString() : "Recently"}</span>
-                      <span>IP: {item.ipAddress || "127.0.0.1"} {item.userEmail ? `| ${item.userEmail}` : ""}</span>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
+                        {/* Actions */}
+                        <td className="py-3.5 px-4 text-right">
+                          <div
+                            className="flex items-center justify-end gap-1.5"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (!item.isRead) handleMarkRead(item.id);
+                                setSelectedTestimonial(item);
+                              }}
+                              className="p-1.5 rounded-lg text-slate-500 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-slate-800 transition-colors"
+                              title="View Feedback"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleToggleApprove(item)}
+                              className={`p-1.5 rounded-lg transition-colors ${
+                                item.isApproved
+                                  ? "text-emerald-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40"
+                                  : "text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-slate-800"
+                              }`}
+                              title={item.isApproved ? "Unpublish Review" : "Approve & Publish"}
+                            >
+                              {item.isApproved ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleDelete(item)}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
+                              title="Delete Review"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* PAGINATION & SEE MORE CONTROLS */}
+          {filteredItems.length > 0 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                Showing <span className="font-bold text-slate-900 dark:text-white">{startIndex + 1}</span> to{" "}
+                <span className="font-bold text-slate-900 dark:text-white">{Math.min(startIndex + pageSize, filteredItems.length)}</span>{" "}
+                of <span className="font-bold text-slate-900 dark:text-white">{filteredItems.length}</span> reviews
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-transparent text-slate-700 dark:text-slate-300 transition-all"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+
+                <span className="text-xs font-bold px-2 text-slate-700 dark:text-slate-300">
+                  Page {currentPage} of {totalPages}
+                </span>
+
+                <button
+                  type="button"
+                  disabled={currentPage >= totalPages}
+                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                  className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-transparent text-slate-700 dark:text-slate-300 transition-all"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+
+                {/* "See More" Button */}
+                {currentPage < totalPages && (
+                  <button
+                    type="button"
+                    onClick={() => setPageSize((prev) => prev + 10)}
+                    className="ml-2 flex items-center gap-1 px-3 py-1.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold transition-all shadow-xs"
+                  >
+                    <span>See More</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
+      {/* DETAIL MODAL FOR SELECTED TESTIMONIAL (portal) */}
+      {selectedTestimonial &&
+        typeof window !== "undefined" &&
+        createPortal(
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+            <div className="w-full max-w-xl bg-white dark:bg-[#131927] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-6 space-y-5">
+              <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                <div className="flex items-center gap-3">
+                  <div className="relative h-11 w-11 shrink-0 rounded-2xl overflow-hidden bg-gradient-to-tr from-violet-600 to-indigo-800 text-white font-extrabold text-sm flex items-center justify-center shadow-xs">
+                    {selectedTestimonial.avatarUrl ? (
+                      <Image
+                        src={selectedTestimonial.avatarUrl}
+                        alt={selectedTestimonial.clientName}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <span>{getInitials(selectedTestimonial.clientName)}</span>
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+                      {selectedTestimonial.clientName}
+                    </h3>
+                    <p className="text-xs text-violet-600 dark:text-violet-400 font-semibold">
+                      {selectedTestimonial.clientRole}, {selectedTestimonial.company}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedTestimonial(null);
+                    onClearSelectedItem?.();
+                  }}
+                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 text-xs bg-slate-50 dark:bg-[#0b0f19] p-3 rounded-xl border border-slate-100 dark:border-slate-800/60">
+                <div>
+                  <span className="text-slate-400 text-[10px] uppercase font-bold block">Rating</span>
+                  <div className="flex items-center gap-1 text-amber-400 font-bold mt-0.5">
+                    {Array.from({ length: selectedTestimonial.rating || 5 }).map((_, i) => (
+                      <Star key={i} className="h-3.5 w-3.5 fill-amber-400" />
+                    ))}
+                    <span className="text-slate-700 dark:text-slate-300 font-extrabold ml-1">
+                      {selectedTestimonial.rating}.0
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <span className="text-slate-400 text-[10px] uppercase font-bold block">Live Status</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200 mt-0.5 block">
+                    {selectedTestimonial.isApproved ? (
+                      <span className="text-emerald-600 dark:text-emerald-400 font-extrabold">Published Live</span>
+                    ) : (
+                      <span className="text-amber-600 dark:text-amber-400 font-extrabold">Pending Approval</span>
+                    )}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-400 text-[10px] uppercase font-bold block">User Email</span>
+                  <span className="font-medium text-slate-700 dark:text-slate-300">
+                    {selectedTestimonial.userEmail || "N/A"}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-400 text-[10px] uppercase font-bold block">Submitted On</span>
+                  <span className="font-mono text-slate-700 dark:text-slate-300">
+                    {selectedTestimonial.createdAt
+                      ? new Date(selectedTestimonial.createdAt).toLocaleString()
+                      : "Recently"}
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                  Client Review Feedback:
+                </span>
+                <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0b0f19] border border-slate-200/80 dark:border-slate-800 text-xs text-slate-800 dark:text-slate-200 leading-relaxed italic max-h-60 overflow-y-auto font-medium">
+                  "{selectedTestimonial.content}"
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-2">
+                <span className="text-[10px] font-mono text-slate-400">
+                  IP: {selectedTestimonial.ipAddress || "127.0.0.1"}
+                </span>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleToggleApprove(selectedTestimonial)}
+                    className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                      selectedTestimonial.isApproved
+                        ? "bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-300"
+                        : "bg-emerald-600 hover:bg-emerald-700 text-white"
+                    }`}
+                  >
+                    {selectedTestimonial.isApproved ? "Unpublish Review" : "Approve & Publish"}
+                  </button>
+
+                          <button
+                              type="button"
+                              onClick={() => {
+                                handleDelete(selectedTestimonial);
+                                onClearSelectedItem?.();
+                              }}
+                              className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-red-200 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400 text-xs font-bold transition-all"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                              <span>Delete</span>
+                            </button>
+                </div>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 }

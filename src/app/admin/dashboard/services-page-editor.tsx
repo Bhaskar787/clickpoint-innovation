@@ -69,6 +69,9 @@ function FileUploadControl({
     try {
       const formData = new FormData();
       formData.append("file", file);
+      if (value) {
+        formData.append("previousUrl", value);
+      }
 
       const res = await fetch("/api/upload", {
         method: "POST",

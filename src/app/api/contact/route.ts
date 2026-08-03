@@ -3,6 +3,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_CONTACT_PAGE_DATA } from "@/data/default-contact-data";
 import { ContactInquiryItem, ContactPageContent } from "@/types";
+import { NotificationService } from "@/services/notification.service";
 
 // GET /api/contact — Fetch contact page headers & list of inquiries for admin
 export async function GET(request: Request) {
@@ -124,6 +125,20 @@ export async function POST(request: Request) {
     revalidateTag("contact-page");
     revalidatePath("/contact");
     revalidatePath("/admin/dashboard");
+
+    // Broadcast real-time notification to Admin via NotificationService
+    NotificationService.notifyRealtime({
+      id: newInquiry.id,
+      category: "CONTACT",
+      title: "Contact Lead Inquiry",
+      clientName: newInquiry.name,
+      email: newInquiry.email,
+      subtext: newInquiry.service ? `${newInquiry.service} (${newInquiry.budget || ""})` : newInquiry.email,
+      content: newInquiry.message,
+      isRead: false,
+      createdAt: newInquiry.createdAt.toISOString(),
+      targetTab: "contact-page",
+    });
 
     return NextResponse.json({
       success: true,

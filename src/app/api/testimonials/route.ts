@@ -3,6 +3,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_TESTIMONIALS_PAGE_DATA } from "@/data/default-testimonials-data";
 import { TestimonialItem, TestimonialsPageContent } from "@/types";
+import { NotificationService } from "@/services/notification.service";
 
 // GET /api/testimonials — Fetch dynamic page config & approved/all testimonials
 export async function GET(request: Request) {
@@ -141,6 +142,22 @@ export async function POST(request: Request) {
     revalidateTag("testimonials-page");
     revalidatePath("/");
     revalidatePath("/testimonials");
+    revalidatePath("/admin/dashboard");
+
+    // Broadcast real-time notification to Admin via NotificationService
+    NotificationService.notifyRealtime({
+      id: newTestimonial.id,
+      category: "REVIEW",
+      title: "Client Feedback Review",
+      clientName: newTestimonial.clientName,
+      email: newTestimonial.userEmail || undefined,
+      subtext: `${newTestimonial.clientRole}, ${newTestimonial.company}`,
+      content: newTestimonial.content,
+      rating: newTestimonial.rating,
+      isRead: false,
+      createdAt: newTestimonial.createdAt.toISOString(),
+      targetTab: "testimonials-page",
+    });
 
     return NextResponse.json({
       success: true,

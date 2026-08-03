@@ -66,8 +66,9 @@ import { toast } from "sonner";
 import AboutPageEditor from "./about-page-editor";
 import ServicesPageEditor from "./services-page-editor";
 import IndustriesPageEditor from "./industries-page-editor";
-import TestimonialsEditor from "./testimonials-editor";
 import ContactEditor from "./contact-editor";
+import TestimonialsEditor from "./testimonials-editor";
+import JourneyEditor from "./journey-editor";
 
 interface AdminDashboardClientProps {
   userEmail: string;
@@ -271,8 +272,9 @@ const ALL_PAGE_CONFIGS: Record<string, PageConfig> = {
     title: "Contact Us Page (/contact)",
     subtitle: "Manage lead capture forms, office address, contact emails, and phone channels",
     sections: [
-      { id: "contact-hero", order: "#01", name: "Contact Hero & Office Details", description: "Configure contact headline, physical address, email addresses, and phone numbers.", icon: Mail, fieldsCount: 9, status: "Active", category: "Contact Info" },
-      { id: "contact-form", order: "#02", name: "Inquiry Lead Form Fields", description: "Manage form fields (Name, Email, Budget, Scope), validation rules, and success messages.", icon: Send, fieldsCount: 10, status: "Active", category: "Form" },
+      { id: "contact-hero", order: "#01", name: "Contact Hero & Office Details", description: "Configure contact headline, physical address, email addresses, and form choice options.", icon: Mail, fieldsCount: 15, status: "Active", category: "Contact Info" },
+      { id: "quick-enquiry", order: "#02", name: "Quick Enquiry Modal Customization", description: "Customize Quick Enquiry Modal titles, badges, country code, and right panel info.", icon: MessageSquare, fieldsCount: 11, status: "Active", category: "Modal" },
+      { id: "contact-form", order: "#03", name: "Client Lead Inquiries Moderation", description: "Manage incoming client lead inquiries, view messages, and mark read status.", icon: Send, fieldsCount: 10, status: "Active", category: "Moderation" },
     ],
   },
 
@@ -287,8 +289,30 @@ const ALL_PAGE_CONFIGS: Record<string, PageConfig> = {
   },
 };
 
+import { subscribeRealtimeNotifications } from "@/lib/realtime-notifications";
+
 function StarIcon(props: { className?: string }) {
   return <Award {...props} />;
+}
+
+function getTimeAgo(dateString?: string): string {
+  if (!dateString) return "Just now";
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "Just now";
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (diffInSeconds < 30) return "Just now";
+  if (diffInSeconds < 60) return `${diffInSeconds}s ago`;
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours}h ago`;
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 30) return `${diffInDays}d ago`;
+  const diffInMonths = Math.floor(diffInDays / 30);
+  if (diffInMonths < 12) return `${diffInMonths}mo ago`;
+  return `${Math.floor(diffInMonths / 12)}y ago`;
 }
 
 export default function AdminDashboardClient({ userEmail }: AdminDashboardClientProps) {
@@ -302,171 +326,162 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
   const [unreadContactCount, setUnreadContactCount] = useState<number>(0);
   const [notificationsList, setNotificationsList] = useState<any[]>([]);
   const [showNotificationsDropdown, setShowNotificationsDropdown] = useState<boolean>(false);
+  const [selectedNotificationItemId, setSelectedNotificationItemId] = useState<string | null>(null);
   const isInitialMount = useRef(true);
   const prevUnreadCountRef = useRef<number>(0);
   const prevContactCountRef = useRef<number>(0);
   const { theme, toggleTheme } = useTheme();
 
-  // Global Real-time Polling for Reviews & Contact Inquiries Notifications
+  // Global Real-time Polling & WebSocket/SSE Subscription via Unified Notification API
   useEffect(() => {
     async function checkNotifications() {
       try {
-        const [testiRes, contactRes] = await Promise.all([
-          fetch("/api/testimonials?includePending=true"),
-          fetch("/api/contact?includeAll=true"),
-        ]);
+        const res = await fetch("/api/notifications");
+        const json = await res.json();
+        if (json.success) {
+          const list = json.notifications || [];
+          const newReviewCount = json.unreadReviewsCount || 0;
+          const newContactCount = json.unreadContactsCount || 0;
 
-        const [testiJson, contactJson] = await Promise.all([
-          testiRes.json(),
-          contactRes.json(),
-        ]);
+          setNotificationsList(list);
+          setUnreadTestimonialsCount(newReviewCount);
+          setUnreadContactCount(newContactCount);
 
-        let unreadReviews: any[] = [];
-        let newReviewCount = 0;
-        if (testiJson.success && testiJson.data) {
-          newReviewCount = testiJson.data.unreadCount || 0;
-          unreadReviews = (testiJson.data.testimonials || [])
-            .filter((t: any) => !t.isRead || !t.isApproved)
-            .map((t: any) => ({
-              id: t.id,
-              type: "REVIEW",
-              title: "Client Feedback Review",
-              clientName: t.clientName,
-              subtext: `${t.clientRole}, ${t.company}`,
-              content: t.content,
-              rating: t.rating,
-              targetTab: "testimonials-page",
-            }));
-        }
-
-        let unreadContacts: any[] = [];
-        let newContactCount = 0;
-        if (contactJson.success && contactJson.data) {
-          newContactCount = contactJson.data.unreadCount || 0;
-          unreadContacts = (contactJson.data.inquiries || [])
-            .filter((i: any) => !i.isRead)
-            .map((i: any) => ({
-              id: i.id,
-              type: "CONTACT",
-              title: "Contact Lead Inquiry",
-              clientName: i.name,
-              email: i.email,
-              subtext: i.service ? `${i.service} (${i.budget || ""})` : i.email,
-              content: i.message,
-              targetTab: "contact-page",
-            }));
-        }
-
-        const combinedList = [...unreadReviews, ...unreadContacts];
-        setNotificationsList(combinedList);
-        setUnreadTestimonialsCount(newReviewCount);
-        setUnreadContactCount(newContactCount);
-
-        // 1. Real-Time Toast for NEW Review (Amber Theme)
-        if (!isInitialMount.current && newReviewCount > prevUnreadCountRef.current) {
-          const latestReview = unreadReviews[0];
-          toast.custom(
-            (tId) => (
-              <div className="flex items-start gap-3 p-4 rounded-2xl bg-amber-50 dark:bg-[#1f1912] border border-amber-200 dark:border-amber-900/60 shadow-xl max-w-sm">
-                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-500 text-white shrink-0 shadow-xs">
-                  <MessageSquare className="h-4 w-4" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-extrabold text-amber-950 dark:text-amber-100">
-                      New Review Received
-                    </h4>
-                    <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400">Just now</span>
+          // 1. Real-Time Toast for NEW Review (Amber Theme)
+          if (!isInitialMount.current && newReviewCount > prevUnreadCountRef.current) {
+            const latestReview = list.find((n: any) => n.category === "REVIEW" || n.type === "REVIEW");
+            toast.custom(
+              (tId) => (
+                <div className="flex items-start gap-3 p-4 rounded-2xl bg-amber-50 dark:bg-[#1f1912] border border-amber-200 dark:border-amber-900/60 shadow-xl max-w-sm">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-500 text-white shrink-0 shadow-xs">
+                    <MessageSquare className="h-4 w-4" />
                   </div>
-                  <p className="text-xs text-amber-900 dark:text-amber-200 mt-1 leading-snug font-medium line-clamp-2 italic">
-                    {latestReview ? `"${latestReview.content}" — ${latestReview.clientName}` : "New feedback submitted."}
-                  </p>
-                  <button
-                    onClick={() => {
-                      toast.dismiss(tId);
-                      setActiveTab("testimonials-page");
-                      setSelectedSectionId(null);
-                    }}
-                    className="mt-2 text-xs font-extrabold text-amber-700 dark:text-amber-300 hover:underline inline-flex items-center gap-1"
-                  >
-                    <span>Moderate Review</span>
-                    <ChevronRight className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              </div>
-            ),
-            { duration: 5000 }
-          );
-        }
-
-        // 2. Real-Time Toast for NEW Contact Inquiry (Blue Theme)
-        if (!isInitialMount.current && newContactCount > prevContactCountRef.current) {
-          const latestContact = unreadContacts[0];
-          toast.custom(
-            (tId) => (
-              <div className="flex items-start gap-3 p-4 rounded-2xl bg-blue-50 dark:bg-[#0f172a] border border-blue-200 dark:border-blue-900/60 shadow-xl max-w-sm">
-                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-600 text-white shrink-0 shadow-xs">
-                  <Mail className="h-4 w-4" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-extrabold text-blue-950 dark:text-blue-100">
-                      New Contact Lead Received
-                    </h4>
-                    <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">Just now</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-extrabold text-amber-950 dark:text-amber-100">
+                        New Review Received
+                      </h4>
+                      <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400">Just now</span>
+                    </div>
+                    <p className="text-xs text-amber-900 dark:text-amber-200 mt-1 leading-snug font-medium line-clamp-2 italic">
+                      {latestReview ? `"${latestReview.content}" — ${latestReview.clientName}` : "New feedback submitted."}
+                    </p>
+                    <button
+                      onClick={() => {
+                        toast.dismiss(tId);
+                        setActiveTab("testimonials-page");
+                        setSelectedSectionId(null);
+                      }}
+                      className="mt-2 text-xs font-extrabold text-amber-700 dark:text-amber-300 hover:underline inline-flex items-center gap-1"
+                    >
+                      <span>Moderate Review</span>
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    </button>
                   </div>
-                  <p className="text-xs text-blue-900 dark:text-blue-200 mt-1 leading-snug font-medium line-clamp-2 italic">
-                    {latestContact ? `Inquiry from ${latestContact.clientName} (${latestContact.email || ""})` : "New contact message received."}
-                  </p>
-                  <button
-                    onClick={() => {
-                      toast.dismiss(tId);
-                      setActiveTab("contact-page");
-                      setSelectedSectionId(null);
-                    }}
-                    className="mt-2 text-xs font-extrabold text-blue-700 dark:text-blue-300 hover:underline inline-flex items-center gap-1"
-                  >
-                    <span>View Contact Lead</span>
-                    <ChevronRight className="h-3.5 w-3.5" />
-                  </button>
                 </div>
-              </div>
-            ),
-            { duration: 5000 }
-          );
-        }
+              ),
+              { duration: 5000 }
+            );
+          }
 
-        prevUnreadCountRef.current = newReviewCount;
-        prevContactCountRef.current = newContactCount;
-        isInitialMount.current = false;
+          // 2. Real-Time Toast for NEW Contact Inquiry / Lead (Blue Theme)
+          if (!isInitialMount.current && newContactCount > prevContactCountRef.current) {
+            const latestContact = list.find((n: any) => n.category !== "REVIEW" && n.type !== "REVIEW");
+            toast.custom(
+              (tId) => (
+                <div className="flex items-start gap-3 p-4 rounded-2xl bg-blue-50 dark:bg-[#0f172a] border border-blue-200 dark:border-blue-900/60 shadow-xl max-w-sm">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-600 text-white shrink-0 shadow-xs">
+                    <Mail className="h-4 w-4" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-extrabold text-blue-950 dark:text-blue-100">
+                        New Lead Inquiry Received
+                      </h4>
+                      <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">Just now</span>
+                    </div>
+                    <p className="text-xs text-blue-900 dark:text-blue-200 mt-1 leading-snug font-medium line-clamp-2 italic">
+                      {latestContact ? `Inquiry from ${latestContact.clientName} (${latestContact.email || ""})` : "New contact message received."}
+                    </p>
+                    <button
+                      onClick={() => {
+                        toast.dismiss(tId);
+                        setActiveTab("contact-page");
+                        setSelectedSectionId(null);
+                      }}
+                      className="mt-2 text-xs font-extrabold text-blue-700 dark:text-blue-300 hover:underline inline-flex items-center gap-1"
+                    >
+                      <span>View Lead Inquiry</span>
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ),
+              { duration: 5000 }
+            );
+          }
+
+          prevUnreadCountRef.current = newReviewCount;
+          prevContactCountRef.current = newContactCount;
+          isInitialMount.current = false;
+        }
       } catch (err) {
         console.error("Error polling notifications:", err);
       }
     }
 
     checkNotifications();
-    const interval = setInterval(checkNotifications, 5000);
-    return () => clearInterval(interval);
+
+    // Real-time listener via BroadcastChannel
+    const unsubscribe = subscribeRealtimeNotifications(() => {
+      checkNotifications();
+    });
+
+    // Real-time listener via SSE stream
+    let sse: EventSource | null = null;
+    if (typeof window !== "undefined") {
+      try {
+        sse = new EventSource("/api/notifications/stream");
+        sse.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data && data.type !== "CONNECTED") {
+              checkNotifications();
+            }
+          } catch (e) {}
+        };
+      } catch (e) {}
+    }
+
+    const interval = setInterval(checkNotifications, 4000);
+    return () => {
+      unsubscribe();
+      if (sse) sse.close();
+      clearInterval(interval);
+    };
   }, []);
 
   async function handleMarkSingleRead(item: any) {
     try {
-      if (item.type === "REVIEW") {
-        await fetch("/api/testimonials", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "update-testimonial", id: item.id, isRead: true }),
-        });
-      } else if (item.type === "CONTACT") {
-        await fetch("/api/contact", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "update-inquiry", id: item.id, isRead: true }),
-        });
-      }
+      const category = item.category || item.type;
+      await fetch("/api/notifications", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "mark-read", id: item.id, category }),
+      });
+
+      // remove from local list and decrement counters
       setNotificationsList((prev) => prev.filter((n) => n.id !== item.id));
-      if (item.type === "REVIEW") setUnreadTestimonialsCount((prev) => Math.max(0, prev - 1));
-      if (item.type === "CONTACT") setUnreadContactCount((prev) => Math.max(0, prev - 1));
+      if (category === "REVIEW") {
+        setUnreadTestimonialsCount((prev) => Math.max(0, prev - 1));
+      } else {
+        setUnreadContactCount((prev) => Math.max(0, prev - 1));
+      }
+
+      // set selected notification id so the appropriate editor can open the specific item
+      setSelectedNotificationItemId(item.id);
+
+      // switch to appropriate admin editor view
       setActiveTab(item.targetTab || "contact-page");
       setSelectedSectionId(null);
       setShowNotificationsDropdown(false);
@@ -477,25 +492,11 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
 
   async function handleArchiveAllNotifications() {
     try {
-      const reviewIds = notificationsList.filter((n) => n.type === "REVIEW").map((n) => n.id);
-      const contactIds = notificationsList.filter((n) => n.type === "CONTACT").map((n) => n.id);
-
-      await Promise.all([
-        ...reviewIds.map((id) =>
-          fetch("/api/testimonials", {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "update-testimonial", id, isRead: true }),
-          })
-        ),
-        ...contactIds.map((id) =>
-          fetch("/api/contact", {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "update-inquiry", id, isRead: true }),
-          })
-        ),
-      ]);
+      await fetch("/api/notifications", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "archive-all" }),
+      });
 
       setNotificationsList([]);
       setUnreadTestimonialsCount(0);
@@ -755,12 +756,12 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                 onClick={() => setShowNotificationsDropdown(!showNotificationsDropdown)}
                 className="relative flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors focus:outline-none"
                 aria-label="Notifications"
-                title={unreadTestimonialsCount > 0 ? `${unreadTestimonialsCount} Unread Reviews` : "Notifications"}
+                title={unreadTestimonialsCount + unreadContactCount > 0 ? `${unreadTestimonialsCount + unreadContactCount} Unread Notifications` : "Notifications"}
               >
                 <Bell className="h-4 w-4" />
-                {unreadTestimonialsCount > 0 ? (
+                {unreadTestimonialsCount + unreadContactCount > 0 ? (
                   <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[11px] font-black text-white shadow-md border-2 border-white dark:border-[#131927]">
-                    {unreadTestimonialsCount > 9 ? "9+" : unreadTestimonialsCount}
+                    {unreadTestimonialsCount + unreadContactCount > 9 ? "9+" : unreadTestimonialsCount + unreadContactCount}
                   </span>
                 ) : (
                   <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-slate-300 dark:bg-slate-700" />
@@ -768,102 +769,112 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
               </button>
 
               {/* Notification Popover Dropdown */}
-              {showNotificationsDropdown && (
-                <div className="absolute right-0 top-12 z-50 w-80 sm:w-96 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 shadow-2xl space-y-3">
-                  <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 dark:border-slate-800">
-                    <div className="flex items-center gap-2">
-                      <Bell className="h-4 w-4 text-amber-500" />
-                      <h4 className="text-xs font-extrabold text-slate-900 dark:text-white">
-                        Notifications ({notificationsList.length} Unread)
-                      </h4>
-                    </div>
+            {showNotificationsDropdown && (
+  <div className="absolute right-0 top-12 z-50 w-80 sm:w-96 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl overflow-hidden">
+    
+    {/* Header */}
+    <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800">
+      <div className="flex items-center gap-2">
+        <Bell className="h-4 w-4 text-slate-700 dark:text-slate-300" />
+        <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+          Notifications
+        </h4>
+        {notificationsList.length > 0 && (
+          <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 rounded-full">
+            {notificationsList.length}
+          </span>
+        )}
+      </div>
 
-                    <div className="flex items-center gap-2">
-                      {notificationsList.length > 0 && (
-                        <button
-                          onClick={handleArchiveAllNotifications}
-                          className="text-[10px] font-extrabold text-amber-600 dark:text-amber-400 hover:underline"
-                        >
-                          Archive All
-                        </button>
-                      )}
-                      <button
-                        onClick={() => setShowNotificationsDropdown(false)}
-                        className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-lg"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
+      <div className="flex items-center gap-3">
+        {notificationsList.length > 0 && (
+          <button
+            onClick={handleArchiveAllNotifications}
+            className="text-[11px] font-medium text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
+          >
+            Archive all
+          </button>
+        )}
+        <button
+          onClick={() => setShowNotificationsDropdown(false)}
+          className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-md p-0.5 transition-colors"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
 
-                  {/* List of Unread Submissions */}
-                  <div className="max-h-72 overflow-y-auto space-y-2 pr-1">
-                    {notificationsList.length === 0 ? (
-                      <div className="text-center py-8 space-y-2">
-                        <div className="h-10 w-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto">
-                          <Archive className="h-5 w-5" />
-                        </div>
-                        <p className="text-xs font-extrabold text-slate-800 dark:text-slate-200">
-                          No recent unread notifications
-                        </p>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 max-w-[240px] mx-auto">
-                          All user feedback reviews & contact messages have been archived.
-                        </p>
-                      </div>
-                    ) : (
-                      notificationsList.map((item) => (
-                        <div
-                          key={item.id}
-                          onClick={() => handleMarkSingleRead(item)}
-                          className="p-3.5 rounded-xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 hover:bg-amber-100/60 dark:hover:bg-amber-900/40 transition-colors cursor-pointer space-y-1.5"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <span className="px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase tracking-wider bg-amber-500 text-white">
-                                {item.type === "REVIEW" ? "Review" : "Inquiry"}
-                              </span>
-                              <span className="text-xs font-extrabold text-slate-900 dark:text-white">
-                                {item.clientName}
-                              </span>
-                            </div>
+    {/* Notification List */}
+    <div className="max-h-80 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
+      {notificationsList.length === 0 ? (
+        <div className="text-center py-8 px-4 space-y-1.5">
+          <div className="h-8 w-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center mx-auto">
+            <Archive className="h-4 w-4" />
+          </div>
+          <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+            No unread notifications
+          </p>
+          <p className="text-[11px] text-slate-400 dark:text-slate-500">
+            All reviews & messages have been archived.
+          </p>
+        </div>
+      ) : (
+        notificationsList.map((item) => (
+          <div
+            key={item.id}
+            onClick={() => handleMarkSingleRead(item)}
+            className="flex items-center justify-between gap-3 px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer group"
+          >
+            {/* Left Column: Type + Name + Hidden Content */}
+            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+              <span
+                className={`shrink-0 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
+                  (item.category || item.type) === "REVIEW"
+                    ? "bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400"
+                    : "bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-400"
+                }`}
+              >
+                {(item.category || item.type) === "REVIEW" ? "Review" : "Inquiry"}
+              </span>
 
-                            {item.rating && (
-                              <div className="flex items-center gap-0.5 text-amber-500">
-                                {Array.from({ length: item.rating }).map((_, i) => (
-                                  <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />
-                                ))}
-                              </div>
-                            )}
-                          </div>
+              <div className="min-w-0 flex-1 flex items-center gap-2">
+                <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 shrink-0">
+                  {item.clientName}
+                </span>
+                
+                {/* Truncated message text (single row, no wrap) */}
+                <span className="text-xs text-slate-400 dark:text-slate-500 truncate min-w-0">
+                  — {item.content}
+                </span>
+              </div>
+            </div>
 
-                          <p className="text-xs text-slate-700 dark:text-slate-300 line-clamp-2 leading-relaxed italic">
-                            "{item.content}"
-                          </p>
-
-                          <span className="text-[9px] text-amber-600 dark:text-amber-400 font-mono block font-semibold">
-                            Click to view details in {item.type === "REVIEW" ? "Testimonials" : "Inquiries"} section
-                          </span>
-                        </div>
-                      ))
-                    )}
-                  </div>
-
-                  {notificationsList.length > 0 && (
-                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800 text-center">
-                      <button
-                        onClick={() => {
-                          setActiveTab("testimonials-page");
-                          setSelectedSectionId(null);
-                          setShowNotificationsDropdown(false);
-                        }}
-                        className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline"
-                      >
-                        View All Testimonials & Moderation Panel
-                      </button>
-                    </div>
-                  )}
+            {/* Right Column: Time Ago + Rating or Action indicator */}
+            <div className="shrink-0 flex items-center gap-2">
+              {item.rating ? (
+                <div className="flex items-center gap-0.5">
+                  <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                  <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                    {item.rating}
+                  </span>
                 </div>
+              ) : (
+                <span className="text-[10px] font-medium text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors">
+                  View →
+                </span>
               )}
+              {item.createdAt && (
+                <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 shrink-0 whitespace-nowrap bg-slate-100 dark:bg-slate-800/80 px-1.5 py-0.5 rounded">
+                  {getTimeAgo(item.createdAt)}
+                </span>
+              )}
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+  </div>
+)}
             </div>
 
             {/* Admin Avatar & Sign Out */}
@@ -1243,75 +1254,115 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                 </div>
               </div>
 
-              {/* Grid of Rectangle Section Cards for the selected page */}
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {currentPageConfig.sections.map((section) => {
-                  const Icon = section.icon;
-                  const isSelected = selectedSectionId === section.id;
-
-                  return (
-                    <div
-                      key={section.id}
-                      onClick={() => setSelectedSectionId(section.id)}
-                      className={`group relative rounded-2xl border p-5 cursor-pointer transition-all duration-200 flex flex-col justify-between ${
-                        isSelected
-                          ? "border-blue-600 dark:border-blue-500 bg-blue-50/40 dark:bg-blue-950/20 ring-2 ring-blue-500/20 shadow-md"
-                          : "border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-md"
-                      }`}
+              {/* Focused Header when a specific section box is selected */}
+              {selectedSectionId && selectedSection && (
+                <div className="flex items-center justify-between p-4 rounded-2xl bg-blue-50/70 dark:bg-[#131927] border border-blue-200 dark:border-slate-800 shadow-xs mb-6">
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedSectionId(null)}
+                      className="px-3.5 py-1.5 rounded-xl bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 text-xs font-bold hover:bg-blue-100 dark:hover:bg-slate-700 transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer"
                     >
-                      {/* Top Box Bar */}
-                      <div>
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono text-xs font-extrabold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-md">
-                              {section.order}
-                            </span>
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                              {section.category}
-                            </span>
-                          </div>
-
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                            {section.status}
-                          </span>
-                        </div>
-
-                        {/* Title & Icon Header */}
-                        <div className="flex items-start gap-3.5 mb-2">
-                          <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-                            isSelected
-                              ? "bg-blue-600 text-white shadow-md shadow-blue-600/30"
-                              : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 group-hover:bg-blue-500 group-hover:text-white"
-                          }`}>
-                            <Icon className="h-5 w-5" />
-                          </div>
-                          <div>
-                            <h3 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                              {section.name}
-                            </h3>
-                            <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 mt-1 leading-relaxed">
-                              {section.description}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Bottom Card Footer Actions */}
-                      <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
-                        <span className="text-[10px] font-semibold text-slate-400">
-                          {section.fieldsCount} Configurable Fields
+                      <ChevronLeft className="h-4 w-4" />
+                      <span>Back to All Section Boxes</span>
+                    </button>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-extrabold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-md">
+                          {selectedSection.order}
                         </span>
+                        <h3 className="text-xs font-extrabold text-slate-900 dark:text-white">
+                          Editing: {selectedSection.name}
+                        </h3>
+                      </div>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                        {selectedSection.description}
+                      </p>
+                    </div>
+                  </div>
 
-                        <div className="flex items-center gap-1 text-xs font-bold text-blue-600 dark:text-blue-400 group-hover:translate-x-1 transition-transform">
-                          <span>Configure Box</span>
-                          <ChevronRight className="h-3.5 w-3.5" />
+                  <button
+                    type="button"
+                    onClick={() => setSelectedSectionId(null)}
+                    className="p-1.5 rounded-xl bg-white dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                    title="Close Editor"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+
+              {/* Grid of Rectangle Section Cards for the selected page (Only shown when no section is selected) */}
+              {!selectedSectionId && (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {currentPageConfig.sections.map((section) => {
+                    const Icon = section.icon;
+                    const isSelected = selectedSectionId === section.id;
+
+                    return (
+                      <div
+                        key={section.id}
+                        onClick={() => setSelectedSectionId(section.id)}
+                        className={`group relative rounded-2xl border p-5 cursor-pointer transition-all duration-200 flex flex-col justify-between ${
+                          isSelected
+                            ? "border-blue-600 dark:border-blue-500 bg-blue-50/40 dark:bg-blue-950/20 ring-2 ring-blue-500/20 shadow-md"
+                            : "border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-md"
+                        }`}
+                      >
+                        {/* Top Box Bar */}
+                        <div>
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-xs font-extrabold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-md">
+                                {section.order}
+                              </span>
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                                {section.category}
+                              </span>
+                            </div>
+
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                              {section.status}
+                            </span>
+                          </div>
+
+                          {/* Title & Icon Header */}
+                          <div className="flex items-start gap-3.5 mb-2">
+                            <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+                              isSelected
+                                ? "bg-blue-600 text-white shadow-md shadow-blue-600/30"
+                                : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 group-hover:bg-blue-500 group-hover:text-white"
+                            }`}>
+                              <Icon className="h-5 w-5" />
+                            </div>
+                            <div>
+                              <h3 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                {section.name}
+                              </h3>
+                              <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 mt-1 leading-relaxed">
+                                {section.description}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Bottom Card Footer Actions */}
+                        <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+                          <span className="text-[10px] font-semibold text-slate-400">
+                            {section.fieldsCount} Configurable Fields
+                          </span>
+
+                          <div className="flex items-center gap-1 text-xs font-bold text-blue-600 dark:text-blue-400 group-hover:translate-x-1 transition-transform">
+                            <span>Configure Box</span>
+                            <ChevronRight className="h-3.5 w-3.5" />
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
 
               {/* About Us Page Content Field Editor Component */}
               {activeTab === "about-page" && (
@@ -1347,9 +1398,27 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
               {activeTab === "testimonials-page" && (
                 <div className="mt-8">
                   <TestimonialsEditor
-                    sectionId={selectedSectionId}
-                    onCloseSection={() => setSelectedSectionId(null)}
+                      sectionId={selectedSectionId}
+                      selectedItemId={selectedNotificationItemId}
+                      onCloseSection={() => setSelectedSectionId(null)}
+                      onClearSelectedItem={() => setSelectedNotificationItemId(null)}
                   />
+                </div>
+              )}
+
+              {/* Journey Page Content Field Editor Component */}
+              {activeTab === "journey-page" && (
+                <div className="mt-8">
+                  <JourneyEditor
+                    sectionId={selectedSectionId || undefined}
+                  />
+                </div>
+              )}
+
+              {/* Landing Page Timeline Section Editor Component */}
+              {activeTab === "landing-management" && selectedSectionId === "timeline" && (
+                <div className="mt-8">
+                  <JourneyEditor sectionId="timeline" />
                 </div>
               )}
 
@@ -1358,13 +1427,15 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                 <div className="mt-8">
                   <ContactEditor
                     sectionId={selectedSectionId}
+                    selectedItemId={selectedNotificationItemId}
                     onCloseSection={() => setSelectedSectionId(null)}
+                    onClearSelectedItem={() => setSelectedNotificationItemId(null)}
                   />
                 </div>
               )}
 
               {/* Selected Section Editor Drawer Placeholder for Other Pages */}
-              {activeTab !== "about-page" && activeTab !== "services-page" && activeTab !== "industries-page" && activeTab !== "testimonials-page" && activeTab !== "contact-page" && activeTab !== "inquiries" && selectedSection && (
+              {activeTab !== "about-page" && activeTab !== "services-page" && activeTab !== "industries-page" && activeTab !== "testimonials-page" && activeTab !== "journey-page" && activeTab !== "contact-page" && activeTab !== "inquiries" && selectedSection && selectedSection.id !== "timeline" && (
                 <div className="mt-8 rounded-2xl border border-blue-500/30 bg-blue-500/5 dark:bg-blue-950/20 p-6 shadow-sm">
                   <div className="flex items-center justify-between mb-4 pb-3 border-b border-blue-500/20">
                     <div className="flex items-center gap-3">

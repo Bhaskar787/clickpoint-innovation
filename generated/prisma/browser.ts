@@ -68,6 +68,11 @@ export type IndustriesPage = Prisma.IndustriesPageModel
  */
 export type ContactPage = Prisma.ContactPageModel
 /**
+ * Model JourneyPage
+ * 
+ */
+export type JourneyPage = Prisma.JourneyPageModel
+/**
  * Model CaseStudy
  * 
  */

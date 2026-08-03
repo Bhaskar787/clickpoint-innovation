@@ -298,7 +298,13 @@ export interface TestimonialsPageContent {
     ctaButtonText?: string;
     reviewModalButtonText?: string;
   };
-  metrics?: { label: string; value: string }[];
+  metrics?: {
+    averageRating?: string;
+    totalReviews?: string;
+    satisfactionRate?: string;
+    recommendationRate?: string;
+    [key: string]: any;
+  } | { label: string; value: string }[];
   testimonials?: TestimonialItem[];
 }
 
@@ -346,6 +352,20 @@ export interface ContactInquiryItem {
   createdAt: string;
 }
 
+export interface QuickEnquiryConfig {
+  badge?: string;
+  title?: string;
+  countryCode?: string;
+  selectServicePlaceholder?: string;
+  submitButtonText?: string;
+  rightBadge?: string;
+  rightTitle?: string;
+  phoneLabel?: string;
+  emailLabel?: string;
+  locationLabel?: string;
+  footerSlaText?: string;
+}
+
 export interface ContactPageContent {
   hero: {
     badge: string;
@@ -364,10 +384,86 @@ export interface ContactPageContent {
     phoneSubtext: string;
     hours: string;
     hoursSubtext: string;
+    mapBadge?: string;
+    mapTitle?: string;
+    mapSubtitle?: string;
     mapUrl?: string;
+    directChannelsTitle?: string;
+    directChannelsSubtitle?: string;
   };
+  quickEnquiryModal?: QuickEnquiryConfig;
   formFields: {
     serviceOptions: string[];
     budgetOptions: string[];
+  };
+}
+
+export interface TimelineEra {
+  id: string;
+  yearRange: string;
+  displayYear: string;
+  title: string;
+  subtitle: string;
+  narrativeParagraphs: string[];
+  quoteText?: string;
+  quoteAuthor?: string;
+  imageUrl: string;
+  stats: { label: string; value: string }[];
+  achievements: string[];
+}
+
+export interface EventItem {
+  id: string;
+  title: string;
+  subtitle: string;
+  category: "Tech Summits" | "Hackathons" | "Global Expansion" | "Team Culture" | "Product Launches" | string;
+  date: string;
+  location: string;
+  imageUrl: string;
+  colSpanDesktop?: string;
+  heightClass?: string;
+  highlights: string[];
+  fullStory: string;
+  attendees?: string;
+  keyMetric?: string;
+}
+
+export interface JourneyPageContent {
+  hero: {
+    badge: string;
+    title: string;
+    subtitle: string;
+    ctaPrimaryText?: string;
+    ctaSecondaryText?: string;
+  };
+  landingTimelineHeader?: {
+    badge: string;
+    title: string;
+    subtitle: string;
+    ctaText: string;
+  };
+  metricsBar: {
+    label: string;
+    value: string;
+    sublabel?: string;
+  }[];
+  eras: TimelineEra[];
+  eventCategories?: string[];
+  events: EventItem[];
+  ethosSection?: {
+    badge: string;
+    title: string;
+    highlightText: string;
+    pillars: {
+      id: string;
+      title: string;
+      description: string;
+    }[];
+  };
+  ctaSection?: {
+    badge: string;
+    title: string;
+    subtitle: string;
+    buttonText: string;
   };
 }

@@ -10,8 +10,13 @@ import TestimonialsSection from "@/components/sections/testimonials-section";
 import BlogSection from "@/components/sections/blog-section";
 import FaqSection from "@/components/sections/faq-section";
 import CtaSection from "@/components/sections/cta-section";
+import { getJourneyPage } from "@/server/actions/journey";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const journeyContent = await getJourneyPage();
+
   return (
     <main className="relative bg-background text-ink">
       <Navbar />
@@ -20,7 +25,7 @@ export default function Home() {
       <Services />
       <TechStackSection />
       <IndustriesSection />
-      <Timeline />
+      <Timeline initialContent={journeyContent} />
       <TestimonialsSection />
       <BlogSection />
       <FaqSection />

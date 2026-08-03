@@ -147,6 +147,15 @@ model ContactPage {
   @@map("contact_page")
 }
 
+model JourneyPage {
+  id        String   @id @default("default")
+  content   Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("journey_page")
+}
+
 // -----------------------------------------------------------------------------
 // 3. FEATURE & CONTENT ENTITY MODELS
 // -----------------------------------------------------------------------------

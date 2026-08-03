@@ -36,9 +36,10 @@ function getInitials(name: string): string {
 
 interface AboutClientViewProps {
   initialContent: any;
+  journeyContent?: any;
 }
 
-export default function AboutClientView({ initialContent }: AboutClientViewProps) {
+export default function AboutClientView({ initialContent, journeyContent }: AboutClientViewProps) {
   const [content, setContent] = useState(initialContent);
 
   useEffect(() => {
@@ -338,7 +339,7 @@ export default function AboutClientView({ initialContent }: AboutClientViewProps
       </section>
 
       {/* Embedded Milestone Timeline */}
-      <Timeline />
+      <Timeline initialContent={journeyContent} />
 
       {/* CTA Section */}
       <CtaSection />

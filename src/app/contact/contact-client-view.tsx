@@ -346,10 +346,10 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
               {/* Direct Channels Box */}
               <div className="rounded-3xl border border-violet-100 bg-gradient-to-br from-[#1b4397] via-[#153880] to-[#0e2764] p-7 text-white shadow-xl">
                 <h4 className="font-display text-lg font-bold text-white mb-2">
-                  Direct Executive Email Channels
+                  {contactInfo.directChannelsTitle || "Direct Executive Email Channels"}
                 </h4>
                 <p className="text-xs text-violet-200/80 leading-relaxed mb-4">
-                  For urgent technical RFPs or enterprise partnership inquiries:
+                  {contactInfo.directChannelsSubtitle || "For urgent technical RFPs or enterprise partnership inquiries:"}
                 </p>
 
                 <div className="space-y-2 text-xs">
@@ -386,13 +386,13 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
           <div className="mx-auto max-w-3xl text-center mb-12">
             <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-3.5 py-1 text-xs font-semibold uppercase tracking-widest text-violet-700">
               <MapPin className="h-3.5 w-3.5 text-violet-600" />
-              Visit Our Headquarters
+              {contactInfo.mapBadge || "Visit Our Headquarters"}
             </div>
             <h2 className="font-display text-3xl font-bold text-ink sm:text-4xl lg:text-5xl">
-              Locate <span className="text-violet-600">Click Point Innovations</span>
+              {contactInfo.mapTitle || "Locate Click Point Innovations"}
             </h2>
             <p className="mt-3 text-base text-ink/75">
-              {contactInfo.address} — {contactInfo.hours}.
+              {contactInfo.mapSubtitle || `${contactInfo.address} — ${contactInfo.hours}`}
             </p>
           </div>
 

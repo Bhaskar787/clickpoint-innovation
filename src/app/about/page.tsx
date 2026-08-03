@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import AboutClientView from "./about-client-view";
 import { STATS_DATA } from "@/data/landing-data";
+import { getJourneyPage } from "@/server/actions/journey";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -125,6 +126,7 @@ const DEFAULT_ABOUT_CONTENT = {
 
 export default async function AboutPage() {
   let content = DEFAULT_ABOUT_CONTENT;
+  const journeyContent = await getJourneyPage();
 
   try {
     const dbRecord = await prisma.aboutPage.findUnique({
@@ -138,5 +140,5 @@ export default async function AboutPage() {
     console.error("Failed to query about content from Prisma DB:", error);
   }
 
-  return <AboutClientView initialContent={content} />;
+  return <AboutClientView initialContent={content} journeyContent={journeyContent} />;
 }

@@ -1,6 +1,4 @@
-"use client";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -12,15 +10,21 @@ import {
   ChevronDown,
   Sparkles,
   Clock,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { broadcastNotification } from "@/lib/realtime-notifications";
+import { DEFAULT_CONTACT_PAGE_DATA } from "@/data/default-contact-data";
+
+import { ContactPageContent, QuickEnquiryConfig } from "@/types";
 
 interface QuickEnquiryModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const SERVICES_LIST = [
+const DEFAULT_SERVICES_LIST = [
   "AI & LLM Integration",
   "Web Application Development",
   "Mobile App Development (iOS & Android)",
@@ -32,15 +36,112 @@ const SERVICES_LIST = [
 export default function QuickEnquiryModal({ isOpen, onClose }: QuickEnquiryModalProps) {
   const [submitted, setSubmitted] = useState<boolean>(false);
   const [selectedService, setSelectedService] = useState<string>("");
+  const [name, setName] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [phone, setPhone] = useState<string>("");
+  const [message, setMessage] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [contactInfo, setContactInfo] = useState<ContactPageContent["contactInfo"]>(DEFAULT_CONTACT_PAGE_DATA.contactInfo);
+  const [modalConfig, setModalConfig] = useState<QuickEnquiryConfig>(DEFAULT_CONTACT_PAGE_DATA.quickEnquiryModal || {});
+  const [serviceOptions, setServiceOptions] = useState<string[]>(
+    DEFAULT_CONTACT_PAGE_DATA.formFields?.serviceOptions || DEFAULT_SERVICES_LIST
+  );
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    async function loadDynamicInfo() {
+      try {
+        const res = await fetch("/api/contact");
+        const json = await res.json();
+        if (json.success && json.data) {
+          const pageData = json.data as ContactPageContent;
+          if (pageData.contactInfo) {
+            setContactInfo({
+              ...DEFAULT_CONTACT_PAGE_DATA.contactInfo,
+              ...pageData.contactInfo,
+            });
+          }
+          if (pageData.quickEnquiryModal) {
+            setModalConfig({
+              ...DEFAULT_CONTACT_PAGE_DATA.quickEnquiryModal,
+              ...pageData.quickEnquiryModal,
+            });
+          }
+          if (pageData.formFields?.serviceOptions && pageData.formFields.serviceOptions.length > 0) {
+            setServiceOptions(pageData.formFields.serviceOptions);
+          }
+        }
+      } catch (err) {
+        // Fallback to default
+      }
+    }
+    if (isOpen) {
+      loadDynamicInfo();
+    }
+  }, [isOpen]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    if (!name || !email) {
+      toast.error("Please enter your name and email.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    const toastId = toast.loading("Sending your inquiry...");
+
+    try {
+      const fullPhone = phone ? `${modalConfig?.countryCode || "+977"} ${phone}` : undefined;
+      const inquiryMessage = message.trim() || `Quick Inquiry submitted for service: ${selectedService || "General Services"}`;
+
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim(),
+          phone: fullPhone,
+          service: selectedService || undefined,
+          message: inquiryMessage,
+        }),
+      });
+
+      const json = await res.json();
+      if (json.success) {
+        setSubmitted(true);
+        toast.success("Quick Inquiry Sent Successfully!", {
+          id: toastId,
+          description: "Our engineering team will contact you shortly.",
+        });
+
+        // Broadcast real-time event to Admin Dashboard
+        broadcastNotification({
+          id: json.data?.id || `quick-${Date.now()}`,
+          type: "QUICK_INQUIRY",
+          title: "Quick Lead Inquiry",
+          clientName: name.trim(),
+          email: email.trim(),
+          subtext: selectedService ? `Service: ${selectedService}` : email.trim(),
+          content: inquiryMessage,
+          createdAt: new Date().toISOString(),
+          targetTab: "contact-page",
+        });
+      } else {
+        toast.error(json.error || "Failed to submit inquiry. Please try again.", { id: toastId });
+      }
+    } catch (err: any) {
+      toast.error(err.message || "An error occurred while sending.", { id: toastId });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleResetAndClose = () => {
     setSubmitted(false);
     setSelectedService("");
+    setName("");
+    setEmail("");
+    setPhone("");
+    setMessage("");
     onClose();
   };
 
@@ -80,10 +181,10 @@ export default function QuickEnquiryModal({ isOpen, onClose }: QuickEnquiryModal
                 {/* Left Side: Form Controls */}
                 <div className="p-6 sm:p-8 lg:p-10">
                   <span className="text-[11px] font-bold uppercase tracking-wider text-violet-600 dark:text-violet-300">
-                    Have a Project in Mind?
+                    {modalConfig?.badge || "Have a Project in Mind?"}
                   </span>
                   <h2 className="mt-1 font-display text-2xl font-extrabold text-ink dark:text-white sm:text-3xl">
-                    Tell Us A Bit More
+                    {modalConfig?.title || "Tell Us A Bit More"}
                   </h2>
 
                   <form onSubmit={handleSubmit} className="mt-6 space-y-4">
@@ -92,6 +193,8 @@ export default function QuickEnquiryModal({ isOpen, onClose }: QuickEnquiryModal
                         <input
                           type="text"
                           required
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
                           placeholder="Name *"
                           className="w-full rounded-xl border border-violet-200 dark:border-slate-700 bg-cloud-100/50 dark:bg-slate-800/80 p-3 text-xs font-medium text-ink dark:text-white placeholder:text-ink/40 dark:placeholder:text-slate-400 focus:border-violet-600 focus:outline-hidden focus:ring-2 focus:ring-violet-600/20"
                         />
@@ -100,6 +203,8 @@ export default function QuickEnquiryModal({ isOpen, onClose }: QuickEnquiryModal
                         <input
                           type="email"
                           required
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
                           placeholder="Email *"
                           className="w-full rounded-xl border border-violet-200 dark:border-slate-700 bg-cloud-100/50 dark:bg-slate-800/80 p-3 text-xs font-medium text-ink dark:text-white placeholder:text-ink/40 dark:placeholder:text-slate-400 focus:border-violet-600 focus:outline-hidden focus:ring-2 focus:ring-violet-600/20"
                         />
@@ -110,12 +215,13 @@ export default function QuickEnquiryModal({ isOpen, onClose }: QuickEnquiryModal
                       {/* Phone with Country Code Badge */}
                       <div className="flex items-center rounded-xl border border-violet-200 dark:border-slate-700 bg-cloud-100/50 dark:bg-slate-800/80 overflow-hidden focus-within:border-violet-600 focus-within:ring-2 focus-within:ring-violet-600/20">
                         <span className="bg-violet-50 dark:bg-slate-700 px-2.5 py-3 text-xs font-bold text-violet-700 dark:text-violet-300 border-r border-violet-200 dark:border-slate-600 shrink-0">
-                          +977
+                          {modalConfig?.countryCode || "+977"}
                         </span>
                         <input
                           type="tel"
-                          required
-                          placeholder="Phone Number *"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          placeholder="Phone Number"
                           className="w-full bg-transparent p-3 text-xs font-medium text-ink dark:text-white placeholder:text-ink/40 dark:placeholder:text-slate-400 focus:outline-hidden"
                         />
                       </div>
@@ -123,15 +229,14 @@ export default function QuickEnquiryModal({ isOpen, onClose }: QuickEnquiryModal
                       {/* Service Dropdown */}
                       <div className="relative">
                         <select
-                          required
                           value={selectedService}
                           onChange={(e) => setSelectedService(e.target.value)}
-                          className="w-full appearance-none rounded-xl border border-violet-200 dark:border-slate-700 bg-cloud-100/50 dark:bg-slate-800/80 p-3 pr-8 text-xs font-medium text-ink dark:text-white focus:border-violet-600 focus:outline-hidden focus:ring-2 focus:ring-violet-600/20"
+                          className="w-full appearance-none rounded-xl border border-violet-200 dark:border-slate-700 bg-cloud-100/50 dark:bg-slate-800/80 p-3 pr-8 text-xs font-medium text-ink dark:text-white focus:border-violet-600 focus:outline-hidden focus:ring-2 focus:ring-violet-600/20 cursor-pointer"
                         >
-                          <option value="" disabled className="dark:bg-slate-800 dark:text-slate-400">
-                            --- Select Service ---
+                          <option value="" className="dark:bg-slate-800 dark:text-slate-400">
+                            {modalConfig?.selectServicePlaceholder || "--- Select Service ---"}
                           </option>
-                          {SERVICES_LIST.map((srv) => (
+                          {serviceOptions.map((srv) => (
                             <option key={srv} value={srv} className="dark:bg-slate-800 dark:text-white">
                               {srv}
                             </option>
@@ -144,7 +249,8 @@ export default function QuickEnquiryModal({ isOpen, onClose }: QuickEnquiryModal
                     <div>
                       <textarea
                         rows={3}
-                        required
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
                         placeholder="Write a Message *"
                         className="w-full rounded-xl border border-violet-200 dark:border-slate-700 bg-cloud-100/50 dark:bg-slate-800/80 p-3 text-xs font-medium text-ink dark:text-white placeholder:text-ink/40 dark:placeholder:text-slate-400 focus:border-violet-600 focus:outline-hidden focus:ring-2 focus:ring-violet-600/20"
                       />
@@ -152,10 +258,15 @@ export default function QuickEnquiryModal({ isOpen, onClose }: QuickEnquiryModal
 
                     <button
                       type="submit"
-                      className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#1b4397] via-[#2153b8] to-[#1b4397] px-6 py-3.5 text-xs font-bold text-white shadow-lg shadow-[#1b4397]/30 hover:shadow-xl hover:shadow-[#1b4397]/40 transition-all hover:scale-[1.01]"
+                      disabled={isSubmitting}
+                      className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#1b4397] via-[#2153b8] to-[#1b4397] px-6 py-3.5 text-xs font-bold text-white shadow-lg shadow-[#1b4397]/30 hover:shadow-xl hover:shadow-[#1b4397]/40 transition-all hover:scale-[1.01] disabled:opacity-50 cursor-pointer"
                     >
-                      <Send className="h-3.5 w-3.5" />
-                      <span>Submit Inquiry</span>
+                      {isSubmitting ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Send className="h-3.5 w-3.5" />
+                      )}
+                      <span>{isSubmitting ? "Submitting..." : (modalConfig?.submitButtonText || "Submit Inquiry")}</span>
                     </button>
                   </form>
                 </div>
@@ -167,10 +278,10 @@ export default function QuickEnquiryModal({ isOpen, onClose }: QuickEnquiryModal
                   
                   <div className="relative z-10">
                     <span className="text-[11px] font-bold uppercase tracking-wider text-[#f58220]">
-                      We would love to hear from you
+                      {modalConfig?.rightBadge || "We would love to hear from you"}
                     </span>
                     <h3 className="font-display text-2xl font-bold text-white mt-1">
-                      Get In Touch
+                      {modalConfig?.rightTitle || "Get In Touch"}
                     </h3>
 
                     <div className="mt-8 space-y-6">
@@ -180,9 +291,9 @@ export default function QuickEnquiryModal({ isOpen, onClose }: QuickEnquiryModal
                           <Phone className="h-5 w-5" />
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-white">Our Phone Number</p>
-                          <a href="tel:+977981846632" className="text-xs text-blue-100 hover:text-[#f58220] font-medium transition-colors">
-                            +977-981846632
+                          <p className="text-xs font-bold text-white">{modalConfig?.phoneLabel || "Our Phone Number"}</p>
+                          <a href={`tel:${contactInfo?.phone || "+977-981846632"}`} className="text-xs text-blue-100 hover:text-[#f58220] font-medium transition-colors">
+                            {contactInfo?.phone || "+977-981846632"}
                           </a>
                         </div>
                       </div>
@@ -193,9 +304,9 @@ export default function QuickEnquiryModal({ isOpen, onClose }: QuickEnquiryModal
                           <Mail className="h-5 w-5" />
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-white">Email Address</p>
-                          <a href="mailto:info@clickpoint.com.np" className="text-xs text-blue-100 hover:text-[#f58220] font-medium transition-colors">
-                            info@clickpoint.com.np
+                          <p className="text-xs font-bold text-white">{modalConfig?.emailLabel || "Email Address"}</p>
+                          <a href={`mailto:${contactInfo?.email || "info@clickpoint.com.np"}`} className="text-xs text-blue-100 hover:text-[#f58220] font-medium transition-colors">
+                            {contactInfo?.email || "info@clickpoint.com.np"}
                           </a>
                         </div>
                       </div>
@@ -206,9 +317,9 @@ export default function QuickEnquiryModal({ isOpen, onClose }: QuickEnquiryModal
                           <MapPin className="h-5 w-5" />
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-white">Our Location</p>
+                          <p className="text-xs font-bold text-white">{modalConfig?.locationLabel || "Our Location"}</p>
                           <p className="text-xs text-blue-100 font-medium">
-                            New Baneshwor, Kathmandu, Nepal
+                            {contactInfo?.address || "New Baneshwor, Kathmandu, Nepal"}
                           </p>
                         </div>
                       </div>
@@ -217,7 +328,7 @@ export default function QuickEnquiryModal({ isOpen, onClose }: QuickEnquiryModal
 
                   <div className="relative z-10 mt-8 pt-4 border-t border-white/15 text-[11px] text-blue-200 flex items-center gap-1.5 flex-wrap">
                     <Clock className="h-3.5 w-3.5 text-[#f58220] shrink-0" />
-                    <span>Hours: Sun - Fri: 9:00 AM - 6:00 PM • Executive SLA: 2 Hours</span>
+                    <span>{modalConfig?.footerSlaText || `Hours: ${contactInfo?.hours || "Sun - Fri: 9:00 AM - 6:00 PM"} • Executive SLA: 2 Hours`}</span>
                   </div>
                 </div>
 

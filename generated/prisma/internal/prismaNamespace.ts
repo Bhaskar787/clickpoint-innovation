@@ -407,6 +407,7 @@ export const ModelName = {
   ServicesPage: 'ServicesPage',
   IndustriesPage: 'IndustriesPage',
   ContactPage: 'ContactPage',
+  JourneyPage: 'JourneyPage',
   CaseStudy: 'CaseStudy',
   BlogPost: 'BlogPost',
   TestimonialsPage: 'TestimonialsPage',
@@ -429,7 +430,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "admin" | "user" | "session" | "account" | "verification" | "landingPage" | "aboutPage" | "servicesPage" | "industriesPage" | "contactPage" | "caseStudy" | "blogPost" | "testimonialsPage" | "testimonial" | "faq" | "inquiry" | "contactInquiry"
+    modelProps: "admin" | "user" | "session" | "account" | "verification" | "landingPage" | "aboutPage" | "servicesPage" | "industriesPage" | "contactPage" | "journeyPage" | "caseStudy" | "blogPost" | "testimonialsPage" | "testimonial" | "faq" | "inquiry" | "contactInquiry"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1173,6 +1174,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    JourneyPage: {
+      payload: Prisma.$JourneyPagePayload<ExtArgs>
+      fields: Prisma.JourneyPageFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.JourneyPageFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JourneyPagePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.JourneyPageFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JourneyPagePayload>
+        }
+        findFirst: {
+          args: Prisma.JourneyPageFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JourneyPagePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.JourneyPageFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JourneyPagePayload>
+        }
+        findMany: {
+          args: Prisma.JourneyPageFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JourneyPagePayload>[]
+        }
+        create: {
+          args: Prisma.JourneyPageCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JourneyPagePayload>
+        }
+        createMany: {
+          args: Prisma.JourneyPageCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.JourneyPageCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JourneyPagePayload>[]
+        }
+        delete: {
+          args: Prisma.JourneyPageDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JourneyPagePayload>
+        }
+        update: {
+          args: Prisma.JourneyPageUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JourneyPagePayload>
+        }
+        deleteMany: {
+          args: Prisma.JourneyPageDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.JourneyPageUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.JourneyPageUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JourneyPagePayload>[]
+        }
+        upsert: {
+          args: Prisma.JourneyPageUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JourneyPagePayload>
+        }
+        aggregate: {
+          args: Prisma.JourneyPageAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateJourneyPage>
+        }
+        groupBy: {
+          args: Prisma.JourneyPageGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.JourneyPageGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.JourneyPageCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.JourneyPageCountAggregateOutputType> | number
+        }
+      }
+    }
     CaseStudy: {
       payload: Prisma.$CaseStudyPayload<ExtArgs>
       fields: Prisma.CaseStudyFieldRefs
@@ -1858,6 +1933,16 @@ export const ContactPageScalarFieldEnum = {
 export type ContactPageScalarFieldEnum = (typeof ContactPageScalarFieldEnum)[keyof typeof ContactPageScalarFieldEnum]
 
 
+export const JourneyPageScalarFieldEnum = {
+  id: 'id',
+  content: 'content',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type JourneyPageScalarFieldEnum = (typeof JourneyPageScalarFieldEnum)[keyof typeof JourneyPageScalarFieldEnum]
+
+
 export const CaseStudyScalarFieldEnum = {
   id: 'id',
   slug: 'slug',
@@ -2298,6 +2383,7 @@ export type GlobalOmitConfig = {
   servicesPage?: Prisma.ServicesPageOmit
   industriesPage?: Prisma.IndustriesPageOmit
   contactPage?: Prisma.ContactPageOmit
+  journeyPage?: Prisma.JourneyPageOmit
   caseStudy?: Prisma.CaseStudyOmit
   blogPost?: Prisma.BlogPostOmit
   testimonialsPage?: Prisma.TestimonialsPageOmit

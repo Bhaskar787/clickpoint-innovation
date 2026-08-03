@@ -119,7 +119,7 @@ export default function TestimonialsClientView({
             {/* Performance Stats Bar */}
             {metrics.length > 0 && (
               <div className="pt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-violet-100 dark:border-slate-800">
-                {metrics.map((m, idx) => (
+                {metrics.map((m: any, idx: number) => (
                   <div key={idx} className="p-4 rounded-2xl bg-violet-50/50 dark:bg-slate-900/60 border border-violet-100 dark:border-slate-800">
                     <p className="font-display text-2xl sm:text-3xl font-extrabold text-violet-600 dark:text-violet-300">{m.value}</p>
                     <p className="mt-1 text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">{m.label}</p>
