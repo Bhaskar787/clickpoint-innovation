@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { toast } from "sonner";
 import {
   Save,
   RotateCcw,
@@ -32,6 +33,8 @@ import {
   Workflow,
   CheckCircle2,
   ExternalLink,
+  Loader2,
+  Link as LinkIcon,
 } from "lucide-react";
 
 interface FileUploadControlProps {
@@ -54,12 +57,45 @@ function FileUploadControl({
   mediaType,
 }: FileUploadControlProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
-  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (file) {
-      const objectUrl = URL.createObjectURL(file);
-      onChange(objectUrl);
+    if (!file) return;
+
+    setIsUploading(true);
+    const toastId = toast.loading(`Uploading ${mediaType} to Cloudinary...`);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (data.success && data.url) {
+        onChange(data.url);
+        if (data.provider === "cloudinary") {
+          toast.success(`Successfully uploaded ${mediaType} to Cloudinary!`, { id: toastId });
+        } else {
+          toast.success(`Uploaded successfully! (Saved to local storage)`, { id: toastId });
+          if (data.warning) {
+            toast.info("Cloudinary 403: Please update CLOUDINARY_API_SECRET in .env", { duration: 6000 });
+          }
+        }
+      } else {
+        toast.error(data.error || "Failed to upload file", { id: toastId });
+      }
+    } catch (err: any) {
+      console.error("Upload error:", err);
+      toast.error("Upload failed: " + (err?.message || "Server error"), { id: toastId });
+    } finally {
+      setIsUploading(false);
+      if (e.target) e.target.value = "";
     }
   }
 
@@ -90,7 +126,10 @@ function FileUploadControl({
           {value && (
             <button
               type="button"
-              onClick={() => onChange("")}
+              onClick={() => {
+                onChange("");
+                toast.info("Cleared media URL");
+              }}
               className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
               title="Clear input"
             >
@@ -109,11 +148,21 @@ function FileUploadControl({
 
         <button
           type="button"
+          disabled={isUploading}
           onClick={() => fileInputRef.current?.click()}
-          className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 text-xs font-semibold hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors shrink-0"
+          className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 text-xs font-semibold hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors shrink-0 disabled:opacity-50"
         >
-          <UploadCloud className="h-3.5 w-3.5" />
-          <span>Choose File</span>
+          {isUploading ? (
+            <>
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              <span>Uploading...</span>
+            </>
+          ) : (
+            <>
+              <UploadCloud className="h-3.5 w-3.5" />
+              <span>Upload Cloudinary</span>
+            </>
+          )}
         </button>
       </div>
 
@@ -124,7 +173,7 @@ function FileUploadControl({
           </div>
           <div className="flex-1 overflow-hidden text-[11px]">
             <p className="font-bold text-slate-800 dark:text-slate-200 truncate">
-              {value.startsWith("blob:") ? "Uploaded Local File" : value}
+              {value.includes("cloudinary.com") ? "Cloudinary Media URL" : value}
             </p>
             <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
               Ready for preview & publication
@@ -136,7 +185,7 @@ function FileUploadControl({
   );
 }
 
-const DEFAULT_SERVICES_CONTENT = {
+export const DEFAULT_SERVICES_CONTENT = {
   hero: {
     badge: "Full-Spectrum Software Engineering Pods",
     title: "Engineering Next-Gen AI & Digital Solutions",
@@ -358,94 +407,6 @@ const DEFAULT_SERVICES_CONTENT = {
       blueprintHeading: "Our step-by-step delivery process",
       useCasesHeading: "Primary Use Cases for",
     },
-    {
-      id: "platform-mod",
-      title: "Platform Modernization",
-      subtitle: "Legacy Code Migration & Cloud-Native Architectures",
-      buttonText: "Explore Capabilities",
-      desc: "Upgrade legacy monoliths to zero-downtime, distributed serverless cloud platforms built for auto-scaling.",
-      fullOverview:
-        "Technical debt holds back fast-growing companies. We help enterprise teams decouple monolithic legacy codebases into modern cloud-native microservices.",
-      heroBadge: "Cloud & Infrastructure",
-      imageUrl: "",
-      keyMetrics: [
-        { label: "Infra Cost Reduction", value: "40%" },
-        { label: "Deploy Frequency", value: "20x/day" },
-        { label: "Migration Downtime", value: "0 mins" },
-      ],
-      features: [
-        { title: "Monolith-to-Microservices Migration", desc: "Strangler fig pattern migration strategy to replace legacy monolith modules." },
-        { title: "Database Refactoring & Sharding", desc: "Migrating legacy relational databases to distributed PostgreSQL and Redis layers." },
-      ],
-      workflow: [
-        { step: "01", title: "Architecture Assessment", desc: "Mapping dependencies, bottleneck points, and compliance constraints." },
-        { step: "02", title: "Target Cloud Blueprint", desc: "Designing multi-region, resilient cloud infrastructure topology." },
-        { step: "03", title: "Incremental Migration", desc: "Migrating services and data stores step-by-step with shadow traffic validation." },
-        { step: "04", title: "Final Cutover & Decommission", desc: "Achieving zero-downtime switch to the modernized cloud platform." },
-      ],
-      useCases: [
-        "Monolith Breakdown",
-        "Multi-Cloud Migration",
-        "Database Optimization",
-        "SOC2 Compliance Infra Setup",
-      ],
-      techStack: ["AWS", "Google Cloud", "Docker", "Kubernetes", "Terraform", "PostgreSQL", "Redis"],
-      ctaPrimaryText: "Request Service Audit",
-      ctaPrimaryRoute: "/contact",
-      ctaSecondaryText: "All Services",
-      ctaSecondaryRoute: "/services",
-      overviewTag: "Detailed Overview",
-      overviewHeading: "How We Deliver Exceptional",
-      capabilitiesTag: "Core Capabilities",
-      capabilitiesHeading: "Engineered features for maximum impact",
-      blueprintTag: "Execution Blueprint",
-      blueprintHeading: "Our step-by-step delivery process",
-      useCasesHeading: "Primary Use Cases for",
-    },
-    {
-      id: "mlops",
-      title: "MLOps & Data Pipelines",
-      subtitle: "Continuous Model Training, Monitoring & Vector DBs",
-      buttonText: "Explore Capabilities",
-      desc: "Automate machine learning model deployment pipelines, feature stores, and real-time monitoring infrastructure.",
-      fullOverview:
-        "Bridge the gap between data science research and live production applications with enterprise MLOps architectures.",
-      heroBadge: "Data Pipelines & MLOps",
-      imageUrl: "",
-      keyMetrics: [
-        { label: "Model Training Speed", value: "5x" },
-        { label: "Inference Latency", value: "< 15ms" },
-        { label: "Data Pipeline Uptime", value: "99.9%" },
-      ],
-      features: [
-        { title: "Automated Model Training & CI/CD", desc: "Triggering automatic retraining pipelines when data drift is detected." },
-        { title: "Enterprise Feature Stores", desc: "Centralizing real-time feature engineering for low-latency model inference." },
-      ],
-      workflow: [
-        { step: "01", title: "Data Pipeline Audit", desc: "Evaluating data sources, vector stores, and latency targets." },
-        { step: "02", title: "Feature Store Setup", desc: "Configuring feature stores for online/offline model feature retrieval." },
-        { step: "03", title: "Pipeline Automation", desc: "Setting up automated retraining and model evaluation tests." },
-        { step: "04", title: "Monitoring & Governance", desc: "Deploying model drift monitoring and explainability dashboards." },
-      ],
-      useCases: [
-        "Real-Time Fraud Detection",
-        "Recommendation Engine Scaling",
-        "Vector Database Knowledge Retrieval",
-        "Automated Model Drift Alerting",
-      ],
-      techStack: ["Python", "Kubeflow", "MLflow", "Pinecone", "Snowflake", "dbt", "Airflow"],
-      ctaPrimaryText: "Request Service Audit",
-      ctaPrimaryRoute: "/contact",
-      ctaSecondaryText: "All Services",
-      ctaSecondaryRoute: "/services",
-      overviewTag: "Detailed Overview",
-      overviewHeading: "How We Deliver Exceptional",
-      capabilitiesTag: "Core Capabilities",
-      capabilitiesHeading: "Engineered features for maximum impact",
-      blueprintTag: "Execution Blueprint",
-      blueprintHeading: "Our step-by-step delivery process",
-      useCasesHeading: "Primary Use Cases for",
-    },
   ],
 };
 
@@ -455,112 +416,161 @@ interface ServicesPageEditorProps {
   onNavigateToDetailSection?: (serviceId: string) => void;
 }
 
-export default function ServicesPageEditor({ sectionId, onCloseSection, onNavigateToDetailSection }: ServicesPageEditorProps) {
+export default function ServicesPageEditor({
+  sectionId,
+  onCloseSection,
+  onNavigateToDetailSection,
+}: ServicesPageEditorProps) {
   const [formData, setFormData] = useState(DEFAULT_SERVICES_CONTENT);
-  const [saveSuccess, setSaveSuccess] = useState(false);
-  const [selectedDetailId, setSelectedDetailId] = useState<string>(DEFAULT_SERVICES_CONTENT.services[0]?.id || "ai-eng");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [selectedDetailId, setSelectedDetailId] = useState<string>("ai-eng");
 
-  // Load previously saved content (including any custom services added to the
-  // catalog) back into the editor whenever it mounts. Without this, switching
-  // admin tabs or refreshing the page would silently reset everything back to
-  // the hardcoded defaults, making newly added services "disappear" from the
-  // Individual Service Detail Pages configurator.
+  // Load live Services data from DB on mount
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem("services_page_content");
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        const mergedServices =
-          Array.isArray(parsed.services) && parsed.services.length > 0
-            ? parsed.services.map((svc: any) => ({
-                // Fill in any missing detail-page fields with placeholders so
-                // every service always has full stats, description, tags,
-                // workflow, etc. even if it was saved before those fields
-                // existed.
-                id: svc.id,
-                title: svc.title || "Unnamed Service",
-                subtitle: svc.subtitle || "Enterprise Digital Solution",
-                buttonText: svc.buttonText || "Explore Capabilities",
-                desc: svc.desc || "Detailed description of this service's capabilities.",
-                fullOverview:
-                  svc.fullOverview ||
-                  "Comprehensive overview narrative explaining how we deliver this discipline for enterprise clients.",
-                heroBadge: svc.heroBadge || "Custom Engineering Pod",
-                imageUrl: svc.imageUrl || "",
-                keyMetrics:
-                  svc.keyMetrics && svc.keyMetrics.length > 0
-                    ? svc.keyMetrics
-                    : [
-                        { label: "Execution Latency", value: "< 250ms" },
-                        { label: "Accuracy Rate", value: "99.4%" },
-                        { label: "Efficiency Gain", value: "4.5x" },
-                      ],
-                features:
-                  svc.features && svc.features.length > 0
-                    ? svc.features
-                    : [
-                        { title: "Core Feature 1", desc: "Detailed breakdown of capability 1." },
-                        { title: "Core Feature 2", desc: "Detailed breakdown of capability 2." },
-                      ],
-                workflow:
-                  svc.workflow && svc.workflow.length > 0
-                    ? svc.workflow
-                    : [
-                        { step: "01", title: "Discovery & Architecture", desc: "Mapping specifications and assembling the engineering pod." },
-                        { step: "02", title: "Prototyping & MVP Sprint", desc: "Delivering working software in 2-4 week sprint cycles." },
-                      ],
-                useCases:
-                  svc.useCases && svc.useCases.length > 0
-                    ? svc.useCases
-                    : ["Enterprise Process Automation", "Custom Cloud Platform Building"],
-                techStack:
-                  svc.techStack && svc.techStack.length > 0
-                    ? svc.techStack
-                    : ["Next.js", "Python", "Cloud"],
-                ctaPrimaryText: svc.ctaPrimaryText || "Request Service Audit",
-                ctaPrimaryRoute: svc.ctaPrimaryRoute || "/contact",
-                ctaSecondaryText: svc.ctaSecondaryText || "All Services",
-                ctaSecondaryRoute: svc.ctaSecondaryRoute || "/services",
-                overviewTag: svc.overviewTag || "Detailed Overview",
-                overviewHeading: svc.overviewHeading || "How We Deliver Exceptional",
-                capabilitiesTag: svc.capabilitiesTag || "Core Capabilities",
-                capabilitiesHeading: svc.capabilitiesHeading || "Engineered features for maximum impact",
-                blueprintTag: svc.blueprintTag || "Execution Blueprint",
-                blueprintHeading: svc.blueprintHeading || "Our step-by-step delivery process",
-                useCasesHeading: svc.useCasesHeading || "Primary Use Cases for",
-              }))
-            : DEFAULT_SERVICES_CONTENT.services;
+    async function loadServicesData() {
+      try {
+        setIsLoading(true);
+        const res = await fetch("/api/services");
+        const json = await res.json();
 
-        setFormData({
-          hero: { ...DEFAULT_SERVICES_CONTENT.hero, ...(parsed.hero || {}) },
-          catalogSection: { ...DEFAULT_SERVICES_CONTENT.catalogSection, ...(parsed.catalogSection || {}) },
-          processSection: {
-            ...DEFAULT_SERVICES_CONTENT.processSection,
-            ...(parsed.processSection || {}),
-            steps:
-              parsed.processSection?.steps && parsed.processSection.steps.length > 0
-                ? parsed.processSection.steps
-                : DEFAULT_SERVICES_CONTENT.processSection.steps,
-          },
-          services: mergedServices,
-        });
-        setSelectedDetailId(mergedServices[0]?.id || "ai-eng");
+        if (json.success && json.data) {
+          const parsed = json.data;
+          const mergedServices =
+            Array.isArray(parsed.services) && parsed.services.length > 0
+              ? parsed.services.map((svc: any, idx: number) => ({
+                  id: svc.id || `service-${idx + 1}`,
+                  title: svc.title || "Unnamed Service",
+                  subtitle: svc.subtitle || "Enterprise Digital Solution",
+                  buttonText: svc.buttonText || "Explore Capabilities",
+                  desc: svc.desc || "Detailed description of this service's capabilities.",
+                  fullOverview:
+                    svc.fullOverview ||
+                    "Comprehensive overview narrative explaining how we deliver this discipline for enterprise clients.",
+                  heroBadge: svc.heroBadge || "Custom Engineering Pod",
+                  imageUrl: svc.imageUrl || "",
+                  keyMetrics:
+                    svc.keyMetrics && svc.keyMetrics.length > 0
+                      ? svc.keyMetrics
+                      : [
+                          { label: "Execution Latency", value: "< 250ms" },
+                          { label: "Accuracy Rate", value: "99.4%" },
+                          { label: "Efficiency Gain", value: "4.5x" },
+                        ],
+                  features:
+                    svc.features && svc.features.length > 0
+                      ? svc.features
+                      : [
+                          { title: "Core Feature 1", desc: "Detailed breakdown of capability 1." },
+                          { title: "Core Feature 2", desc: "Detailed breakdown of capability 2." },
+                        ],
+                  workflow:
+                    svc.workflow && svc.workflow.length > 0
+                      ? svc.workflow
+                      : [
+                          { step: "01", title: "Discovery & Architecture", desc: "Mapping specifications and assembling the engineering pod." },
+                          { step: "02", title: "Prototyping & MVP Sprint", desc: "Delivering working software in 2-4 week sprint cycles." },
+                        ],
+                  useCases:
+                    svc.useCases && svc.useCases.length > 0
+                      ? svc.useCases
+                      : ["Enterprise Process Automation", "Custom Cloud Platform Building"],
+                  techStack:
+                    svc.techStack && svc.techStack.length > 0
+                      ? svc.techStack
+                      : ["Next.js", "Python", "Cloud"],
+                  ctaPrimaryText: svc.ctaPrimaryText || "Request Service Audit",
+                  ctaPrimaryRoute: svc.ctaPrimaryRoute || "/contact",
+                  ctaSecondaryText: svc.ctaSecondaryText || "All Services",
+                  ctaSecondaryRoute: svc.ctaSecondaryRoute || "/services",
+                  overviewTag: svc.overviewTag || "Detailed Overview",
+                  overviewHeading: svc.overviewHeading || "How We Deliver Exceptional",
+                  capabilitiesTag: svc.capabilitiesTag || "Core Capabilities",
+                  capabilitiesHeading: svc.capabilitiesHeading || "Engineered features for maximum impact",
+                  blueprintTag: svc.blueprintTag || "Execution Blueprint",
+                  blueprintHeading: svc.blueprintHeading || "Our step-by-step delivery process",
+                  useCasesHeading: svc.useCasesHeading || "Primary Focus Areas",
+                }))
+              : DEFAULT_SERVICES_CONTENT.services;
+
+          setFormData({
+            hero: { ...DEFAULT_SERVICES_CONTENT.hero, ...(parsed.hero || {}) },
+            catalogSection: { ...DEFAULT_SERVICES_CONTENT.catalogSection, ...(parsed.catalogSection || {}) },
+            processSection: {
+              ...DEFAULT_SERVICES_CONTENT.processSection,
+              ...(parsed.processSection || {}),
+              steps:
+                parsed.processSection?.steps && parsed.processSection.steps.length > 0
+                  ? parsed.processSection.steps
+                  : DEFAULT_SERVICES_CONTENT.processSection.steps,
+            },
+            services: mergedServices,
+          });
+          setSelectedDetailId(mergedServices[0]?.id || "ai-eng");
+        }
+      } catch (error) {
+        console.error("Failed to load services content:", error);
+        toast.error("Failed to load Services data from database.");
+      } finally {
+        setIsLoading(false);
       }
-    } catch (err) {
-      console.error("Failed to load saved services_page_content:", err);
     }
+    loadServicesData();
   }, []);
 
-  function handleSave() {
-    localStorage.setItem("services_page_content", JSON.stringify(formData));
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 3000);
+  async function handleSave() {
+    setIsSaving(true);
+    const toastId = toast.loading("Saving services changes to database...");
+    try {
+      const res = await fetch("/api/services", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const json = await res.json();
+
+      if (json.success) {
+        toast.success("Services page saved to database successfully!", { id: toastId });
+      } else {
+        toast.error(json.error || "Failed to save services page content", { id: toastId });
+      }
+    } catch (err: any) {
+      console.error("Save error:", err);
+      toast.error("Save failed: " + (err?.message || "Server error"), { id: toastId });
+    } finally {
+      setIsSaving(false);
+    }
   }
 
-  function handleReset() {
+  async function handleReset() {
+    if (!confirm("Are you sure you want to reset all Services data to defaults?")) return;
+
     setFormData(DEFAULT_SERVICES_CONTENT);
-    setSelectedDetailId(DEFAULT_SERVICES_CONTENT.services[0]?.id || "ai-eng");
-    localStorage.removeItem("services_page_content");
+    setSelectedDetailId(DEFAULT_SERVICES_CONTENT.services[0].id);
+
+    const toastId = toast.loading("Resetting services in database...");
+    try {
+      const res = await fetch("/api/services", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(DEFAULT_SERVICES_CONTENT),
+      });
+      const json = await res.json();
+      if (json.success) {
+        toast.info("Reset to default Services page content!", { id: toastId });
+      }
+    } catch {
+      toast.error("Failed to reset content", { id: toastId });
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-3 bg-white dark:bg-[#131927] rounded-2xl border border-slate-200 dark:border-slate-800 p-8">
+        <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
+        <p className="text-xs font-semibold text-slate-500">Loading Services Page data from database...</p>
+      </div>
+    );
   }
 
   const selectedServiceIndex = formData.services.findIndex((s) => s.id === selectedDetailId);
@@ -569,15 +579,15 @@ export default function ServicesPageEditor({ sectionId, onCloseSection, onNaviga
   return (
     <div className="space-y-6">
       
-      {/* Top Action Header */}
+      {/* Action Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#131927] p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
         <div>
           <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <Layers className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-            Editing Services Page & Individual Service Detail Pages (/services/[id])
+            <Info className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            Editing Services Page Content, Individual Service Detail Pages & Cloudinary Media
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Manage main services catalog cards and individual detail page fields (/services/[id]) for all active services.
+            Configure every catalog card, hero badge, metric, feature list, 4-phase agile workflow step, and unique URL slug ID (`/services/[id]`).
           </p>
         </div>
 
@@ -592,12 +602,13 @@ export default function ServicesPageEditor({ sectionId, onCloseSection, onNaviga
 
           <button
             onClick={handleSave}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-500/20 transition-all"
+            disabled={isSaving}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-500/20 transition-all disabled:opacity-50"
           >
-            {saveSuccess ? (
+            {isSaving ? (
               <>
-                <Check className="h-4 w-4" />
-                <span>Saved & Published!</span>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Saving...</span>
               </>
             ) : (
               <>
@@ -609,14 +620,14 @@ export default function ServicesPageEditor({ sectionId, onCloseSection, onNaviga
         </div>
       </div>
 
-      {/* HERO SECTION FIELDS */}
+      {/* SECTION 1: MAIN SERVICES HERO BANNER & CATALOG HEADINGS */}
       {(!sectionId || sectionId === "services-hero") && (
-        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-4">
+        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-5">
           <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
             <span className="font-mono text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
               #01
             </span>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Services Hero Banner Badges & Titles</h3>
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Services Catalog Main Hero Banner & Headlines</h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -633,10 +644,10 @@ export default function ServicesPageEditor({ sectionId, onCloseSection, onNaviga
               />
             </div>
 
-            <div className="md:col-span-2">
+            <div>
               <label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 <Type className="h-3.5 w-3.5 text-blue-500" />
-                Hero Main Headline Title
+                Hero Main Title
               </label>
               <input
                 type="text"
@@ -651,7 +662,7 @@ export default function ServicesPageEditor({ sectionId, onCloseSection, onNaviga
                 Hero Subtitle Description
               </label>
               <textarea
-                rows={3}
+                rows={2}
                 value={formData.hero.subtitle}
                 onChange={(e) => setFormData({ ...formData, hero: { ...formData.hero, subtitle: e.target.value } })}
                 className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white"
@@ -661,49 +672,44 @@ export default function ServicesPageEditor({ sectionId, onCloseSection, onNaviga
         </div>
       )}
 
-      {/* DYNAMIC SERVICES LIST (ADD & DELETE SERVICES + METRICS + BUTTONS) */}
-      {(!sectionId || sectionId === "services-list") && (
-        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-5">
+      {/* SECTION 2: CATALOG SERVICES LIST & UNIQUE ID MANAGER */}
+      {(!sectionId || sectionId === "services-catalog" || sectionId === "services-list") && (
+        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-4">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-2">
               <span className="font-mono text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
                 #02
               </span>
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                Core Services Cards Catalog ({formData.services.length} Active Services)
+                Catalog Service Cards Manager ({formData.services.length} Services)
               </h3>
             </div>
 
             <button
+              type="button"
               onClick={() => {
-                const newId = `custom-service-${Date.now()}`;
-                const newService = {
-                  id: newId,
-                  title: "New Custom Engineering Service",
-                  subtitle: "Specialized Enterprise Solution",
+                const uniqueId = `service-${Date.now().toString().slice(-4)}`;
+                const newSvc = {
+                  id: uniqueId,
+                  title: "New Custom Service",
+                  subtitle: "Enterprise Engineering Discipline",
                   buttonText: "Explore Capabilities",
-                  desc: "Detailed description of custom engineering service capabilities.",
-                  fullOverview: "Comprehensive overview narrative explaining how we deliver custom software engineering for this discipline.",
+                  desc: "Description of the new service discipline.",
+                  fullOverview: "Detailed overview narrative for this enterprise service.",
                   heroBadge: "Custom Engineering Pod",
                   imageUrl: "",
                   keyMetrics: [
-                    { label: "Execution Latency", value: "< 250ms" },
-                    { label: "Accuracy Rate", value: "99.4%" },
-                    { label: "Efficiency Gain", value: "4.5x" },
+                    { label: "Execution Speed", value: "3x" },
+                    { label: "Reliability SLA", value: "99.9%" },
                   ],
                   features: [
-                    { title: "Core Feature 1", desc: "Detailed breakdown of capability 1." },
-                    { title: "Core Feature 2", desc: "Detailed breakdown of capability 2." },
+                    { title: "Core Feature 1", desc: "Description of capability 1" },
                   ],
                   workflow: [
-                    { step: "01", title: "Discovery & Architecture", desc: "Mapping specifications and assembling the engineering pod." },
-                    { step: "02", title: "Prototyping & MVP Sprint", desc: "Delivering working software in 2-4 week sprint cycles." },
+                    { step: "01", title: "Architecture & Setup", desc: "Initial pod configuration" },
                   ],
-                  useCases: [
-                    "Enterprise Process Automation",
-                    "Custom Cloud Platform Building",
-                  ],
-                  techStack: ["Next.js", "Python", "Cloud"],
+                  useCases: ["Enterprise Scale Automation"],
+                  techStack: ["Next.js", "TypeScript"],
                   ctaPrimaryText: "Request Service Audit",
                   ctaPrimaryRoute: "/contact",
                   ctaSecondaryText: "All Services",
@@ -714,544 +720,146 @@ export default function ServicesPageEditor({ sectionId, onCloseSection, onNaviga
                   capabilitiesHeading: "Engineered features for maximum impact",
                   blueprintTag: "Execution Blueprint",
                   blueprintHeading: "Our step-by-step delivery process",
-                  useCasesHeading: "Primary Use Cases for",
+                  useCasesHeading: "Primary Focus Areas",
                 };
-                setFormData({ ...formData, services: [...formData.services, newService] });
-                setSelectedDetailId(newId);
+                setFormData({ ...formData, services: [...formData.services, newSvc] });
+                setSelectedDetailId(uniqueId);
+                toast.success(`Created new service item (ID: ${uniqueId})!`);
               }}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-xs"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-xs"
             >
-              <Plus className="h-4 w-4" />
-              <span>Add New Service to Catalog</span>
+              <Plus className="h-3.5 w-3.5" />
+              <span>Add New Service</span>
             </button>
           </div>
 
-          {/* Section Header Badges & Titles */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
-            <div>
-              <label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                <Tag className="h-3.5 w-3.5 text-blue-500" />
-                Catalog Section Tag Badge
-              </label>
-              <input
-                type="text"
-                value={formData.catalogSection.tag}
-                onChange={(e) => setFormData({ ...formData, catalogSection: { ...formData.catalogSection, tag: e.target.value } })}
-                className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white"
-              />
-            </div>
-
-            <div>
-              <label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                <Type className="h-3.5 w-3.5 text-blue-500" />
-                Catalog Section Main Title
-              </label>
-              <input
-                type="text"
-                value={formData.catalogSection.title}
-                onChange={(e) => setFormData({ ...formData, catalogSection: { ...formData.catalogSection, title: e.target.value } })}
-                className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-bold"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            {formData.services.map((service, sIdx) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {formData.services.map((svc, idx) => (
               <div
-                key={service.id}
-                className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 space-y-4"
+                key={svc.id}
+                className={`p-4 rounded-xl border transition-all space-y-3 ${
+                  selectedDetailId === svc.id
+                    ? "border-blue-500 bg-blue-50/20 dark:bg-blue-950/20 ring-1 ring-blue-500/50"
+                    : "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50"
+                }`}
               >
-                {/* Service Card Top Header */}
-                <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-bold text-blue-600 bg-blue-100 dark:bg-blue-950 px-2 py-0.5 rounded">
-                      #{sIdx + 1}
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-100 dark:bg-blue-950 px-2 py-0.5 rounded">
+                      Service #{idx + 1}
                     </span>
-                    <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                      {service.title || "Unnamed Service"}
-                    </h4>
-                    <span className="text-[10px] font-mono text-slate-400">
-                      (ID: {service.id})
-                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedDetailId(svc.id)}
+                      className={`text-[11px] font-semibold underline transition-colors ${
+                        selectedDetailId === svc.id
+                          ? "text-blue-600 font-bold"
+                          : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                      }`}
+                    >
+                      {selectedDetailId === svc.id ? "Currently Editing Details" : "Edit Detailed View"}
+                    </button>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  {formData.services.length > 1 && (
                     <button
                       type="button"
                       onClick={() => {
-                        // Select this exact service and jump straight into its
-                        // individual detail-page configurator, instead of
-                        // staying on the full catalog list.
-                        setSelectedDetailId(service.id);
-                        if (onNavigateToDetailSection) {
-                          onNavigateToDetailSection(service.id);
-                        }
-                      }}
-                      className="flex items-center gap-1 text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/60 px-3 py-1 rounded-lg transition-colors border border-blue-200 dark:border-blue-800/60"
-                    >
-                      <FileText className="h-3.5 w-3.5" />
-                      <span>Configure Detail Page</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const updated = formData.services.filter((s) => s.id !== service.id);
+                        const svcToDelete = svc;
+                        const updated = formData.services.filter((s) => s.id !== svc.id);
                         setFormData({ ...formData, services: updated });
-                        if (selectedDetailId === service.id && updated.length > 0) {
-                          setSelectedDetailId(updated[0].id);
+                        if (selectedDetailId === svc.id) {
+                          setSelectedDetailId(updated[0]?.id || "ai-eng");
                         }
+                        toast.success(`Deleted service "${svcToDelete.title}"`);
                       }}
-                      className="flex items-center gap-1 text-xs font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/50 px-2.5 py-1 rounded-lg transition-colors"
+                      className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 dark:hover:bg-red-950/50"
+                      title="Delete service"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
-                      <span>Delete Service</span>
                     </button>
-                  </div>
+                  )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      <Type className="h-3.5 w-3.5 text-blue-500" />
-                      Service Card Title
+                    <label className="flex items-center gap-1 text-[10px] font-bold text-slate-700 dark:text-slate-300">
+                      <LinkIcon className="h-3 w-3 text-blue-500" />
+                      Unique Service ID / URL Slug
                     </label>
                     <input
                       type="text"
-                      value={service.title}
+                      value={svc.id}
                       onChange={(e) => {
+                        const newId = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-");
                         const updated = [...formData.services];
-                        updated[sIdx].title = e.target.value;
+                        const oldId = updated[idx].id;
+                        updated[idx].id = newId;
                         setFormData({ ...formData, services: updated });
+                        if (selectedDetailId === oldId) setSelectedDetailId(newId);
                       }}
-                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3 py-1.5 text-xs text-slate-900 dark:text-white font-semibold"
+                      className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-2.5 py-1 text-xs font-mono font-bold text-blue-600 dark:text-blue-400"
                     />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      Subtitle Tagline
-                    </label>
-                    <input
-                      type="text"
-                      value={service.subtitle}
-                      onChange={(e) => {
-                        const updated = [...formData.services];
-                        updated[sIdx].subtitle = e.target.value;
-                        setFormData({ ...formData, services: updated });
-                      }}
-                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3 py-1.5 text-xs text-slate-900 dark:text-white"
-                    />
+                    <span className="text-[9px] text-slate-400">Route: /services/{svc.id}</span>
                   </div>
 
                   <div>
-                    <label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      <Tag className="h-3.5 w-3.5 text-blue-500" />
-                      Service Hero Badge Pill
+                    <label className="block text-[10px] font-bold text-slate-700 dark:text-slate-300">
+                      Service Title
                     </label>
                     <input
                       type="text"
-                      value={service.heroBadge}
+                      value={svc.title}
                       onChange={(e) => {
                         const updated = [...formData.services];
-                        updated[sIdx].heroBadge = e.target.value;
+                        updated[idx].title = e.target.value;
                         setFormData({ ...formData, services: updated });
                       }}
-                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3 py-1.5 text-xs text-slate-900 dark:text-white"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      <MousePointerClick className="h-3.5 w-3.5 text-blue-500" />
-                      CTA Button Label Text
-                    </label>
-                    <input
-                      type="text"
-                      value={service.buttonText || "Explore Capabilities"}
-                      onChange={(e) => {
-                        const updated = [...formData.services];
-                        updated[sIdx].buttonText = e.target.value;
-                        setFormData({ ...formData, services: updated });
-                      }}
-                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3 py-1.5 text-xs text-slate-900 dark:text-white font-semibold"
-                    />
-                  </div>
-
-                  {/* Service Media File Upload Control */}
-                  <div className="md:col-span-2">
-                    <FileUploadControl
-                      label="Service Photo / Video File / URL"
-                      value={service.imageUrl || ""}
-                      accept="image/*,video/*"
-                      mediaType="image"
-                      placeholder="Upload image/video file or enter URL..."
-                      helperText="Custom thumbnail image/video for service card & detail page header"
-                      onChange={(val) => {
-                        const updated = [...formData.services];
-                        updated[sIdx].imageUrl = val;
-                        setFormData({ ...formData, services: updated });
-                      }}
-                    />
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      Short Description (Card Overview)
-                    </label>
-                    <textarea
-                      rows={2}
-                      value={service.desc}
-                      onChange={(e) => {
-                        const updated = [...formData.services];
-                        updated[sIdx].desc = e.target.value;
-                        setFormData({ ...formData, services: updated });
-                      }}
-                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3 py-1.5 text-xs text-slate-900 dark:text-white"
-                    />
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      Tech Stack Tags (comma-separated)
-                    </label>
-                    <input
-                      type="text"
-                      value={service.techStack.join(", ")}
-                      onChange={(e) => {
-                        const updated = [...formData.services];
-                        updated[sIdx].techStack = e.target.value.split(",").map((t) => t.trim());
-                        setFormData({ ...formData, services: updated });
-                      }}
-                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3 py-1.5 text-xs text-slate-900 dark:text-white"
+                      className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-2.5 py-1 text-xs text-slate-900 dark:text-white font-bold"
                     />
                   </div>
                 </div>
 
-                {/* DYNAMIC KEY METRICS SECTION (< 250ms Execution Latency, 99.4% Accuracy Rate, etc.) */}
-                <div className="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
-                      <TrendingUp className="h-4 w-4 text-blue-600" />
-                      <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                        Key Metrics Pairs ({service.keyMetrics?.length || 0})
-                      </span>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const updated = [...formData.services];
-                        if (!updated[sIdx].keyMetrics) updated[sIdx].keyMetrics = [];
-                        updated[sIdx].keyMetrics.push({ value: "99.9%", label: "Metric Label" });
-                        setFormData({ ...formData, services: updated });
-                      }}
-                      className="flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:underline"
-                    >
-                      <Plus className="h-3 w-3" />
-                      <span>Add Metric Pair</span>
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    {service.keyMetrics?.map((metric, mIdx) => (
-                      <div
-                        key={mIdx}
-                        className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b0f19] space-y-1.5 relative"
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="text-[9px] font-bold uppercase text-blue-600">Metric #{mIdx + 1}</span>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const updated = [...formData.services];
-                              updated[sIdx].keyMetrics = updated[sIdx].keyMetrics.filter((_, i) => i !== mIdx);
-                              setFormData({ ...formData, services: updated });
-                            }}
-                            className="text-red-500 hover:text-red-700 p-0.5"
-                            title="Remove metric"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </button>
-                        </div>
-
-                        <div>
-                          <label className="block text-[9px] text-slate-400">Value (e.g. &lt; 250ms, 99.4%)</label>
-                          <input
-                            type="text"
-                            value={metric.value}
-                            onChange={(e) => {
-                              const updated = [...formData.services];
-                              updated[sIdx].keyMetrics[mIdx].value = e.target.value;
-                              setFormData({ ...formData, services: updated });
-                            }}
-                            className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2 py-1 text-xs font-bold text-blue-600 dark:text-blue-400"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-[9px] text-slate-400">Label (e.g. Execution Latency)</label>
-                          <input
-                            type="text"
-                            value={metric.label}
-                            onChange={(e) => {
-                              const updated = [...formData.services];
-                              updated[sIdx].keyMetrics[mIdx].label = e.target.value;
-                              setFormData({ ...formData, services: updated });
-                            }}
-                            className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2 py-1 text-[11px] text-slate-900 dark:text-white"
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-700 dark:text-slate-300">
+                    Subtitle Badge Tag
+                  </label>
+                  <input
+                    type="text"
+                    value={svc.subtitle}
+                    onChange={(e) => {
+                      const updated = [...formData.services];
+                      updated[idx].subtitle = e.target.value;
+                      setFormData({ ...formData, services: updated });
+                    }}
+                    className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-2.5 py-1 text-xs text-slate-900 dark:text-white"
+                  />
                 </div>
 
-                {/* DYNAMIC SERVICE FEATURES LIST */}
-                <div className="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                      Service Feature Bullets ({service.features.length})
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const updated = [...formData.services];
-                        updated[sIdx].features.push({
-                          title: "New Capability Feature",
-                          desc: "Description of feature capability.",
-                        });
-                        setFormData({ ...formData, services: updated });
-                      }}
-                      className="flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:underline"
-                    >
-                      <Plus className="h-3 w-3" />
-                      <span>Add Feature Bullet</span>
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {service.features.map((feat, fIdx) => (
-                      <div
-                        key={fIdx}
-                        className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b0f19] flex items-center justify-between gap-2"
-                      >
-                        <input
-                          type="text"
-                          value={feat.title}
-                          onChange={(e) => {
-                            const updated = [...formData.services];
-                            updated[sIdx].features[fIdx].title = e.target.value;
-                            setFormData({ ...formData, services: updated });
-                          }}
-                          className="flex-1 text-xs bg-transparent border-none font-semibold text-slate-900 dark:text-white focus:outline-none"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const updated = [...formData.services];
-                            updated[sIdx].features = updated[sIdx].features.filter((_, i) => i !== fIdx);
-                            setFormData({ ...formData, services: updated });
-                          }}
-                          className="text-red-500 hover:text-red-700 p-0.5"
-                          title="Remove feature"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-700 dark:text-slate-300">
+                    Catalog Card Summary Description
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={svc.desc}
+                    onChange={(e) => {
+                      const updated = [...formData.services];
+                      updated[idx].desc = e.target.value;
+                      setFormData({ ...formData, services: updated });
+                    }}
+                    className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-2.5 py-1 text-xs text-slate-900 dark:text-white"
+                  />
                 </div>
-
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* ENGINEERING PROCESS & POD MODEL SECTION (Global 4-Step Process shown on /services) */}
-      {(!sectionId || sectionId === "services-process") && (
-        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-4">
-          <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
-            <span className="font-mono text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
-              #03
-            </span>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Engineering Process &amp; Pod Model</h3>
-          </div>
+      {/* SECTION 3: INDIVIDUAL SERVICE DETAIL PAGE CONFIGURATOR */}
+      {(!sectionId || sectionId === "service-detail" || sectionId === "services-details") && (
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                <Tag className="h-3.5 w-3.5 text-blue-500" />
-                Process Section Tag Badge
-              </label>
-              <input
-                type="text"
-                value={formData.processSection.tag}
-                onChange={(e) =>
-                  setFormData({ ...formData, processSection: { ...formData.processSection, tag: e.target.value } })
-                }
-                className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white"
-              />
-            </div>
-
-            <div>
-              <label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                <Type className="h-3.5 w-3.5 text-blue-500" />
-                Process Section Main Title
-              </label>
-              <input
-                type="text"
-                value={formData.processSection.title}
-                onChange={(e) =>
-                  setFormData({ ...formData, processSection: { ...formData.processSection, title: e.target.value } })
-                }
-                className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-bold"
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Process Section Subtitle
-              </label>
-              <textarea
-                rows={2}
-                value={formData.processSection.subtitle}
-                onChange={(e) =>
-                  setFormData({ ...formData, processSection: { ...formData.processSection, subtitle: e.target.value } })
-                }
-                className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white"
-              />
-            </div>
-          </div>
-
-          {/* 4-STEP GLOBAL PROCESS EDITOR */}
-          <div className="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5">
-                <Workflow className="h-4 w-4 text-blue-600" />
-                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  Process Phases ({formData.processSection.steps?.length || 0})
-                </span>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => {
-                  const steps = formData.processSection.steps || [];
-                  const nextNum = String(steps.length + 1).padStart(2, "0");
-                  setFormData({
-                    ...formData,
-                    processSection: {
-                      ...formData.processSection,
-                      steps: [
-                        ...steps,
-                        {
-                          step: nextNum,
-                          title: `Phase ${nextNum}`,
-                          desc: "Description of this engineering process phase.",
-                          deliverable: "Phase Deliverable",
-                        },
-                      ],
-                    },
-                  });
-                }}
-                className="flex items-center gap-1 text-xs font-bold text-blue-600 hover:underline"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                <span>Add Process Phase</span>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {formData.processSection.steps?.map((stepItem: any, pIdx: number) => (
-                <div
-                  key={pIdx}
-                  className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b0f19] space-y-2 relative"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-mono font-bold text-blue-600">
-                      Phase #{stepItem.step || `0${pIdx + 1}`}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const steps = formData.processSection.steps.filter((_: any, i: number) => i !== pIdx);
-                        setFormData({ ...formData, processSection: { ...formData.processSection, steps } });
-                      }}
-                      className="text-red-500 hover:text-red-700 p-0.5"
-                      title="Remove phase"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-2">
-                    <div>
-                      <label className="block text-[9px] text-slate-400 font-semibold">Code</label>
-                      <input
-                        type="text"
-                        value={stepItem.step}
-                        onChange={(e) => {
-                          const steps = [...formData.processSection.steps];
-                          steps[pIdx] = { ...steps[pIdx], step: e.target.value };
-                          setFormData({ ...formData, processSection: { ...formData.processSection, steps } });
-                        }}
-                        className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2 py-1 text-xs font-mono text-slate-900 dark:text-white"
-                      />
-                    </div>
-
-                    <div className="col-span-2">
-                      <label className="block text-[9px] text-slate-400 font-semibold">Phase Title</label>
-                      <input
-                        type="text"
-                        value={stepItem.title}
-                        onChange={(e) => {
-                          const steps = [...formData.processSection.steps];
-                          steps[pIdx] = { ...steps[pIdx], title: e.target.value };
-                          setFormData({ ...formData, processSection: { ...formData.processSection, steps } });
-                        }}
-                        className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2 py-1 text-xs font-bold text-slate-900 dark:text-white"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-[9px] text-slate-400 font-semibold">Phase Narrative Description</label>
-                    <textarea
-                      rows={2}
-                      value={stepItem.desc}
-                      onChange={(e) => {
-                        const steps = [...formData.processSection.steps];
-                        steps[pIdx] = { ...steps[pIdx], desc: e.target.value };
-                        setFormData({ ...formData, processSection: { ...formData.processSection, steps } });
-                      }}
-                      className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2 py-1 text-xs text-slate-900 dark:text-white"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[9px] text-slate-400 font-semibold">Key Deliverable</label>
-                    <input
-                      type="text"
-                      value={stepItem.deliverable || ""}
-                      onChange={(e) => {
-                        const steps = [...formData.processSection.steps];
-                        steps[pIdx] = { ...steps[pIdx], deliverable: e.target.value };
-                        setFormData({ ...formData, processSection: { ...formData.processSection, steps } });
-                      }}
-                      className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2 py-1 text-xs font-semibold text-blue-600 dark:text-blue-400"
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* SECTION 3: INDIVIDUAL SERVICE DETAIL PAGES CONFIGURATOR (/services/[id]) */}
-      {(!sectionId || sectionId === "services-details" || sectionId === "services-detail-config") && (
         <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-2">
@@ -1259,88 +867,52 @@ export default function ServicesPageEditor({ sectionId, onCloseSection, onNaviga
                 #03
               </span>
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                Individual Service Detail Pages Configurator (/services/[id])
+                Individual Service Detail View Configurator (`/services/[id]`)
               </h3>
             </div>
 
+            {/* Service Selector Dropdown */}
             <div className="flex items-center gap-2">
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                Select Service:
-              </label>
+              <label className="text-xs font-bold text-slate-500">Select Service to Edit:</label>
               <select
                 value={selectedDetailId}
                 onChange={(e) => setSelectedDetailId(e.target.value)}
-                className="rounded-xl border border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/60 px-3 py-1.5 text-xs font-bold text-blue-900 dark:text-blue-200 focus:outline-none"
+                className="rounded-xl border border-blue-300 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/40 px-3 py-1.5 text-xs font-bold text-blue-700 dark:text-blue-300 focus:outline-none"
               >
-                {formData.services.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.title} (Route: /services/{s.id})
+                {formData.services.map((svc) => (
+                  <option key={svc.id} value={svc.id}>
+                    {svc.title} ({svc.id})
                   </option>
                 ))}
               </select>
             </div>
           </div>
 
-          {currentService && selectedServiceIndex !== -1 && (
-            <div className="p-5 rounded-2xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/30 dark:bg-blue-950/20 space-y-5">
-              <div className="flex items-center justify-between border-b border-blue-200 dark:border-blue-800 pb-3">
-                <div className="flex items-center gap-2">
-                  <ExternalLink className="h-4 w-4 text-blue-600" />
-                  <h4 className="text-sm font-extrabold text-slate-900 dark:text-white">
-                    Configuring Detail Page for &quot;{currentService.title}&quot;
+          {currentService && (
+            <div className="space-y-6">
+              
+              {/* STEP 1: Hero Section & Cloudinary Media Upload */}
+              <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <FileText className="h-4 w-4 text-blue-500" />
+                    Step 1: Hero Banner & Cloudinary Media (<span className="text-blue-600">{currentService.title}</span>)
                   </h4>
-                </div>
-                <span className="text-xs font-mono text-blue-600 dark:text-blue-400 font-bold">
-                  /services/{currentService.id}
-                </span>
-              </div>
-
-              {/* CORE IDENTITY FIELDS (Title, Subtitle, Badge, Button, Description) */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-1.5">
-                  <Type className="h-4 w-4 text-blue-600" />
-                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                    Core Identity &amp; Hero Content
-                  </span>
+                  <a
+                    href={`/services/${currentService.id}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:underline"
+                  >
+                    <span>Preview Live Route (/services/{currentService.id})</span>
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      Service Title
-                    </label>
-                    <input
-                      type="text"
-                      value={currentService.title}
-                      onChange={(e) => {
-                        const updated = [...formData.services];
-                        updated[selectedServiceIndex].title = e.target.value;
-                        setFormData({ ...formData, services: updated });
-                      }}
-                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-bold"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      Subtitle Tagline
-                    </label>
-                    <input
-                      type="text"
-                      value={currentService.subtitle}
-                      onChange={(e) => {
-                        const updated = [...formData.services];
-                        updated[selectedServiceIndex].subtitle = e.target.value;
-                        setFormData({ ...formData, services: updated });
-                      }}
-                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      <Tag className="h-3.5 w-3.5 text-blue-500" />
-                      Hero Badge Pill
+                      Hero Section Badge Tag
                     </label>
                     <input
                       type="text"
@@ -1350,241 +922,37 @@ export default function ServicesPageEditor({ sectionId, onCloseSection, onNaviga
                         updated[selectedServiceIndex].heroBadge = e.target.value;
                         setFormData({ ...formData, services: updated });
                       }}
-                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white"
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-1.5 text-xs text-slate-900 dark:text-white"
                     />
                   </div>
 
-                  <div>
-                    <label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      <MousePointerClick className="h-3.5 w-3.5 text-blue-500" />
-                      CTA Button Label Text
-                    </label>
-                    <input
-                      type="text"
-                      value={currentService.buttonText || "Explore Capabilities"}
-                      onChange={(e) => {
-                        const updated = [...formData.services];
-                        updated[selectedServiceIndex].buttonText = e.target.value;
-                        setFormData({ ...formData, services: updated });
-                      }}
-                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-semibold"
-                    />
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      Short Description (Card Overview)
-                    </label>
-                    <textarea
-                      rows={2}
-                      value={currentService.desc}
-                      onChange={(e) => {
-                        const updated = [...formData.services];
-                        updated[selectedServiceIndex].desc = e.target.value;
-                        setFormData({ ...formData, services: updated });
-                      }}
-                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white"
-                    />
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <FileUploadControl
-                      label="Service Photo / Video File / URL"
-                      value={currentService.imageUrl || ""}
-                      accept="image/*,video/*"
-                      mediaType="image"
-                      placeholder="Upload image/video file or enter URL..."
-                      helperText="Custom thumbnail image/video for detail page header"
-                      onChange={(val) => {
-                        const updated = [...formData.services];
-                        updated[selectedServiceIndex].imageUrl = val;
-                        setFormData({ ...formData, services: updated });
-                      }}
-                    />
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      Tech Stack Tags (comma-separated)
-                    </label>
-                    <input
-                      type="text"
-                      value={(currentService.techStack || []).join(", ")}
-                      onChange={(e) => {
-                        const updated = [...formData.services];
-                        updated[selectedServiceIndex].techStack = e.target.value.split(",").map((t: string) => t.trim());
-                        setFormData({ ...formData, services: updated });
-                      }}
-                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* DYNAMIC KEY METRICS SECTION (< 250ms Execution Latency, 99.4% Accuracy Rate, etc.) */}
-              <div className="pt-3 border-t border-blue-200 dark:border-blue-800 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5">
-                    <TrendingUp className="h-4 w-4 text-blue-600" />
-                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                      Key Metrics Pairs ({currentService.keyMetrics?.length || 0})
-                    </span>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => {
+                  <FileUploadControl
+                    label="Hero / Overview Cloudinary Media Image File"
+                    value={currentService.imageUrl || ""}
+                    accept="image/*"
+                    mediaType="image"
+                    placeholder="Upload image to Cloudinary..."
+                    onChange={(val) => {
                       const updated = [...formData.services];
-                      if (!updated[selectedServiceIndex].keyMetrics) updated[selectedServiceIndex].keyMetrics = [];
-                      updated[selectedServiceIndex].keyMetrics.push({ value: "99.9%", label: "Metric Label" });
+                      updated[selectedServiceIndex].imageUrl = val;
                       setFormData({ ...formData, services: updated });
                     }}
-                    className="flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:underline"
-                  >
-                    <Plus className="h-3 w-3" />
-                    <span>Add Metric Pair</span>
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                  {currentService.keyMetrics?.map((metric: any, mIdx: number) => (
-                    <div
-                      key={mIdx}
-                      className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b0f19] space-y-1.5 relative"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-[9px] font-bold uppercase text-blue-600">Metric #{mIdx + 1}</span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const updated = [...formData.services];
-                            updated[selectedServiceIndex].keyMetrics = updated[selectedServiceIndex].keyMetrics.filter((_: any, i: number) => i !== mIdx);
-                            setFormData({ ...formData, services: updated });
-                          }}
-                          className="text-red-500 hover:text-red-700 p-0.5"
-                          title="Remove metric"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </button>
-                      </div>
-
-                      <div>
-                        <label className="block text-[9px] text-slate-400">Value (e.g. &lt; 250ms, 99.4%)</label>
-                        <input
-                          type="text"
-                          value={metric.value}
-                          onChange={(e) => {
-                            const updated = [...formData.services];
-                            updated[selectedServiceIndex].keyMetrics[mIdx].value = e.target.value;
-                            setFormData({ ...formData, services: updated });
-                          }}
-                          className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2 py-1 text-xs font-bold text-blue-600 dark:text-blue-400"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[9px] text-slate-400">Label (e.g. Execution Latency)</label>
-                        <input
-                          type="text"
-                          value={metric.label}
-                          onChange={(e) => {
-                            const updated = [...formData.services];
-                            updated[selectedServiceIndex].keyMetrics[mIdx].label = e.target.value;
-                            setFormData({ ...formData, services: updated });
-                          }}
-                          className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2 py-1 text-[11px] text-slate-900 dark:text-white"
-                        />
-                      </div>
-                    </div>
-                  ))}
+                  />
                 </div>
               </div>
 
-              {/* HERO ACTION BUTTONS (Request Service Audit / All Services) */}
-              <div className="pt-3 border-t border-blue-200 dark:border-blue-800 space-y-3">
-                <div className="flex items-center gap-1.5">
-                  <MousePointerClick className="h-4 w-4 text-blue-600" />
-                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                    Hero Action Buttons &amp; Routes
-                  </span>
-                </div>
+              {/* STEP 2: Detailed Overview Section */}
+              <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 space-y-4">
+                <h4 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                  <Type className="h-4 w-4 text-blue-500" />
+                  Step 2: Detailed Overview Section Content & Focus Areas
+                </h4>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b0f19] space-y-2">
-                    <span className="text-[10px] font-bold uppercase text-blue-600">Primary Button</span>
-                    <div>
-                      <label className="block text-[9px] text-slate-400 font-semibold">Button Text</label>
-                      <input
-                        type="text"
-                        value={currentService.ctaPrimaryText || "Request Service Audit"}
-                        onChange={(e) => {
-                          const updated = [...formData.services];
-                          updated[selectedServiceIndex].ctaPrimaryText = e.target.value;
-                          setFormData({ ...formData, services: updated });
-                        }}
-                        className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2 py-1 text-xs font-bold text-slate-900 dark:text-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[9px] text-slate-400 font-semibold">Button Route / Link</label>
-                      <input
-                        type="text"
-                        value={currentService.ctaPrimaryRoute || "/contact"}
-                        onChange={(e) => {
-                          const updated = [...formData.services];
-                          updated[selectedServiceIndex].ctaPrimaryRoute = e.target.value;
-                          setFormData({ ...formData, services: updated });
-                        }}
-                        placeholder="/contact"
-                        className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2 py-1 text-xs font-mono text-blue-600 dark:text-blue-400"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b0f19] space-y-2">
-                    <span className="text-[10px] font-bold uppercase text-blue-600">Secondary Button</span>
-                    <div>
-                      <label className="block text-[9px] text-slate-400 font-semibold">Button Text</label>
-                      <input
-                        type="text"
-                        value={currentService.ctaSecondaryText || "All Services"}
-                        onChange={(e) => {
-                          const updated = [...formData.services];
-                          updated[selectedServiceIndex].ctaSecondaryText = e.target.value;
-                          setFormData({ ...formData, services: updated });
-                        }}
-                        className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2 py-1 text-xs font-bold text-slate-900 dark:text-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[9px] text-slate-400 font-semibold">Button Route / Link</label>
-                      <input
-                        type="text"
-                        value={currentService.ctaSecondaryRoute || "/services"}
-                        onChange={(e) => {
-                          const updated = [...formData.services];
-                          updated[selectedServiceIndex].ctaSecondaryRoute = e.target.value;
-                          setFormData({ ...formData, services: updated });
-                        }}
-                        placeholder="/services"
-                        className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2 py-1 text-xs font-mono text-blue-600 dark:text-blue-400"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* DETAILED OVERVIEW SECTION LABEL, HEADING & NARRATIVE */}
-              <div className="pt-3 border-t border-blue-200 dark:border-blue-800 space-y-2">
-                <div className="flex items-center gap-1.5">
-                  <FileText className="h-4 w-4 text-blue-600" />
-                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                    Detailed Overview Section Labels
-                  </span>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[9px] text-slate-400 font-semibold">Eyebrow Tag Text</label>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Overview Section Tag Label
+                    </label>
                     <input
                       type="text"
                       value={currentService.overviewTag || "Detailed Overview"}
@@ -1593,12 +961,13 @@ export default function ServicesPageEditor({ sectionId, onCloseSection, onNaviga
                         updated[selectedServiceIndex].overviewTag = e.target.value;
                         setFormData({ ...formData, services: updated });
                       }}
-                      className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2 py-1 text-xs text-slate-900 dark:text-white"
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-1.5 text-xs text-slate-900 dark:text-white"
                     />
                   </div>
+
                   <div>
-                    <label className="block text-[9px] text-slate-400 font-semibold">
-                      Section Heading (service title is appended automatically)
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Overview Heading Prefix
                     </label>
                     <input
                       type="text"
@@ -1608,39 +977,215 @@ export default function ServicesPageEditor({ sectionId, onCloseSection, onNaviga
                         updated[selectedServiceIndex].overviewHeading = e.target.value;
                         setFormData({ ...formData, services: updated });
                       }}
-                      className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2 py-1 text-xs font-bold text-slate-900 dark:text-white"
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-1.5 text-xs text-slate-900 dark:text-white font-bold"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Full Overview Detailed Paragraph Narrative
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={currentService.fullOverview || ""}
+                      onChange={(e) => {
+                        const updated = [...formData.services];
+                        updated[selectedServiceIndex].fullOverview = e.target.value;
+                        setFormData({ ...formData, services: updated });
+                      }}
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white"
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Full Overview Narrative (Rendered on /services/{currentService.id})
-                  </label>
-                  <textarea
-                    rows={4}
-                    value={currentService.fullOverview || ""}
-                    onChange={(e) => {
-                      const updated = [...formData.services];
-                      updated[selectedServiceIndex].fullOverview = e.target.value;
-                      setFormData({ ...formData, services: updated });
-                    }}
-                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white"
-                  />
+                {/* Primary Use Cases / Focus Areas */}
+                <div className="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                        Primary Focus Areas Headline
+                      </label>
+                      <input
+                        type="text"
+                        value={currentService.useCasesHeading || "Primary Focus Areas"}
+                        onChange={(e) => {
+                          const updated = [...formData.services];
+                          updated[selectedServiceIndex].useCasesHeading = e.target.value;
+                          setFormData({ ...formData, services: updated });
+                        }}
+                        className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-2.5 py-1 text-xs text-slate-900 dark:text-white font-bold"
+                      />
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const updated = [...formData.services];
+                        updated[selectedServiceIndex].useCases = [
+                          ...(updated[selectedServiceIndex].useCases || []),
+                          "New Enterprise Use Case",
+                        ];
+                        setFormData({ ...formData, services: updated });
+                        toast.success("Added use case!");
+                      }}
+                      className="text-xs font-bold text-blue-600 hover:underline"
+                    >
+                      + Add Focus Area
+                    </button>
+                  </div>
+
+                  <div className="space-y-2">
+                    {currentService.useCases?.map((uc: string, uIdx: number) => (
+                      <div key={uIdx} className="flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-blue-600 shrink-0" />
+                        <input
+                          type="text"
+                          value={uc}
+                          onChange={(e) => {
+                            const updated = [...formData.services];
+                            updated[selectedServiceIndex].useCases[uIdx] = e.target.value;
+                            setFormData({ ...formData, services: updated });
+                          }}
+                          className="flex-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-2.5 py-1 text-xs text-slate-900 dark:text-white"
+                        />
+                        {currentService.useCases.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = [...formData.services];
+                              updated[selectedServiceIndex].useCases = updated[selectedServiceIndex].useCases.filter(
+                                (_: string, idx: number) => idx !== uIdx
+                              );
+                              setFormData({ ...formData, services: updated });
+                              toast.success("Deleted focus area!");
+                            }}
+                            className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/50 rounded"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              {/* CORE CAPABILITIES SECTION LABEL + HEADING */}
-              <div className="pt-3 border-t border-blue-200 dark:border-blue-800 space-y-2">
-                <div className="flex items-center gap-1.5">
-                  <Layers className="h-4 w-4 text-blue-600" />
-                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                    Core Capabilities Section Labels
-                  </span>
+              {/* STEP 3: Key Performance Metrics */}
+              <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4 text-blue-600" />
+                    <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+                      Step 3: Key Performance Metrics ({currentService.keyMetrics?.length || 0})
+                    </h4>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const updated = [...formData.services];
+                      const newMetric = { label: "Performance SLA", value: "99.9%" };
+                      updated[selectedServiceIndex].keyMetrics = [
+                        ...(updated[selectedServiceIndex].keyMetrics || []),
+                        newMetric,
+                      ];
+                      setFormData({ ...formData, services: updated });
+                      toast.success("Added new metric!");
+                    }}
+                    className="flex items-center gap-1 px-3 py-1 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-colors"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    <span>Add Metric</span>
+                  </button>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {currentService.keyMetrics?.map((met: any, mIdx: number) => (
+                    <div key={mIdx} className="p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b0f19] space-y-2 relative">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[9px] font-bold text-blue-600">Metric #{mIdx + 1}</span>
+                        {currentService.keyMetrics.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = [...formData.services];
+                              updated[selectedServiceIndex].keyMetrics = updated[selectedServiceIndex].keyMetrics.filter(
+                                (_: any, idx: number) => idx !== mIdx
+                              );
+                              setFormData({ ...formData, services: updated });
+                              toast.success("Deleted metric!");
+                            }}
+                            className="text-red-500 hover:text-red-700 p-0.5"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </button>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-[9px] text-slate-400">Value</label>
+                        <input
+                          type="text"
+                          value={met.value}
+                          onChange={(e) => {
+                            const updated = [...formData.services];
+                            updated[selectedServiceIndex].keyMetrics[mIdx].value = e.target.value;
+                            setFormData({ ...formData, services: updated });
+                          }}
+                          className="w-full rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-2 py-0.5 text-xs font-extrabold text-blue-600"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] text-slate-400">Label</label>
+                        <input
+                          type="text"
+                          value={met.label}
+                          onChange={(e) => {
+                            const updated = [...formData.services];
+                            updated[selectedServiceIndex].keyMetrics[mIdx].label = e.target.value;
+                            setFormData({ ...formData, services: updated });
+                          }}
+                          className="w-full rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-2 py-0.5 text-xs text-slate-900 dark:text-white"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* STEP 4: Core Capabilities Section & Feature Cards */}
+              <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-blue-600" />
+                    <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+                      Step 4: Core Capabilities Section & Feature Cards ({currentService.features?.length || 0})
+                    </h4>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const updated = [...formData.services];
+                      const newFeat = { title: "New Capability", desc: "Detailed breakdown of feature." };
+                      updated[selectedServiceIndex].features = [
+                        ...(updated[selectedServiceIndex].features || []),
+                        newFeat,
+                      ];
+                      setFormData({ ...formData, services: updated });
+                      toast.success("Added new feature!");
+                    }}
+                    className="flex items-center gap-1 px-3 py-1 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-colors"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    <span>Add Feature</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[9px] text-slate-400 font-semibold">Eyebrow Tag Text</label>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Capabilities Section Tag
+                    </label>
                     <input
                       type="text"
                       value={currentService.capabilitiesTag || "Core Capabilities"}
@@ -1649,11 +1194,14 @@ export default function ServicesPageEditor({ sectionId, onCloseSection, onNaviga
                         updated[selectedServiceIndex].capabilitiesTag = e.target.value;
                         setFormData({ ...formData, services: updated });
                       }}
-                      className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2 py-1 text-xs text-slate-900 dark:text-white"
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-1.5 text-xs text-slate-900 dark:text-white"
                     />
                   </div>
+
                   <div>
-                    <label className="block text-[9px] text-slate-400 font-semibold">Section Heading</label>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Capabilities Section Heading
+                    </label>
                     <input
                       type="text"
                       value={currentService.capabilitiesHeading || "Engineered features for maximum impact"}
@@ -1662,95 +1210,103 @@ export default function ServicesPageEditor({ sectionId, onCloseSection, onNaviga
                         updated[selectedServiceIndex].capabilitiesHeading = e.target.value;
                         setFormData({ ...formData, services: updated });
                       }}
-                      className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2 py-1 text-xs font-bold text-slate-900 dark:text-white"
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-1.5 text-xs text-slate-900 dark:text-white font-bold"
                     />
                   </div>
                 </div>
-              </div>
 
-              {/* DYNAMIC SERVICE FEATURES LIST */}
-              <div className="pt-3 border-t border-blue-200 dark:border-blue-800 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                    Service Feature Bullets ({currentService.features?.length || 0})
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const updated = [...formData.services];
-                      if (!updated[selectedServiceIndex].features) updated[selectedServiceIndex].features = [];
-                      updated[selectedServiceIndex].features.push({
-                        title: "New Capability Feature",
-                        desc: "Description of feature capability.",
-                      });
-                      setFormData({ ...formData, services: updated });
-                    }}
-                    className="flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:underline"
-                  >
-                    <Plus className="h-3 w-3" />
-                    <span>Add Feature Bullet</span>
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
                   {currentService.features?.map((feat: any, fIdx: number) => (
-                    <div
-                      key={fIdx}
-                      className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b0f19] space-y-1.5 relative"
-                    >
+                    <div key={fIdx} className="p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b0f19] space-y-2 relative">
                       <div className="flex items-center justify-between">
-                        <span className="text-[9px] font-bold uppercase text-blue-600">Feature #{fIdx + 1}</span>
-                        <button
-                          type="button"
-                          onClick={() => {
+                        <span className="text-[9px] font-bold text-blue-600">Feature #{fIdx + 1}</span>
+                        {currentService.features.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = [...formData.services];
+                              updated[selectedServiceIndex].features = updated[selectedServiceIndex].features.filter(
+                                (_: any, idx: number) => idx !== fIdx
+                              );
+                              setFormData({ ...formData, services: updated });
+                              toast.success("Deleted feature!");
+                            }}
+                            className="text-red-500 hover:text-red-700 p-0.5"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-[9px] text-slate-400">Feature Title</label>
+                        <input
+                          type="text"
+                          value={feat.title}
+                          onChange={(e) => {
                             const updated = [...formData.services];
-                            updated[selectedServiceIndex].features = updated[selectedServiceIndex].features.filter((_: any, i: number) => i !== fIdx);
+                            updated[selectedServiceIndex].features[fIdx].title = e.target.value;
                             setFormData({ ...formData, services: updated });
                           }}
-                          className="text-red-500 hover:text-red-700 p-0.5"
-                          title="Remove feature"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
+                          className="w-full rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-2.5 py-1 text-xs font-bold text-slate-900 dark:text-white"
+                        />
                       </div>
-                      <input
-                        type="text"
-                        value={feat.title}
-                        onChange={(e) => {
-                          const updated = [...formData.services];
-                          updated[selectedServiceIndex].features[fIdx].title = e.target.value;
-                          setFormData({ ...formData, services: updated });
-                        }}
-                        placeholder="Feature title"
-                        className="w-full text-xs bg-slate-50 dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700 px-2 py-1 font-semibold text-slate-900 dark:text-white focus:outline-none"
-                      />
-                      <textarea
-                        rows={2}
-                        value={feat.desc}
-                        onChange={(e) => {
-                          const updated = [...formData.services];
-                          updated[selectedServiceIndex].features[fIdx].desc = e.target.value;
-                          setFormData({ ...formData, services: updated });
-                        }}
-                        placeholder="Feature description"
-                        className="w-full text-xs bg-slate-50 dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700 px-2 py-1 text-slate-900 dark:text-white focus:outline-none"
-                      />
+                      <div>
+                        <label className="block text-[9px] text-slate-400">Description</label>
+                        <textarea
+                          rows={2}
+                          value={feat.desc}
+                          onChange={(e) => {
+                            const updated = [...formData.services];
+                            updated[selectedServiceIndex].features[fIdx].desc = e.target.value;
+                            setFormData({ ...formData, services: updated });
+                          }}
+                          className="w-full rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-2.5 py-1 text-xs text-slate-900 dark:text-white"
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* EXECUTION BLUEPRINT SECTION LABEL + HEADING */}
-              <div className="pt-3 border-t border-blue-200 dark:border-blue-800 space-y-2">
-                <div className="flex items-center gap-1.5">
-                  <Workflow className="h-4 w-4 text-blue-600" />
-                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                    Execution Blueprint Section Labels
-                  </span>
+              {/* STEP 5: Execution Blueprint Section & Workflow Steps */}
+              <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Workflow className="h-4 w-4 text-blue-600" />
+                    <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+                      Step 5: Execution Blueprint & Delivery Workflow Steps ({currentService.workflow?.length || 0})
+                    </h4>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const updated = [...formData.services];
+                      const stepNum = (updated[selectedServiceIndex].workflow?.length || 0) + 1;
+                      const newStep = {
+                        step: stepNum < 10 ? `0${stepNum}` : `${stepNum}`,
+                        title: `Phase ${stepNum} Delivery`,
+                        desc: "Step description and deliverable requirements.",
+                      };
+                      updated[selectedServiceIndex].workflow = [
+                        ...(updated[selectedServiceIndex].workflow || []),
+                        newStep,
+                      ];
+                      setFormData({ ...formData, services: updated });
+                      toast.success("Added workflow step!");
+                    }}
+                    className="flex items-center gap-1 px-3 py-1 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-colors"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    <span>Add Step</span>
+                  </button>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[9px] text-slate-400 font-semibold">Eyebrow Tag Text</label>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Blueprint Section Tag
+                    </label>
                     <input
                       type="text"
                       value={currentService.blueprintTag || "Execution Blueprint"}
@@ -1759,11 +1315,14 @@ export default function ServicesPageEditor({ sectionId, onCloseSection, onNaviga
                         updated[selectedServiceIndex].blueprintTag = e.target.value;
                         setFormData({ ...formData, services: updated });
                       }}
-                      className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2 py-1 text-xs text-slate-900 dark:text-white"
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-1.5 text-xs text-slate-900 dark:text-white"
                     />
                   </div>
+
                   <div>
-                    <label className="block text-[9px] text-slate-400 font-semibold">Section Heading</label>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Blueprint Section Heading
+                    </label>
                     <input
                       type="text"
                       value={currentService.blueprintHeading || "Our step-by-step delivery process"}
@@ -1772,107 +1331,72 @@ export default function ServicesPageEditor({ sectionId, onCloseSection, onNaviga
                         updated[selectedServiceIndex].blueprintHeading = e.target.value;
                         setFormData({ ...formData, services: updated });
                       }}
-                      className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2 py-1 text-xs font-bold text-slate-900 dark:text-white"
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-1.5 text-xs text-slate-900 dark:text-white font-bold"
                     />
                   </div>
                 </div>
-              </div>
 
-              {/* 4-STEP EXECUTION WORKFLOW EDITOR */}
-              <div className="space-y-3 pt-3 border-t border-blue-200 dark:border-blue-800">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5">
-                    <Workflow className="h-4 w-4 text-blue-600" />
-                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                      Execution Blueprint Steps ({currentService.workflow?.length || 0})
-                    </span>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const updated = [...formData.services];
-                      if (!updated[selectedServiceIndex].workflow) updated[selectedServiceIndex].workflow = [];
-                      const nextNum = String(updated[selectedServiceIndex].workflow.length + 1).padStart(2, "0");
-                      updated[selectedServiceIndex].workflow.push({
-                        step: nextNum,
-                        title: `Step ${nextNum}. Execution Phase`,
-                        desc: "Detailed description of execution phase workflow.",
-                      });
-                      setFormData({ ...formData, services: updated });
-                    }}
-                    className="flex items-center gap-1 text-xs font-bold text-blue-600 hover:underline"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    <span>Add Workflow Step</span>
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {currentService.workflow?.map((stepItem: any, wfIdx: number) => (
-                    <div
-                      key={wfIdx}
-                      className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b0f19] space-y-2 relative"
-                    >
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                  {currentService.workflow?.map((wf: any, wIdx: number) => (
+                    <div key={wIdx} className="p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b0f19] space-y-2 relative">
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-mono font-bold text-blue-600">
-                          Step #{stepItem.step || `0${wfIdx + 1}`}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const updated = [...formData.services];
-                            updated[selectedServiceIndex].workflow = updated[selectedServiceIndex].workflow.filter((_: any, i: number) => i !== wfIdx);
-                            setFormData({ ...formData, services: updated });
-                          }}
-                          className="text-red-500 hover:text-red-700 p-0.5"
-                          title="Remove step"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
+                        <span className="text-[9px] font-bold font-mono text-blue-600">Step #{wf.step}</span>
+                        {currentService.workflow.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = [...formData.services];
+                              updated[selectedServiceIndex].workflow = updated[selectedServiceIndex].workflow.filter(
+                                (_: any, idx: number) => idx !== wIdx
+                              );
+                              setFormData({ ...formData, services: updated });
+                              toast.success("Deleted workflow step!");
+                            }}
+                            className="text-red-500 hover:text-red-700 p-0.5"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        )}
                       </div>
-
                       <div className="grid grid-cols-3 gap-2">
                         <div>
-                          <label className="block text-[9px] text-slate-400 font-semibold">Code</label>
+                          <label className="block text-[9px] text-slate-400">Step #</label>
                           <input
                             type="text"
-                            value={stepItem.step}
+                            value={wf.step}
                             onChange={(e) => {
                               const updated = [...formData.services];
-                              updated[selectedServiceIndex].workflow[wfIdx].step = e.target.value;
+                              updated[selectedServiceIndex].workflow[wIdx].step = e.target.value;
                               setFormData({ ...formData, services: updated });
                             }}
-                            className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2 py-1 text-xs font-mono text-slate-900 dark:text-white"
+                            className="w-full rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-2 py-0.5 text-xs font-bold text-blue-600"
                           />
                         </div>
-
                         <div className="col-span-2">
-                          <label className="block text-[9px] text-slate-400 font-semibold">Step Title</label>
+                          <label className="block text-[9px] text-slate-400">Step Headline</label>
                           <input
                             type="text"
-                            value={stepItem.title}
+                            value={wf.title}
                             onChange={(e) => {
                               const updated = [...formData.services];
-                              updated[selectedServiceIndex].workflow[wfIdx].title = e.target.value;
+                              updated[selectedServiceIndex].workflow[wIdx].title = e.target.value;
                               setFormData({ ...formData, services: updated });
                             }}
-                            className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2 py-1 text-xs font-bold text-slate-900 dark:text-white"
+                            className="w-full rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-2 py-0.5 text-xs font-bold text-slate-900 dark:text-white"
                           />
                         </div>
                       </div>
-
                       <div>
-                        <label className="block text-[9px] text-slate-400 font-semibold">Step Narrative Description</label>
+                        <label className="block text-[9px] text-slate-400">Step Description</label>
                         <textarea
                           rows={2}
-                          value={stepItem.desc}
+                          value={wf.desc}
                           onChange={(e) => {
                             const updated = [...formData.services];
-                            updated[selectedServiceIndex].workflow[wfIdx].desc = e.target.value;
+                            updated[selectedServiceIndex].workflow[wIdx].desc = e.target.value;
                             setFormData({ ...formData, services: updated });
                           }}
-                          className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2 py-1 text-xs text-slate-900 dark:text-white"
+                          className="w-full rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-2 py-0.5 text-xs text-slate-900 dark:text-white"
                         />
                       </div>
                     </div>
@@ -1880,86 +1404,60 @@ export default function ServicesPageEditor({ sectionId, onCloseSection, onNaviga
                 </div>
               </div>
 
-              {/* USE CASES SECTION HEADING */}
-              <div className="pt-3 border-t border-blue-200 dark:border-blue-800 space-y-2">
-                <div className="flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4 text-blue-600" />
-                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                    Use Cases Section Heading
-                  </span>
-                </div>
-                <div>
-                  <label className="block text-[9px] text-slate-400 font-semibold">
-                    Heading Prefix (service title is appended automatically)
-                  </label>
-                  <input
-                    type="text"
-                    value={currentService.useCasesHeading || "Primary Use Cases for"}
-                    onChange={(e) => {
-                      const updated = [...formData.services];
-                      updated[selectedServiceIndex].useCasesHeading = e.target.value;
-                      setFormData({ ...formData, services: updated });
-                    }}
-                    className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2 py-1 text-xs font-bold text-slate-900 dark:text-white"
-                  />
-                </div>
-              </div>
+              {/* STEP 6: Tech Stack Badges */}
+              <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 space-y-3">
+                <h4 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                  <Code2 className="h-4 w-4 text-blue-500" />
+                  Step 6: Tech Stack Badges ({currentService.techStack?.length || 0})
+                </h4>
 
-              {/* PRIMARY USE CASES EDITOR */}
-              <div className="space-y-3 pt-3 border-t border-blue-200 dark:border-blue-800">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5">
-                    <CheckCircle2 className="h-4 w-4 text-blue-600" />
-                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                      Primary Use Cases ({currentService.useCases?.length || 0})
-                    </span>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const updated = [...formData.services];
-                      if (!updated[selectedServiceIndex].useCases) updated[selectedServiceIndex].useCases = [];
-                      updated[selectedServiceIndex].useCases.push("New Custom Enterprise Use Case");
-                      setFormData({ ...formData, services: updated });
-                    }}
-                    className="flex items-center gap-1 text-xs font-bold text-blue-600 hover:underline"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    <span>Add Use Case</span>
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {currentService.useCases?.map((uc: string, uIdx: number) => (
-                    <div
-                      key={uIdx}
-                      className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b0f19] flex items-center justify-between gap-2"
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {currentService.techStack?.map((tag: string, tIdx: number) => (
+                    <span
+                      key={tIdx}
+                      className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-white dark:bg-[#0b0f19] text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800"
                     >
-                      <input
-                        type="text"
-                        value={uc}
-                        onChange={(e) => {
-                          const updated = [...formData.services];
-                          updated[selectedServiceIndex].useCases[uIdx] = e.target.value;
-                          setFormData({ ...formData, services: updated });
-                        }}
-                        className="flex-1 text-xs bg-transparent border-none font-semibold text-slate-900 dark:text-white focus:outline-none"
-                      />
+                      <span>{tag}</span>
                       <button
                         type="button"
                         onClick={() => {
                           const updated = [...formData.services];
-                          updated[selectedServiceIndex].useCases = updated[selectedServiceIndex].useCases.filter((_: any, i: number) => i !== uIdx);
+                          updated[selectedServiceIndex].techStack = updated[selectedServiceIndex].techStack.filter(
+                            (_: string, idx: number) => idx !== tIdx
+                          );
                           setFormData({ ...formData, services: updated });
+                          toast.success(`Removed tag "${tag}"`);
                         }}
-                        className="text-red-500 hover:text-red-700 p-0.5"
-                        title="Remove use case"
+                        className="text-slate-400 hover:text-red-500 p-0.5"
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <X className="h-3 w-3" />
                       </button>
-                    </div>
+                    </span>
                   ))}
+                </div>
+
+                <div className="flex items-center gap-2 pt-2">
+                  <input
+                    type="text"
+                    placeholder="Add tech stack tag (e.g. Next.js, Python)..."
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        const val = (e.target as HTMLInputElement).value.trim();
+                        if (val) {
+                          const updated = [...formData.services];
+                          updated[selectedServiceIndex].techStack = [
+                            ...(updated[selectedServiceIndex].techStack || []),
+                            val,
+                          ];
+                          setFormData({ ...formData, services: updated });
+                          (e.target as HTMLInputElement).value = "";
+                          toast.success(`Added tag "${val}"`);
+                        }
+                      }
+                    }}
+                    className="flex-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3 py-1.5 text-xs text-slate-900 dark:text-white"
+                  />
                 </div>
               </div>
 

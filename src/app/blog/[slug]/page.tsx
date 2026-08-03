@@ -131,7 +131,7 @@ export default function BlogDetailPage({ params }: BlogDetailPageProps) {
 
               {/* Article Markdown Body */}
               <div className="mt-8 space-y-6 text-base leading-relaxed text-ink/80 font-normal">
-                {post.content.split("\n\n").map((paragraph, index) => {
+                {post.content.split("\n\n").map((paragraph: string, index: number) => {
                   const trimmed = paragraph.trim();
                   if (trimmed.startsWith("## ")) {
                     return (
@@ -178,7 +178,7 @@ export default function BlogDetailPage({ params }: BlogDetailPageProps) {
                 <span className="text-xs font-bold uppercase tracking-wider text-ink/50 mr-2">
                   Topics:
                 </span>
-                {post.tags.map((tag) => (
+                {post.tags?.map((tag: string) => (
                   <span
                     key={tag}
                     className="rounded-lg bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-700 border border-violet-100"

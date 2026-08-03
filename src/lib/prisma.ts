@@ -18,6 +18,15 @@ const createPrismaClient = () => {
   });
 };
 
-export const prisma = globalForPrisma.prisma ?? createPrismaClient();
+const getPrisma = () => {
+  const existing = globalForPrisma.prisma;
+  // If an existing cached instance is missing new models, recreate client
+  if (existing && (existing as any).servicesPage && (existing as any).aboutPage) {
+    return existing;
+  }
+  const client = createPrismaClient();
+  if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = client;
+  return client;
+};
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+export const prisma = getPrisma();

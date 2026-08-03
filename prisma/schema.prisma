@@ -1,4 +1,4 @@
-// Prisma schema — Admin dashboard authentication
+// Prisma Schema — Clickpoint Innovation Enterprise Platform
 // Docs: https://pris.ly/d/prisma-schema
 
 generator client {
@@ -10,20 +10,21 @@ datasource db {
   provider = "postgresql"
 }
 
-model Admin {
-  id           String    @id @default(cuid())
-  email        String    @unique
-  passwordHash String
-  name         String?
-  role         AdminRole @default(ADMIN)
+// -----------------------------------------------------------------------------
+// 1. ADMIN & AUTHENTICATION MODELS (Better-Auth + Legacy Admin)
+// -----------------------------------------------------------------------------
 
-  // Basic brute-force protection
+model Admin {
+  id                  String    @id @default(cuid())
+  email               String    @unique
+  passwordHash        String
+  name                String?
+  role                AdminRole @default(ADMIN)
   failedLoginAttempts Int       @default(0)
   lockedUntil         DateTime?
   lastLoginAt         DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
   @@map("admins")
 }
@@ -97,6 +98,19 @@ model Verification {
   @@map("verification")
 }
 
+// -----------------------------------------------------------------------------
+// 2. PAGE CONFIGURATION & DYNAMIC CONTENT MODELS
+// -----------------------------------------------------------------------------
+
+model LandingPage {
+  id        String   @id @default("default")
+  content   Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("landing_page")
+}
+
 model AboutPage {
   id        String   @id @default("default")
   content   Json
@@ -106,3 +120,155 @@ model AboutPage {
   @@map("about_page")
 }
 
+model ServicesPage {
+  id        String   @id @default("default")
+  content   Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("services_page")
+}
+
+model IndustriesPage {
+  id        String   @id @default("default")
+  content   Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("industries_page")
+}
+
+model ContactPage {
+  id        String   @id @default("default")
+  content   Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("contact_page")
+}
+
+// -----------------------------------------------------------------------------
+// 3. FEATURE & CONTENT ENTITY MODELS
+// -----------------------------------------------------------------------------
+
+model CaseStudy {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  client      String
+  category    String
+  description String
+  challenge   String?
+  solution    String?
+  results     String?
+  metrics     Json?    // E.g. [{ label: "Growth", value: "+250%" }]
+  techStack   Json?    // E.g. ["Next.js", "Python", "Cloud"]
+  imageUrl    String?
+  featured    Boolean  @default(false)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("case_studies")
+}
+
+model BlogPost {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  title       String
+  excerpt     String
+  content     String
+  author      String
+  authorRole  String?
+  category    String
+  readTime    String    @default("5 min read")
+  publishedAt DateTime  @default(now())
+  imageUrl    String?
+  tags        Json?     // E.g. ["AI", "Next.js", "Cloud"]
+  featured    Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("blog_posts")
+}
+
+model TestimonialsPage {
+  id        String   @id @default("default")
+  content   Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("testimonials_page")
+}
+
+model Testimonial {
+  id          String   @id @default(cuid())
+  clientName  String
+  clientRole  String
+  company     String
+  content     String
+  rating      Int      @default(5)
+  avatarUrl   String?
+  featured    Boolean  @default(true)
+  isApproved  Boolean  @default(false)
+  isRead      Boolean  @default(false)
+  ipAddress   String?
+  userEmail   String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("testimonials")
+}
+
+model Faq {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String
+  category  String   @default("General")
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("faqs")
+}
+
+model Inquiry {
+  id        String        @id @default(cuid())
+  name      String
+  email     String
+  company   String?
+  service   String?
+  budget    String?
+  message   String
+  status    InquiryStatus @default(PENDING)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@map("inquiries")
+}
+
+model ContactInquiry {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  company   String?
+  service   String?
+  budget    String?
+  message   String
+  ipAddress String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("contact_inquiries")
+}
+
+enum InquiryStatus {
+  PENDING
+  IN_PROGRESS
+  CONTACTED
+  COMPLETED
+  ARCHIVED
+}

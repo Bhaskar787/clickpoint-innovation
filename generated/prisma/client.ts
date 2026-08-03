@@ -67,7 +67,62 @@ export type Account = Prisma.AccountModel
  */
 export type Verification = Prisma.VerificationModel
 /**
+ * Model LandingPage
+ * 
+ */
+export type LandingPage = Prisma.LandingPageModel
+/**
  * Model AboutPage
  * 
  */
 export type AboutPage = Prisma.AboutPageModel
+/**
+ * Model ServicesPage
+ * 
+ */
+export type ServicesPage = Prisma.ServicesPageModel
+/**
+ * Model IndustriesPage
+ * 
+ */
+export type IndustriesPage = Prisma.IndustriesPageModel
+/**
+ * Model ContactPage
+ * 
+ */
+export type ContactPage = Prisma.ContactPageModel
+/**
+ * Model CaseStudy
+ * 
+ */
+export type CaseStudy = Prisma.CaseStudyModel
+/**
+ * Model BlogPost
+ * 
+ */
+export type BlogPost = Prisma.BlogPostModel
+/**
+ * Model TestimonialsPage
+ * 
+ */
+export type TestimonialsPage = Prisma.TestimonialsPageModel
+/**
+ * Model Testimonial
+ * 
+ */
+export type Testimonial = Prisma.TestimonialModel
+/**
+ * Model Faq
+ * 
+ */
+export type Faq = Prisma.FaqModel
+/**
+ * Model Inquiry
+ * 
+ */
+export type Inquiry = Prisma.InquiryModel
+/**
+ * Model ContactInquiry
+ * 
+ */
+export type ContactInquiry = Prisma.ContactInquiryModel

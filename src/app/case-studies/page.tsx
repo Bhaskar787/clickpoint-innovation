@@ -27,8 +27,8 @@ import { INDUSTRIES_DATA } from "@/data/landing-data";
 const CATEGORIES = ["ALL", "Fintech", "Healthcare", "E-Commerce", "SaaS", "Logistics", "EdTech"];
 
 // Extract all case study projects with industry metadata
-const ALL_CASE_STUDIES = INDUSTRIES_DATA.flatMap((ind) =>
-  ind.projects.map((proj) => ({
+const ALL_CASE_STUDIES = INDUSTRIES_DATA.flatMap((ind: any) =>
+  ind.projects.map((proj: any) => ({
     ...proj,
     industryId: ind.id,
     industryTitle: ind.title,
@@ -223,7 +223,7 @@ export default function CaseStudiesPage() {
 
                       {/* Architecture Tech Stack Pills */}
                       <div className="pt-2 flex flex-wrap gap-1.5">
-                        {project.techStack.map((tech) => (
+                        {project.techStack.map((tech: string) => (
                           <span
                             key={tech}
                             className="rounded-md bg-cloud-100/70 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-medium text-ink/70 dark:text-slate-300 border border-violet-100/60 dark:border-slate-700"

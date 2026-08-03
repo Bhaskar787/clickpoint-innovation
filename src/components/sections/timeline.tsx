@@ -182,7 +182,7 @@ export default function Timeline() {
                       </p>
 
                       <div className="mt-6 flex flex-wrap gap-2 pt-4 border-t border-violet-100 dark:border-slate-800">
-                        {item.tags.map((tag) => (
+                        {item.tags.map((tag: string) => (
                           <span
                             key={tag}
                             className="rounded-md bg-violet-50 dark:bg-slate-800 px-2.5 py-1 text-xs font-semibold text-violet-600 dark:text-[#5340d6] transition-colors group-hover:bg-violet-600 group-hover:text-white"

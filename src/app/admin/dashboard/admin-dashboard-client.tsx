@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -28,6 +28,7 @@ import {
   Layers,
   ShieldCheck,
   CheckCircle2,
+  Archive,
   Clock,
   MoreVertical,
   SlidersHorizontal,
@@ -57,12 +58,16 @@ import {
   UserCheck,
   Award,
   AlertTriangle,
+  Star,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { useTheme } from "@/components/common/theme-provider";
 import { toast } from "sonner";
 import AboutPageEditor from "./about-page-editor";
 import ServicesPageEditor from "./services-page-editor";
+import IndustriesPageEditor from "./industries-page-editor";
+import TestimonialsEditor from "./testimonials-editor";
+import ContactEditor from "./contact-editor";
 
 interface AdminDashboardClientProps {
   userEmail: string;
@@ -293,7 +298,213 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
   const [collapsed, setCollapsed] = useState<boolean>(false);
   const [mobileOpen, setMobileOpen] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [unreadTestimonialsCount, setUnreadTestimonialsCount] = useState<number>(0);
+  const [unreadContactCount, setUnreadContactCount] = useState<number>(0);
+  const [notificationsList, setNotificationsList] = useState<any[]>([]);
+  const [showNotificationsDropdown, setShowNotificationsDropdown] = useState<boolean>(false);
+  const isInitialMount = useRef(true);
+  const prevUnreadCountRef = useRef<number>(0);
+  const prevContactCountRef = useRef<number>(0);
   const { theme, toggleTheme } = useTheme();
+
+  // Global Real-time Polling for Reviews & Contact Inquiries Notifications
+  useEffect(() => {
+    async function checkNotifications() {
+      try {
+        const [testiRes, contactRes] = await Promise.all([
+          fetch("/api/testimonials?includePending=true"),
+          fetch("/api/contact?includeAll=true"),
+        ]);
+
+        const [testiJson, contactJson] = await Promise.all([
+          testiRes.json(),
+          contactRes.json(),
+        ]);
+
+        let unreadReviews: any[] = [];
+        let newReviewCount = 0;
+        if (testiJson.success && testiJson.data) {
+          newReviewCount = testiJson.data.unreadCount || 0;
+          unreadReviews = (testiJson.data.testimonials || [])
+            .filter((t: any) => !t.isRead || !t.isApproved)
+            .map((t: any) => ({
+              id: t.id,
+              type: "REVIEW",
+              title: "Client Feedback Review",
+              clientName: t.clientName,
+              subtext: `${t.clientRole}, ${t.company}`,
+              content: t.content,
+              rating: t.rating,
+              targetTab: "testimonials-page",
+            }));
+        }
+
+        let unreadContacts: any[] = [];
+        let newContactCount = 0;
+        if (contactJson.success && contactJson.data) {
+          newContactCount = contactJson.data.unreadCount || 0;
+          unreadContacts = (contactJson.data.inquiries || [])
+            .filter((i: any) => !i.isRead)
+            .map((i: any) => ({
+              id: i.id,
+              type: "CONTACT",
+              title: "Contact Lead Inquiry",
+              clientName: i.name,
+              email: i.email,
+              subtext: i.service ? `${i.service} (${i.budget || ""})` : i.email,
+              content: i.message,
+              targetTab: "contact-page",
+            }));
+        }
+
+        const combinedList = [...unreadReviews, ...unreadContacts];
+        setNotificationsList(combinedList);
+        setUnreadTestimonialsCount(newReviewCount);
+        setUnreadContactCount(newContactCount);
+
+        // 1. Real-Time Toast for NEW Review (Amber Theme)
+        if (!isInitialMount.current && newReviewCount > prevUnreadCountRef.current) {
+          const latestReview = unreadReviews[0];
+          toast.custom(
+            (tId) => (
+              <div className="flex items-start gap-3 p-4 rounded-2xl bg-amber-50 dark:bg-[#1f1912] border border-amber-200 dark:border-amber-900/60 shadow-xl max-w-sm">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-500 text-white shrink-0 shadow-xs">
+                  <MessageSquare className="h-4 w-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-extrabold text-amber-950 dark:text-amber-100">
+                      New Review Received
+                    </h4>
+                    <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400">Just now</span>
+                  </div>
+                  <p className="text-xs text-amber-900 dark:text-amber-200 mt-1 leading-snug font-medium line-clamp-2 italic">
+                    {latestReview ? `"${latestReview.content}" — ${latestReview.clientName}` : "New feedback submitted."}
+                  </p>
+                  <button
+                    onClick={() => {
+                      toast.dismiss(tId);
+                      setActiveTab("testimonials-page");
+                      setSelectedSectionId(null);
+                    }}
+                    className="mt-2 text-xs font-extrabold text-amber-700 dark:text-amber-300 hover:underline inline-flex items-center gap-1"
+                  >
+                    <span>Moderate Review</span>
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+            ),
+            { duration: 5000 }
+          );
+        }
+
+        // 2. Real-Time Toast for NEW Contact Inquiry (Blue Theme)
+        if (!isInitialMount.current && newContactCount > prevContactCountRef.current) {
+          const latestContact = unreadContacts[0];
+          toast.custom(
+            (tId) => (
+              <div className="flex items-start gap-3 p-4 rounded-2xl bg-blue-50 dark:bg-[#0f172a] border border-blue-200 dark:border-blue-900/60 shadow-xl max-w-sm">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-600 text-white shrink-0 shadow-xs">
+                  <Mail className="h-4 w-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-extrabold text-blue-950 dark:text-blue-100">
+                      New Contact Lead Received
+                    </h4>
+                    <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">Just now</span>
+                  </div>
+                  <p className="text-xs text-blue-900 dark:text-blue-200 mt-1 leading-snug font-medium line-clamp-2 italic">
+                    {latestContact ? `Inquiry from ${latestContact.clientName} (${latestContact.email || ""})` : "New contact message received."}
+                  </p>
+                  <button
+                    onClick={() => {
+                      toast.dismiss(tId);
+                      setActiveTab("contact-page");
+                      setSelectedSectionId(null);
+                    }}
+                    className="mt-2 text-xs font-extrabold text-blue-700 dark:text-blue-300 hover:underline inline-flex items-center gap-1"
+                  >
+                    <span>View Contact Lead</span>
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+            ),
+            { duration: 5000 }
+          );
+        }
+
+        prevUnreadCountRef.current = newReviewCount;
+        prevContactCountRef.current = newContactCount;
+        isInitialMount.current = false;
+      } catch (err) {
+        console.error("Error polling notifications:", err);
+      }
+    }
+
+    checkNotifications();
+    const interval = setInterval(checkNotifications, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  async function handleMarkSingleRead(item: any) {
+    try {
+      if (item.type === "REVIEW") {
+        await fetch("/api/testimonials", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "update-testimonial", id: item.id, isRead: true }),
+        });
+      } else if (item.type === "CONTACT") {
+        await fetch("/api/contact", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "update-inquiry", id: item.id, isRead: true }),
+        });
+      }
+      setNotificationsList((prev) => prev.filter((n) => n.id !== item.id));
+      if (item.type === "REVIEW") setUnreadTestimonialsCount((prev) => Math.max(0, prev - 1));
+      if (item.type === "CONTACT") setUnreadContactCount((prev) => Math.max(0, prev - 1));
+      setActiveTab(item.targetTab || "contact-page");
+      setSelectedSectionId(null);
+      setShowNotificationsDropdown(false);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function handleArchiveAllNotifications() {
+    try {
+      const reviewIds = notificationsList.filter((n) => n.type === "REVIEW").map((n) => n.id);
+      const contactIds = notificationsList.filter((n) => n.type === "CONTACT").map((n) => n.id);
+
+      await Promise.all([
+        ...reviewIds.map((id) =>
+          fetch("/api/testimonials", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "update-testimonial", id, isRead: true }),
+          })
+        ),
+        ...contactIds.map((id) =>
+          fetch("/api/contact", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "update-inquiry", id, isRead: true }),
+          })
+        ),
+      ]);
+
+      setNotificationsList([]);
+      setUnreadTestimonialsCount(0);
+      setUnreadContactCount(0);
+      toast.success("All notifications archived & marked as read!");
+    } catch (err) {
+      console.error(err);
+    }
+  }
 
   // Close mobile drawer on resize to larger screens
   useEffect(() => {
@@ -337,16 +548,31 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
         { id: "journey-page", label: "Company Journey Page", icon: Milestone },
         { id: "blog-page", label: "Blog Pages", icon: BookOpen },
         { id: "careers-page", label: "Careers Page", icon: Briefcase },
-        { id: "testimonials-page", label: "Testimonials Page", icon: Quote },
+        {
+          id: "testimonials-page",
+          label: "Testimonials Page",
+          icon: Quote,
+          badge: unreadTestimonialsCount > 0 ? `${unreadTestimonialsCount} UNREAD` : undefined,
+        },
         { id: "faqs-page", label: "FAQs Page", icon: HelpCircle },
-        { id: "contact-page", label: "Contact Us Page", icon: Mail },
+        {
+          id: "contact-page",
+          label: "Contact Us Page",
+          icon: Mail,
+          badge: unreadContactCount > 0 ? `${unreadContactCount} UNREAD` : undefined,
+        },
         { id: "not-found-page", label: "404 Error Page", icon: AlertTriangle },
       ],
     },
     {
       group: "LEADS & INQUIRIES",
       items: [
-        { id: "inquiries", label: "Client Inquiries", icon: MessageSquare, badge: "57 NEW" },
+        {
+          id: "inquiries",
+          label: "Client Inquiries",
+          icon: MessageSquare,
+          badge: unreadContactCount > 0 ? `${unreadContactCount} NEW` : undefined,
+        },
       ],
     },
     {
@@ -444,7 +670,13 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                           <div className="flex-1 flex items-center justify-between overflow-hidden text-left">
                             <span className="truncate">{item.label}</span>
                             {item.badge && (
-                              <span className="ml-2 rounded-full bg-blue-100 dark:bg-blue-900/60 px-2 py-0.5 text-[9px] font-bold text-blue-700 dark:text-blue-300 shrink-0">
+                              <span
+                                className={`ml-2 rounded-full px-2 py-0.5 text-[9px] font-extrabold shrink-0 ${
+                                  item.id === "testimonials-page"
+                                    ? "bg-amber-500 text-white animate-pulse shadow-sm"
+                                    : "bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300"
+                                }`}
+                              >
                                 {item.badge}
                               </span>
                             )}
@@ -517,18 +749,134 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
               {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4 text-slate-700" />}
             </button>
 
-            {/* Notifications Bell */}
-            <button className="relative flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
-              <Bell className="h-4 w-4" />
-              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-blue-600 ring-2 ring-white dark:ring-[#131927]" />
-            </button>
+            {/* Notifications Bell & Popover Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setShowNotificationsDropdown(!showNotificationsDropdown)}
+                className="relative flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors focus:outline-none"
+                aria-label="Notifications"
+                title={unreadTestimonialsCount > 0 ? `${unreadTestimonialsCount} Unread Reviews` : "Notifications"}
+              >
+                <Bell className="h-4 w-4" />
+                {unreadTestimonialsCount > 0 ? (
+                  <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[11px] font-black text-white shadow-md border-2 border-white dark:border-[#131927]">
+                    {unreadTestimonialsCount > 9 ? "9+" : unreadTestimonialsCount}
+                  </span>
+                ) : (
+                  <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-slate-300 dark:bg-slate-700" />
+                )}
+              </button>
+
+              {/* Notification Popover Dropdown */}
+              {showNotificationsDropdown && (
+                <div className="absolute right-0 top-12 z-50 w-80 sm:w-96 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 shadow-2xl space-y-3">
+                  <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center gap-2">
+                      <Bell className="h-4 w-4 text-amber-500" />
+                      <h4 className="text-xs font-extrabold text-slate-900 dark:text-white">
+                        Notifications ({notificationsList.length} Unread)
+                      </h4>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {notificationsList.length > 0 && (
+                        <button
+                          onClick={handleArchiveAllNotifications}
+                          className="text-[10px] font-extrabold text-amber-600 dark:text-amber-400 hover:underline"
+                        >
+                          Archive All
+                        </button>
+                      )}
+                      <button
+                        onClick={() => setShowNotificationsDropdown(false)}
+                        className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-lg"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* List of Unread Submissions */}
+                  <div className="max-h-72 overflow-y-auto space-y-2 pr-1">
+                    {notificationsList.length === 0 ? (
+                      <div className="text-center py-8 space-y-2">
+                        <div className="h-10 w-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto">
+                          <Archive className="h-5 w-5" />
+                        </div>
+                        <p className="text-xs font-extrabold text-slate-800 dark:text-slate-200">
+                          No recent unread notifications
+                        </p>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 max-w-[240px] mx-auto">
+                          All user feedback reviews & contact messages have been archived.
+                        </p>
+                      </div>
+                    ) : (
+                      notificationsList.map((item) => (
+                        <div
+                          key={item.id}
+                          onClick={() => handleMarkSingleRead(item)}
+                          className="p-3.5 rounded-xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 hover:bg-amber-100/60 dark:hover:bg-amber-900/40 transition-colors cursor-pointer space-y-1.5"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase tracking-wider bg-amber-500 text-white">
+                                {item.type === "REVIEW" ? "Review" : "Inquiry"}
+                              </span>
+                              <span className="text-xs font-extrabold text-slate-900 dark:text-white">
+                                {item.clientName}
+                              </span>
+                            </div>
+
+                            {item.rating && (
+                              <div className="flex items-center gap-0.5 text-amber-500">
+                                {Array.from({ length: item.rating }).map((_, i) => (
+                                  <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          <p className="text-xs text-slate-700 dark:text-slate-300 line-clamp-2 leading-relaxed italic">
+                            "{item.content}"
+                          </p>
+
+                          <span className="text-[9px] text-amber-600 dark:text-amber-400 font-mono block font-semibold">
+                            Click to view details in {item.type === "REVIEW" ? "Testimonials" : "Inquiries"} section
+                          </span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {notificationsList.length > 0 && (
+                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800 text-center">
+                      <button
+                        onClick={() => {
+                          setActiveTab("testimonials-page");
+                          setSelectedSectionId(null);
+                          setShowNotificationsDropdown(false);
+                        }}
+                        className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline"
+                      >
+                        View All Testimonials & Moderation Panel
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
             {/* Admin Avatar & Sign Out */}
             <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-3 border-l border-slate-200 dark:border-slate-800">
               <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shadow-sm shrink-0">
-                  {userEmail.substring(0, 2).toUpperCase()}
-                </div>
+ <Image
+                src="/images/fav3.png"
+                alt="Clickpoint Innovation"
+                width={100}
+                height={100}
+                priority
+                className="h-8 w-8 object-contain transition-transform hover:scale-110"
+              />
                 <div className="hidden md:block text-left">
                   <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate max-w-[130px]">
                     {userEmail}
@@ -985,8 +1333,38 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                 </div>
               )}
 
+              {/* Industries Page Content Field Editor Component */}
+              {activeTab === "industries-page" && (
+                <div className="mt-8">
+                  <IndustriesPageEditor
+                    sectionId={selectedSectionId}
+                    onCloseSection={() => setSelectedSectionId(null)}
+                  />
+                </div>
+              )}
+
+              {/* Testimonials Page Content Field Editor Component */}
+              {activeTab === "testimonials-page" && (
+                <div className="mt-8">
+                  <TestimonialsEditor
+                    sectionId={selectedSectionId}
+                    onCloseSection={() => setSelectedSectionId(null)}
+                  />
+                </div>
+              )}
+
+              {/* Contact Page Content & Inquiries Moderation Component */}
+              {(activeTab === "contact-page" || activeTab === "inquiries") && (
+                <div className="mt-8">
+                  <ContactEditor
+                    sectionId={selectedSectionId}
+                    onCloseSection={() => setSelectedSectionId(null)}
+                  />
+                </div>
+              )}
+
               {/* Selected Section Editor Drawer Placeholder for Other Pages */}
-              {activeTab !== "about-page" && activeTab !== "services-page" && selectedSection && (
+              {activeTab !== "about-page" && activeTab !== "services-page" && activeTab !== "industries-page" && activeTab !== "testimonials-page" && activeTab !== "contact-page" && activeTab !== "inquiries" && selectedSection && (
                 <div className="mt-8 rounded-2xl border border-blue-500/30 bg-blue-500/5 dark:bg-blue-950/20 p-6 shadow-sm">
                   <div className="flex items-center justify-between mb-4 pb-3 border-b border-blue-500/20">
                     <div className="flex items-center gap-3">

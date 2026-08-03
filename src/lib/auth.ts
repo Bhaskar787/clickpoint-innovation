@@ -28,8 +28,6 @@ export const auth = betterAuth({
   secret: process.env.SESSION_SECRET || process.env.BETTER_AUTH_SECRET,
   baseURL: getBaseUrl(),
   trustedOrigins: [
-    "http://localhost:3000",
-    "http://localhost:3001",
     process.env.NEXT_PUBLIC_APP_URL || "",
     process.env.BETTER_AUTH_URL || "",
     process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "",

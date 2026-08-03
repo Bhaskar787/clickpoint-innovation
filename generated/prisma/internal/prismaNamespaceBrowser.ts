@@ -56,7 +56,18 @@ export const ModelName = {
   Session: 'Session',
   Account: 'Account',
   Verification: 'Verification',
-  AboutPage: 'AboutPage'
+  LandingPage: 'LandingPage',
+  AboutPage: 'AboutPage',
+  ServicesPage: 'ServicesPage',
+  IndustriesPage: 'IndustriesPage',
+  ContactPage: 'ContactPage',
+  CaseStudy: 'CaseStudy',
+  BlogPost: 'BlogPost',
+  TestimonialsPage: 'TestimonialsPage',
+  Testimonial: 'Testimonial',
+  Faq: 'Faq',
+  Inquiry: 'Inquiry',
+  ContactInquiry: 'ContactInquiry'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -153,6 +164,16 @@ export const VerificationScalarFieldEnum = {
 export type VerificationScalarFieldEnum = (typeof VerificationScalarFieldEnum)[keyof typeof VerificationScalarFieldEnum]
 
 
+export const LandingPageScalarFieldEnum = {
+  id: 'id',
+  content: 'content',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type LandingPageScalarFieldEnum = (typeof LandingPageScalarFieldEnum)[keyof typeof LandingPageScalarFieldEnum]
+
+
 export const AboutPageScalarFieldEnum = {
   id: 'id',
   content: 'content',
@@ -161,6 +182,157 @@ export const AboutPageScalarFieldEnum = {
 } as const
 
 export type AboutPageScalarFieldEnum = (typeof AboutPageScalarFieldEnum)[keyof typeof AboutPageScalarFieldEnum]
+
+
+export const ServicesPageScalarFieldEnum = {
+  id: 'id',
+  content: 'content',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ServicesPageScalarFieldEnum = (typeof ServicesPageScalarFieldEnum)[keyof typeof ServicesPageScalarFieldEnum]
+
+
+export const IndustriesPageScalarFieldEnum = {
+  id: 'id',
+  content: 'content',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type IndustriesPageScalarFieldEnum = (typeof IndustriesPageScalarFieldEnum)[keyof typeof IndustriesPageScalarFieldEnum]
+
+
+export const ContactPageScalarFieldEnum = {
+  id: 'id',
+  content: 'content',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ContactPageScalarFieldEnum = (typeof ContactPageScalarFieldEnum)[keyof typeof ContactPageScalarFieldEnum]
+
+
+export const CaseStudyScalarFieldEnum = {
+  id: 'id',
+  slug: 'slug',
+  title: 'title',
+  client: 'client',
+  category: 'category',
+  description: 'description',
+  challenge: 'challenge',
+  solution: 'solution',
+  results: 'results',
+  metrics: 'metrics',
+  techStack: 'techStack',
+  imageUrl: 'imageUrl',
+  featured: 'featured',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CaseStudyScalarFieldEnum = (typeof CaseStudyScalarFieldEnum)[keyof typeof CaseStudyScalarFieldEnum]
+
+
+export const BlogPostScalarFieldEnum = {
+  id: 'id',
+  slug: 'slug',
+  title: 'title',
+  excerpt: 'excerpt',
+  content: 'content',
+  author: 'author',
+  authorRole: 'authorRole',
+  category: 'category',
+  readTime: 'readTime',
+  publishedAt: 'publishedAt',
+  imageUrl: 'imageUrl',
+  tags: 'tags',
+  featured: 'featured',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BlogPostScalarFieldEnum = (typeof BlogPostScalarFieldEnum)[keyof typeof BlogPostScalarFieldEnum]
+
+
+export const TestimonialsPageScalarFieldEnum = {
+  id: 'id',
+  content: 'content',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TestimonialsPageScalarFieldEnum = (typeof TestimonialsPageScalarFieldEnum)[keyof typeof TestimonialsPageScalarFieldEnum]
+
+
+export const TestimonialScalarFieldEnum = {
+  id: 'id',
+  clientName: 'clientName',
+  clientRole: 'clientRole',
+  company: 'company',
+  content: 'content',
+  rating: 'rating',
+  avatarUrl: 'avatarUrl',
+  featured: 'featured',
+  isApproved: 'isApproved',
+  isRead: 'isRead',
+  ipAddress: 'ipAddress',
+  userEmail: 'userEmail',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TestimonialScalarFieldEnum = (typeof TestimonialScalarFieldEnum)[keyof typeof TestimonialScalarFieldEnum]
+
+
+export const FaqScalarFieldEnum = {
+  id: 'id',
+  question: 'question',
+  answer: 'answer',
+  category: 'category',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FaqScalarFieldEnum = (typeof FaqScalarFieldEnum)[keyof typeof FaqScalarFieldEnum]
+
+
+export const InquiryScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  email: 'email',
+  company: 'company',
+  service: 'service',
+  budget: 'budget',
+  message: 'message',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type InquiryScalarFieldEnum = (typeof InquiryScalarFieldEnum)[keyof typeof InquiryScalarFieldEnum]
+
+
+export const ContactInquiryScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  email: 'email',
+  phone: 'phone',
+  company: 'company',
+  service: 'service',
+  budget: 'budget',
+  message: 'message',
+  ipAddress: 'ipAddress',
+  isRead: 'isRead',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ContactInquiryScalarFieldEnum = (typeof ContactInquiryScalarFieldEnum)[keyof typeof ContactInquiryScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -176,6 +348,14 @@ export const JsonNullValueInput = {
 } as const
 
 export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
 export const QueryMode = {

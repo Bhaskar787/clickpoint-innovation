@@ -137,7 +137,7 @@ export default function Navbar() {
                           <li key={i.id}>
                             <NavigationMenuLink asChild>
                               <Link
-                                href={i.href}
+                                href={i.href || "#"}
                                 className="group flex items-start gap-2.5 rounded-xl p-2.5 transition-colors hover:bg-violet-50/90 dark:hover:bg-slate-800/90"
                               >
                                 {Icon && (
@@ -322,12 +322,12 @@ export default function Navbar() {
                   <MobileGroup
                     title="Industries"
                     onItemClick={closeMobile}
-                    items={INDUSTRIES_DATA.map((i) => ({ title: i.title, desc: i.subtitle, href: i.href, icon: i.icon }))}
+                    items={INDUSTRIES_DATA.map((i) => ({ title: i.title, desc: i.subtitle || "", href: i.href || "#", icon: i.icon }))}
                   />
                   <MobileGroup
                     title="Company"
                     onItemClick={closeMobile}
-                    items={COMPANY_DATA.map((c) => ({ title: c.title, desc: c.desc, badge: c.badge, href: c.href, icon: c.icon }))}
+                    items={COMPANY_DATA.map((c) => ({ title: c.title || c.name || "", desc: c.desc || "", badge: c.badge, href: c.href, icon: c.icon }))}
                   />
 
                   <div className="pt-3 pb-1 border-b border-violet-100 dark:border-slate-800 space-y-1">

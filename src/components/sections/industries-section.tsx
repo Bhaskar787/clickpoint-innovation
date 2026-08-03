@@ -47,7 +47,7 @@ export default function IndustriesSection() {
                       </span>
                     )}
                     <span className="rounded-full bg-violet-50 dark:bg-slate-800 px-2.5 py-1 text-[11px] font-bold text-violet-600 dark:text-violet-300 border border-violet-100 dark:border-slate-700">
-                      {ind.keyMetrics[0]?.value} {ind.keyMetrics[0]?.label}
+                      {ind.keyMetrics?.[0]?.value} {ind.keyMetrics?.[0]?.label}
                     </span>
                   </div>
 
@@ -64,7 +64,7 @@ export default function IndustriesSection() {
                     <p className="text-[11px] font-bold uppercase tracking-wider text-ink/40 dark:text-slate-400">
                       Featured Case Studies & Live Work
                     </p>
-                    {ind.projects.map((proj) => (
+                    {ind.projects.map((proj: any) => (
                       <div key={proj.id} className="flex items-center justify-between text-xs py-1">
                         <span className="font-semibold text-ink/80 dark:text-slate-200 group-hover:text-ink dark:group-hover:text-white">
                           {proj.title}
