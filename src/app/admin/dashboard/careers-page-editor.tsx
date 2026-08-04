@@ -189,7 +189,7 @@ function ListEditor({
           </button>
         </div>
       ))}
-      <div className="flex items-center gap-2 mt-1">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-1">
         <input
           type="text"
           value={newItem}
@@ -206,7 +206,7 @@ function ListEditor({
         <button
           type="button"
           onClick={add}
-          className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 transition-colors shrink-0"
+          className="flex items-center justify-center gap-1 px-3 py-1.5 rounded-xl bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 transition-colors shrink-0"
         >
           <ListPlus className="h-3.5 w-3.5" />
           Add
@@ -217,9 +217,7 @@ function ListEditor({
 }
 
 // ---------------------------------------------------------------------------
-// VacancyFormFields — must live OUTSIDE CareersPageEditor to avoid remount
-// on every keystroke (defining a component inside another component causes
-// React to treat it as a new type each render, unmounting inputs mid-type).
+// VacancyFormFields
 // ---------------------------------------------------------------------------
 
 function VacancyFormFields({
@@ -235,9 +233,9 @@ function VacancyFormFields({
     onChange({ ...data, [field]: value });
 
   return (
-    <div className="space-y-4 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60">
+    <div className="space-y-4 p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60">
       {/* Title */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         <div className="sm:col-span-2">
           <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Job Title *</label>
           <input
@@ -400,12 +398,10 @@ function VacancyFormFields({
 // ---------------------------------------------------------------------------
 
 export default function CareersPageEditor({ sectionId, onCloseSection }: CareersPageEditorProps) {
-  // Page content state
   const [formData, setFormData] = useState<CareersPageContent>(DEFAULT_CONTENT);
   const [isLoadingContent, setIsLoadingContent] = useState(true);
   const [isSavingContent, setIsSavingContent] = useState(false);
 
-  // Categories state
   const [categories, setCategories] = useState<JobCategory[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [editingCategory, setEditingCategory] = useState<JobCategory | null>(null);
@@ -413,7 +409,6 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
   const [newCategoryDesc, setNewCategoryDesc] = useState("");
   const [isSavingCategory, setIsSavingCategory] = useState(false);
 
-  // Vacancies state
   const [vacancies, setVacancies] = useState<JobVacancy[]>([]);
   const [isLoadingVacancies, setIsLoadingVacancies] = useState(true);
   const [editingVacancy, setEditingVacancy] = useState<JobVacancy | null>(null);
@@ -435,9 +430,6 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
     order: 0,
   });
 
-  // -------------------------------------------------------------------------
-  // Load page content
-  // -------------------------------------------------------------------------
   useEffect(() => {
     async function load() {
       try {
@@ -453,9 +445,6 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
     load();
   }, []);
 
-  // -------------------------------------------------------------------------
-  // Load categories
-  // -------------------------------------------------------------------------
   async function loadCategories() {
     setIsLoadingCategories(true);
     try {
@@ -469,9 +458,6 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
     }
   }
 
-  // -------------------------------------------------------------------------
-  // Load vacancies
-  // -------------------------------------------------------------------------
   async function loadVacancies() {
     setIsLoadingVacancies(true);
     try {
@@ -490,9 +476,6 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
     loadVacancies();
   }, []);
 
-  // -------------------------------------------------------------------------
-  // Save page content
-  // -------------------------------------------------------------------------
   async function handleSaveContent() {
     setIsSavingContent(true);
     const toastId = toast.loading("Saving careers page content...");
@@ -526,9 +509,6 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
     toast.info("Reset to default careers page content");
   }
 
-  // -------------------------------------------------------------------------
-  // Category CRUD
-  // -------------------------------------------------------------------------
   async function handleCreateCategory() {
     if (!newCategoryName.trim()) {
       toast.error("Category name is required");
@@ -610,9 +590,6 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
     }
   }
 
-  // -------------------------------------------------------------------------
-  // Vacancy CRUD
-  // -------------------------------------------------------------------------
   async function handleCreateVacancy() {
     if (!newVacancy.title.trim()) {
       toast.error("Job title is required");
@@ -722,39 +699,33 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
     }
   }
 
-  // -------------------------------------------------------------------------
-  // Render
-  // -------------------------------------------------------------------------
-
   if (isLoadingContent) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] gap-3 bg-white dark:bg-[#131927] rounded-2xl border border-slate-200 dark:border-slate-800 p-8">
-        <Loader2 className="h-8 w-8 text-violet-600 animate-spin" />
+      <div className="flex flex-col items-center justify-center min-h-[300px] sm:min-h-[400px] gap-3 bg-white dark:bg-[#131927] rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-8">
+        <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 text-violet-600 animate-spin" />
         <p className="text-xs font-semibold text-slate-500">Loading careers page data...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="w-full max-w-full space-y-4 sm:space-y-6 text-slate-900 dark:text-white">
 
-      {/* ------------------------------------------------------------------ */}
-      {/* ACTION HEADER                                                        */}
-      {/* ------------------------------------------------------------------ */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#131927] p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
+      {/* ACTION HEADER */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#131927] p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
         <div>
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <Briefcase className="h-5 w-5 text-violet-600" />
+          <h2 className="text-base sm:text-lg font-bold flex items-center gap-2">
+            <Briefcase className="h-5 w-5 text-violet-600 shrink-0" />
             Careers Page Editor — Full Dynamic Control
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Edit hero text, stats, perks section headings, manage job categories, and create/edit vacancies.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
           <button
             onClick={handleResetContent}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 transition-colors"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 transition-colors"
           >
             <RotateCcw className="h-3.5 w-3.5" />
             Reset Defaults
@@ -762,7 +733,7 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
           <button
             onClick={handleSaveContent}
             disabled={isSavingContent}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-semibold text-xs shadow-md shadow-violet-500/20 transition-all disabled:opacity-50"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-semibold text-xs shadow-md shadow-violet-500/20 transition-all disabled:opacity-50"
           >
             {isSavingContent ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             Save Page Content
@@ -770,20 +741,18 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
         </div>
       </div>
 
-      {/* ------------------------------------------------------------------ */}
-      {/* SECTION 1: HERO                                                      */}
-      {/* ------------------------------------------------------------------ */}
+      {/* SECTION 1: HERO */}
       {(!sectionId || sectionId === "careers-hero") && (
-        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-5">
+        <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-5">
           <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
-            <span className="font-mono text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">#01</span>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Hero Banner — Badge, Titles & Subtitle</h3>
+            <span className="font-mono text-[10px] sm:text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">#01</span>
+            <h3 className="text-xs sm:text-sm font-bold">Hero Banner — Badge, Titles & Subtitle</h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                <Tag className="h-3.5 w-3.5 text-violet-500" /> Hero Badge Text
+                <Tag className="h-3.5 w-3.5 text-violet-500 shrink-0" /> Hero Badge Text
               </label>
               <input
                 type="text"
@@ -795,7 +764,7 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
 
             <div>
               <label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                <Type className="h-3.5 w-3.5 text-violet-500" /> Hero Title (before highlight)
+                <Type className="h-3.5 w-3.5 text-violet-500 shrink-0" /> Hero Title (before highlight)
               </label>
               <input
                 type="text"
@@ -807,7 +776,7 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
 
             <div>
               <label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                <Sparkles className="h-3.5 w-3.5 text-violet-500" /> Highlight Text (coloured portion)
+                <Sparkles className="h-3.5 w-3.5 text-violet-500 shrink-0" /> Highlight Text (coloured portion)
               </label>
               <input
                 type="text"
@@ -830,10 +799,10 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
 
           {/* Stats bar */}
           <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-violet-600" />
-                <h4 className="text-xs font-bold text-slate-900 dark:text-white">Counter Stats Bar ({formData.stats.length})</h4>
+                <TrendingUp className="h-4 w-4 text-violet-600 shrink-0" />
+                <h4 className="text-xs font-bold">Counter Stats Bar ({formData.stats.length})</h4>
               </div>
               <button
                 type="button"
@@ -843,7 +812,7 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
                     stats: [...formData.stats, { id: `st-${Date.now()}`, value: "0", label: "New Stat" }],
                   });
                 }}
-                className="flex items-center gap-1 px-3 py-1 rounded-lg bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 transition-colors"
+                className="w-full sm:w-auto flex items-center justify-center gap-1 px-3 py-1 rounded-lg bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 transition-colors"
               >
                 <Plus className="h-3.5 w-3.5" /> Add Stat
               </button>
@@ -895,17 +864,15 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
         </div>
       )}
 
-      {/* ------------------------------------------------------------------ */}
-      {/* SECTION 2: PERKS SECTION HEADINGS + PERKS CARDS                    */}
-      {/* ------------------------------------------------------------------ */}
+      {/* SECTION 2: PERKS SECTION HEADINGS + PERKS CARDS */}
       {(!sectionId || sectionId === "careers-hero") && (
-        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-5">
+        <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-5">
           <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
-            <span className="font-mono text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">#02</span>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Perks & Benefits Section — Headings & Perk Cards</h3>
+            <span className="font-mono text-[10px] sm:text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">#02</span>
+            <h3 className="text-xs sm:text-sm font-bold">Perks & Benefits Section — Headings & Perk Cards</h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Section Tag (orange small text)</label>
               <input
@@ -946,8 +913,8 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
 
           {/* Perks Cards */}
           <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-3">
-            <div className="flex items-center justify-between">
-              <h4 className="text-xs font-bold text-slate-900 dark:text-white">Perk Cards ({formData.perksSection.perks.length})</h4>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <h4 className="text-xs font-bold">Perk Cards ({formData.perksSection.perks.length})</h4>
               <button
                 type="button"
                 onClick={() => {
@@ -957,7 +924,7 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
                     perksSection: { ...formData.perksSection, perks: [...formData.perksSection.perks, newPerk] },
                   });
                 }}
-                className="flex items-center gap-1 px-3 py-1 rounded-lg bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 transition-colors"
+                className="w-full sm:w-auto flex items-center justify-center gap-1 px-3 py-1 rounded-lg bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 transition-colors"
               >
                 <Plus className="h-3.5 w-3.5" /> Add Perk
               </button>
@@ -1008,17 +975,15 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
         </div>
       )}
 
-      {/* ------------------------------------------------------------------ */}
-      {/* SECTION 3: OPENINGS SECTION HEADINGS                               */}
-      {/* ------------------------------------------------------------------ */}
+      {/* SECTION 3: OPENINGS SECTION HEADINGS */}
       {(!sectionId || sectionId === "careers-jobs") && (
-        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-4">
+        <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4">
           <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
-            <span className="font-mono text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">#03</span>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Open Vacancies Section — Headings & Search Placeholder</h3>
+            <span className="font-mono text-[10px] sm:text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">#03</span>
+            <h3 className="text-xs sm:text-sm font-bold">Open Vacancies Section — Headings & Search Placeholder</h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Section Badge</label>
               <input
@@ -1059,20 +1024,18 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
         </div>
       )}
 
-      {/* ------------------------------------------------------------------ */}
-      {/* SECTION 4: JOB CATEGORIES MANAGER                                  */}
-      {/* ------------------------------------------------------------------ */}
+      {/* SECTION 4: JOB CATEGORIES MANAGER */}
       {(!sectionId || sectionId === "careers-jobs") && (
-        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-5">
+        <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-5">
           <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
-            <span className="font-mono text-xs font-extrabold text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded">#04</span>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Job Category Manager — Create & Edit Departments</h3>
+            <span className="font-mono text-[10px] sm:text-xs font-extrabold text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded">#04</span>
+            <h3 className="text-xs sm:text-sm font-bold">Job Category Manager — Create & Edit Departments</h3>
           </div>
 
           {/* Create new category */}
-          <div className="p-4 rounded-xl border border-emerald-200 dark:border-emerald-800/50 bg-emerald-50 dark:bg-emerald-950/20 space-y-3">
+          <div className="p-3.5 sm:p-4 rounded-xl border border-emerald-200 dark:border-emerald-800/50 bg-emerald-50 dark:bg-emerald-950/20 space-y-3">
             <h4 className="text-xs font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
-              <FolderPlus className="h-4 w-4" /> Create New Category / Department
+              <FolderPlus className="h-4 w-4 shrink-0" /> Create New Category / Department
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
@@ -1100,7 +1063,7 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
             <button
               onClick={handleCreateCategory}
               disabled={isSavingCategory}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs shadow-md shadow-emerald-500/20 transition-all disabled:opacity-50"
+              className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs shadow-md shadow-emerald-500/20 transition-all disabled:opacity-50"
             >
               {isSavingCategory ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
               Create Category
@@ -1114,7 +1077,7 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
               <span className="text-xs text-slate-400">Loading categories...</span>
             </div>
           ) : categories.length === 0 ? (
-            <div className="text-center py-8 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
+            <div className="text-center py-8 p-4 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
               <p className="text-xs text-slate-500 dark:text-slate-400">No categories yet. Create one above to start adding vacancies.</p>
             </div>
           ) : (
@@ -1125,7 +1088,6 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
                   className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60"
                 >
                   {editingCategory?.id === cat.id ? (
-                    // Edit mode
                     <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
                       <input
                         type="text"
@@ -1142,20 +1104,20 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
                       />
                     </div>
                   ) : (
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-slate-900 dark:text-white">{cat.name}</span>
-                        <span className="rounded-full bg-violet-100 dark:bg-violet-900/40 px-2 py-0.5 text-[10px] font-bold text-violet-700 dark:text-violet-300">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-xs font-bold text-slate-900 dark:text-white truncate">{cat.name}</span>
+                        <span className="rounded-full bg-violet-100 dark:bg-violet-900/40 px-2 py-0.5 text-[10px] font-bold text-violet-700 dark:text-violet-300 shrink-0">
                           {cat._count?.vacancies ?? 0} vacancies
                         </span>
                       </div>
                       {cat.description && (
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{cat.description}</p>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">{cat.description}</p>
                       )}
                     </div>
                   )}
 
-                  <div className="flex items-center gap-1.5 shrink-0">
+                  <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-center">
                     {editingCategory?.id === cat.id ? (
                       <>
                         <button
@@ -1197,294 +1159,277 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
         </div>
       )}
 
-      {/* ------------------------------------------------------------------ */}
-      {/* SECTION 5: JOB VACANCIES MANAGER                                   */}
-      {/* ------------------------------------------------------------------ */}
-    {(!sectionId || sectionId === "careers-jobs") && (
-  <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-5">
-    {/* Section Header */}
-    <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-      <div className="flex items-center gap-2">
-        <span className="font-mono text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
-          #05
-        </span>
-        <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-          Job Vacancies Manager ({vacancies.length} total)
-        </h3>
-      </div>
-      <button
-        onClick={() => {
-          setShowNewVacancyForm(!showNewVacancyForm);
-          setNewVacancy((prev) => ({
-            ...prev,
-            categoryId: categories[0]?.id || "",
-          }));
-        }}
-        className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-500/20 transition-all"
-      >
-        {showNewVacancyForm ? (
-          <X className="h-4 w-4" />
-        ) : (
-          <Plus className="h-4 w-4" />
-        )}
-        {showNewVacancyForm ? "Cancel" : "New Vacancy"}
-      </button>
-    </div>
+      {/* SECTION 5: JOB VACANCIES MANAGER */}
+      {(!sectionId || sectionId === "careers-jobs") && (
+        <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-5">
+          {/* Section Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-[10px] sm:text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
+                #05
+              </span>
+              <h3 className="text-xs sm:text-sm font-bold">
+                Job Vacancies Manager ({vacancies.length} total)
+              </h3>
+            </div>
+            <button
+              onClick={() => {
+                setShowNewVacancyForm(!showNewVacancyForm);
+                setNewVacancy((prev) => ({
+                  ...prev,
+                  categoryId: categories[0]?.id || "",
+                }));
+              }}
+              className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-500/20 transition-all"
+            >
+              {showNewVacancyForm ? (
+                <X className="h-4 w-4" />
+              ) : (
+                <Plus className="h-4 w-4" />
+              )}
+              {showNewVacancyForm ? "Cancel" : "New Vacancy"}
+            </button>
+          </div>
 
-    {/* New Vacancy Form */}
-    {showNewVacancyForm && (
-      <div className="space-y-3 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40">
-        <h4 className="text-xs font-bold text-blue-700 dark:text-blue-300 flex items-center gap-1.5">
-          <FolderPlus className="h-4 w-4" /> Creating New Job Vacancy
-        </h4>
-        <VacancyFormFields
-          data={newVacancy}
-          onChange={(updated) =>
-            setNewVacancy(
-              updated as Omit<JobVacancy, "id" | "category">
-            )
-          }
-          categories={categories}
-        />
-        <div className="flex items-center gap-2 pt-1">
-          <button
-            onClick={handleCreateVacancy}
-            disabled={isSavingVacancy}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-500/20 transition-all disabled:opacity-50"
-          >
-            {isSavingVacancy ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Save className="h-4 w-4" />
-            )}
-            Create Vacancy
-          </button>
-          <button
-            onClick={() => setShowNewVacancyForm(false)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-          >
-            <X className="h-3.5 w-3.5" /> Cancel
-          </button>
-        </div>
-      </div>
-    )}
-
-    {/* Vacancies Tabular Layout */}
-    {isLoadingVacancies ? (
-      <div className="flex items-center justify-center py-8 gap-2">
-        <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
-        <span className="text-xs text-slate-400">Loading vacancies...</span>
-      </div>
-    ) : vacancies.length === 0 ? (
-      <div className="text-center py-10 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
-        <Briefcase className="h-8 w-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
-        <p className="text-xs text-slate-500 dark:text-slate-400">
-          No vacancies yet. Create categories first, then add vacancies above.
-        </p>
-      </div>
-    ) : (
-      <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
-        <table className="w-full text-left text-xs border-collapse">
-          {/* Table Header */}
-          <thead>
-            <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/80 text-slate-500 dark:text-slate-400 uppercase font-semibold">
-              <th scope="col" className="px-4 py-3">
-                Job Title
-              </th>
-              <th scope="col" className="px-4 py-3">
-                Category
-              </th>
-              <th scope="col" className="px-4 py-3">
-                Type
-              </th>
-              <th scope="col" className="px-4 py-3">
-                Location
-              </th>
-              <th scope="col" className="px-4 py-3">
-                Salary
-              </th>
-              <th scope="col" className="px-4 py-3">
-                Status
-              </th>
-              <th scope="col" className="px-4 py-3 text-right">
-                Actions
-              </th>
-            </tr>
-          </thead>
-
-          {/* Table Body */}
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 bg-white dark:bg-[#131927]">
-            {vacancies.map((v) => {
-              const isExpanded = expandedVacancyId === v.id;
-              return (
-                <React.Fragment key={v.id}>
-                  {/* Data Row */}
-                  <tr
-                    className={`transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/40 ${
-                      isExpanded ? "bg-blue-50/40 dark:bg-slate-800/30" : ""
-                    }`}
-                  >
-                    {/* Title & Badges */}
-                    <td className="px-4 py-3.5 font-medium text-slate-900 dark:text-white">
-                      <div className="flex items-center gap-2">
-                        <span className="truncate max-w-[180px] sm:max-w-xs font-semibold">
-                          {v.title}
-                        </span>
-                        {v.featured && (
-                          <span className="rounded-full bg-violet-100 dark:bg-violet-900/40 px-2 py-0.5 text-[10px] font-bold text-violet-700 dark:text-violet-300">
-                            Featured
-                          </span>
-                        )}
-                      </div>
-                    </td>
-
-                    {/* Category */}
-                    <td className="px-4 py-3.5">
-                      <span className="inline-block rounded-full bg-violet-100 dark:bg-slate-800 px-2.5 py-0.5 text-[11px] font-semibold text-violet-700 dark:text-violet-300">
-                        {v.category.name}
-                      </span>
-                    </td>
-
-                    {/* Job Type */}
-                    <td className="px-4 py-3.5 text-slate-600 dark:text-slate-300">
-                      {v.type}
-                    </td>
-
-                    {/* Location */}
-                    <td className="px-4 py-3.5 text-slate-600 dark:text-slate-300 whitespace-nowrap">
-                      {v.location}
-                    </td>
-
-                    {/* Salary */}
-                    <td className="px-4 py-3.5 text-slate-600 dark:text-slate-300 whitespace-nowrap">
-                      {v.salary || "—"}
-                    </td>
-
-                    {/* Active Toggle Button */}
-                    <td className="px-4 py-3.5">
-                      <button
-                        onClick={() => handleToggleActive(v)}
-                        title={
-                          v.isActive
-                            ? "Deactivate (hide from site)"
-                            : "Activate (show on site)"
-                        }
-                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
-                          v.isActive
-                            ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
-                            : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-600"
-                        }`}
-                      >
-                        {v.isActive ? (
-                          <ToggleRight className="h-3.5 w-3.5" />
-                        ) : (
-                          <ToggleLeft className="h-3.5 w-3.5" />
-                        )}
-                        {v.isActive ? "Active" : "Inactive"}
-                      </button>
-                    </td>
-
-                    {/* Row Action Controls */}
-                    <td className="px-4 py-3.5 text-right whitespace-nowrap">
-                      <div className="flex items-center justify-end gap-1.5">
-                        {/* Edit/Expand toggle */}
-                        <button
-                          onClick={() => {
-                            if (isExpanded) {
-                              setExpandedVacancyId(null);
-                              setEditingVacancy(null);
-                            } else {
-                              setExpandedVacancyId(v.id);
-                              setEditingVacancy({ ...v });
-                            }
-                          }}
-                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                        >
-                          <Edit3 className="h-3.5 w-3.5" />
-                          {isExpanded ? (
-                            <ChevronUp className="h-3.5 w-3.5" />
-                          ) : (
-                            <ChevronDown className="h-3.5 w-3.5" />
-                          )}
-                        </button>
-
-                        {/* Delete */}
-                        <button
-                          onClick={() => handleDeleteVacancy(v)}
-                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-red-200 dark:border-red-800 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-
-                  {/* Collapsible Edit Form Row */}
-                  {isExpanded && editingVacancy && (
-                    <tr className="bg-slate-50/60 dark:bg-slate-900/60">
-                      <td colSpan={7} className="p-4 border-b border-slate-200 dark:border-slate-800">
-                        <div className="space-y-4 max-w-5xl mx-auto">
-                          <VacancyFormFields
-                            data={{
-                              title: editingVacancy.title,
-                              categoryId: editingVacancy.categoryId,
-                              type: editingVacancy.type,
-                              location: editingVacancy.location,
-                              experience: editingVacancy.experience,
-                              salary: editingVacancy.salary,
-                              summary: editingVacancy.summary,
-                              responsibilities: editingVacancy.responsibilities,
-                              requirements: editingVacancy.requirements,
-                              featured: editingVacancy.featured,
-                              isActive: editingVacancy.isActive,
-                              order: editingVacancy.order,
-                            }}
-                            onChange={(updated) =>
-                              setEditingVacancy({
-                                ...editingVacancy,
-                                ...updated,
-                              })
-                            }
-                            categories={categories}
-                          />
-                          <div className="flex items-center gap-2 pt-1">
-                            <button
-                              onClick={handleUpdateVacancy}
-                              disabled={isSavingVacancy}
-                              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-500/20 transition-all disabled:opacity-50"
-                            >
-                              {isSavingVacancy ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <Save className="h-4 w-4" />
-                              )}
-                              Save Changes
-                            </button>
-                            <button
-                              onClick={() => {
-                                setExpandedVacancyId(null);
-                                setEditingVacancy(null);
-                              }}
-                              className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-                            >
-                              <X className="h-3.5 w-3.5" /> Cancel
-                            </button>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
+          {/* New Vacancy Form */}
+          {showNewVacancyForm && (
+            <div className="space-y-3 p-3.5 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40">
+              <h4 className="text-xs font-bold text-blue-700 dark:text-blue-300 flex items-center gap-1.5">
+                <FolderPlus className="h-4 w-4 shrink-0" /> Creating New Job Vacancy
+              </h4>
+              <VacancyFormFields
+                data={newVacancy}
+                onChange={(updated) =>
+                  setNewVacancy(
+                    updated as Omit<JobVacancy, "id" | "category">
+                  )
+                }
+                categories={categories}
+              />
+              <div className="flex items-center gap-2 pt-1">
+                <button
+                  onClick={handleCreateVacancy}
+                  disabled={isSavingVacancy}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-500/20 transition-all disabled:opacity-50"
+                >
+                  {isSavingVacancy ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4" />
                   )}
-                </React.Fragment>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    )}
-  </div>
-)}
+                  Create Vacancy
+                </button>
+                <button
+                  onClick={() => setShowNewVacancyForm(false)}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                >
+                  <X className="h-3.5 w-3.5" /> Cancel
+                </button>
+              </div>
+            </div>
+          )}
 
-  
+          {/* Vacancies Tabular Layout */}
+          {isLoadingVacancies ? (
+            <div className="flex items-center justify-center py-8 gap-2">
+              <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
+              <span className="text-xs text-slate-400">Loading vacancies...</span>
+            </div>
+          ) : vacancies.length === 0 ? (
+            <div className="text-center py-10 p-4 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
+              <Briefcase className="h-8 w-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                No vacancies yet. Create categories first, then add vacancies above.
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+              <table className="w-full text-left text-xs border-collapse min-w-[640px]">
+                <thead>
+                  <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/80 text-slate-500 dark:text-slate-400 uppercase font-semibold text-[10px]">
+                    <th scope="col" className="px-3.5 sm:px-4 py-3">
+                      Job Title
+                    </th>
+                    <th scope="col" className="px-3.5 sm:px-4 py-3">
+                      Category
+                    </th>
+                    <th scope="col" className="px-3.5 sm:px-4 py-3">
+                      Type
+                    </th>
+                    <th scope="col" className="px-3.5 sm:px-4 py-3">
+                      Location
+                    </th>
+                    <th scope="col" className="px-3.5 sm:px-4 py-3">
+                      Salary
+                    </th>
+                    <th scope="col" className="px-3.5 sm:px-4 py-3">
+                      Status
+                    </th>
+                    <th scope="col" className="px-3.5 sm:px-4 py-3 text-right">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 bg-white dark:bg-[#131927]">
+                  {vacancies.map((v) => {
+                    const isExpanded = expandedVacancyId === v.id;
+                    return (
+                      <React.Fragment key={v.id}>
+                        <tr
+                          className={`transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/40 ${
+                            isExpanded ? "bg-blue-50/40 dark:bg-slate-800/30" : ""
+                          }`}
+                        >
+                          <td className="px-3.5 sm:px-4 py-3.5 font-medium text-slate-900 dark:text-white">
+                            <div className="flex items-center gap-2">
+                              <span className="truncate max-w-[140px] sm:max-w-xs font-semibold">
+                                {v.title}
+                              </span>
+                              {v.featured && (
+                                <span className="rounded-full bg-violet-100 dark:bg-violet-900/40 px-2 py-0.5 text-[10px] font-bold text-violet-700 dark:text-violet-300 shrink-0">
+                                  Featured
+                                </span>
+                              )}
+                            </div>
+                          </td>
+
+                          <td className="px-3.5 sm:px-4 py-3.5">
+                            <span className="inline-block rounded-full bg-violet-100 dark:bg-slate-800 px-2.5 py-0.5 text-[11px] font-semibold text-violet-700 dark:text-violet-300 whitespace-nowrap">
+                              {v.category.name}
+                            </span>
+                          </td>
+
+                          <td className="px-3.5 sm:px-4 py-3.5 text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                            {v.type}
+                          </td>
+
+                          <td className="px-3.5 sm:px-4 py-3.5 text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                            {v.location}
+                          </td>
+
+                          <td className="px-3.5 sm:px-4 py-3.5 text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                            {v.salary || "—"}
+                          </td>
+
+                          <td className="px-3.5 sm:px-4 py-3.5 whitespace-nowrap">
+                            <button
+                              onClick={() => handleToggleActive(v)}
+                              title={
+                                v.isActive
+                                  ? "Deactivate (hide from site)"
+                                  : "Activate (show on site)"
+                              }
+                              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                                v.isActive
+                                  ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
+                                  : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-600"
+                              }`}
+                            >
+                              {v.isActive ? (
+                                <ToggleRight className="h-3.5 w-3.5 shrink-0" />
+                              ) : (
+                                <ToggleLeft className="h-3.5 w-3.5 shrink-0" />
+                              )}
+                              {v.isActive ? "Active" : "Inactive"}
+                            </button>
+                          </td>
+
+                          <td className="px-3.5 sm:px-4 py-3.5 text-right whitespace-nowrap">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                onClick={() => {
+                                  if (isExpanded) {
+                                    setExpandedVacancyId(null);
+                                    setEditingVacancy(null);
+                                  } else {
+                                    setExpandedVacancyId(v.id);
+                                    setEditingVacancy({ ...v });
+                                  }
+                                }}
+                                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                              >
+                                <Edit3 className="h-3.5 w-3.5" />
+                                {isExpanded ? (
+                                  <ChevronUp className="h-3.5 w-3.5" />
+                                ) : (
+                                  <ChevronDown className="h-3.5 w-3.5" />
+                                )}
+                              </button>
+
+                              <button
+                                onClick={() => handleDeleteVacancy(v)}
+                                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-red-200 dark:border-red-800 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+
+                        {isExpanded && editingVacancy && (
+                          <tr className="bg-slate-50/60 dark:bg-slate-900/60">
+                            <td colSpan={7} className="p-3 sm:p-4 border-b border-slate-200 dark:border-slate-800">
+                              <div className="space-y-4 max-w-5xl mx-auto">
+                                <VacancyFormFields
+                                  data={{
+                                    title: editingVacancy.title,
+                                    categoryId: editingVacancy.categoryId,
+                                    type: editingVacancy.type,
+                                    location: editingVacancy.location,
+                                    experience: editingVacancy.experience,
+                                    salary: editingVacancy.salary,
+                                    summary: editingVacancy.summary,
+                                    responsibilities: editingVacancy.responsibilities,
+                                    requirements: editingVacancy.requirements,
+                                    featured: editingVacancy.featured,
+                                    isActive: editingVacancy.isActive,
+                                    order: editingVacancy.order,
+                                  }}
+                                  onChange={(updated) =>
+                                    setEditingVacancy({
+                                      ...editingVacancy,
+                                      ...updated,
+                                    })
+                                  }
+                                  categories={categories}
+                                />
+                                <div className="flex items-center gap-2 pt-1">
+                                  <button
+                                    onClick={handleUpdateVacancy}
+                                    disabled={isSavingVacancy}
+                                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-500/20 transition-all disabled:opacity-50"
+                                  >
+                                    {isSavingVacancy ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <Save className="h-4 w-4" />
+                                    )}
+                                    Save Changes
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setExpandedVacancyId(null);
+                                      setEditingVacancy(null);
+                                    }}
+                                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                  >
+                                    <X className="h-3.5 w-3.5" /> Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

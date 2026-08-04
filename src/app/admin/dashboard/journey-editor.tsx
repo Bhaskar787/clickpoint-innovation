@@ -123,7 +123,6 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
     }
   }
 
-  // Helper to trigger background deletion of Cloudinary media
   async function triggerCloudinaryDelete(url: string) {
     if (!url || typeof url !== "string") return;
     if (url.includes("res.cloudinary.com") || url.startsWith("/uploads/")) {
@@ -139,7 +138,6 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
     }
   }
 
-  // Cloudinary image uploader handler with auto-deletion of previous photo
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>, fieldKey: string, previousUrl?: string) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -180,7 +178,6 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
     }
   }
 
-  // Helper functions for Eras (Timeline Node Sequence)
   function handleUpdateEra(index: number, field: keyof TimelineEra, value: any) {
     const updated = [...(formData.eras || DEFAULT_JOURNEY_PAGE_DATA.eras)];
     updated[index] = { ...updated[index], [field]: value };
@@ -223,7 +220,6 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
     setFormData({ ...formData, eras: list });
   }
 
-  // Helper functions for Events (Gallery Cards Sequence)
   function handleUpdateEvent(index: number, field: keyof EventItem, value: any) {
     const updated = [...(formData.events || DEFAULT_JOURNEY_PAGE_DATA.events)];
     updated[index] = { ...updated[index], [field]: value };
@@ -277,34 +273,36 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] p-8 space-y-3">
-        <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
-        <p className="text-xs font-semibold text-slate-500">Loading Journey Page content records...</p>
+      <div className="flex flex-col items-center justify-center min-h-[300px] sm:min-h-[400px] p-4 sm:p-8 space-y-3">
+        <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 animate-spin" />
+        <p className="text-xs sm:text-sm font-semibold text-slate-500 text-center">
+          Loading Journey Page content records...
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="w-full max-w-full space-y-4 sm:space-y-6 text-slate-900 dark:text-white">
       {/* HEADER CONTROLS */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-white dark:bg-[#131927] border border-slate-200/80 dark:border-slate-800 shadow-xs">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-white dark:bg-[#131927] border border-slate-200/80 dark:border-slate-800 shadow-xs">
+        <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <Milestone className="h-5 w-5 text-violet-600 dark:text-violet-400" />
-            <h2 className="text-base font-extrabold text-slate-900 dark:text-white">
+            <Milestone className="h-4 w-4 sm:h-5 sm:w-5 text-violet-600 dark:text-violet-400 shrink-0" />
+            <h2 className="text-sm sm:text-base font-extrabold tracking-tight">
               Company Journey & Events Configurator (/journey)
             </h2>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             Manage milestone eras, historical timeline story nodes, Cloudinary photo gallery, and event summits.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
           <button
             type="button"
             onClick={handleResetToDefaults}
-            className="px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-colors flex items-center gap-1.5 cursor-pointer"
+            className="flex-1 sm:flex-none px-3 py-2 sm:px-3.5 sm:py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <RotateCcw className="h-3.5 w-3.5" />
             <span>Reset Defaults</span>
@@ -314,7 +312,7 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
             type="button"
             onClick={handleSave}
             disabled={isSaving}
-            className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            className="flex-1 sm:flex-none px-4 py-2 sm:px-5 sm:py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
           >
             {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
             <span>Save All Changes</span>
@@ -324,17 +322,17 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
 
       {/* SECTION 1: HERO & METRICS BAR */}
       {showHeroSection && (
-        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-5 shadow-xs">
+        <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-5 shadow-xs">
           <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
-            <span className="font-mono text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
+            <span className="font-mono text-[10px] sm:text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
               #01
             </span>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+            <h3 className="text-xs sm:text-sm font-bold">
               Journey Page Hero Banner & Counter Metrics Bar
             </h3>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2">
             <div>
               <label className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 block">
                 Hero Badge Tag
@@ -389,10 +387,10 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
 
           {/* Hero Counter Metrics Bar */}
           <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-3">
-            <h4 className="text-xs font-extrabold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+            <h4 className="text-[10px] sm:text-xs font-extrabold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
               Top Stats Counter Metrics Bar (4 Counter Cards)
             </h4>
-            <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-4">
+            <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
               {formData.metricsBar.map((mb, idx) => (
                 <div
                   key={idx}
@@ -440,17 +438,17 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
 
       {/* SECTION LANDING TIMELINE HEADER (BOX #06) */}
       {showLandingHeader && (
-        <div className="rounded-2xl border border-blue-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-5 shadow-xs">
+        <div className="rounded-xl sm:rounded-2xl border border-blue-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-5 shadow-xs">
           <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
-            <span className="font-mono text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
+            <span className="font-mono text-[10px] sm:text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
               #06
             </span>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+            <h3 className="text-xs sm:text-sm font-bold">
               Home Page (#06 Timeline & Journey Section Header & CTA)
             </h3>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2">
             <div>
               <label className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 block">
                 Landing Page Badge Tag (e.g. Our Journey)
@@ -554,14 +552,14 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
 
       {/* SECTION 2: HISTORICAL ERA NODES MANAGER */}
       {showErasSection && (
-        <div className="rounded-2xl border border-violet-200/80 dark:border-slate-800 bg-gradient-to-b from-white via-violet-50/20 to-white dark:from-[#131927] dark:to-[#131927] p-6 space-y-6 shadow-xs">
+        <div className="rounded-xl sm:rounded-2xl border border-violet-200/80 dark:border-slate-800 bg-gradient-to-b from-white via-violet-50/20 to-white dark:from-[#131927] dark:to-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-6 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-violet-100 dark:border-slate-800">
             <div className="flex items-center gap-2">
-              <span className="font-mono text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">
+              <span className="font-mono text-[10px] sm:text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">
                 #02
               </span>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+              <h3 className="text-xs sm:text-sm font-bold flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-violet-600 dark:text-violet-400 shrink-0" />
                 Historical Timeline Milestone Era Nodes ({formData.eras?.length || 0} Total Eras)
               </h3>
             </div>
@@ -569,31 +567,31 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
             <button
               type="button"
               onClick={handleAddEra}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 transition-colors shadow-xs cursor-pointer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 transition-colors shadow-xs cursor-pointer"
             >
               <Plus className="h-3.5 w-3.5" />
               <span>Add New Era Milestone</span>
             </button>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {formData.eras.map((era, idx) => (
               <div
                 key={era.id || idx}
-                className="p-5 rounded-2xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#0b0f19] space-y-4 shadow-xs relative group"
+                className="p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#0b0f19] space-y-3 sm:space-y-4 shadow-xs relative group"
               >
                 {/* Era Control Bar */}
-                <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-extrabold text-violet-600 bg-violet-100 dark:bg-violet-950 px-2.5 py-1 rounded-lg">
+                <div className="flex items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="font-mono text-[10px] sm:text-xs font-extrabold text-violet-600 bg-violet-100 dark:bg-violet-950 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg shrink-0">
                       Era #{idx + 1} ({era.displayYear})
                     </span>
-                    <span className="text-xs font-bold text-slate-900 dark:text-white truncate max-w-[280px]">
+                    <span className="text-xs font-bold truncate">
                       {era.title}
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1 shrink-0">
                     <button
                       type="button"
                       disabled={idx === 0}
@@ -618,14 +616,14 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
                       type="button"
                       onClick={() => handleRemoveEra(idx)}
                       title="Delete Era Node"
-                      className="p-1.5 rounded-lg bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900 transition-colors ml-1"
+                      className="p-1.5 rounded-lg bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900 transition-colors ml-0.5"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </div>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-3">
+                <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
                   <div>
                     <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1 block">
                       Year Range (e.g. 2016 - 2017)
@@ -650,7 +648,7 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
                     />
                   </div>
 
-                  <div>
+                  <div className="sm:col-span-2 md:col-span-1">
                     <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1 block">
                       Era Title
                     </label>
@@ -663,7 +661,7 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
                   </div>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2">
                   <div>
                     <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1 block">
                       Subtitle / Tagline
@@ -722,20 +720,20 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
                 </div>
 
                 {/* Cloudinary Image Uploader Widget */}
-                <div className="p-3.5 rounded-xl border border-violet-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/60 space-y-2">
+                <div className="p-3 sm:p-3.5 rounded-xl border border-violet-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/60 space-y-2">
                   <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                    <ImageIcon className="h-3.5 w-3.5 text-violet-600" />
+                    <ImageIcon className="h-3.5 w-3.5 text-violet-600 shrink-0" />
                     Era Photo Image (Cloudinary Upload)
                   </label>
-                  <div className="flex flex-col sm:flex-row items-center gap-3">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
                     <input
                       type="text"
                       value={era.imageUrl}
                       onChange={(e) => handleUpdateEra(idx, "imageUrl", e.target.value)}
                       placeholder="https://images.unsplash.com/..."
-                      className="flex-1 w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 dark:text-white font-mono"
+                      className="w-full sm:flex-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 dark:text-white font-mono"
                     />
-                    <label className="shrink-0 px-3.5 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors">
+                    <label className="shrink-0 px-3.5 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-colors">
                       {uploadingField === `era-${idx}` ? (
                         <Loader2 className="h-3.5 w-3.5 animate-spin" />
                       ) : (
@@ -759,14 +757,14 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
 
       {/* SECTION 3: COMPANY CULTURE & EVENTS GALLERY MANAGER */}
       {showEventsSection && (
-        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-6 shadow-xs">
+        <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-6 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-2">
-              <span className="font-mono text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
+              <span className="font-mono text-[10px] sm:text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
                 #03
               </span>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <Camera className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              <h3 className="text-xs sm:text-sm font-bold flex items-center gap-2">
+                <Camera className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
                 Company Culture & Events Gallery ({formData.events?.length || 0} Total Events)
               </h3>
             </div>
@@ -774,7 +772,7 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
             <button
               type="button"
               onClick={handleAddEvent}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-colors shadow-xs cursor-pointer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-colors shadow-xs cursor-pointer"
             >
               <Plus className="h-3.5 w-3.5" />
               <span>Add New Event Card</span>
@@ -782,9 +780,9 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
           </div>
 
           {/* GALLERY SECTION HEADING (Badge, Title, Subtitle) */}
-          <div className="p-4 rounded-xl border border-violet-100 dark:border-slate-800 bg-violet-50/40 dark:bg-[#0b0f19] space-y-3">
-            <h4 className="text-xs font-extrabold text-violet-700 dark:text-violet-400 flex items-center gap-1.5 uppercase tracking-wider">
-              <Camera className="h-3.5 w-3.5 text-violet-600" />
+          <div className="p-3.5 sm:p-4 rounded-xl border border-violet-100 dark:border-slate-800 bg-violet-50/40 dark:bg-[#0b0f19] space-y-3">
+            <h4 className="text-[10px] sm:text-xs font-extrabold text-violet-700 dark:text-violet-400 flex items-center gap-1.5 uppercase tracking-wider">
+              <Camera className="h-3.5 w-3.5 text-violet-600 shrink-0" />
               Gallery Section Heading
             </h4>
 
@@ -844,11 +842,11 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
           </div>
 
           {/* DYNAMIC CATEGORY TAGS MANAGER */}
-          <div className="p-4 rounded-xl border border-violet-100 dark:border-slate-800 bg-violet-50/40 dark:bg-[#0b0f19] space-y-3">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="p-3.5 sm:p-4 rounded-xl border border-violet-100 dark:border-slate-800 bg-violet-50/40 dark:bg-[#0b0f19] space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <h4 className="text-xs font-extrabold text-violet-700 dark:text-violet-400 flex items-center gap-1.5 uppercase tracking-wider">
-                  <Tag className="h-3.5 w-3.5 text-violet-600" />
+                <h4 className="text-[10px] sm:text-xs font-extrabold text-violet-700 dark:text-violet-400 flex items-center gap-1.5 uppercase tracking-wider">
+                  <Tag className="h-3.5 w-3.5 text-violet-600 shrink-0" />
                   Dynamic Event Category Tags ({formData.eventCategories?.length || 0} Total Tags)
                 </h4>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
@@ -861,10 +859,10 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
                 <input
                   type="text"
                   value={newCategoryInput}
-                  placeholder="New Tag Name (e.g. AI Expo)"
+                  placeholder="New Tag Name"
                   onChange={(e) => setNewCategoryInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddCategory())}
-                  className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1 text-xs text-slate-900 dark:text-white font-semibold"
+                  className="w-full sm:w-auto rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1 text-xs text-slate-900 dark:text-white font-semibold"
                 />
                 <button
                   type="button"
@@ -872,7 +870,7 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
                   className="px-3 py-1 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold transition-colors shrink-0 cursor-pointer flex items-center gap-1"
                 >
                   <Plus className="h-3.5 w-3.5" />
-                  <span>Add Tag</span>
+                  <span>Add</span>
                 </button>
               </div>
             </div>
@@ -891,7 +889,7 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
                     type="text"
                     value={catName}
                     onChange={(e) => handleUpdateCategory(cIdx, e.target.value)}
-                    className="bg-transparent border-none p-0 text-xs font-extrabold focus:ring-0 text-violet-700 dark:text-violet-300 w-24 sm:w-32"
+                    className="bg-transparent border-none p-0 text-xs font-extrabold focus:ring-0 text-violet-700 dark:text-violet-300 w-20 sm:w-32"
                   />
                   <button
                     type="button"
@@ -906,23 +904,23 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
             </div>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {formData.events.map((evt, idx) => (
               <div
                 key={evt.id || idx}
-                className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#0b0f19] space-y-4 shadow-xs"
+                className="p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#0b0f19] space-y-3 sm:space-y-4 shadow-xs"
               >
-                <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-extrabold text-blue-600 bg-blue-100 dark:bg-blue-950 px-2.5 py-1 rounded-lg">
+                <div className="flex items-center justify-between gap-2 pb-3 border-b border-slate-200 dark:border-slate-800">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="font-mono text-[10px] sm:text-xs font-extrabold text-blue-600 bg-blue-100 dark:bg-blue-950 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg shrink-0">
                       Event #{idx + 1}
                     </span>
-                    <span className="text-xs font-bold text-slate-900 dark:text-white truncate max-w-[280px]">
+                    <span className="text-xs font-bold truncate">
                       {evt.title}
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1 shrink-0">
                     <button
                       type="button"
                       disabled={idx === 0}
@@ -942,14 +940,14 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
                     <button
                       type="button"
                       onClick={() => handleRemoveEvent(idx)}
-                      className="p-1.5 rounded-lg bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900 transition-colors ml-1"
+                      className="p-1.5 rounded-lg bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900 transition-colors ml-0.5"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </div>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-3">
+                <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
                   <div>
                     <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1 block">
                       Event Title
@@ -974,7 +972,7 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
                     />
                   </div>
 
-                  <div>
+                  <div className="sm:col-span-2 md:col-span-1">
                     <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1 block">
                       Category Tag
                     </label>
@@ -995,7 +993,7 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
                   </div>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-3">
+                <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
                   <div>
                     <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1 block">
                       Event Date (e.g. November 14, 2025)
@@ -1020,7 +1018,7 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
                     />
                   </div>
 
-                  <div>
+                  <div className="sm:col-span-2 md:col-span-1">
                     <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1 block">
                       Key Metric Badge (e.g. 4 Keynote Demos)
                     </label>
@@ -1046,20 +1044,20 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
                 </div>
 
                 {/* Cloudinary Image Uploader Widget */}
-                <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-2">
+                <div className="p-3 sm:p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-2">
                   <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                    <ImageIcon className="h-3.5 w-3.5 text-blue-600" />
+                    <ImageIcon className="h-3.5 w-3.5 text-blue-600 shrink-0" />
                     Event Cover Image (Cloudinary Upload)
                   </label>
-                  <div className="flex flex-col sm:flex-row items-center gap-3">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
                     <input
                       type="text"
                       value={evt.imageUrl}
                       onChange={(e) => handleUpdateEvent(idx, "imageUrl", e.target.value)}
                       placeholder="https://images.unsplash.com/..."
-                      className="flex-1 w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 dark:text-white font-mono"
+                      className="w-full sm:flex-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 dark:text-white font-mono"
                     />
-                    <label className="shrink-0 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors">
+                    <label className="shrink-0 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-colors">
                       {uploadingField === `event-${idx}` ? (
                         <Loader2 className="h-3.5 w-3.5 animate-spin" />
                       ) : (
@@ -1083,18 +1081,18 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
 
       {/* SECTION ENGINEERING ETHOS (4 PILLARS) */}
       {showEthosSection && (
-        <div className="rounded-2xl border border-violet-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-5 shadow-xs">
+        <div className="rounded-xl sm:rounded-2xl border border-violet-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-5 shadow-xs">
           <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
-            <span className="font-mono text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">
+            <span className="font-mono text-[10px] sm:text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">
               #04
             </span>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Award className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+            <h3 className="text-xs sm:text-sm font-bold flex items-center gap-2">
+              <Award className="h-4 w-4 text-violet-600 dark:text-violet-400 shrink-0" />
               Engineering Ethos & 4 Operating Pillars (Journey Page Only)
             </h3>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
             <div>
               <label className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 block">
                 Ethos Badge Tag (e.g. Engineering Ethos)
@@ -1131,7 +1129,7 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
               />
             </div>
 
-            <div>
+            <div className="sm:col-span-2 md:col-span-1">
               <label className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 block">
                 Title Highlighted Text
               </label>
@@ -1152,14 +1150,14 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
 
           {/* 4 Pillars Manager */}
           <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-4">
-            <h4 className="text-xs font-extrabold text-violet-600 dark:text-violet-400 uppercase tracking-wider">
+            <h4 className="text-[10px] sm:text-xs font-extrabold text-violet-600 dark:text-violet-400 uppercase tracking-wider">
               The 4 Operating Pillars Cards
             </h4>
 
-            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
+            <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
               {(formData.ethosSection?.pillars || DEFAULT_JOURNEY_PAGE_DATA.ethosSection?.pillars || []).map((pillar, idx) => (
-                <div key={pillar.id || idx} className="p-4 rounded-xl bg-slate-50 dark:bg-[#0b0f19] border border-slate-200 dark:border-slate-800 space-y-2">
-                  <span className="font-mono text-[10px] font-extrabold text-violet-600 bg-violet-100 dark:bg-violet-950 px-2 py-0.5 rounded">
+                <div key={pillar.id || idx} className="p-3.5 sm:p-4 rounded-xl bg-slate-50 dark:bg-[#0b0f19] border border-slate-200 dark:border-slate-800 space-y-2">
+                  <span className="font-mono text-[10px] font-extrabold text-violet-600 bg-violet-100 dark:bg-violet-950 px-2 py-0.5 rounded inline-block">
                     Pillar #{idx + 1}
                   </span>
                   <div>
@@ -1204,12 +1202,12 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
       )}
 
       {/* SECTION 4: CALL TO ACTION */}
-      <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-4 shadow-xs">
-        <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+      <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 shadow-xs">
+        <h3 className="text-xs sm:text-sm font-bold">
           Journey Bottom Call-To-Action (CTA) Section
         </h3>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2">
           <div>
             <label className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 block">
               CTA Header Title

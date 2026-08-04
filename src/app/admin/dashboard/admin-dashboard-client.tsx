@@ -70,6 +70,9 @@ import ContactEditor from "./contact-editor";
 import TestimonialsEditor from "./testimonials-editor";
 import JourneyEditor from "./journey-editor";
 import NotFoundPageEditor from "./not-found-page-editor";
+import { subscribeRealtimeNotifications } from "@/lib/realtime-notifications";
+import CareersPageEditor from "./careers-page-editor";
+import FaqEditor from "./faq-editor";
 
 interface AdminDashboardClientProps {
   userEmail: string;
@@ -290,10 +293,6 @@ const ALL_PAGE_CONFIGS: Record<string, PageConfig> = {
   },
 };
 
-import { subscribeRealtimeNotifications } from "@/lib/realtime-notifications";
-import CareersPageEditor from "./careers-page-editor";
-import FaqEditor from "./faq-editor";
-
 function StarIcon(props: { className?: string }) {
   return <Award {...props} />;
 }
@@ -435,7 +434,6 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
 
     checkNotifications();
 
-    // Instant re-sync on window focus / tab switch
     const handleFocus = () => checkNotifications();
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
@@ -446,12 +444,10 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
     window.addEventListener("focus", handleFocus);
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
-    // Real-time listener via BroadcastChannel (Same-device multi-tab fallback)
     const unsubscribe = subscribeRealtimeNotifications(() => {
       checkNotifications();
     });
 
-    // Real-time listener via SSE stream
     let sse: EventSource | null = null;
     if (typeof window !== "undefined") {
       try {
@@ -467,7 +463,6 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
       } catch (e) {}
     }
 
-    // 3-second rapid background poll for instant multi-device sync
     const interval = setInterval(checkNotifications, 3000);
     return () => {
       window.removeEventListener("focus", handleFocus);
@@ -487,7 +482,6 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
         body: JSON.stringify({ action: "mark-read", id: item.id, category }),
       });
 
-      // remove from local list and decrement counters
       setNotificationsList((prev) => prev.filter((n) => n.id !== item.id));
       if (category === "REVIEW") {
         setUnreadTestimonialsCount((prev) => Math.max(0, prev - 1));
@@ -495,10 +489,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
         setUnreadContactCount((prev) => Math.max(0, prev - 1));
       }
 
-      // set selected notification id so the appropriate editor can open the specific item
       setSelectedNotificationItemId(item.id);
-
-      // switch to appropriate admin editor view
       setActiveTab(item.targetTab || "contact-page");
       setSelectedSectionId(null);
       setShowNotificationsDropdown(false);
@@ -524,7 +515,6 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
     }
   }
 
-  // Close mobile drawer on resize to larger screens
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 1024) {
@@ -546,7 +536,6 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
     router.refresh();
   }
 
-  // Navigation Items Organized by Page Routes
   const navItems: NavGroup[] = [
     {
       group: "DASHBOARD & ANALYTICS",
@@ -616,13 +605,12 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
         />
       )}
 
-      {/* ================= 1. SIDEBAR (Fixed Header/Footer + Scrollable Links Middle) ================= */}
+      {/* ================= 1. SIDEBAR ================= */}
       <aside
         className={`fixed top-0 left-0 z-50 h-screen bg-white dark:bg-[#131927] border-r border-slate-200/80 dark:border-slate-800 flex flex-col justify-between transition-all duration-300 ${
           mobileOpen ? "translate-x-0 w-64 shadow-2xl" : "-translate-x-full lg:translate-x-0"
         } ${collapsed ? "lg:w-20" : "lg:w-64"}`}
       >
-        {/* FIXED TOP HEADER: Clickpoint Logo (Never Scrolls) */}
         <div className="h-16 shrink-0 flex items-center justify-between px-4 border-b border-slate-100 dark:border-slate-800">
           <Link href="/" className="flex items-center gap-2 overflow-hidden">
             {!collapsed ? (
@@ -646,7 +634,6 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
             )}
           </Link>
 
-          {/* Close button for Mobile Drawer */}
           <button
             onClick={() => setMobileOpen(false)}
             className="lg:hidden p-1 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
@@ -655,7 +642,6 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
           </button>
         </div>
 
-        {/* SCROLLABLE MIDDLE NAVIGATION LINKS (Only this section scrolls!) */}
         <div className="flex-1 overflow-y-auto min-h-0 py-4 px-3 space-y-6 [scrollbar-width:thin] [scrollbar-color:rgba(148,163,184,0.3)_transparent]">
           {navItems.map((group) => (
             <div key={group.group}>
@@ -709,7 +695,6 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
           ))}
         </div>
 
-        {/* FIXED BOTTOM FOOTER: Collapse / Expand Toggle Button (Never Scrolls) */}
         <div className="shrink-0 p-3 border-t border-slate-100 dark:border-slate-800 hidden lg:block">
           <button
             onClick={() => setCollapsed(!collapsed)}
@@ -731,53 +716,48 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
       <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${collapsed ? "lg:ml-20" : "lg:ml-64"}`}>
         
         {/* Top Responsive Navbar Header */}
-        <header className="h-16 bg-white dark:bg-[#131927] border-b border-slate-200/80 dark:border-slate-800 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 backdrop-blur-md">
+        <header className="h-16 bg-white dark:bg-[#131927] border-b border-slate-200/80 dark:border-slate-800 px-3 sm:px-6 flex items-center justify-between sticky top-0 z-30 backdrop-blur-md">
           
-          <div className="flex items-center gap-3">
-            {/* Hamburger Button for Mobile */}
+          <div className="flex items-center gap-2 sm:gap-3 flex-1 max-w-md">
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="lg:hidden p-2 rounded-xl text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700"
+              className="lg:hidden p-2 rounded-xl text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 shrink-0"
               aria-label="Toggle navigation drawer"
             >
               <Menu className="h-5 w-5" />
             </button>
 
-            {/* Search Bar */}
-            <div className="relative w-44 sm:w-72">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <div className="relative w-full max-w-[200px] sm:max-w-xs">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
               <input
                 type="text"
                 placeholder="Search page content..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#0b0f19] pl-9 pr-4 py-1.5 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#0b0f19] pl-8 sm:pl-9 pr-3 py-1.5 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
           </div>
 
-          {/* Right Header Actions */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Theme Toggle */}
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             <button
               onClick={(e) => toggleTheme(e)}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+              className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
               aria-label="Toggle theme"
             >
               {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4 text-slate-700" />}
             </button>
 
-            {/* Notifications Bell & Popover Dropdown */}
             <div className="relative">
               <button
                 onClick={() => setShowNotificationsDropdown(!showNotificationsDropdown)}
-                className="relative flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors focus:outline-none"
+                className="relative flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors focus:outline-none"
                 aria-label="Notifications"
                 title={unreadTestimonialsCount + unreadContactCount > 0 ? `${unreadTestimonialsCount + unreadContactCount} Unread Notifications` : "Notifications"}
               >
                 <Bell className="h-4 w-4" />
                 {unreadTestimonialsCount + unreadContactCount > 0 ? (
-                  <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[11px] font-black text-white shadow-md border-2 border-white dark:border-[#131927]">
+                  <span className="absolute -top-1 -right-1 sm:-top-1.5 sm:-right-1.5 flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] sm:text-[11px] font-black text-white shadow-md border-2 border-white dark:border-[#131927]">
                     {unreadTestimonialsCount + unreadContactCount > 9 ? "9+" : unreadTestimonialsCount + unreadContactCount}
                   </span>
                 ) : (
@@ -785,128 +765,119 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                 )}
               </button>
 
-              {/* Notification Popover Dropdown */}
-            {showNotificationsDropdown && (
-  <div className="absolute right-0 top-12 z-50 w-80 sm:w-96 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl overflow-hidden">
-    
-    {/* Header */}
-    <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800">
-      <div className="flex items-center gap-2">
-        <Bell className="h-4 w-4 text-slate-700 dark:text-slate-300" />
-        <h4 className="text-xs font-bold text-slate-900 dark:text-white">
-          Notifications
-        </h4>
-        {notificationsList.length > 0 && (
-          <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 rounded-full">
-            {notificationsList.length}
-          </span>
-        )}
-      </div>
+              {showNotificationsDropdown && (
+                <div className="absolute right-0 top-12 z-50 w-72 sm:w-96 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl overflow-hidden">
+                  <div className="flex items-center justify-between px-3 sm:px-4 py-3 border-b border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center gap-2">
+                      <Bell className="h-4 w-4 text-slate-700 dark:text-slate-300" />
+                      <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+                        Notifications
+                      </h4>
+                      {notificationsList.length > 0 && (
+                        <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 rounded-full">
+                          {notificationsList.length}
+                        </span>
+                      )}
+                    </div>
 
-      <div className="flex items-center gap-3">
-        {notificationsList.length > 0 && (
-          <button
-            onClick={handleArchiveAllNotifications}
-            className="text-[11px] font-medium text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
-          >
-            Archive all
-          </button>
-        )}
-        <button
-          onClick={() => setShowNotificationsDropdown(false)}
-          className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-md p-0.5 transition-colors"
-        >
-          <X className="h-4 w-4" />
-        </button>
-      </div>
-    </div>
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      {notificationsList.length > 0 && (
+                        <button
+                          onClick={handleArchiveAllNotifications}
+                          className="text-[11px] font-medium text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
+                        >
+                          Archive all
+                        </button>
+                      )}
+                      <button
+                        onClick={() => setShowNotificationsDropdown(false)}
+                        className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-md p-0.5 transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
 
-    {/* Notification List */}
-    <div className="max-h-80 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
-      {notificationsList.length === 0 ? (
-        <div className="text-center py-8 px-4 space-y-1.5">
-          <div className="h-8 w-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center mx-auto">
-            <Archive className="h-4 w-4" />
-          </div>
-          <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-            No unread notifications
-          </p>
-          <p className="text-[11px] text-slate-400 dark:text-slate-500">
-            All reviews & messages have been archived.
-          </p>
-        </div>
-      ) : (
-        notificationsList.map((item) => (
-          <div
-            key={item.id}
-            onClick={() => handleMarkSingleRead(item)}
-            className="flex items-center justify-between gap-3 px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer group"
-          >
-            {/* Left Column: Type + Name + Hidden Content */}
-            <div className="flex items-center gap-2.5 min-w-0 flex-1">
-              <span
-                className={`shrink-0 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
-                  (item.category || item.type) === "REVIEW"
-                    ? "bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400"
-                    : "bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-400"
-                }`}
-              >
-                {(item.category || item.type) === "REVIEW" ? "Review" : "Inquiry"}
-              </span>
+                  <div className="max-h-80 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
+                    {notificationsList.length === 0 ? (
+                      <div className="text-center py-8 px-4 space-y-1.5">
+                        <div className="h-8 w-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center mx-auto">
+                          <Archive className="h-4 w-4" />
+                        </div>
+                        <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                          No unread notifications
+                        </p>
+                        <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                          All reviews & messages have been archived.
+                        </p>
+                      </div>
+                    ) : (
+                      notificationsList.map((item) => (
+                        <div
+                          key={item.id}
+                          onClick={() => handleMarkSingleRead(item)}
+                          className="flex items-center justify-between gap-2.5 px-3 sm:px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer group"
+                        >
+                          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
+                            <span
+                              className={`shrink-0 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
+                                (item.category || item.type) === "REVIEW"
+                                  ? "bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400"
+                                  : "bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-400"
+                              }`}
+                            >
+                              {(item.category || item.type) === "REVIEW" ? "Review" : "Inquiry"}
+                            </span>
 
-              <div className="min-w-0 flex-1 flex items-center gap-2">
-                <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 shrink-0">
-                  {item.clientName}
-                </span>
-                
-                {/* Truncated message text (single row, no wrap) */}
-                <span className="text-xs text-slate-400 dark:text-slate-500 truncate min-w-0">
-                  — {item.content}
-                </span>
-              </div>
-            </div>
+                            <div className="min-w-0 flex-1 flex items-center gap-1.5 sm:gap-2">
+                              <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 shrink-0 truncate max-w-[80px] sm:max-w-none">
+                                {item.clientName}
+                              </span>
+                              <span className="text-xs text-slate-400 dark:text-slate-500 truncate min-w-0">
+                                — {item.content}
+                              </span>
+                            </div>
+                          </div>
 
-            {/* Right Column: Time Ago + Rating or Action indicator */}
-            <div className="shrink-0 flex items-center gap-2">
-              {item.rating ? (
-                <div className="flex items-center gap-0.5">
-                  <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                  <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
-                    {item.rating}
-                  </span>
+                          <div className="shrink-0 flex items-center gap-1.5 sm:gap-2">
+                            {item.rating ? (
+                              <div className="flex items-center gap-0.5">
+                                <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                                <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                                  {item.rating}
+                                </span>
+                              </div>
+                            ) : (
+                              <span className="text-[10px] font-medium text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors">
+                                View →
+                              </span>
+                            )}
+                            {item.createdAt && (
+                              <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 shrink-0 whitespace-nowrap bg-slate-100 dark:bg-slate-800/80 px-1.5 py-0.5 rounded hidden sm:inline-block">
+                                {getTimeAgo(item.createdAt)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
                 </div>
-              ) : (
-                <span className="text-[10px] font-medium text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors">
-                  View →
-                </span>
               )}
-              {item.createdAt && (
-                <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 shrink-0 whitespace-nowrap bg-slate-100 dark:bg-slate-800/80 px-1.5 py-0.5 rounded">
-                  {getTimeAgo(item.createdAt)}
-                </span>
-              )}
-            </div>
-          </div>
-        ))
-      )}
-    </div>
-  </div>
-)}
             </div>
 
-            {/* Admin Avatar & Sign Out */}
-            <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-3 border-l border-slate-200 dark:border-slate-800">
+            <div className="flex items-center gap-1.5 sm:gap-3 pl-2 sm:pl-3 border-l border-slate-200 dark:border-slate-800">
               <div className="flex items-center gap-2">
- <Image
-                src="/images/fav3.png"
-                alt="Clickpoint Innovation"
-                width={100}
-                height={100}
-                priority
-                className="h-8 w-8 object-contain transition-transform hover:scale-110"
-              />
+                <Image
+                  src="/images/fav3.png"
+                  alt="Clickpoint Innovation"
+                  width={100}
+                  height={100}
+                  priority
+                  className="h-7 w-7 sm:h-8 sm:w-8 object-contain transition-transform hover:scale-110"
+                />
                 <div className="hidden md:block text-left">
-                  <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate max-w-[130px]">
+                  <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate max-w-[110px] sm:max-w-[130px]">
                     {userEmail}
                   </p>
                   <p className="text-[10px] text-slate-400 font-semibold">Super Admin</p>
@@ -915,7 +886,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
 
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-1 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 px-2 sm:px-2.5 py-1.5 rounded-lg transition-colors ml-1"
+                className="flex items-center gap-1 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 px-2 sm:px-2.5 py-1.5 rounded-lg transition-colors"
                 title="Sign out"
               >
                 <LogOut className="h-3.5 w-3.5" />
@@ -926,15 +897,14 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
         </header>
 
         {/* Dashboard Main Scrollable Content */}
-        <main className="p-4 sm:p-6 space-y-6">
+        <main className="p-3 sm:p-6 space-y-4 sm:space-y-6">
           
           {/* TAB 1: OVERVIEW DASHBOARD */}
           {activeTab === "dashboard" && (
             <>
-              {/* Title Banner */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                 <div>
-                  <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+                  <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
                     Clickpoint Admin Dashboard
                   </h1>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -950,10 +920,9 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                 </div>
               </div>
 
-              {/* Quick Metrics Bar */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 flex items-center gap-3.5 shadow-xs">
-                  <div className="h-10 w-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 font-bold">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-3.5 sm:p-4 flex items-center gap-3.5 shadow-xs">
+                  <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 font-bold text-xs sm:text-sm">
                     57
                   </div>
                   <div>
@@ -962,8 +931,8 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 flex items-center gap-3.5 shadow-xs">
-                  <div className="h-10 w-10 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 font-bold">
+                <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-3.5 sm:p-4 flex items-center gap-3.5 shadow-xs">
+                  <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 font-bold text-xs sm:text-sm">
                     5
                   </div>
                   <div>
@@ -972,8 +941,8 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 flex items-center gap-3.5 shadow-xs sm:col-span-2 lg:col-span-1">
-                  <div className="h-10 w-10 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 font-bold">
+                <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-3.5 sm:p-4 flex items-center gap-3.5 shadow-xs sm:col-span-2 lg:col-span-1">
+                  <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 font-bold text-xs sm:text-sm">
                     15
                   </div>
                   <div>
@@ -983,11 +952,8 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                 </div>
               </div>
 
-              {/* Grid Charts Section */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                
-                {/* Left 7 Columns: Total Revenue & Sales Chart */}
-                <div className="lg:col-span-7 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 shadow-xs flex flex-col justify-between">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
+                <div className="lg:col-span-7 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 shadow-xs flex flex-col justify-between">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
                     <div>
                       <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">Total Sells & Conversion</h3>
@@ -998,8 +964,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                     </span>
                   </div>
 
-                  {/* Vector SVG Area Chart */}
-                  <div className="w-full h-48 sm:h-56 my-2 relative">
+                  <div className="w-full h-40 sm:h-56 my-2 relative">
                     <svg className="w-full h-full overflow-visible" viewBox="0 0 500 200" preserveAspectRatio="none">
                       <line x1="0" y1="40" x2="500" y2="40" stroke="currentColor" className="text-slate-100 dark:text-slate-800" strokeWidth="1" />
                       <line x1="0" y1="90" x2="500" y2="90" stroke="currentColor" className="text-slate-100 dark:text-slate-800" strokeWidth="1" />
@@ -1043,11 +1008,8 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                   </div>
                 </div>
 
-                {/* Right 5 Columns: Metrics Cards Grid */}
-                <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  
-                  {/* Card 1: Total Orders */}
-                  <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+                <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-5 shadow-xs flex flex-col justify-between">
                     <div>
                       <div className="flex items-center justify-between">
                         <h4 className="text-xs font-bold text-slate-900 dark:text-white">Total Orders</h4>
@@ -1068,8 +1030,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                     </div>
                   </div>
 
-                  {/* Card 2: New Customers */}
-                  <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+                  <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-5 shadow-xs flex flex-col justify-between">
                     <div>
                       <div className="flex items-center justify-between">
                         <h4 className="text-xs font-bold text-slate-900 dark:text-white">New Customers</h4>
@@ -1093,15 +1054,14 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                     </div>
                   </div>
 
-                  {/* Card 3: Top Services Radial Progress */}
-                  <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+                  <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-5 shadow-xs flex flex-col justify-between">
                     <div>
                       <h4 className="text-xs font-bold text-slate-900 dark:text-white">Top Services</h4>
                       <p className="text-[10px] text-slate-400">Last 7 days</p>
                     </div>
 
                     <div className="my-3 flex items-center justify-center">
-                      <div className="relative h-20 w-20 flex items-center justify-center">
+                      <div className="relative h-16 w-16 sm:h-20 sm:w-20 flex items-center justify-center">
                         <svg className="h-full w-full -rotate-90" viewBox="0 0 36 36">
                           <path
                             className="text-slate-100 dark:text-slate-800"
@@ -1120,20 +1080,19 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                             d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                           />
                         </svg>
-                        <span className="absolute text-sm font-extrabold text-slate-900 dark:text-white">72%</span>
+                        <span className="absolute text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white">72%</span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Card 4: Paying vs Non-paying */}
-                  <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+                  <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-5 shadow-xs flex flex-col justify-between">
                     <div>
                       <h4 className="text-xs font-bold text-slate-900 dark:text-white">Paying vs Non Paying</h4>
                       <p className="text-[10px] text-slate-400">Last 7 days</p>
                     </div>
 
                     <div className="my-3 flex items-center justify-center">
-                      <div className="relative h-20 w-20 flex items-center justify-center">
+                      <div className="relative h-16 w-16 sm:h-20 sm:w-20 flex items-center justify-center">
                         <svg className="h-full w-full" viewBox="0 0 36 36">
                           <path
                             className="text-blue-500"
@@ -1152,11 +1111,10 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                 </div>
               </div>
 
-              {/* Data Table Section: Recent Inquiries */}
-              <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 shadow-xs">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+              <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 shadow-xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
                   <div>
-                    <h3 className="text-base font-bold text-slate-900 dark:text-white">Latest Inquiries & Deals</h3>
+                    <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">Latest Inquiries & Deals</h3>
                     <p className="text-xs text-slate-400">Real-time incoming inquiries submitted by prospective clients</p>
                   </div>
 
@@ -1168,17 +1126,17 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                   </div>
                 </div>
 
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-800">
                   <table className="w-full text-left border-collapse min-w-[640px]">
                     <thead>
-                      <tr className="border-b border-slate-100 dark:border-slate-800 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                        <th className="pb-3 px-3">INQUIRY ID</th>
-                        <th className="pb-3 px-3">CLIENT / PRODUCT</th>
-                        <th className="pb-3 px-3">SERVICE CATEGORY</th>
-                        <th className="pb-3 px-3">ESTIMATED BUDGET</th>
-                        <th className="pb-3 px-3">RATING</th>
-                        <th className="pb-3 px-3">STATUS</th>
-                        <th className="pb-3 px-3 text-right">ACTION</th>
+                      <tr className="border-b border-slate-100 dark:border-slate-800 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400 bg-slate-50/50 dark:bg-slate-900/40">
+                        <th className="py-3 px-3">INQUIRY ID</th>
+                        <th className="py-3 px-3">CLIENT / PRODUCT</th>
+                        <th className="py-3 px-3">SERVICE CATEGORY</th>
+                        <th className="py-3 px-3">ESTIMATED BUDGET</th>
+                        <th className="py-3 px-3">RATING</th>
+                        <th className="py-3 px-3">STATUS</th>
+                        <th className="py-3 px-3 text-right">ACTION</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs">
@@ -1186,13 +1144,13 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                         <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                           <td className="py-3.5 px-3 font-mono font-bold text-blue-600 dark:text-blue-400">{item.id}</td>
                           <td className="py-3.5 px-3">
-                            <p className="font-bold text-slate-900 dark:text-slate-100">{item.client}</p>
-                            <p className="text-[10px] text-slate-400">{item.email}</p>
+                            <p className="font-bold text-slate-900 dark:text-slate-100 truncate max-w-[120px] sm:max-w-none">{item.client}</p>
+                            <p className="text-[10px] text-slate-400 truncate max-w-[120px] sm:max-w-none">{item.email}</p>
                           </td>
                           <td className="py-3.5 px-3 font-medium text-slate-700 dark:text-slate-300">{item.service}</td>
-                          <td className="py-3.5 px-3 font-extrabold text-slate-900 dark:text-white">{item.budget}</td>
-                          <td className="py-3.5 px-3 text-amber-500 font-bold">{item.rating}</td>
-                          <td className="py-3.5 px-3">
+                          <td className="py-3.5 px-3 font-extrabold text-slate-900 dark:text-white whitespace-nowrap">{item.budget}</td>
+                          <td className="py-3.5 px-3 text-amber-500 font-bold whitespace-nowrap">{item.rating}</td>
+                          <td className="py-3.5 px-3 whitespace-nowrap">
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${item.statusColor}`}>
                               {item.status}
                             </span>
@@ -1211,14 +1169,13 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
             </>
           )}
 
-          {/* DYNAMIC PAGE CONTENT MANAGEMENT VIEW (FOR ALL WEBSITE PAGES) */}
+          {/* DYNAMIC PAGE CONTENT MANAGEMENT VIEW */}
           {currentPageConfig && activeTab !== "dashboard" && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               
-              {/* Page Header Banner */}
-              <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
                       <LayoutTemplate className="h-3 w-3" />
                       Dynamic Content Engine
@@ -1227,7 +1184,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                       {currentPageConfig.sections.length} Configurable Sections
                     </span>
                   </div>
-                  <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+                  <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
                     {currentPageConfig.title} Management
                   </h1>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -1263,7 +1220,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                         : "/contact"
                     }
                     target="_blank"
-                    className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80 px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80 px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors w-full sm:w-auto"
                   >
                     <Eye className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
                     <span>Preview Page</span>
@@ -1271,28 +1228,27 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                 </div>
               </div>
 
-              {/* Focused Header when a specific section box is selected */}
               {selectedSectionId && selectedSection && (
-                <div className="flex items-center justify-between p-4 rounded-2xl bg-blue-50/70 dark:bg-[#131927] border border-blue-200 dark:border-slate-800 shadow-xs mb-6">
-                  <div className="flex items-center gap-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-blue-50/70 dark:bg-[#131927] border border-blue-200 dark:border-slate-800 shadow-xs mb-4 sm:mb-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 min-w-0">
                     <button
                       type="button"
                       onClick={() => setSelectedSectionId(null)}
-                      className="px-3.5 py-1.5 rounded-xl bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 text-xs font-bold hover:bg-blue-100 dark:hover:bg-slate-700 transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer"
+                      className="self-start sm:self-auto px-3.5 py-1.5 rounded-xl bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 text-xs font-bold hover:bg-blue-100 dark:hover:bg-slate-700 transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer shrink-0"
                     >
                       <ChevronLeft className="h-4 w-4" />
                       <span>Back to All Section Boxes</span>
                     </button>
-                    <div>
+                    <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-extrabold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-md">
+                        <span className="font-mono text-xs font-extrabold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-md shrink-0">
                           {selectedSection.order}
                         </span>
-                        <h3 className="text-xs font-extrabold text-slate-900 dark:text-white">
+                        <h3 className="text-xs font-extrabold truncate">
                           Editing: {selectedSection.name}
                         </h3>
                       </div>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
                         {selectedSection.description}
                       </p>
                     </div>
@@ -1301,7 +1257,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                   <button
                     type="button"
                     onClick={() => setSelectedSectionId(null)}
-                    className="p-1.5 rounded-xl bg-white dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                    className="p-1.5 rounded-xl bg-white dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors self-end sm:self-auto"
                     title="Close Editor"
                   >
                     <X className="h-4 w-4" />
@@ -1309,9 +1265,8 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                 </div>
               )}
 
-              {/* Grid of Rectangle Section Cards for the selected page (Only shown when no section is selected) */}
               {!selectedSectionId && (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
                   {currentPageConfig.sections.map((section) => {
                     const Icon = section.icon;
                     const isSelected = selectedSectionId === section.id;
@@ -1320,41 +1275,39 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                       <div
                         key={section.id}
                         onClick={() => setSelectedSectionId(section.id)}
-                        className={`group relative rounded-2xl border p-5 cursor-pointer transition-all duration-200 flex flex-col justify-between ${
+                        className={`group relative rounded-xl sm:rounded-2xl border p-4 sm:p-5 cursor-pointer transition-all duration-200 flex flex-col justify-between ${
                           isSelected
                             ? "border-blue-600 dark:border-blue-500 bg-blue-50/40 dark:bg-blue-950/20 ring-2 ring-blue-500/20 shadow-md"
                             : "border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-md"
                         }`}
                       >
-                        {/* Top Box Bar */}
                         <div>
                           <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-2">
                               <span className="font-mono text-xs font-extrabold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-md">
                                 {section.order}
                               </span>
-                              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 truncate">
                                 {section.category}
                               </span>
                             </div>
 
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
                               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                               {section.status}
                             </span>
                           </div>
 
-                          {/* Title & Icon Header */}
                           <div className="flex items-start gap-3.5 mb-2">
-                            <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+                            <div className={`h-9 w-9 sm:h-10 sm:w-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
                               isSelected
                                 ? "bg-blue-600 text-white shadow-md shadow-blue-600/30"
                                 : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 group-hover:bg-blue-500 group-hover:text-white"
                             }`}>
-                              <Icon className="h-5 w-5" />
+                              <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                             </div>
-                            <div>
-                              <h3 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                            <div className="min-w-0">
+                              <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
                                 {section.name}
                               </h3>
                               <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 mt-1 leading-relaxed">
@@ -1364,14 +1317,13 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                           </div>
                         </div>
 
-                        {/* Bottom Card Footer Actions */}
                         <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
                           <span className="text-[10px] font-semibold text-slate-400">
                             {section.fieldsCount} Configurable Fields
                           </span>
 
                           <div className="flex items-center gap-1 text-xs font-bold text-blue-600 dark:text-blue-400 group-hover:translate-x-1 transition-transform">
-                            <span>Configure Box</span>
+                            <span>Configure</span>
                             <ChevronRight className="h-3.5 w-3.5" />
                           </div>
                         </div>
@@ -1381,9 +1333,8 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                 </div>
               )}
 
-              {/* About Us Page Content Field Editor Component */}
               {activeTab === "about-page" && (
-                <div className="mt-8">
+                <div className="mt-6 sm:mt-8">
                   <AboutPageEditor
                     sectionId={selectedSectionId}
                     onCloseSection={() => setSelectedSectionId(null)}
@@ -1391,9 +1342,8 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                 </div>
               )}
 
-              {/* Services Page Content Field Editor Component */}
               {activeTab === "services-page" && (
-                <div className="mt-8">
+                <div className="mt-6 sm:mt-8">
                   <ServicesPageEditor
                     sectionId={selectedSectionId}
                     onCloseSection={() => setSelectedSectionId(null)}
@@ -1401,9 +1351,8 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                 </div>
               )}
 
-              {/* Industries Page Content Field Editor Component */}
               {activeTab === "industries-page" && (
-                <div className="mt-8">
+                <div className="mt-6 sm:mt-8">
                   <IndustriesPageEditor
                     sectionId={selectedSectionId}
                     onCloseSection={() => setSelectedSectionId(null)}
@@ -1411,9 +1360,8 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                 </div>
               )}
 
-              {/* Testimonials Page Content Field Editor Component */}
               {activeTab === "testimonials-page" && (
-                <div className="mt-8">
+                <div className="mt-6 sm:mt-8">
                   <TestimonialsEditor
                       sectionId={selectedSectionId}
                       selectedItemId={selectedNotificationItemId}
@@ -1423,25 +1371,22 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                 </div>
               )}
 
-              {/* Journey Page Content Field Editor Component */}
               {activeTab === "journey-page" && (
-                <div className="mt-8">
+                <div className="mt-6 sm:mt-8">
                   <JourneyEditor
                     sectionId={selectedSectionId || undefined}
                   />
                 </div>
               )}
 
-              {/* Landing Page Timeline Section Editor Component */}
               {activeTab === "landing-management" && selectedSectionId === "timeline" && (
-                <div className="mt-8">
+                <div className="mt-6 sm:mt-8">
                   <JourneyEditor sectionId="timeline" />
                 </div>
               )}
 
-              {/* Contact Page Content & Inquiries Moderation Component */}
               {(activeTab === "contact-page" || activeTab === "inquiries") && (
-                <div className="mt-8">
+                <div className="mt-6 sm:mt-8">
                   <ContactEditor
                     sectionId={selectedSectionId}
                     selectedItemId={selectedNotificationItemId}
@@ -1451,9 +1396,8 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                 </div>
               )}
 
-              {/* Careers Page — Full Dynamic Editor (categories, vacancies, page content) */}
               {activeTab === "careers-page" && (
-                <div className="mt-8">
+                <div className="mt-6 sm:mt-8">
                   <CareersPageEditor
                     sectionId={selectedSectionId}
                     onCloseSection={() => setSelectedSectionId(null)}
@@ -1461,9 +1405,8 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                 </div>
               )}
 
-              {/* FAQs Page — Full CRUD Editor (create, edit, reorder, delete questions) */}
               {activeTab === "faqs-page" && (
-                <div className="mt-8">
+                <div className="mt-6 sm:mt-8">
                   <FaqEditor
                     sectionId={selectedSectionId}
                     onCloseSection={() => setSelectedSectionId(null)}
@@ -1471,9 +1414,8 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                 </div>
               )}
 
-              {/* 404 Error Page Content Field Editor Component */}
               {activeTab === "not-found-page" && (
-                <div className="mt-8">
+                <div className="mt-6 sm:mt-8">
                   <NotFoundPageEditor
                     sectionId={selectedSectionId}
                     onCloseSection={() => setSelectedSectionId(null)}
@@ -1481,16 +1423,15 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                 </div>
               )}
 
-              {/* Selected Section Editor Drawer Placeholder for Other Pages */}
               {activeTab !== "about-page" && activeTab !== "services-page" && activeTab !== "industries-page" && activeTab !== "testimonials-page" && activeTab !== "journey-page" && activeTab !== "contact-page" && activeTab !== "inquiries" && activeTab !== "careers-page" && activeTab !== "not-found-page" && selectedSection && selectedSection.id !== "timeline" && (
-                <div className="mt-8 rounded-2xl border border-blue-500/30 bg-blue-500/5 dark:bg-blue-950/20 p-6 shadow-sm">
-                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-blue-500/20">
+                <div className="mt-6 sm:mt-8 rounded-xl sm:rounded-2xl border border-blue-500/30 bg-blue-500/5 dark:bg-blue-950/20 p-4 sm:p-6 shadow-sm">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-blue-500/20">
                     <div className="flex items-center gap-3">
-                      <div className="h-9 w-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold">
+                      <div className="h-9 w-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold shrink-0">
                         <Edit3 className="h-4 w-4" />
                       </div>
                       <div>
-                        <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                        <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
                           Configure {selectedSection.name}
                         </h3>
                         <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -1501,17 +1442,17 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
 
                     <button
                       onClick={() => setSelectedSectionId(null)}
-                      className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                      className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 self-end sm:self-auto"
                     >
                       <X className="h-5 w-5" />
                     </button>
                   </div>
 
-                  <div className="p-4 bg-white dark:bg-[#131927] rounded-xl border border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 flex items-center justify-between">
+                  <div className="p-3.5 sm:p-4 bg-white dark:bg-[#131927] rounded-xl border border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                     <span>
                       Box <strong className="text-blue-600 dark:text-blue-400">{selectedSection.order} ({selectedSection.name})</strong> ready for content field inputs.
                     </span>
-                    <button className="px-3 py-1.5 rounded-lg bg-blue-600 text-white font-semibold text-xs shadow-xs hover:bg-blue-700 transition-colors">
+                    <button className="px-3 py-1.5 rounded-lg bg-blue-600 text-white font-semibold text-xs shadow-xs hover:bg-blue-700 transition-colors shrink-0">
                       Edit Content Fields
                     </button>
                   </div>

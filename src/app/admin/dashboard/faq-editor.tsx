@@ -88,8 +88,6 @@ export default function FaqEditor({ sectionId, onCloseSection }: FaqEditorProps)
     loadCategories();
   }, []);
 
-  // Filter tabs use whatever categories currently exist, so an empty
-  // freshly-created category still shows up for filtering/assignment.
   const categoryFilterOptions = useMemo(() => {
     const names = categories.map((c) => c.name);
     return ["ALL", ...names];
@@ -187,7 +185,6 @@ export default function FaqEditor({ sectionId, onCloseSection }: FaqEditorProps)
     const current = sorted[index];
     const swapWith = sorted[swapIndex];
 
-    // Optimistic UI update
     const reordered = [...sorted];
     reordered[index] = { ...swapWith, order: current.order };
     reordered[swapIndex] = { ...current, order: swapWith.order };
@@ -216,9 +213,6 @@ export default function FaqEditor({ sectionId, onCloseSection }: FaqEditorProps)
     }
   }
 
-  // ---------------------------------------------------------------------
-  // Category CRUD
-  // ---------------------------------------------------------------------
   async function handleCreateCategory() {
     if (!newCategoryName.trim()) {
       toast.error("Category name is required");
@@ -268,7 +262,7 @@ export default function FaqEditor({ sectionId, onCloseSection }: FaqEditorProps)
         toast.success("Category updated!", { id: toastId });
         setEditingCategory(null);
         await loadCategories();
-        await loadFaqs(); // refresh so renamed category reflects immediately in the list/badges
+        await loadFaqs();
       } else {
         toast.error(json.error || "Failed to update category", { id: toastId });
       }
@@ -303,7 +297,7 @@ export default function FaqEditor({ sectionId, onCloseSection }: FaqEditorProps)
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-20">
+      <div className="flex items-center justify-center min-h-[250px] py-12 sm:py-20">
         <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
       </div>
     );
@@ -313,15 +307,13 @@ export default function FaqEditor({ sectionId, onCloseSection }: FaqEditorProps)
   const showFaqs = !sectionId || sectionId === "faq-editor";
 
   return (
-    <div className="space-y-8">
-      {/* ------------------------------------------------------------------ */}
-      {/* FAQ CATEGORY MANAGER                                               */}
-      {/* ------------------------------------------------------------------ */}
+    <div className="w-full max-w-full space-y-6 sm:space-y-8 text-slate-900 dark:text-white">
+      {/* FAQ CATEGORY MANAGER */}
       {showCategories && (
         <div className="space-y-4">
           <div>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <FolderPlus className="h-5 w-5 text-blue-600" />
+            <h2 className="text-base sm:text-lg font-bold flex items-center gap-2">
+              <FolderPlus className="h-5 w-5 text-blue-600 shrink-0" />
               FAQ Categories ({categories.length})
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -330,9 +322,9 @@ export default function FaqEditor({ sectionId, onCloseSection }: FaqEditorProps)
           </div>
 
           {/* Create new category */}
-          <div className="p-4 rounded-xl border border-blue-200 dark:border-blue-800/50 bg-blue-50 dark:bg-blue-950/20 space-y-3">
+          <div className="p-3.5 sm:p-4 rounded-xl border border-blue-200 dark:border-blue-800/50 bg-blue-50 dark:bg-blue-950/20 space-y-3">
             <h4 className="text-xs font-bold text-blue-800 dark:text-blue-300 flex items-center gap-1.5">
-              <FolderPlus className="h-4 w-4" /> Create New Category
+              <FolderPlus className="h-4 w-4 shrink-0" /> Create New Category
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
@@ -360,7 +352,7 @@ export default function FaqEditor({ sectionId, onCloseSection }: FaqEditorProps)
             <button
               onClick={handleCreateCategory}
               disabled={isSavingCategory}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-600/20 transition-all disabled:opacity-50"
+              className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-600/20 transition-all disabled:opacity-50"
             >
               {isSavingCategory ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
               Create Category
@@ -374,7 +366,7 @@ export default function FaqEditor({ sectionId, onCloseSection }: FaqEditorProps)
               <span className="text-xs text-slate-400">Loading categories...</span>
             </div>
           ) : categories.length === 0 ? (
-            <div className="text-center py-8 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
+            <div className="text-center py-8 p-4 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
               <p className="text-xs text-slate-500 dark:text-slate-400">No categories yet. Create one above to start adding FAQs.</p>
             </div>
           ) : (
@@ -401,20 +393,20 @@ export default function FaqEditor({ sectionId, onCloseSection }: FaqEditorProps)
                       />
                     </div>
                   ) : (
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-slate-900 dark:text-white">{cat.name}</span>
-                        <span className="rounded-full bg-blue-100 dark:bg-blue-900/40 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:text-blue-300">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-xs font-bold text-slate-900 dark:text-white truncate">{cat.name}</span>
+                        <span className="rounded-full bg-blue-100 dark:bg-blue-900/40 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:text-blue-300 shrink-0">
                           {cat._count?.faqs ?? 0} FAQs
                         </span>
                       </div>
                       {cat.description && (
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{cat.description}</p>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">{cat.description}</p>
                       )}
                     </div>
                   )}
 
-                  <div className="flex items-center gap-1.5 shrink-0">
+                  <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-center">
                     {editingCategory?.id === cat.id ? (
                       <>
                         <button
@@ -456,209 +448,248 @@ export default function FaqEditor({ sectionId, onCloseSection }: FaqEditorProps)
         </div>
       )}
 
-      {/* ------------------------------------------------------------------ */}
-      {/* FAQ LIST                                                           */}
-      {/* ------------------------------------------------------------------ */}
+      {/* FAQ LIST */}
       {showFaqs && (
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <HelpCircle className="h-5 w-5 text-blue-600" />
-              FAQs ({faqs.length})
-            </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              Live on <span className="font-semibold">/faqs</span>. Manage categories above, then assign one to each question below.
-            </p>
-          </div>
-          <button
-            onClick={openCreateForm}
-            disabled={categories.length === 0}
-            title={categories.length === 0 ? "Create a category first" : undefined}
-            className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600 text-white text-xs font-bold transition-all shadow-md shadow-blue-600/20"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            Add FAQ
-          </button>
-        </div>
-
-        {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search question or answer..."
-              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] py-2 pl-9 pr-3 text-xs text-slate-900 dark:text-white"
-            />
-          </div>
-          <select
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-            className="rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-white"
-          >
-            {categoryFilterOptions.map((c) => (
-              <option key={c} value={c}>
-                {c === "ALL" ? "All Categories" : c}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* List */}
-        <div className="space-y-2">
-          {filteredFaqs.length === 0 ? (
-            <div className="text-center py-12 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
-              <p className="text-sm text-slate-500 dark:text-slate-400">No FAQs match your filters.</p>
+        <div className="space-y-4 sm:space-y-6">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+            <div>
+              <h2 className="text-base sm:text-lg font-bold flex items-center gap-2">
+                <HelpCircle className="h-5 w-5 text-blue-600 shrink-0" />
+                FAQs Manager ({faqs.length})
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                Live on <span className="font-semibold text-slate-700 dark:text-slate-300">/faqs</span>. Manage categories above, then assign one to each question below.
+              </p>
             </div>
-          ) : (
-            filteredFaqs
-              .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-              .map((faq, i) => (
-                <div
-                  key={faq.id}
-                  className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0f1524] p-4"
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="flex flex-col gap-1 pt-0.5">
-                      <button
-                        onClick={() => handleMove(faq, "up")}
-                        disabled={i === 0}
-                        className="text-slate-400 hover:text-blue-600 disabled:opacity-30 disabled:hover:text-slate-400"
-                        title="Move up"
-                      >
-                        <ArrowUp className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        onClick={() => handleMove(faq, "down")}
-                        disabled={i === filteredFaqs.length - 1}
-                        className="text-slate-400 hover:text-blue-600 disabled:opacity-30 disabled:hover:text-slate-400"
-                        title="Move down"
-                      >
-                        <ArrowDown className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
+            <button
+              onClick={openCreateForm}
+              disabled={categories.length === 0}
+              title={categories.length === 0 ? "Create a category first" : undefined}
+              className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-md shadow-blue-600/20 shrink-0"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Add FAQ
+            </button>
+          </div>
 
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-slate-700">
-                          <Tag className="h-2.5 w-2.5" />
-                          {faq.category}
-                        </span>
-                      </div>
-                      <p className="text-sm font-bold text-slate-900 dark:text-white">{faq.question}</p>
-                      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{faq.answer}</p>
-                    </div>
+          {/* Filters Toolbar */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search question or answer..."
+                className="w-full rounded-xl border border-slate-300 dark:border-slate-800 bg-white dark:bg-[#0b0f19] py-2 pl-9 pr-3 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+              />
+            </div>
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="w-full sm:w-48 rounded-xl border border-slate-300 dark:border-slate-800 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+            >
+              {categoryFilterOptions.map((c) => (
+                <option key={c} value={c}>
+                  {c === "ALL" ? "All Categories" : c}
+                </option>
+              ))}
+            </select>
+          </div>
 
-                    <div className="flex items-center gap-1 shrink-0">
-                      <button
-                        onClick={() => openEditForm(faq)}
-                        className="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors"
-                        title="Edit"
+          {/* Tabular FAQ List */}
+          <div className="overflow-x-auto rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0f1524] shadow-xs">
+            {filteredFaqs.length === 0 ? (
+              <div className="text-center py-12 p-4">
+                <HelpCircle className="h-8 w-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">No FAQs match your search or filter.</p>
+              </div>
+            ) : (
+              <table className="w-full text-left border-collapse text-xs min-w-[600px]">
+                <thead>
+                  <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/60 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                    <th scope="col" className="py-3 px-3 text-center w-12">Order</th>
+                    <th scope="col" className="py-3 px-4 w-36 sm:w-40">Category</th>
+                    <th scope="col" className="py-3 px-4 min-w-[180px]">Question</th>
+                    <th scope="col" className="py-3 px-4 min-w-[220px]">Answer</th>
+                    <th scope="col" className="py-3 px-4 text-right w-20 sm:w-24">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                  {filteredFaqs
+                    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+                    .map((faq, i) => (
+                      <tr
+                        key={faq.id}
+                        className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors group"
                       >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(faq)}
-                        className="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-slate-800 transition-colors"
-                        title="Delete"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  </div>
+                        {/* Reordering Controls */}
+                        <td className="py-3 px-3">
+                          <div className="flex flex-col items-center justify-center gap-0.5">
+                            <button
+                              type="button"
+                              onClick={() => handleMove(faq, "up")}
+                              disabled={i === 0}
+                              className="p-0.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 disabled:opacity-20 disabled:hover:text-slate-400 transition-colors"
+                              title="Move Up"
+                            >
+                              <ArrowUp className="h-3 w-3" />
+                            </button>
+                            <span className="text-[10px] font-mono text-slate-400 font-semibold">{i + 1}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleMove(faq, "down")}
+                              disabled={i === filteredFaqs.length - 1}
+                              className="p-0.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 disabled:opacity-20 disabled:hover:text-slate-400 transition-colors"
+                              title="Move Down"
+                            >
+                              <ArrowDown className="h-3 w-3" />
+                            </button>
+                          </div>
+                        </td>
+
+                        {/* Category Badge */}
+                        <td className="py-3 px-4 align-top">
+                          <span className="inline-flex items-center gap-1.5 rounded-md bg-blue-50 dark:bg-blue-950/40 px-2.5 py-1 text-[11px] font-semibold text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-900/50 whitespace-nowrap">
+                            <Tag className="h-3 w-3 shrink-0" />
+                            {faq.category}
+                          </span>
+                        </td>
+
+                        {/* Question */}
+                        <td className="py-3 px-4 align-top">
+                          <p className="font-bold text-slate-900 dark:text-white leading-snug">
+                            {faq.question}
+                          </p>
+                        </td>
+
+                        {/* Answer */}
+                        <td className="py-3 px-4 align-top">
+                          <p className="text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-2" title={faq.answer}>
+                            {faq.answer}
+                          </p>
+                        </td>
+
+                        {/* Actions */}
+                        <td className="py-3 px-4 align-top text-right whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-1">
+                            <button
+                              onClick={() => openEditForm(faq)}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors"
+                              title="Edit FAQ"
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(faq)}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-slate-800 transition-colors"
+                              title="Delete FAQ"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+
+          {/* Add / Edit Modal */}
+          {isFormOpen && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 animate-in fade-in duration-150">
+              <div className="w-full max-w-lg max-h-[90vh] flex flex-col rounded-xl sm:rounded-2xl bg-white dark:bg-[#0f1524] border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">
+                <div className="flex items-center justify-between p-3.5 sm:p-4 px-4 sm:px-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 shrink-0">
+                  <h3 className="text-xs font-bold uppercase tracking-wider flex items-center gap-2">
+                    <HelpCircle className="h-4 w-4 text-blue-600 shrink-0" />
+                    {editingId ? "Edit FAQ" : "Add New FAQ"}
+                  </h3>
+                  <button
+                    onClick={closeForm}
+                    className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
                 </div>
-              ))
+
+                <form onSubmit={handleSubmit} className="p-4 sm:p-5 space-y-4 overflow-y-auto">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                      Category
+                    </label>
+                    {categories.length === 0 ? (
+                      <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+                        ⚠ Create at least one category first
+                      </p>
+                    ) : (
+                      <select
+                        value={form.categoryId}
+                        onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
+                        className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                        required
+                      >
+                        <option value="">— Select category —</option>
+                        {categories.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.name}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                      Question
+                    </label>
+                    <input
+                      type="text"
+                      value={form.question}
+                      onChange={(e) => setForm({ ...form, question: e.target.value })}
+                      placeholder="How fast can you..."
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                      Answer
+                    </label>
+                    <textarea
+                      value={form.answer}
+                      onChange={(e) => setForm({ ...form, answer: e.target.value })}
+                      rows={4}
+                      placeholder="We can..."
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                      required
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+                    <button
+                      type="button"
+                      onClick={closeForm}
+                      className="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSaving}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-md shadow-blue-600/20"
+                    >
+                      {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                      {editingId ? "Update FAQ" : "Create FAQ"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
           )}
         </div>
-
-        {/* Add / Edit Modal */}
-        {isFormOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
-            <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-[#0f1524] border border-slate-200 dark:border-slate-800 shadow-2xl">
-              <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-800">
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                  {editingId ? "Edit FAQ" : "Add New FAQ"}
-                </h3>
-                <button onClick={closeForm} className="text-slate-400 hover:text-slate-700 dark:hover:text-white">
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-
-              <form onSubmit={handleSubmit} className="p-5 space-y-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                    Category
-                  </label>
-                  {categories.length === 0 ? (
-                    <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
-                      ⚠ Create at least one category first
-                    </p>
-                  ) : (
-                    <select
-                      value={form.categoryId}
-                      onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
-                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-semibold"
-                    >
-                      <option value="">— Select category —</option>
-                      {categories.map((c) => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
-                      ))}
-                    </select>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                    Question
-                  </label>
-                  <input
-                    type="text"
-                    value={form.question}
-                    onChange={(e) => setForm({ ...form, question: e.target.value })}
-                    placeholder="How fast can you...?"
-                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-semibold"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                    Answer
-                  </label>
-                  <textarea
-                    value={form.answer}
-                    onChange={(e) => setForm({ ...form, answer: e.target.value })}
-                    rows={4}
-                    placeholder="We can..."
-                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white resize-none"
-                  />
-                </div>
-
-                <div className="flex items-center justify-end gap-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={closeForm}
-                    className="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isSaving}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-md shadow-blue-600/20"
-                  >
-                    {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
-                    {editingId ? "Update FAQ" : "Create FAQ"}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-      </div>
       )}
     </div>
   );

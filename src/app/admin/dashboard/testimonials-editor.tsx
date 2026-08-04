@@ -108,10 +108,8 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
     const found = testimonials.find((t) => t.id === selectedItemId);
     if (found) {
       setSelectedTestimonial(found);
-      // mark as read when opened via notification
       if (!found.isRead) handleMarkRead(found.id);
     }
-    // notify parent to clear the selected id so polling/updates don't re-open it repeatedly
     onClearSelectedItem?.();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedItemId, testimonials]);
@@ -283,40 +281,40 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] p-8 space-y-3">
-        <Loader2 className="h-8 w-8 text-violet-600 animate-spin" />
-        <p className="text-xs font-semibold text-slate-500">Loading Testimonials database records...</p>
+      <div className="flex flex-col items-center justify-center min-h-[300px] sm:min-h-[400px] p-4 sm:p-8 space-y-3">
+        <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 text-violet-600 animate-spin" />
+        <p className="text-xs sm:text-sm font-semibold text-slate-500 text-center">Loading Testimonials database records...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="w-full max-w-full space-y-4 sm:space-y-6 text-slate-900 dark:text-white">
       {/* HEADER CONTROLS */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-white dark:bg-[#131927] border border-slate-200/80 dark:border-slate-800 shadow-xs">
-        <div>
-          <div className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5 text-violet-600 dark:text-violet-400" />
-            <h2 className="text-base font-extrabold text-slate-900 dark:text-white">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-white dark:bg-[#131927] border border-slate-200/80 dark:border-slate-800 shadow-xs">
+        <div className="space-y-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 text-violet-600 dark:text-violet-400 shrink-0" />
+            <h2 className="text-sm sm:text-base font-extrabold tracking-tight">
               Testimonials & Reviews Configurator (/testimonials)
             </h2>
             {unreadCount > 0 && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-amber-500/10 text-amber-600 border border-amber-500/20">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-extrabold bg-amber-500/10 text-amber-600 border border-amber-500/20">
                 <BellRing className="h-3 w-3" />
                 {unreadCount} Unread Review(s)
               </span>
             )}
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             Configure dynamic page titles, badges, rating statistics, and moderate client reviews in real-time.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
           <button
             type="button"
             onClick={() => setFormData(DEFAULT_TESTIMONIALS_PAGE_DATA)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all"
+            className="flex-1 sm:flex-none px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all flex items-center justify-center gap-1.5"
           >
             <RotateCcw className="h-3.5 w-3.5" />
             <span>Reset Defaults</span>
@@ -326,7 +324,7 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
             type="button"
             disabled={isSaving}
             onClick={handleSaveHeader}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-md shadow-violet-600/20"
+            className="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-md shadow-violet-600/20 flex items-center justify-center gap-1.5"
           >
             {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
             <span>{isSaving ? "Saving..." : "Save Content"}</span>
@@ -336,22 +334,22 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
 
       {/* SECTION 1: HERO & METRICS CONFIGURATOR */}
       {showHeroSection && (
-        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-6">
+        <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-6">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-2">
-              <span className="font-mono text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">
+              <span className="font-mono text-[10px] sm:text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">
                 #01
               </span>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+              <h3 className="text-xs sm:text-sm font-bold">
                 Testimonials Hero Banner, Badges & Overall Rating Metrics
               </h3>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                <Tag className="h-3.5 w-3.5 text-violet-500" />
+                <Tag className="h-3.5 w-3.5 text-violet-500 shrink-0" />
                 Hero Badge Tag
               </label>
               <input
@@ -364,7 +362,7 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
 
             <div>
               <label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                <Type className="h-3.5 w-3.5 text-violet-500" />
+                <Type className="h-3.5 w-3.5 text-violet-500 shrink-0" />
                 Main Header Title
               </label>
               <input
@@ -387,7 +385,7 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
               />
             </div>
 
-            <div>
+            <div className="md:col-span-2">
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 Feedback Modal Button Label
               </label>
@@ -407,10 +405,10 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
 
           {/* RATING METRICS BAR CONFIGURATOR */}
           <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <BarChart3 className="h-4 w-4 text-violet-600 dark:text-violet-400" />
-                <h4 className="text-xs font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">
+                <BarChart3 className="h-4 w-4 text-violet-600 dark:text-violet-400 shrink-0" />
+                <h4 className="text-[10px] sm:text-xs font-extrabold uppercase tracking-wider">
                   Rating Stats & Trust Metrics Bar
                 </h4>
               </div>
@@ -418,23 +416,23 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
               <button
                 type="button"
                 onClick={handleAddMetric}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-400 hover:bg-violet-500/20 text-xs font-bold transition-all"
+                className="w-full sm:w-auto flex items-center justify-center gap-1 px-3 py-1.5 rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-400 hover:bg-violet-500/20 text-xs font-bold transition-all"
               >
                 <Plus className="h-3.5 w-3.5" />
                 <span>Add Metric Stat</span>
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {(Array.isArray(formData.metrics) ? formData.metrics : []).map((m: any, idx: number) => (
                 <div
                   key={idx}
-                  className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#0b0f19] space-y-2.5 relative group"
+                  className="p-3.5 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#0b0f19] space-y-2.5 relative group"
                 >
                   <button
                     type="button"
                     onClick={() => handleRemoveMetric(idx)}
-                    className="absolute top-2 right-2 p-1 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute top-2 right-2 p-1 text-red-400 hover:text-red-600 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                     title="Remove metric"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
@@ -472,27 +470,27 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
 
       {/* SECTION 2: TABULAR TESTIMONIALS MODERATION PANEL */}
       {showReviewsSection && (
-        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-5 shadow-xs">
+        <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-5 shadow-xs">
           {/* Section Header Controls */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-2">
-              <span className="font-mono text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">
+              <span className="font-mono text-[10px] sm:text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">
                 #02
               </span>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+              <h3 className="text-xs sm:text-sm font-bold">
                 Client Reviews Moderation ({testimonials.length} Submissions)
               </h3>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl">
+            <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
+              <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl w-full sm:w-auto justify-center">
                 <button
                   type="button"
                   onClick={() => {
                     setFilterTab("ALL");
                     setCurrentPage(1);
                   }}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                  className={`flex-1 sm:flex-none px-3 py-1 rounded-lg text-xs font-bold transition-all ${
                     filterTab === "ALL"
                       ? "bg-violet-600 text-white shadow-xs"
                       : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
@@ -507,7 +505,7 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
                     setFilterTab("UNREAD");
                     setCurrentPage(1);
                   }}
-                  className={`flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                  className={`flex-1 sm:flex-none flex items-center justify-center gap-1 px-3 py-1 rounded-lg text-xs font-bold transition-all ${
                     filterTab === "UNREAD"
                       ? "bg-amber-500 text-white shadow-xs"
                       : "text-amber-600 dark:text-amber-400"
@@ -527,7 +525,7 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
                     setFilterTab("APPROVED");
                     setCurrentPage(1);
                   }}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                  className={`flex-1 sm:flex-none px-3 py-1 rounded-lg text-xs font-bold transition-all ${
                     filterTab === "APPROVED"
                       ? "bg-emerald-600 text-white shadow-xs"
                       : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
@@ -544,7 +542,7 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
                   setPageSize(Number(e.target.value));
                   setCurrentPage(1);
                 }}
-                className="bg-slate-100 dark:bg-slate-800 border-none rounded-xl px-2 py-1 text-xs font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                className="bg-slate-100 dark:bg-slate-800 border-none rounded-xl px-2 py-1 text-xs font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-violet-500 shrink-0"
               >
                 <option value={5}>5 per page</option>
                 <option value={10}>10 per page</option>
@@ -556,17 +554,17 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
 
           {/* TABULAR REVIEWS LIST */}
           {filteredItems.length === 0 ? (
-            <div className="text-center py-12 border border-dashed border-slate-300 dark:border-slate-800 rounded-2xl">
+            <div className="text-center py-12 p-4 border border-dashed border-slate-300 dark:border-slate-800 rounded-xl sm:rounded-2xl">
               <MessageSquare className="h-8 w-8 text-slate-400 mx-auto mb-2" />
               <p className="text-xs font-bold text-slate-600 dark:text-slate-400">
                 No review submissions found in this category.
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-2xl border border-slate-200/80 dark:border-slate-800">
-              <table className="w-full text-left border-collapse">
+            <div className="overflow-x-auto rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800">
+              <table className="w-full text-left border-collapse min-w-[640px]">
                 <thead>
-                  <tr className="bg-slate-50 dark:bg-[#0b0f19] border-b border-slate-200 dark:border-slate-800 text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  <tr className="bg-slate-50 dark:bg-[#0b0f19] border-b border-slate-200 dark:border-slate-800 text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     <th className="py-3 px-4">Client Details</th>
                     <th className="py-3 px-4">Company & Role</th>
                     <th className="py-3 px-4">Rating</th>
@@ -606,7 +604,7 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
                             </div>
                             <div className="min-w-0">
                               <div className="flex items-center gap-1.5">
-                                <span className="font-extrabold text-slate-900 dark:text-white truncate">
+                                <span className="font-extrabold truncate max-w-[120px] sm:max-w-none">
                                   {item.clientName}
                                 </span>
                                 {!item.isRead && (
@@ -615,7 +613,7 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
                                   </span>
                                 )}
                               </div>
-                              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-[120px] sm:max-w-none">
                                 {item.userEmail || "No email provided"}
                               </p>
                             </div>
@@ -623,19 +621,19 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
                         </td>
 
                         {/* Company & Role */}
-                        <td className="py-3.5 px-4 font-semibold text-slate-700 dark:text-slate-300">
+                        <td className="py-3.5 px-4 font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap">
                           <div>
-                            <span className="text-violet-600 dark:text-violet-400 font-bold block truncate">
+                            <span className="text-violet-600 dark:text-violet-400 font-bold block truncate max-w-[120px] sm:max-w-none">
                               {item.clientRole || "Client"}
                             </span>
-                            <span className="text-slate-500 dark:text-slate-400 text-[11px] truncate">
+                            <span className="text-slate-500 dark:text-slate-400 text-[11px] truncate max-w-[120px] sm:max-w-none block">
                               {item.company || "Independent"}
                             </span>
                           </div>
                         </td>
 
                         {/* Star Rating */}
-                        <td className="py-3.5 px-4">
+                        <td className="py-3.5 px-4 whitespace-nowrap">
                           <div className="flex items-center gap-1">
                             <div className="flex text-amber-400">
                               {Array.from({ length: item.rating || 5 }).map((_, i) => (
@@ -660,7 +658,7 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
                         </td>
 
                         {/* Status */}
-                        <td className="py-3.5 px-4">
+                        <td className="py-3.5 px-4 whitespace-nowrap">
                           {item.isApproved ? (
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
                               <CheckCircle2 className="h-3 w-3" />
@@ -674,7 +672,7 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
                         </td>
 
                         {/* Actions */}
-                        <td className="py-3.5 px-4 text-right">
+                        <td className="py-3.5 px-4 text-right whitespace-nowrap">
                           <div
                             className="flex items-center justify-end gap-1.5"
                             onClick={(e) => e.stopPropagation()}
@@ -724,8 +722,8 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
 
           {/* PAGINATION & SEE MORE CONTROLS */}
           {filteredItems.length > 0 && (
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-3 border-t border-slate-100 dark:border-slate-800">
-              <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <div className="text-xs text-slate-500 dark:text-slate-400 font-medium text-center sm:text-left">
                 Showing <span className="font-bold text-slate-900 dark:text-white">{startIndex + 1}</span> to{" "}
                 <span className="font-bold text-slate-900 dark:text-white">{Math.min(startIndex + pageSize, filteredItems.length)}</span>{" "}
                 of <span className="font-bold text-slate-900 dark:text-white">{filteredItems.length}</span> reviews
@@ -774,11 +772,11 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
       {selectedTestimonial &&
         typeof window !== "undefined" &&
         createPortal(
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
-            <div className="w-full max-w-xl bg-white dark:bg-[#131927] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-6 space-y-5">
-              <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+            <div className="w-full max-w-xl max-h-[90vh] flex flex-col bg-white dark:bg-[#131927] border border-slate-200 dark:border-slate-800 rounded-xl sm:rounded-2xl shadow-2xl p-4 sm:p-6 space-y-4 sm:space-y-5 overflow-y-auto">
+              <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-3 shrink-0">
                 <div className="flex items-center gap-3">
-                  <div className="relative h-11 w-11 shrink-0 rounded-2xl overflow-hidden bg-gradient-to-tr from-violet-600 to-indigo-800 text-white font-extrabold text-sm flex items-center justify-center shadow-xs">
+                  <div className="relative h-10 w-10 sm:h-11 sm:w-11 shrink-0 rounded-2xl overflow-hidden bg-gradient-to-tr from-violet-600 to-indigo-800 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center shadow-xs">
                     {selectedTestimonial.avatarUrl ? (
                       <Image
                         src={selectedTestimonial.avatarUrl}
@@ -790,11 +788,11 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
                       <span>{getInitials(selectedTestimonial.clientName)}</span>
                     )}
                   </div>
-                  <div>
-                    <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+                  <div className="min-w-0">
+                    <h3 className="text-sm sm:text-base font-extrabold truncate">
                       {selectedTestimonial.clientName}
                     </h3>
-                    <p className="text-xs text-violet-600 dark:text-violet-400 font-semibold">
+                    <p className="text-xs text-violet-600 dark:text-violet-400 font-semibold truncate">
                       {selectedTestimonial.clientRole}, {selectedTestimonial.company}
                     </p>
                   </div>
@@ -806,13 +804,13 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
                     setSelectedTestimonial(null);
                     onClearSelectedItem?.();
                   }}
-                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 shrink-0"
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 text-xs bg-slate-50 dark:bg-[#0b0f19] p-3 rounded-xl border border-slate-100 dark:border-slate-800/60">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-slate-50 dark:bg-[#0b0f19] p-3 rounded-xl border border-slate-100 dark:border-slate-800/60">
                 <div>
                   <span className="text-slate-400 text-[10px] uppercase font-bold block">Rating</span>
                   <div className="flex items-center gap-1 text-amber-400 font-bold mt-0.5">
@@ -836,7 +834,7 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
                 </div>
                 <div>
                   <span className="text-slate-400 text-[10px] uppercase font-bold block">User Email</span>
-                  <span className="font-medium text-slate-700 dark:text-slate-300">
+                  <span className="font-medium text-slate-700 dark:text-slate-300 break-all">
                     {selectedTestimonial.userEmail || "N/A"}
                   </span>
                 </div>
@@ -854,13 +852,13 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
                 <span className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
                   Client Review Feedback:
                 </span>
-                <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0b0f19] border border-slate-200/80 dark:border-slate-800 text-xs text-slate-800 dark:text-slate-200 leading-relaxed italic max-h-60 overflow-y-auto font-medium">
+                <div className="p-3.5 sm:p-4 rounded-xl bg-slate-50 dark:bg-[#0b0f19] border border-slate-200/80 dark:border-slate-800 text-xs text-slate-800 dark:text-slate-200 leading-relaxed italic max-h-48 sm:max-h-60 overflow-y-auto font-medium">
                   "{selectedTestimonial.content}"
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-2">
-                <span className="text-[10px] font-mono text-slate-400">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
+                <span className="text-[10px] font-mono text-slate-400 text-center sm:text-left">
                   IP: {selectedTestimonial.ipAddress || "127.0.0.1"}
                 </span>
 
@@ -868,7 +866,7 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
                   <button
                     type="button"
                     onClick={() => handleToggleApprove(selectedTestimonial)}
-                    className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                    className={`flex-1 sm:flex-none flex items-center justify-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                       selectedTestimonial.isApproved
                         ? "bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-300"
                         : "bg-emerald-600 hover:bg-emerald-700 text-white"
@@ -877,17 +875,17 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
                     {selectedTestimonial.isApproved ? "Unpublish Review" : "Approve & Publish"}
                   </button>
 
-                          <button
-                              type="button"
-                              onClick={() => {
-                                handleDelete(selectedTestimonial);
-                                onClearSelectedItem?.();
-                              }}
-                              className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-red-200 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400 text-xs font-bold transition-all"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                              <span>Delete</span>
-                            </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleDelete(selectedTestimonial);
+                      onClearSelectedItem?.();
+                    }}
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-1 px-3 py-1.5 rounded-xl border border-red-200 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400 text-xs font-bold transition-all"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    <span>Delete</span>
+                  </button>
                 </div>
               </div>
             </div>

@@ -113,7 +113,7 @@ function FileUploadControl({
 
   return (
     <div className="space-y-1.5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-0.5 sm:gap-2">
         <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
           {label}
         </label>
@@ -162,7 +162,7 @@ function FileUploadControl({
           type="button"
           disabled={isUploading}
           onClick={() => fileInputRef.current?.click()}
-          className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 text-xs font-semibold hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors shrink-0 disabled:opacity-50"
+          className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 text-xs font-semibold hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors shrink-0 disabled:opacity-50"
         >
           {isUploading ? (
             <>
@@ -247,7 +247,7 @@ function LinkedInSkillSection({ skills, onChange }: LinkedInSkillSectionProps) {
 
   return (
     <div className="p-3.5 rounded-xl border border-blue-100 dark:border-blue-900/40 bg-blue-50/40 dark:bg-blue-950/20 space-y-3">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
         <div className="flex items-center gap-1.5">
           <span className="text-xs font-bold text-slate-900 dark:text-white">
             Core Expertise ({skills.length})
@@ -263,12 +263,12 @@ function LinkedInSkillSection({ skills, onChange }: LinkedInSkillSectionProps) {
             key={skill}
             className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-white dark:bg-[#0b0f19] text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 shadow-xs group hover:border-blue-400 transition-all"
           >
-            <CheckCircle2 className="h-3 w-3 text-[#0a66c2]" />
-            <span>{skill}</span>
+            <CheckCircle2 className="h-3 w-3 text-[#0a66c2] shrink-0" />
+            <span className="truncate max-w-[120px] sm:max-w-none">{skill}</span>
             <button
               type="button"
               onClick={() => handleRemoveSkill(skill)}
-              className="text-slate-400 hover:text-red-500 rounded-full p-0.5 transition-colors"
+              className="text-slate-400 hover:text-red-500 rounded-full p-0.5 transition-colors shrink-0"
               title={`Remove ${skill}`}
             >
               <X className="h-3 w-3" />
@@ -282,7 +282,7 @@ function LinkedInSkillSection({ skills, onChange }: LinkedInSkillSectionProps) {
       </div>
 
       {/* Add New Skill Input Box */}
-      <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
         <input
           type="text"
           placeholder="Type skill name & press Enter..."
@@ -294,7 +294,7 @@ function LinkedInSkillSection({ skills, onChange }: LinkedInSkillSectionProps) {
         <button
           type="button"
           onClick={handleAddSkill}
-          className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#0a66c2] hover:bg-[#084e96] text-white text-xs font-bold transition-all shadow-xs shrink-0"
+          className="flex items-center justify-center gap-1 px-3 py-1.5 rounded-xl bg-[#0a66c2] hover:bg-[#084e96] text-white text-xs font-bold transition-all shadow-xs shrink-0"
         >
           <Plus className="h-3.5 w-3.5" />
           <span>Add Skill</span>
@@ -303,7 +303,7 @@ function LinkedInSkillSection({ skills, onChange }: LinkedInSkillSectionProps) {
 
       {/* Quick Add Suggestions */}
       <div className="pt-1 flex flex-wrap items-center gap-1">
-        <span className="text-[10px] text-slate-400 font-semibold mr-1">Quick Add:</span>
+        <span className="text-[10px] text-slate-400 font-semibold mr-1 shrink-0">Quick Add:</span>
         {SUGGESTED_SKILLS.filter((s) => !skills.includes(s)).slice(0, 4).map((sugg) => (
           <button
             key={sugg}
@@ -520,32 +520,32 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] gap-3 bg-white dark:bg-[#131927] rounded-2xl border border-slate-200 dark:border-slate-800 p-8">
-        <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
-        <p className="text-xs font-semibold text-slate-500">Loading About Page data from database...</p>
+      <div className="flex flex-col items-center justify-center min-h-[300px] sm:min-h-[400px] gap-3 bg-white dark:bg-[#131927] rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-8">
+        <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 animate-spin" />
+        <p className="text-xs sm:text-sm font-semibold text-slate-500 text-center">Loading About Page data from database...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="w-full max-w-full space-y-4 sm:space-y-6 text-slate-900 dark:text-white">
       
       {/* Action Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#131927] p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
-        <div>
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <Info className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#131927] p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
+        <div className="space-y-1">
+          <h2 className="text-base sm:text-lg font-bold flex items-center gap-2">
+            <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0" />
             Editing About Us Page Content & Cloudinary Uploads
           </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             Configure every badge tag, section main title, stat metric (89%, 350+), Cloudinary images/videos, and team members dynamically.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
           <button
             onClick={handleReset}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 transition-colors"
+            className="flex-1 sm:flex-none px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5"
           >
             <RotateCcw className="h-3.5 w-3.5" />
             <span>Reset Defaults</span>
@@ -554,7 +554,7 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-500/20 transition-all disabled:opacity-50"
+            className="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-500/20 transition-all disabled:opacity-50 flex items-center justify-center gap-1.5"
           >
             {isSaving ? (
               <>
@@ -573,18 +573,18 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
 
       {/* SECTION 1: ABOUT HERO BANNER + STAT METRICS GRID */}
       {(!sectionId || sectionId === "about-hero") && (
-        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-5">
+        <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-5">
           <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
-            <span className="font-mono text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
+            <span className="font-mono text-[10px] sm:text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
               #01
             </span>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">About Hero Banner Badges, Titles & Stat Metrics</h3>
+            <h3 className="text-xs sm:text-sm font-bold">About Hero Banner Badges, Titles & Stat Metrics</h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                <Tag className="h-3.5 w-3.5 text-blue-500" />
+                <Tag className="h-3.5 w-3.5 text-blue-500 shrink-0" />
                 Hero Badge Tag
               </label>
               <input
@@ -607,7 +607,7 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
 
             <div className="md:col-span-2">
               <label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                <Type className="h-3.5 w-3.5 text-blue-500" />
+                <Type className="h-3.5 w-3.5 text-blue-500 shrink-0" />
                 Hero Main Title
               </label>
               <input
@@ -632,7 +632,7 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
 
             <div>
               <label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                <MousePointerClick className="h-3.5 w-3.5 text-blue-500" />
+                <MousePointerClick className="h-3.5 w-3.5 text-blue-500 shrink-0" />
                 Primary Button Label
               </label>
               <input
@@ -645,7 +645,7 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
 
             <div>
               <label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                <MousePointerClick className="h-3.5 w-3.5 text-blue-500" />
+                <MousePointerClick className="h-3.5 w-3.5 text-blue-500 shrink-0" />
                 Secondary Button Label
               </label>
               <input
@@ -659,10 +659,10 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
 
           {/* DYNAMIC STATS BANNER METRICS GRID (89%, 350+, 150+, 50+) */}
           <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-blue-600" />
-                <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+                <TrendingUp className="h-4 w-4 text-blue-600 shrink-0" />
+                <h4 className="text-xs font-bold">
                   Glassmorphic Stat Metrics ({formData.stats.length})
                 </h4>
               </div>
@@ -679,7 +679,7 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
                   setFormData({ ...formData, stats: [...formData.stats, newStat] });
                   toast.success("Added new stat metric!");
                 }}
-                className="flex items-center gap-1 px-3 py-1 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-colors shadow-xs"
+                className="w-full sm:w-auto flex items-center justify-center gap-1 px-3 py-1 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-colors shadow-xs"
               >
                 <Plus className="h-3.5 w-3.5" />
                 <span>Add Stat Metric</span>
@@ -763,20 +763,20 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
 
       {/* SECTION 2: STORY & MISSION BADGES & TITLES */}
       {(!sectionId || sectionId === "about-mission") && (
-        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-5">
+        <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-5">
           <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
-            <span className="font-mono text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
+            <span className="font-mono text-[10px] sm:text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
               #02
             </span>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+            <h3 className="text-xs sm:text-sm font-bold">
               Story & Mission Section Badges & Header Titles
             </h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                <Tag className="h-3.5 w-3.5 text-blue-500" />
+                <Tag className="h-3.5 w-3.5 text-blue-500 shrink-0" />
                 Mission Tag Badge
               </label>
               <input
@@ -789,7 +789,7 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
 
             <div>
               <label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                <Type className="h-3.5 w-3.5 text-blue-500" />
+                <Type className="h-3.5 w-3.5 text-blue-500 shrink-0" />
                 Mission Section Title
               </label>
               <input
@@ -826,11 +826,11 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
           </div>
 
           {/* DYNAMIC FEATURE BULLETS SECTION */}
-          <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 space-y-3">
-            <div className="flex items-center justify-between">
+          <div className="p-3.5 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-blue-600" />
-                <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+                <CheckCircle2 className="h-4 w-4 text-blue-600 shrink-0" />
+                <h4 className="text-xs font-bold">
                   Dynamic Feature Bullet Points ({formData.mission.bullets.length})
                 </h4>
               </div>
@@ -847,7 +847,7 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
                   });
                   toast.success("Added new bullet point!");
                 }}
-                className="flex items-center gap-1 px-3 py-1 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-colors shadow-xs"
+                className="w-full sm:w-auto flex items-center justify-center gap-1 px-3 py-1 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-colors shadow-xs"
               >
                 <Plus className="h-3.5 w-3.5" />
                 <span>Add Bullet</span>
@@ -882,7 +882,7 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
                         });
                         toast.success("Deleted bullet point!");
                       }}
-                      className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/50 rounded"
+                      className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/50 rounded shrink-0"
                       title="Remove bullet"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -894,10 +894,10 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
           </div>
 
           {/* DYNAMIC GLOBAL PODS VISUAL CARD CONFIGURATION */}
-          <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 space-y-3">
+          <div className="p-3.5 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 space-y-3">
             <div className="flex items-center gap-2">
-              <Globe2 className="h-4 w-4 text-blue-600" />
-              <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+              <Globe2 className="h-4 w-4 text-blue-600 shrink-0" />
+              <h4 className="text-xs font-bold">
                 Global Engineering Pods Card Headline & Stat Badges
               </h4>
             </div>
@@ -977,13 +977,13 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
 
       {/* SECTION 3: CORE VALUES BADGES & TITLES */}
       {(!sectionId || sectionId === "about-stats") && (
-        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+        <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-2">
-              <span className="font-mono text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
+              <span className="font-mono text-[10px] sm:text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
                 #03
               </span>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Core Values Badges & Section Titles</h3>
+              <h3 className="text-xs sm:text-sm font-bold">Core Values Badges & Section Titles</h3>
             </div>
 
             <button
@@ -1003,17 +1003,17 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
                 });
                 toast.success("Added new core value!");
               }}
-              className="flex items-center gap-1 px-3 py-1 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-colors shadow-xs"
+              className="w-full sm:w-auto flex items-center justify-center gap-1 px-3 py-1 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-colors shadow-xs"
             >
               <Plus className="h-3.5 w-3.5" />
               <span>Add Core Value</span>
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-3 border-b border-slate-100 dark:border-slate-800">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 pb-3 border-b border-slate-100 dark:border-slate-800">
             <div>
               <label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                <Tag className="h-3.5 w-3.5 text-blue-500" />
+                <Tag className="h-3.5 w-3.5 text-blue-500 shrink-0" />
                 Core Values Tag Badge
               </label>
               <input
@@ -1026,7 +1026,7 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
 
             <div>
               <label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                <Type className="h-3.5 w-3.5 text-blue-500" />
+                <Type className="h-3.5 w-3.5 text-blue-500 shrink-0" />
                 Core Values Section Title
               </label>
               <input
@@ -1038,9 +1038,9 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             {formData.values.items.map((val, idx) => (
-              <div key={val.id} className="p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 space-y-2">
+              <div key={val.id} className="p-3.5 sm:p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-bold uppercase text-blue-600">Value #{idx + 1}</span>
                   {formData.values.items.length > 1 && (
@@ -1098,16 +1098,17 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
 
       {/* SECTION 4: LEADERSHIP TEAM BADGES & TITLES + LINKEDIN SKILL SECTION */}
       {(!sectionId || sectionId === "about-team") && (
-        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+        <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-2">
-              <span className="font-mono text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
+              <span className="font-mono text-[10px] sm:text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
                 #04
               </span>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Leadership Section Badges, Titles & Team Members</h3>
+              <h3 className="text-xs sm:text-sm font-bold">Leadership Section Badges, Titles & Team Members</h3>
             </div>
 
             <button
+              type="button"
               onClick={() => {
                 const newMember = {
                   id: `team-${Date.now()}`,
@@ -1126,7 +1127,7 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
                 });
                 toast.success("Added new team member!");
               }}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 text-xs font-bold hover:bg-blue-100 transition-colors"
+              className="w-full sm:w-auto flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 text-xs font-bold hover:bg-blue-100 transition-colors"
             >
               <Plus className="h-3.5 w-3.5" />
               <span>Add Member</span>
@@ -1136,7 +1137,7 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
             <div>
               <label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                <Tag className="h-3.5 w-3.5 text-blue-500" />
+                <Tag className="h-3.5 w-3.5 text-blue-500 shrink-0" />
                 Leadership Tag Badge
               </label>
               <input
@@ -1149,7 +1150,7 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
 
             <div>
               <label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                <Type className="h-3.5 w-3.5 text-blue-500" />
+                <Type className="h-3.5 w-3.5 text-blue-500 shrink-0" />
                 Leadership Main Title
               </label>
               <input
@@ -1173,16 +1174,16 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
             {formData.leadership.team.map((member, idx) => {
               const computedInitials = getInitials(member.name);
 
               return (
-                <div key={member.id} className="p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 space-y-3">
+                <div key={member.id} className="p-3.5 sm:p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 space-y-3">
                   
                   {/* Top Bar with Live Image / Initials Avatar Preview */}
-                  <div className="flex items-center justify-between pb-2 border-b border-slate-200/60 dark:border-slate-700/60">
-                    <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-between gap-2 pb-2 border-b border-slate-200/60 dark:border-slate-700/60">
+                    <div className="flex items-center gap-3 min-w-0">
                       {member.imageUrl && member.imageUrl.trim() !== "" ? (
                         <div className="relative h-10 w-10 rounded-full overflow-hidden border-2 border-blue-500 shadow-sm shrink-0">
                           <img
@@ -1200,15 +1201,16 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
                         </div>
                       )}
 
-                      <div>
-                        <h4 className="text-xs font-bold text-slate-900 dark:text-white">{member.name || "Unnamed Member"}</h4>
-                        <p className="text-[10px] font-medium text-slate-400">
+                      <div className="min-w-0">
+                        <h4 className="text-xs font-bold truncate">{member.name || "Unnamed Member"}</h4>
+                        <p className="text-[10px] font-medium text-slate-400 truncate">
                           {member.imageUrl && member.imageUrl.trim() !== "" ? "Custom Image Uploaded" : `Initials Avatar (${computedInitials})`}
                         </p>
                       </div>
                     </div>
 
                     <button
+                      type="button"
                       onClick={() => {
                         const memberToDelete = member;
                         if (memberToDelete.imageUrl) {
@@ -1225,7 +1227,7 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
                         });
                         toast.success(`Deleted team member "${memberToDelete.name}"`);
                       }}
-                      className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/50 rounded transition-colors"
+                      className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/50 rounded transition-colors shrink-0"
                       title="Delete member"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -1233,7 +1235,7 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
                   </div>
 
                   {/* Member Name & Role */}
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <div>
                       <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400">Full Name</label>
                       <input

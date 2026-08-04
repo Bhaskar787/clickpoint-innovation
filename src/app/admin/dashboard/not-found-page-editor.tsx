@@ -158,40 +158,42 @@ export default function NotFoundPageEditor({ sectionId, onCloseSection }: NotFou
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] gap-3 bg-white dark:bg-[#131927] rounded-2xl border border-slate-200 dark:border-slate-800 p-8">
-        <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
-        <p className="text-xs font-semibold text-slate-500">Loading 404 Page data from database...</p>
+      <div className="flex flex-col items-center justify-center min-h-[300px] sm:min-h-[400px] gap-3 bg-white dark:bg-[#131927] rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-8">
+        <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 animate-spin" />
+        <p className="text-xs sm:text-sm font-semibold text-slate-500 text-center">Loading 404 Page data from database...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="w-full max-w-full space-y-4 sm:space-y-6 text-slate-900 dark:text-white">
       {/* Action Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#131927] p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
-        <div>
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#131927] p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
+        <div className="space-y-1">
+          <h2 className="text-base sm:text-lg font-bold flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0" />
             Editing 404 Error Page Content
           </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             Configure the badge tag, error code, headline, subtitle, and every recovery navigation link dynamically.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
           <button
+            type="button"
             onClick={handleReset}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 transition-colors"
+            className="flex-1 sm:flex-none px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5"
           >
             <RotateCcw className="h-3.5 w-3.5" />
             <span>Reset Defaults</span>
           </button>
 
           <button
+            type="button"
             onClick={handleSave}
             disabled={isSaving}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-500/20 transition-all disabled:opacity-50"
+            className="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-500/20 transition-all disabled:opacity-50 flex items-center justify-center gap-1.5"
           >
             {isSaving ? (
               <>
@@ -210,20 +212,20 @@ export default function NotFoundPageEditor({ sectionId, onCloseSection }: NotFou
 
       {/* SECTION 1: 404 HERO & BLUEPRINT GRID */}
       {(!sectionId || sectionId === "404-hero") && (
-        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-5">
+        <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-5">
           <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
-            <span className="font-mono text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
+            <span className="font-mono text-[10px] sm:text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
               #01
             </span>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+            <h3 className="text-xs sm:text-sm font-bold">
               404 Error Hero Badge, Error Code, Titles & Subtitle
             </h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                <Tag className="h-3.5 w-3.5 text-blue-500" />
+                <Tag className="h-3.5 w-3.5 text-blue-500 shrink-0" />
                 Eyebrow Badge Tag
               </label>
               <input
@@ -238,7 +240,7 @@ export default function NotFoundPageEditor({ sectionId, onCloseSection }: NotFou
 
             <div>
               <label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                <Hash className="h-3.5 w-3.5 text-blue-500" />
+                <Hash className="h-3.5 w-3.5 text-blue-500 shrink-0" />
                 Error Code (e.g. 404)
               </label>
               <input
@@ -254,7 +256,7 @@ export default function NotFoundPageEditor({ sectionId, onCloseSection }: NotFou
 
             <div className="md:col-span-2">
               <label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                <Type className="h-3.5 w-3.5 text-blue-500" />
+                <Type className="h-3.5 w-3.5 text-blue-500 shrink-0" />
                 Main Headline Title
               </label>
               <input
@@ -286,13 +288,13 @@ export default function NotFoundPageEditor({ sectionId, onCloseSection }: NotFou
 
       {/* SECTION 2: QUICK ACTION NAVIGATION LINKS */}
       {(!sectionId || sectionId === "404-links") && (
-        <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-5">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+        <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-2">
-              <span className="font-mono text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
+              <span className="font-mono text-[10px] sm:text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
                 #02
               </span>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+              <h3 className="text-xs sm:text-sm font-bold">
                 Quick Action Navigation Links ({formData.actions.length})
               </h3>
             </div>
@@ -300,24 +302,24 @@ export default function NotFoundPageEditor({ sectionId, onCloseSection }: NotFou
             <button
               type="button"
               onClick={handleAddAction}
-              className="flex items-center gap-1 px-3 py-1 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-colors shadow-xs"
+              className="w-full sm:w-auto flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-colors shadow-xs"
             >
               <Plus className="h-3.5 w-3.5" />
               Add Link
             </button>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {formData.actions.map((action, index) => (
               <div
                 key={action.id}
-                className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 space-y-3"
+                className="p-3.5 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 space-y-3"
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400">
                     Link #{index + 1}
                   </span>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 shrink-0">
                     <button
                       type="button"
                       onClick={() => handleMoveAction(index, "up")}
@@ -347,10 +349,10 @@ export default function NotFoundPageEditor({ sectionId, onCloseSection }: NotFou
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="flex items-center gap-1 text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      <MousePointerClick className="h-3.5 w-3.5 text-blue-500" />
+                      <MousePointerClick className="h-3.5 w-3.5 text-blue-500 shrink-0" />
                       Button Label
                     </label>
                     <input
@@ -363,7 +365,7 @@ export default function NotFoundPageEditor({ sectionId, onCloseSection }: NotFou
 
                   <div>
                     <label className="flex items-center gap-1 text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      <Link2 className="h-3.5 w-3.5 text-blue-500" />
+                      <Link2 className="h-3.5 w-3.5 text-blue-500 shrink-0" />
                       Link URL (href)
                     </label>
                     <input
@@ -393,7 +395,7 @@ export default function NotFoundPageEditor({ sectionId, onCloseSection }: NotFou
 
                   <div>
                     <label className="flex items-center gap-1 text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      <Palette className="h-3.5 w-3.5 text-blue-500" />
+                      <Palette className="h-3.5 w-3.5 text-blue-500 shrink-0" />
                       Button Style
                     </label>
                     <select
