@@ -4,14 +4,10 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
 import {
-  Home,
   LayoutDashboard,
   MessageSquare,
-  ShoppingBag,
   Briefcase,
-  Users,
   Settings,
   Bell,
   Search,
@@ -21,15 +17,12 @@ import {
   ChevronLeft,
   ChevronRight,
   TrendingUp,
-  ArrowUpRight,
   Sparkles,
   BarChart3,
   Calendar,
   Layers,
   ShieldCheck,
-  CheckCircle2,
   Archive,
-  Clock,
   MoreVertical,
   SlidersHorizontal,
   Grid,
@@ -38,14 +31,10 @@ import {
   FileText,
   HelpCircle,
   FolderGit2,
-  PieChart,
   LayoutTemplate,
-  GripVertical,
   Edit3,
   Eye,
-  Check,
   Globe,
-  Sliders,
   Cpu,
   Milestone,
   Building2,
@@ -151,7 +140,6 @@ const RECENT_INQUIRIES = [
   },
 ];
 
-// Complete Page Specifications for Every Single Route in the App
 const ALL_PAGE_CONFIGS: Record<string, PageConfig> = {
   "landing-management": {
     id: "landing-management",
@@ -172,7 +160,6 @@ const ALL_PAGE_CONFIGS: Record<string, PageConfig> = {
       { id: "footer", order: "#12", name: "Footer Content & Links Section", description: "Configure footer logo, company bio, quick links columns, social media URLs, and copyright text.", icon: PanelBottom, fieldsCount: 11, status: "Active", category: "Footer" },
     ],
   },
-
   "about-page": {
     id: "about-page",
     title: "About Us Page (/about)",
@@ -180,11 +167,10 @@ const ALL_PAGE_CONFIGS: Record<string, PageConfig> = {
     sections: [
       { id: "about-hero", order: "#01", name: "About Hero Banner", description: "Configure heading, vision subtext, background blueprint styling, and hero CTA buttons.", icon: Info, fieldsCount: 6, status: "Active", category: "Banner" },
       { id: "about-mission", order: "#02", name: "Our Mission & Core Values", description: "Manage core philosophy, engineering standards, speed metrics, and trust commitments.", icon: ShieldCheck, fieldsCount: 10, status: "Active", category: "Philosophy" },
-      { id: "about-team", order: "#03", name: "Leadership & Engineering Team", description: "Customize team member profiles, bios, designations, photos, and LinkedIn social links.", icon: Users, fieldsCount: 16, status: "Active", category: "Team" },
+      { id: "about-team", order: "#03", name: "Leadership & Engineering Team", description: "Customize team member profiles, bios, designations, photos, and LinkedIn social links.", icon: UserCheck, fieldsCount: 16, status: "Active", category: "Team" },
       { id: "about-stats", order: "#04", name: "Company Stats & Milestones", description: "Edit client count, years in business, total deployments, and active developer count.", icon: Award, fieldsCount: 8, status: "Active", category: "Stats" },
     ],
   },
-
   "services-page": {
     id: "services-page",
     title: "Services Pages (/services & /services/[id])",
@@ -195,7 +181,6 @@ const ALL_PAGE_CONFIGS: Record<string, PageConfig> = {
       { id: "services-details", order: "#03", name: "Individual Service Detail Pages", description: "Configure template settings for AI Eng, Web Dev, Mobile Apps, UI/UX, and Cloud Ops.", icon: Edit3, fieldsCount: 15, status: "Active", category: "Detail Pages" },
     ],
   },
-
   "industries-page": {
     id: "industries-page",
     title: "Industries Pages (/industries & /industries/[id])",
@@ -206,7 +191,6 @@ const ALL_PAGE_CONFIGS: Record<string, PageConfig> = {
       { id: "ind-details", order: "#03", name: "Industry Detail Page Templates", description: "Configure specialized compliance badges (HIPAA, PCI-DSS), security models, and case links.", icon: ShieldCheck, fieldsCount: 12, status: "Active", category: "Detail Pages" },
     ],
   },
-
   "case-studies-page": {
     id: "case-studies-page",
     title: "Case Studies Page (/case-studies)",
@@ -217,7 +201,6 @@ const ALL_PAGE_CONFIGS: Record<string, PageConfig> = {
       { id: "case-cta", order: "#03", name: "Portfolio Project Inquiry Trigger", description: "Configure 'Build Similar Architecture' CTA card and inquiry form.", icon: Send, fieldsCount: 5, status: "Active", category: "Conversion" },
     ],
   },
-
   "journey-page": {
     id: "journey-page",
     title: "Company Journey Page (/journey)",
@@ -228,7 +211,6 @@ const ALL_PAGE_CONFIGS: Record<string, PageConfig> = {
       { id: "journey-modal", order: "#03", name: "Quick Enquiry Modal Trigger", description: "Customize timeline consultation modal fields and booking options.", icon: MessageSquare, fieldsCount: 6, status: "Active", category: "Modal" },
     ],
   },
-
   "blog-page": {
     id: "blog-page",
     title: "Blog & Insights Pages (/blog & /blog/[slug])",
@@ -239,7 +221,6 @@ const ALL_PAGE_CONFIGS: Record<string, PageConfig> = {
       { id: "blog-newsletter", order: "#03", name: "Newsletter Subscription Box", description: "Configure email capture form, subscription promise, and privacy text.", icon: Mail, fieldsCount: 5, status: "Active", category: "Newsletter" },
     ],
   },
-
   "careers-page": {
     id: "careers-page",
     title: "Careers Page (/careers)",
@@ -250,17 +231,15 @@ const ALL_PAGE_CONFIGS: Record<string, PageConfig> = {
       { id: "careers-apply", order: "#03", name: "Job Application Form Config", description: "Customize resume upload settings, screening questions, and HR notification email.", icon: Send, fieldsCount: 8, status: "Active", category: "Form" },
     ],
   },
-
   "testimonials-page": {
     id: "testimonials-page",
     title: "Testimonials Page (/testimonials)",
     subtitle: "Manage client reviews, star ratings, video testimonials, and social proof",
     sections: [
       { id: "test-hero", order: "#01", name: "Testimonials Hero Banner", description: "Header title, overall rating badge (4.9/5.0), and client trust metrics.", icon: Quote, fieldsCount: 6, status: "Active", category: "Banner" },
-      { id: "test-list", order: "#02", name: "Client Reviews Grid", description: "Edit review text, star ratings, reviewer names, designations, and company logos.", icon: StarIcon, fieldsCount: 15, status: "Active", category: "Reviews" },
+      { id: "test-list", order: "#02", name: "Client Reviews Grid", description: "Edit review text, star ratings, reviewer names, designations, and company logos.", icon: Award, fieldsCount: 15, status: "Active", category: "Reviews" },
     ],
   },
-
   "faqs-page": {
     id: "faqs-page",
     title: "FAQs Page (/faqs)",
@@ -270,7 +249,6 @@ const ALL_PAGE_CONFIGS: Record<string, PageConfig> = {
       { id: "faq-editor", order: "#02", name: "Question & Answer Items", description: "Edit questions, detailed answers, category assignment, and reorder accordion items.", icon: MessageSquare, fieldsCount: 18, status: "Active", category: "Accordions" },
     ],
   },
-
   "contact-page": {
     id: "contact-page",
     title: "Contact Us Page (/contact)",
@@ -281,7 +259,6 @@ const ALL_PAGE_CONFIGS: Record<string, PageConfig> = {
       { id: "contact-form", order: "#03", name: "Client Lead Inquiries Moderation", description: "Manage incoming client lead inquiries, view messages, and mark read status.", icon: Send, fieldsCount: 10, status: "Active", category: "Moderation" },
     ],
   },
-
   "not-found-page": {
     id: "not-found-page",
     title: "404 Error Page (not-found)",
@@ -292,10 +269,6 @@ const ALL_PAGE_CONFIGS: Record<string, PageConfig> = {
     ],
   },
 };
-
-function StarIcon(props: { className?: string }) {
-  return <Award {...props} />;
-}
 
 function getTimeAgo(dateString?: string): string {
   if (!dateString) return "Just now";
@@ -334,7 +307,6 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
   const prevContactCountRef = useRef<number>(0);
   const { theme, toggleTheme } = useTheme();
 
-  // Global Real-time Polling & WebSocket/SSE Subscription via Unified Notification API
   useEffect(() => {
     async function checkNotifications() {
       try {
@@ -349,7 +321,6 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
           setUnreadTestimonialsCount(newReviewCount);
           setUnreadContactCount(newContactCount);
 
-          // 1. Real-Time Toast for NEW Review (Amber Theme)
           if (!isInitialMount.current && newReviewCount > prevUnreadCountRef.current) {
             const latestReview = list.find((n: any) => n.category === "REVIEW" || n.type === "REVIEW");
             toast.custom(
@@ -386,7 +357,6 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
             );
           }
 
-          // 2. Real-Time Toast for NEW Contact Inquiry / Lead (Blue Theme)
           if (!isInitialMount.current && newContactCount > prevContactCountRef.current) {
             const latestContact = list.find((n: any) => n.category !== "REVIEW" && n.type !== "REVIEW");
             toast.custom(
@@ -595,7 +565,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
   const selectedSection = currentPageConfig?.sections.find((s) => s.id === selectedSectionId);
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa] dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 flex flex-col lg:flex-row transition-colors duration-200">
+    <div className="min-h-screen bg-[#f8f9fa] dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 flex flex-col lg:flex-row transition-colors duration-200 w-full overflow-x-hidden">
       
       {/* Mobile Drawer Overlay Backdrop */}
       {mobileOpen && (
@@ -671,7 +641,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                       >
                         <Icon className="h-4 w-4 shrink-0" />
                         {!collapsed && (
-                          <div className="flex-1 flex items-center justify-between overflow-hidden text-left">
+                          <div className="flex-1 flex items-center justify-between overflow-hidden text-left min-w-0">
                             <span className="truncate">{item.label}</span>
                             {item.badge && (
                               <span
@@ -713,12 +683,14 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
       </aside>
 
       {/* ================= 2. MAIN CONTENT AREA ================= */}
-      <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${collapsed ? "lg:ml-20" : "lg:ml-64"}`}>
+      <div className={`flex-1 flex flex-col min-w-0 w-full overflow-x-hidden transition-all duration-300 ${collapsed ? "lg:ml-20" : "lg:ml-64"}`}>
         
-        {/* Top Responsive Navbar Header */}
-        <header className="h-16 bg-white dark:bg-[#131927] border-b border-slate-200/80 dark:border-slate-800 px-3 sm:px-6 flex items-center justify-between sticky top-0 z-30 backdrop-blur-md">
+        {/* Top FIXED Navbar Header - Stays pinned at top during scroll */}
+        <header className={`h-16 bg-white dark:bg-[#131927] border-b border-slate-200/80 dark:border-slate-800 px-3 sm:px-6 flex items-center justify-between fixed top-0 right-0 z-30 backdrop-blur-md transition-all duration-300 ${
+          collapsed ? "left-0 lg:left-20" : "left-0 lg:left-64"
+        }`}>
           
-          <div className="flex items-center gap-2 sm:gap-3 flex-1 max-w-md">
+          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 max-w-md">
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
               className="lg:hidden p-2 rounded-xl text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 shrink-0"
@@ -727,7 +699,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
               <Menu className="h-5 w-5" />
             </button>
 
-            <div className="relative w-full max-w-[200px] sm:max-w-xs">
+            <div className="relative w-full max-w-[180px] sm:max-w-xs">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
               <input
                 type="text"
@@ -867,37 +839,37 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
             </div>
 
             <div className="flex items-center gap-1.5 sm:gap-3 pl-2 sm:pl-3 border-l border-slate-200 dark:border-slate-800">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 min-w-0">
                 <Image
                   src="/images/fav3.png"
                   alt="Clickpoint Innovation"
                   width={100}
                   height={100}
                   priority
-                  className="h-7 w-7 sm:h-8 sm:w-8 object-contain transition-transform hover:scale-110"
+                  className="h-7 w-7 sm:h-8 sm:w-8 object-contain transition-transform hover:scale-110 shrink-0"
                 />
-                <div className="hidden md:block text-left">
-                  <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate max-w-[110px] sm:max-w-[130px]">
+                <div className="hidden md:block text-left min-w-0">
+                  <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate max-w-[100px] lg:max-w-[130px]">
                     {userEmail}
                   </p>
-                  <p className="text-[10px] text-slate-400 font-semibold">Super Admin</p>
+                  <p className="text-[10px] text-slate-400 font-semibold truncate">Super Admin</p>
                 </div>
               </div>
 
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-1 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 px-2 sm:px-2.5 py-1.5 rounded-lg transition-colors"
+                className="flex items-center gap-1 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 px-2 sm:px-2.5 py-1.5 rounded-lg transition-colors shrink-0"
                 title="Sign out"
               >
-                <LogOut className="h-3.5 w-3.5" />
+                <LogOut className="h-3.5 w-3.5 shrink-0" />
                 <span className="hidden sm:inline">Sign Out</span>
               </button>
             </div>
           </div>
         </header>
 
-        {/* Dashboard Main Scrollable Content */}
-        <main className="p-3 sm:p-6 space-y-4 sm:space-y-6">
+        {/* Dashboard Main Scrollable Content (pt-20 offsets the fixed navbar header) */}
+        <main className="pt-20 sm:pt-22 p-3 sm:p-6 space-y-4 sm:space-y-6 w-full max-w-full min-w-0 overflow-x-hidden">
           
           {/* TAB 1: OVERVIEW DASHBOARD */}
           {activeTab === "dashboard" && (
@@ -925,9 +897,9 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                   <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 font-bold text-xs sm:text-sm">
                     57
                   </div>
-                  <div>
-                    <p className="text-xs font-bold text-slate-900 dark:text-slate-100">57 new inquiries</p>
-                    <p className="text-[11px] text-slate-400">Awaiting processing</p>
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">57 new inquiries</p>
+                    <p className="text-[11px] text-slate-400 truncate">Awaiting processing</p>
                   </div>
                 </div>
 
@@ -935,9 +907,9 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                   <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 font-bold text-xs sm:text-sm">
                     5
                   </div>
-                  <div>
-                    <p className="text-xs font-bold text-slate-900 dark:text-slate-100">5 proposals</p>
-                    <p className="text-[11px] text-slate-400">On hold for review</p>
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">5 proposals</p>
+                    <p className="text-[11px] text-slate-400 truncate">On hold for review</p>
                   </div>
                 </div>
 
@@ -945,15 +917,15 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                   <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 font-bold text-xs sm:text-sm">
                     15
                   </div>
-                  <div>
-                    <p className="text-xs font-bold text-slate-900 dark:text-slate-100">15 active projects</p>
-                    <p className="text-[11px] text-slate-400">Live & in production</p>
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">15 active projects</p>
+                    <p className="text-[11px] text-slate-400 truncate">Live & in production</p>
                   </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
-                <div className="lg:col-span-7 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 shadow-xs flex flex-col justify-between">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 min-w-0">
+                <div className="lg:col-span-7 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 shadow-xs flex flex-col justify-between min-w-0">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
                     <div>
                       <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">Total Sells & Conversion</h3>
@@ -1008,7 +980,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                   </div>
                 </div>
 
-                <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 min-w-0">
                   <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-5 shadow-xs flex flex-col justify-between">
                     <div>
                       <div className="flex items-center justify-between">
@@ -1111,14 +1083,14 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                 </div>
               </div>
 
-              <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 shadow-xs">
+              <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 shadow-xs min-w-0">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
                   <div>
                     <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">Latest Inquiries & Deals</h3>
                     <p className="text-xs text-slate-400">Real-time incoming inquiries submitted by prospective clients</p>
                   </div>
 
-                  <div className="flex items-center gap-2 self-start sm:self-auto">
+                  <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
                     <button className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200">
                       <SlidersHorizontal className="h-3.5 w-3.5" />
                       <span>Filter Deals</span>
@@ -1171,23 +1143,23 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
 
           {/* DYNAMIC PAGE CONTENT MANAGEMENT VIEW */}
           {currentPageConfig && activeTab !== "dashboard" && (
-            <div className="space-y-4 sm:space-y-6">
+            <div className="space-y-4 sm:space-y-6 min-w-0">
               
-              <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
+              <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2 mb-1">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 shrink-0">
                       <LayoutTemplate className="h-3 w-3" />
                       Dynamic Content Engine
                     </span>
-                    <span className="text-[10px] font-semibold text-slate-400">
+                    <span className="text-[10px] font-semibold text-slate-400 shrink-0">
                       {currentPageConfig.sections.length} Configurable Sections
                     </span>
                   </div>
-                  <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+                  <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white truncate">
                     {currentPageConfig.title} Management
                   </h1>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
                     {currentPageConfig.subtitle}
                   </p>
                 </div>
@@ -1229,7 +1201,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
               </div>
 
               {selectedSectionId && selectedSection && (
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-blue-50/70 dark:bg-[#131927] border border-blue-200 dark:border-slate-800 shadow-xs mb-4 sm:mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-blue-50/70 dark:bg-[#131927] border border-blue-200 dark:border-slate-800 shadow-xs mb-4 sm:mb-6 min-w-0">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 min-w-0">
                     <button
                       type="button"
@@ -1257,7 +1229,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                   <button
                     type="button"
                     onClick={() => setSelectedSectionId(null)}
-                    className="p-1.5 rounded-xl bg-white dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors self-end sm:self-auto"
+                    className="p-1.5 rounded-xl bg-white dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors self-end sm:self-auto shrink-0"
                     title="Close Editor"
                   >
                     <X className="h-4 w-4" />
@@ -1266,7 +1238,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
               )}
 
               {!selectedSectionId && (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 min-w-0">
                   {currentPageConfig.sections.map((section) => {
                     const Icon = section.icon;
                     const isSelected = selectedSectionId === section.id;
@@ -1275,16 +1247,16 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                       <div
                         key={section.id}
                         onClick={() => setSelectedSectionId(section.id)}
-                        className={`group relative rounded-xl sm:rounded-2xl border p-4 sm:p-5 cursor-pointer transition-all duration-200 flex flex-col justify-between ${
+                        className={`group relative rounded-xl sm:rounded-2xl border p-4 sm:p-5 cursor-pointer transition-all duration-200 flex flex-col justify-between min-w-0 ${
                           isSelected
                             ? "border-blue-600 dark:border-blue-500 bg-blue-50/40 dark:bg-blue-950/20 ring-2 ring-blue-500/20 shadow-md"
                             : "border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-md"
                         }`}
                       >
                         <div>
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-2">
-                              <span className="font-mono text-xs font-extrabold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-md">
+                          <div className="flex items-center justify-between mb-3 gap-2">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="font-mono text-xs font-extrabold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-md shrink-0">
                                 {section.order}
                               </span>
                               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 truncate">
@@ -1298,7 +1270,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                             </span>
                           </div>
 
-                          <div className="flex items-start gap-3.5 mb-2">
+                          <div className="flex items-start gap-3.5 mb-2 min-w-0">
                             <div className={`h-9 w-9 sm:h-10 sm:w-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
                               isSelected
                                 ? "bg-blue-600 text-white shadow-md shadow-blue-600/30"
@@ -1306,7 +1278,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                             }`}>
                               <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                             </div>
-                            <div className="min-w-0">
+                            <div className="min-w-0 flex-1">
                               <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
                                 {section.name}
                               </h3>
@@ -1334,7 +1306,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
               )}
 
               {activeTab === "about-page" && (
-                <div className="mt-6 sm:mt-8">
+                <div className="mt-6 sm:mt-8 min-w-0">
                   <AboutPageEditor
                     sectionId={selectedSectionId}
                     onCloseSection={() => setSelectedSectionId(null)}
@@ -1343,7 +1315,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
               )}
 
               {activeTab === "services-page" && (
-                <div className="mt-6 sm:mt-8">
+                <div className="mt-6 sm:mt-8 min-w-0">
                   <ServicesPageEditor
                     sectionId={selectedSectionId}
                     onCloseSection={() => setSelectedSectionId(null)}
@@ -1352,7 +1324,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
               )}
 
               {activeTab === "industries-page" && (
-                <div className="mt-6 sm:mt-8">
+                <div className="mt-6 sm:mt-8 min-w-0">
                   <IndustriesPageEditor
                     sectionId={selectedSectionId}
                     onCloseSection={() => setSelectedSectionId(null)}
@@ -1361,7 +1333,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
               )}
 
               {activeTab === "testimonials-page" && (
-                <div className="mt-6 sm:mt-8">
+                <div className="mt-6 sm:mt-8 min-w-0">
                   <TestimonialsEditor
                       sectionId={selectedSectionId}
                       selectedItemId={selectedNotificationItemId}
@@ -1372,7 +1344,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
               )}
 
               {activeTab === "journey-page" && (
-                <div className="mt-6 sm:mt-8">
+                <div className="mt-6 sm:mt-8 min-w-0">
                   <JourneyEditor
                     sectionId={selectedSectionId || undefined}
                   />
@@ -1380,13 +1352,13 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
               )}
 
               {activeTab === "landing-management" && selectedSectionId === "timeline" && (
-                <div className="mt-6 sm:mt-8">
+                <div className="mt-6 sm:mt-8 min-w-0">
                   <JourneyEditor sectionId="timeline" />
                 </div>
               )}
 
               {(activeTab === "contact-page" || activeTab === "inquiries") && (
-                <div className="mt-6 sm:mt-8">
+                <div className="mt-6 sm:mt-8 min-w-0">
                   <ContactEditor
                     sectionId={selectedSectionId}
                     selectedItemId={selectedNotificationItemId}
@@ -1397,7 +1369,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
               )}
 
               {activeTab === "careers-page" && (
-                <div className="mt-6 sm:mt-8">
+                <div className="mt-6 sm:mt-8 min-w-0">
                   <CareersPageEditor
                     sectionId={selectedSectionId}
                     onCloseSection={() => setSelectedSectionId(null)}
@@ -1406,7 +1378,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
               )}
 
               {activeTab === "faqs-page" && (
-                <div className="mt-6 sm:mt-8">
+                <div className="mt-6 sm:mt-8 min-w-0">
                   <FaqEditor
                     sectionId={selectedSectionId}
                     onCloseSection={() => setSelectedSectionId(null)}
@@ -1415,7 +1387,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
               )}
 
               {activeTab === "not-found-page" && (
-                <div className="mt-6 sm:mt-8">
+                <div className="mt-6 sm:mt-8 min-w-0">
                   <NotFoundPageEditor
                     sectionId={selectedSectionId}
                     onCloseSection={() => setSelectedSectionId(null)}
@@ -1424,17 +1396,17 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
               )}
 
               {activeTab !== "about-page" && activeTab !== "services-page" && activeTab !== "industries-page" && activeTab !== "testimonials-page" && activeTab !== "journey-page" && activeTab !== "contact-page" && activeTab !== "inquiries" && activeTab !== "careers-page" && activeTab !== "not-found-page" && selectedSection && selectedSection.id !== "timeline" && (
-                <div className="mt-6 sm:mt-8 rounded-xl sm:rounded-2xl border border-blue-500/30 bg-blue-500/5 dark:bg-blue-950/20 p-4 sm:p-6 shadow-sm">
+                <div className="mt-6 sm:mt-8 rounded-xl sm:rounded-2xl border border-blue-500/30 bg-blue-500/5 dark:bg-blue-950/20 p-4 sm:p-6 shadow-sm min-w-0">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-blue-500/20">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
                       <div className="h-9 w-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold shrink-0">
                         <Edit3 className="h-4 w-4" />
                       </div>
-                      <div>
-                        <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+                      <div className="min-w-0">
+                        <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate">
                           Configure {selectedSection.name}
                         </h3>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
                           Section box selected. Ready for step-by-step content field customization.
                         </p>
                       </div>
@@ -1442,14 +1414,14 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
 
                     <button
                       onClick={() => setSelectedSectionId(null)}
-                      className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 self-end sm:self-auto"
+                      className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 self-end sm:self-auto shrink-0"
                     >
                       <X className="h-5 w-5" />
                     </button>
                   </div>
 
                   <div className="p-3.5 sm:p-4 bg-white dark:bg-[#131927] rounded-xl border border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-                    <span>
+                    <span className="truncate">
                       Box <strong className="text-blue-600 dark:text-blue-400">{selectedSection.order} ({selectedSection.name})</strong> ready for content field inputs.
                     </span>
                     <button className="px-3 py-1.5 rounded-lg bg-blue-600 text-white font-semibold text-xs shadow-xs hover:bg-blue-700 transition-colors shrink-0">
