@@ -275,13 +275,13 @@ export default function JourneyClientView({ initialContent }: JourneyClientViewP
               <div className="max-w-2xl">
                 <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-violet-50 dark:bg-slate-800 px-3.5 py-1 text-xs font-semibold uppercase tracking-widest text-violet-600 dark:text-violet-300">
                   <Camera className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
-                  Company Culture & Events
+                  {content.eventsSection?.badge || DEFAULT_JOURNEY_PAGE_DATA.eventsSection!.badge}
                 </div>
                 <h2 className="font-display text-3xl font-bold tracking-tight text-ink dark:text-white sm:text-4xl lg:text-5xl">
-                  Moments That Define Our <span className="text-[#f58220]">Engineering Spirit</span>
+                  {content.eventsSection?.title || DEFAULT_JOURNEY_PAGE_DATA.eventsSection!.title}
                 </h2>
                 <p className="mt-3 text-base text-ink/75 dark:text-slate-300">
-                  Explore photos, hackathons, global tech expos, and team celebrations across our engineering hubs.
+                  {content.eventsSection?.subtitle || DEFAULT_JOURNEY_PAGE_DATA.eventsSection!.subtitle}
                 </p>
               </div>
 

@@ -11,11 +11,20 @@ import BlogSection from "@/components/sections/blog-section";
 import FaqSection from "@/components/sections/faq-section";
 import CtaSection from "@/components/sections/cta-section";
 import { getJourneyPage } from "@/server/actions/journey";
+import { getFaqs } from "@/server/actions/faqs";
+import { getContactPage } from "@/server/actions/contact";
 
 export const dynamic = "force-dynamic";
 
+// Number of FAQs shown in the homepage preview stack before linking out to /faqs
+const HOMEPAGE_FAQ_PREVIEW_COUNT = 6;
+
 export default async function Home() {
-  const journeyContent = await getJourneyPage();
+  const [journeyContent, faqs, contactContent] = await Promise.all([
+    getJourneyPage(),
+    getFaqs(),
+    getContactPage(),
+  ]);
 
   return (
     <main className="relative bg-background text-ink">
@@ -28,7 +37,11 @@ export default async function Home() {
       <Timeline initialContent={journeyContent} />
       <TestimonialsSection />
       <BlogSection />
-      <FaqSection />
+      <FaqSection
+        faqs={faqs.slice(0, HOMEPAGE_FAQ_PREVIEW_COUNT)}
+        phone={contactContent.contactInfo.phone}
+        phoneSubtext={contactContent.contactInfo.phoneSubtext}
+      />
       <CtaSection />
       <Footer />
     </main>

@@ -156,6 +156,24 @@ model JourneyPage {
   @@map("journey_page")
 }
 
+model CareersPage {
+  id        String   @id @default("default")
+  content   Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("careers_page")
+}
+
+model NotFoundPage {
+  id        String   @id @default("default")
+  content   Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("not_found_page")
+}
+
 // -----------------------------------------------------------------------------
 // 3. FEATURE & CONTENT ENTITY MODELS
 // -----------------------------------------------------------------------------
@@ -231,15 +249,28 @@ model Testimonial {
 }
 
 model Faq {
-  id        String   @id @default(cuid())
-  question  String
-  answer    String
-  category  String   @default("General")
-  order     Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String      @id @default(cuid())
+  question   String
+  answer     String
+  categoryId String
+  category   FaqCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  order      Int         @default(0)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
 
   @@map("faqs")
+}
+
+model FaqCategory {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  faqs        Faq[]
+
+  @@map("faq_categories")
 }
 
 model Inquiry {
@@ -272,6 +303,43 @@ model ContactInquiry {
   updatedAt DateTime @updatedAt
 
   @@map("contact_inquiries")
+}
+
+// -----------------------------------------------------------------------------
+// 4. CAREERS — CATEGORIES & VACANCIES
+// -----------------------------------------------------------------------------
+
+model JobCategory {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  description String?
+  order       Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  vacancies   JobVacancy[]
+
+  @@map("job_categories")
+}
+
+model JobVacancy {
+  id               String      @id @default(cuid())
+  title            String
+  categoryId       String
+  category         JobCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  type             String      @default("Full-Time")
+  location         String      @default("Remote (Global)")
+  experience       String      @default("Senior")
+  salary           String      @default("")
+  summary          String      @default("")
+  responsibilities Json        @default("[]") // String[]
+  requirements     Json        @default("[]") // String[]
+  featured         Boolean     @default(false)
+  isActive         Boolean     @default(true)
+  order            Int         @default(0)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  @@map("job_vacancies")
 }
 
 enum InquiryStatus {

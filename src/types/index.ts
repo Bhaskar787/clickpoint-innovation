@@ -312,10 +312,21 @@ export interface TestimonialsPageContent {
 // 7. FAQ DOMAIN MODELS
 // -----------------------------------------------------------------------------
 
+export interface FaqCategory {
+  id: string;
+  name: string;
+  description?: string | null;
+  order: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface FaqItem {
   id: string;
   question: string;
   answer: string;
+  categoryId: string;
+  /** Resolved category name — joined in from FaqCategory for display/grouping. */
   category: string;
   order?: number;
 }
@@ -450,6 +461,11 @@ export interface JourneyPageContent {
   eras: TimelineEra[];
   eventCategories?: string[];
   events: EventItem[];
+  eventsSection?: {
+    badge: string;
+    title: string;
+    subtitle: string;
+  };
   ethosSection?: {
     badge: string;
     title: string;
@@ -466,4 +482,94 @@ export interface JourneyPageContent {
     subtitle: string;
     buttonText: string;
   };
+}
+
+// -----------------------------------------------------------------------------
+// CAREERS DOMAIN MODELS
+// -----------------------------------------------------------------------------
+
+export interface CareersStatItem {
+  id: string;
+  value: string;
+  label: string;
+}
+
+export interface CareersPerkItem {
+  id: string;
+  title: string;
+  desc: string;
+}
+
+export interface CareersPageContent {
+  hero: {
+    badge: string;
+    title: string;
+    titleHighlight: string;
+    subtitle: string;
+  };
+  stats: CareersStatItem[];
+  perksSection: {
+    tag: string;
+    title: string;
+    titleHighlight: string;
+    subtitle: string;
+    perks: CareersPerkItem[];
+  };
+  openingsSection: {
+    badge: string;
+    title: string;
+    subtitle: string;
+    searchPlaceholder: string;
+  };
+}
+
+export interface JobCategory {
+  id: string;
+  name: string;
+  description?: string | null;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface JobVacancy {
+  id: string;
+  title: string;
+  type: string;
+  location: string;
+  experience: string;
+  salary?: string | null;
+  summary: string;
+  responsibilities: string[];
+  requirements: string[];
+  featured: boolean;
+  active: boolean;
+  categoryId: string;
+  category?: JobCategory;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// -----------------------------------------------------------------------------
+// 404 / NOT-FOUND PAGE DOMAIN MODELS
+// -----------------------------------------------------------------------------
+
+export interface NotFoundActionLink {
+  id: string;
+  label: string;
+  href: string;
+  icon: string;
+  style: "primary" | "outline" | "ghost";
+  order?: number;
+}
+
+export interface NotFoundPageContent {
+  hero: {
+    eyebrowBadge: string;
+    errorCode: string;
+    title: string;
+    titleHighlight?: string;
+    subtitle: string;
+  };
+  actions: NotFoundActionLink[];
 }

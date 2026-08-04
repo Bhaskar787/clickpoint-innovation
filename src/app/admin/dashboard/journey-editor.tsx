@@ -78,6 +78,7 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
             eras: json.data.eras?.length ? json.data.eras : DEFAULT_JOURNEY_PAGE_DATA.eras,
             eventCategories: json.data.eventCategories?.length ? json.data.eventCategories : DEFAULT_JOURNEY_PAGE_DATA.eventCategories,
             events: json.data.events?.length ? json.data.events : DEFAULT_JOURNEY_PAGE_DATA.events,
+            eventsSection: { ...DEFAULT_JOURNEY_PAGE_DATA.eventsSection, ...json.data.eventsSection },
             ethosSection: { ...DEFAULT_JOURNEY_PAGE_DATA.ethosSection, ...json.data.ethosSection },
             ctaSection: { ...DEFAULT_JOURNEY_PAGE_DATA.ctaSection, ...json.data.ctaSection },
           });
@@ -778,6 +779,68 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
               <Plus className="h-3.5 w-3.5" />
               <span>Add New Event Card</span>
             </button>
+          </div>
+
+          {/* GALLERY SECTION HEADING (Badge, Title, Subtitle) */}
+          <div className="p-4 rounded-xl border border-violet-100 dark:border-slate-800 bg-violet-50/40 dark:bg-[#0b0f19] space-y-3">
+            <h4 className="text-xs font-extrabold text-violet-700 dark:text-violet-400 flex items-center gap-1.5 uppercase tracking-wider">
+              <Camera className="h-3.5 w-3.5 text-violet-600" />
+              Gallery Section Heading
+            </h4>
+
+            <div>
+              <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1 block">
+                Badge Text
+              </label>
+              <input
+                type="text"
+                value={formData.eventsSection?.badge ?? DEFAULT_JOURNEY_PAGE_DATA.eventsSection!.badge}
+                onChange={(e) => {
+                  const current = formData.eventsSection || DEFAULT_JOURNEY_PAGE_DATA.eventsSection!;
+                  setFormData({
+                    ...formData,
+                    eventsSection: { ...current, badge: e.target.value },
+                  });
+                }}
+                className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 dark:text-white font-medium"
+              />
+            </div>
+
+            <div>
+              <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1 block">
+                Title
+              </label>
+              <input
+                type="text"
+                value={formData.eventsSection?.title ?? DEFAULT_JOURNEY_PAGE_DATA.eventsSection!.title}
+                onChange={(e) => {
+                  const current = formData.eventsSection || DEFAULT_JOURNEY_PAGE_DATA.eventsSection!;
+                  setFormData({
+                    ...formData,
+                    eventsSection: { ...current, title: e.target.value },
+                  });
+                }}
+                className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 dark:text-white font-medium"
+              />
+            </div>
+
+            <div>
+              <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1 block">
+                Subtitle
+              </label>
+              <textarea
+                rows={2}
+                value={formData.eventsSection?.subtitle ?? DEFAULT_JOURNEY_PAGE_DATA.eventsSection!.subtitle}
+                onChange={(e) => {
+                  const current = formData.eventsSection || DEFAULT_JOURNEY_PAGE_DATA.eventsSection!;
+                  setFormData({
+                    ...formData,
+                    eventsSection: { ...current, subtitle: e.target.value },
+                  });
+                }}
+                className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-900 dark:text-white font-medium"
+              />
+            </div>
           </div>
 
           {/* DYNAMIC CATEGORY TAGS MANAGER */}

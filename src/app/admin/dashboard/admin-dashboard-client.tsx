@@ -69,6 +69,7 @@ import IndustriesPageEditor from "./industries-page-editor";
 import ContactEditor from "./contact-editor";
 import TestimonialsEditor from "./testimonials-editor";
 import JourneyEditor from "./journey-editor";
+import NotFoundPageEditor from "./not-found-page-editor";
 
 interface AdminDashboardClientProps {
   userEmail: string;
@@ -262,8 +263,8 @@ const ALL_PAGE_CONFIGS: Record<string, PageConfig> = {
     title: "FAQs Page (/faqs)",
     subtitle: "Manage question categories, search filters, and collapsible Q&A accordions",
     sections: [
-      { id: "faq-hero", order: "#01", name: "FAQ Hero & Category Filter", description: "Configure header, search placeholder, and filter pills (Engineering, Billing).", icon: HelpCircle, fieldsCount: 7, status: "Active", category: "Banner" },
-      { id: "faq-items", order: "#02", name: "Question & Answer Items", description: "Edit questions, detailed answers, category tags, and expandable accordion states.", icon: MessageSquare, fieldsCount: 18, status: "Active", category: "Accordions" },
+      { id: "faq-categories", order: "#01", name: "FAQ Category Manager", description: "Create, rename, or delete the topics used as filter tabs (Engineering, Billing, Security).", icon: HelpCircle, fieldsCount: 4, status: "Active", category: "Categories" },
+      { id: "faq-editor", order: "#02", name: "Question & Answer Items", description: "Edit questions, detailed answers, category assignment, and reorder accordion items.", icon: MessageSquare, fieldsCount: 18, status: "Active", category: "Accordions" },
     ],
   },
 
@@ -290,6 +291,8 @@ const ALL_PAGE_CONFIGS: Record<string, PageConfig> = {
 };
 
 import { subscribeRealtimeNotifications } from "@/lib/realtime-notifications";
+import CareersPageEditor from "./careers-page-editor";
+import FaqEditor from "./faq-editor";
 
 function StarIcon(props: { className?: string }) {
   return <Award {...props} />;
@@ -1448,8 +1451,38 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                 </div>
               )}
 
+              {/* Careers Page — Full Dynamic Editor (categories, vacancies, page content) */}
+              {activeTab === "careers-page" && (
+                <div className="mt-8">
+                  <CareersPageEditor
+                    sectionId={selectedSectionId}
+                    onCloseSection={() => setSelectedSectionId(null)}
+                  />
+                </div>
+              )}
+
+              {/* FAQs Page — Full CRUD Editor (create, edit, reorder, delete questions) */}
+              {activeTab === "faqs-page" && (
+                <div className="mt-8">
+                  <FaqEditor
+                    sectionId={selectedSectionId}
+                    onCloseSection={() => setSelectedSectionId(null)}
+                  />
+                </div>
+              )}
+
+              {/* 404 Error Page Content Field Editor Component */}
+              {activeTab === "not-found-page" && (
+                <div className="mt-8">
+                  <NotFoundPageEditor
+                    sectionId={selectedSectionId}
+                    onCloseSection={() => setSelectedSectionId(null)}
+                  />
+                </div>
+              )}
+
               {/* Selected Section Editor Drawer Placeholder for Other Pages */}
-              {activeTab !== "about-page" && activeTab !== "services-page" && activeTab !== "industries-page" && activeTab !== "testimonials-page" && activeTab !== "journey-page" && activeTab !== "contact-page" && activeTab !== "inquiries" && selectedSection && selectedSection.id !== "timeline" && (
+              {activeTab !== "about-page" && activeTab !== "services-page" && activeTab !== "industries-page" && activeTab !== "testimonials-page" && activeTab !== "journey-page" && activeTab !== "contact-page" && activeTab !== "inquiries" && activeTab !== "careers-page" && activeTab !== "not-found-page" && selectedSection && selectedSection.id !== "timeline" && (
                 <div className="mt-8 rounded-2xl border border-blue-500/30 bg-blue-500/5 dark:bg-blue-950/20 p-6 shadow-sm">
                   <div className="flex items-center justify-between mb-4 pb-3 border-b border-blue-500/20">
                     <div className="flex items-center gap-3">

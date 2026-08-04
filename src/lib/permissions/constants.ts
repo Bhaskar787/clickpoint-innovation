@@ -22,6 +22,10 @@ export const ALL_PERMISSIONS = {
   // Inquiries / Leads CMS
   CMS_INQUIRY_READ: "cms:inquiry:read",
   CMS_INQUIRY_UPDATE: "cms:inquiry:update",
+
+  // FAQ CMS
+  CMS_FAQ_READ: "cms:faq:read",
+  CMS_FAQ_UPDATE: "cms:faq:update",
 } as const;
 
 export type Permission = (typeof ALL_PERMISSIONS)[keyof typeof ALL_PERMISSIONS];

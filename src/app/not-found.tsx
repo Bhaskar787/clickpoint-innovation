@@ -1,90 +1,10 @@
-"use client";
+import { getNotFoundPage } from "@/server/actions/not-found";
+import NotFoundClientView from "./not-found-client-view";
 
-import Link from "next/link";
-import { motion } from "framer-motion";
-import { ArrowLeft, Home, Compass, Search, Phone, FileQuestion, ArrowRight, Sparkles } from "lucide-react";
-import Navbar from "@/components/layout/navbar";
-import Footer from "@/components/layout/footer";
-import { Button } from "@/components/ui/button";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
-export default function NotFound() {
-  return (
-    <main className="relative flex min-h-screen flex-col overflow-x-hidden bg-background text-ink">
-      <Navbar />
-
-      {/* 404 Main Hero Container */}
-      <section className="relative flex flex-1 items-center justify-center pt-36 pb-24 lg:pt-44 lg:pb-32 overflow-hidden">
-        {/* Background Graph Paper Blueprint Grid & Ambient Glow */}
-        <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-          {/* Fine Precision Graph Paper Grid (32px x 32px) */}
-          <div 
-            className="absolute inset-0 bg-[linear-gradient(to_right,rgba(37,99,235,0.09)_1px,transparent_1px),linear-gradient(to_bottom,rgba(37,99,235,0.09)_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,rgba(99,102,241,0.2)_1px,transparent_1px),linear-gradient(to_bottom,rgba(99,102,241,0.2)_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_85%_80%_at_50%_40%,#000_75%,transparent_100%)]" 
-          />
-
-          {/* Major Axis Grid Lines */}
-          <div 
-            className="absolute inset-0 bg-[linear-gradient(to_right,rgba(37,99,235,0.18)_1.5px,transparent_1.5px),linear-gradient(to_bottom,rgba(37,99,235,0.18)_1.5px,transparent_1.5px)] dark:bg-[linear-gradient(to_right,rgba(56,189,248,0.3)_1.5px,transparent_1.5px),linear-gradient(to_bottom,rgba(56,189,248,0.3)_1.5px,transparent_1.5px)] bg-[size:160px_160px] [mask-image:radial-gradient(ellipse_85%_80%_at_50%_40%,#000_75%,transparent_100%)]" 
-          />
-
-          {/* Central Ambient Glow */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[550px] w-[800px] rounded-full bg-gradient-to-tr from-violet-600/20 via-indigo-600/15 to-blue-500/10 dark:from-indigo-600/30 dark:via-blue-600/20 dark:to-transparent blur-[130px]" />
-        </div>
-
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="mx-auto max-w-3xl"
-          >
-            {/* Top Pill Eyebrow */}
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-700 bg-violet-50 dark:bg-slate-800/90 px-4 py-1.5 text-xs font-bold text-violet-700 dark:text-violet-300 shadow-sm backdrop-blur-md">
-              <Compass className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300 animate-spin" style={{ animationDuration: "12s" }} />
-              <span>Error 404 • Page Not Found</span>
-            </div>
-
-            {/* Glowing 404 Huge Typography */}
-            <h1 className="font-display text-7xl font-black tracking-tight sm:text-9xl text-ink dark:text-white leading-none drop-shadow-sm">
-              4<span className="text-[#f58220]">0</span>4
-            </h1>
-
-            {/* Main Headline */}
-            <h2 className="mt-4 font-display text-2xl font-bold tracking-tight text-ink dark:text-white sm:text-4xl">
-              Page Lost in Cyberspace
-            </h2>
-
-            {/* Subtitle Description */}
-            <p className="mt-4 text-base leading-relaxed text-ink/70 dark:text-slate-300 sm:text-lg max-w-xl mx-auto">
-              The page or route you are looking for might have been removed, renamed, or is temporarily unavailable. Let&apos;s get you back on track!
-            </p>
-
-            {/* Action Buttons */}
-            <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-              <Link href="/">
-                <Button variant="primary" size="lg" className="group shadow-lg shadow-violet-600/25 font-bold">
-                  <ArrowLeft className="h-4 w-4 mr-2 transition-transform group-hover:-translate-x-1" />
-                  Return to Homepage
-                </Button>
-              </Link>
-              <Link href="/#services">
-                <Button variant="outline" size="lg" className="font-bold border-violet-200 dark:border-slate-700">
-                  Explore Services
-                </Button>
-              </Link>
-              <Link href="/contact">
-                <Button variant="ghost" size="lg" className="font-bold text-violet-700 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-slate-800">
-                  <Phone className="h-4 w-4 mr-2" />
-                  Contact Support
-                </Button>
-              </Link>
-            </div>
-
-        
-          </motion.div>
-        </div>
-      </section>
-
-      <Footer />
-    </main>
-  );
+export default async function NotFound() {
+  const content = await getNotFoundPage();
+  return <NotFoundClientView content={content} />;
 }

@@ -257,6 +257,12 @@ export const DEFAULT_JOURNEY_PAGE_DATA: JourneyPageContent = {
         "Culture is the engine behind Clickpoint's technical excellence. Our annual offsite brought together team members from across 5 timezones for high-energy strategy workshops, outdoor adventures, and team celebrations.",
     },
   ],
+  eventsSection: {
+    badge: "Company Culture & Events",
+    title: "Moments That Define Our Engineering Spirit",
+    subtitle:
+      "Explore photos, hackathons, global tech expos, and team celebrations across our engineering hubs.",
+  },
   ethosSection: {
     badge: "Engineering Ethos",
     title: "The 4 Pillars That Guide Our Work",

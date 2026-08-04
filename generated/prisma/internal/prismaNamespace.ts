@@ -408,13 +408,18 @@ export const ModelName = {
   IndustriesPage: 'IndustriesPage',
   ContactPage: 'ContactPage',
   JourneyPage: 'JourneyPage',
+  CareersPage: 'CareersPage',
+  NotFoundPage: 'NotFoundPage',
   CaseStudy: 'CaseStudy',
   BlogPost: 'BlogPost',
   TestimonialsPage: 'TestimonialsPage',
   Testimonial: 'Testimonial',
   Faq: 'Faq',
+  FaqCategory: 'FaqCategory',
   Inquiry: 'Inquiry',
-  ContactInquiry: 'ContactInquiry'
+  ContactInquiry: 'ContactInquiry',
+  JobCategory: 'JobCategory',
+  JobVacancy: 'JobVacancy'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -430,7 +435,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "admin" | "user" | "session" | "account" | "verification" | "landingPage" | "aboutPage" | "servicesPage" | "industriesPage" | "contactPage" | "journeyPage" | "caseStudy" | "blogPost" | "testimonialsPage" | "testimonial" | "faq" | "inquiry" | "contactInquiry"
+    modelProps: "admin" | "user" | "session" | "account" | "verification" | "landingPage" | "aboutPage" | "servicesPage" | "industriesPage" | "contactPage" | "journeyPage" | "careersPage" | "notFoundPage" | "caseStudy" | "blogPost" | "testimonialsPage" | "testimonial" | "faq" | "faqCategory" | "inquiry" | "contactInquiry" | "jobCategory" | "jobVacancy"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1248,6 +1253,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    CareersPage: {
+      payload: Prisma.$CareersPagePayload<ExtArgs>
+      fields: Prisma.CareersPageFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CareersPageFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CareersPagePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CareersPageFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CareersPagePayload>
+        }
+        findFirst: {
+          args: Prisma.CareersPageFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CareersPagePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CareersPageFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CareersPagePayload>
+        }
+        findMany: {
+          args: Prisma.CareersPageFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CareersPagePayload>[]
+        }
+        create: {
+          args: Prisma.CareersPageCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CareersPagePayload>
+        }
+        createMany: {
+          args: Prisma.CareersPageCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CareersPageCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CareersPagePayload>[]
+        }
+        delete: {
+          args: Prisma.CareersPageDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CareersPagePayload>
+        }
+        update: {
+          args: Prisma.CareersPageUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CareersPagePayload>
+        }
+        deleteMany: {
+          args: Prisma.CareersPageDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CareersPageUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CareersPageUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CareersPagePayload>[]
+        }
+        upsert: {
+          args: Prisma.CareersPageUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CareersPagePayload>
+        }
+        aggregate: {
+          args: Prisma.CareersPageAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCareersPage>
+        }
+        groupBy: {
+          args: Prisma.CareersPageGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CareersPageGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CareersPageCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CareersPageCountAggregateOutputType> | number
+        }
+      }
+    }
+    NotFoundPage: {
+      payload: Prisma.$NotFoundPagePayload<ExtArgs>
+      fields: Prisma.NotFoundPageFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.NotFoundPageFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotFoundPagePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.NotFoundPageFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotFoundPagePayload>
+        }
+        findFirst: {
+          args: Prisma.NotFoundPageFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotFoundPagePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.NotFoundPageFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotFoundPagePayload>
+        }
+        findMany: {
+          args: Prisma.NotFoundPageFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotFoundPagePayload>[]
+        }
+        create: {
+          args: Prisma.NotFoundPageCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotFoundPagePayload>
+        }
+        createMany: {
+          args: Prisma.NotFoundPageCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.NotFoundPageCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotFoundPagePayload>[]
+        }
+        delete: {
+          args: Prisma.NotFoundPageDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotFoundPagePayload>
+        }
+        update: {
+          args: Prisma.NotFoundPageUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotFoundPagePayload>
+        }
+        deleteMany: {
+          args: Prisma.NotFoundPageDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.NotFoundPageUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.NotFoundPageUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotFoundPagePayload>[]
+        }
+        upsert: {
+          args: Prisma.NotFoundPageUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotFoundPagePayload>
+        }
+        aggregate: {
+          args: Prisma.NotFoundPageAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateNotFoundPage>
+        }
+        groupBy: {
+          args: Prisma.NotFoundPageGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.NotFoundPageGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.NotFoundPageCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.NotFoundPageCountAggregateOutputType> | number
+        }
+      }
+    }
     CaseStudy: {
       payload: Prisma.$CaseStudyPayload<ExtArgs>
       fields: Prisma.CaseStudyFieldRefs
@@ -1618,6 +1771,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    FaqCategory: {
+      payload: Prisma.$FaqCategoryPayload<ExtArgs>
+      fields: Prisma.FaqCategoryFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FaqCategoryFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FaqCategoryPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FaqCategoryFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FaqCategoryPayload>
+        }
+        findFirst: {
+          args: Prisma.FaqCategoryFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FaqCategoryPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FaqCategoryFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FaqCategoryPayload>
+        }
+        findMany: {
+          args: Prisma.FaqCategoryFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FaqCategoryPayload>[]
+        }
+        create: {
+          args: Prisma.FaqCategoryCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FaqCategoryPayload>
+        }
+        createMany: {
+          args: Prisma.FaqCategoryCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FaqCategoryCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FaqCategoryPayload>[]
+        }
+        delete: {
+          args: Prisma.FaqCategoryDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FaqCategoryPayload>
+        }
+        update: {
+          args: Prisma.FaqCategoryUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FaqCategoryPayload>
+        }
+        deleteMany: {
+          args: Prisma.FaqCategoryDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FaqCategoryUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FaqCategoryUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FaqCategoryPayload>[]
+        }
+        upsert: {
+          args: Prisma.FaqCategoryUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FaqCategoryPayload>
+        }
+        aggregate: {
+          args: Prisma.FaqCategoryAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFaqCategory>
+        }
+        groupBy: {
+          args: Prisma.FaqCategoryGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FaqCategoryGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FaqCategoryCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FaqCategoryCountAggregateOutputType> | number
+        }
+      }
+    }
     Inquiry: {
       payload: Prisma.$InquiryPayload<ExtArgs>
       fields: Prisma.InquiryFieldRefs
@@ -1763,6 +1990,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.ContactInquiryCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.ContactInquiryCountAggregateOutputType> | number
+        }
+      }
+    }
+    JobCategory: {
+      payload: Prisma.$JobCategoryPayload<ExtArgs>
+      fields: Prisma.JobCategoryFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.JobCategoryFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobCategoryPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.JobCategoryFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobCategoryPayload>
+        }
+        findFirst: {
+          args: Prisma.JobCategoryFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobCategoryPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.JobCategoryFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobCategoryPayload>
+        }
+        findMany: {
+          args: Prisma.JobCategoryFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobCategoryPayload>[]
+        }
+        create: {
+          args: Prisma.JobCategoryCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobCategoryPayload>
+        }
+        createMany: {
+          args: Prisma.JobCategoryCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.JobCategoryCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobCategoryPayload>[]
+        }
+        delete: {
+          args: Prisma.JobCategoryDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobCategoryPayload>
+        }
+        update: {
+          args: Prisma.JobCategoryUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobCategoryPayload>
+        }
+        deleteMany: {
+          args: Prisma.JobCategoryDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.JobCategoryUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.JobCategoryUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobCategoryPayload>[]
+        }
+        upsert: {
+          args: Prisma.JobCategoryUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobCategoryPayload>
+        }
+        aggregate: {
+          args: Prisma.JobCategoryAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateJobCategory>
+        }
+        groupBy: {
+          args: Prisma.JobCategoryGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.JobCategoryGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.JobCategoryCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.JobCategoryCountAggregateOutputType> | number
+        }
+      }
+    }
+    JobVacancy: {
+      payload: Prisma.$JobVacancyPayload<ExtArgs>
+      fields: Prisma.JobVacancyFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.JobVacancyFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobVacancyPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.JobVacancyFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobVacancyPayload>
+        }
+        findFirst: {
+          args: Prisma.JobVacancyFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobVacancyPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.JobVacancyFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobVacancyPayload>
+        }
+        findMany: {
+          args: Prisma.JobVacancyFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobVacancyPayload>[]
+        }
+        create: {
+          args: Prisma.JobVacancyCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobVacancyPayload>
+        }
+        createMany: {
+          args: Prisma.JobVacancyCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.JobVacancyCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobVacancyPayload>[]
+        }
+        delete: {
+          args: Prisma.JobVacancyDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobVacancyPayload>
+        }
+        update: {
+          args: Prisma.JobVacancyUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobVacancyPayload>
+        }
+        deleteMany: {
+          args: Prisma.JobVacancyDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.JobVacancyUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.JobVacancyUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobVacancyPayload>[]
+        }
+        upsert: {
+          args: Prisma.JobVacancyUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobVacancyPayload>
+        }
+        aggregate: {
+          args: Prisma.JobVacancyAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateJobVacancy>
+        }
+        groupBy: {
+          args: Prisma.JobVacancyGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.JobVacancyGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.JobVacancyCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.JobVacancyCountAggregateOutputType> | number
         }
       }
     }
@@ -1943,6 +2318,26 @@ export const JourneyPageScalarFieldEnum = {
 export type JourneyPageScalarFieldEnum = (typeof JourneyPageScalarFieldEnum)[keyof typeof JourneyPageScalarFieldEnum]
 
 
+export const CareersPageScalarFieldEnum = {
+  id: 'id',
+  content: 'content',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CareersPageScalarFieldEnum = (typeof CareersPageScalarFieldEnum)[keyof typeof CareersPageScalarFieldEnum]
+
+
+export const NotFoundPageScalarFieldEnum = {
+  id: 'id',
+  content: 'content',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type NotFoundPageScalarFieldEnum = (typeof NotFoundPageScalarFieldEnum)[keyof typeof NotFoundPageScalarFieldEnum]
+
+
 export const CaseStudyScalarFieldEnum = {
   id: 'id',
   slug: 'slug',
@@ -2021,13 +2416,25 @@ export const FaqScalarFieldEnum = {
   id: 'id',
   question: 'question',
   answer: 'answer',
-  category: 'category',
+  categoryId: 'categoryId',
   order: 'order',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type FaqScalarFieldEnum = (typeof FaqScalarFieldEnum)[keyof typeof FaqScalarFieldEnum]
+
+
+export const FaqCategoryScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FaqCategoryScalarFieldEnum = (typeof FaqCategoryScalarFieldEnum)[keyof typeof FaqCategoryScalarFieldEnum]
 
 
 export const InquiryScalarFieldEnum = {
@@ -2062,6 +2469,39 @@ export const ContactInquiryScalarFieldEnum = {
 } as const
 
 export type ContactInquiryScalarFieldEnum = (typeof ContactInquiryScalarFieldEnum)[keyof typeof ContactInquiryScalarFieldEnum]
+
+
+export const JobCategoryScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type JobCategoryScalarFieldEnum = (typeof JobCategoryScalarFieldEnum)[keyof typeof JobCategoryScalarFieldEnum]
+
+
+export const JobVacancyScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  categoryId: 'categoryId',
+  type: 'type',
+  location: 'location',
+  experience: 'experience',
+  salary: 'salary',
+  summary: 'summary',
+  responsibilities: 'responsibilities',
+  requirements: 'requirements',
+  featured: 'featured',
+  isActive: 'isActive',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type JobVacancyScalarFieldEnum = (typeof JobVacancyScalarFieldEnum)[keyof typeof JobVacancyScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -2384,13 +2824,18 @@ export type GlobalOmitConfig = {
   industriesPage?: Prisma.IndustriesPageOmit
   contactPage?: Prisma.ContactPageOmit
   journeyPage?: Prisma.JourneyPageOmit
+  careersPage?: Prisma.CareersPageOmit
+  notFoundPage?: Prisma.NotFoundPageOmit
   caseStudy?: Prisma.CaseStudyOmit
   blogPost?: Prisma.BlogPostOmit
   testimonialsPage?: Prisma.TestimonialsPageOmit
   testimonial?: Prisma.TestimonialOmit
   faq?: Prisma.FaqOmit
+  faqCategory?: Prisma.FaqCategoryOmit
   inquiry?: Prisma.InquiryOmit
   contactInquiry?: Prisma.ContactInquiryOmit
+  jobCategory?: Prisma.JobCategoryOmit
+  jobVacancy?: Prisma.JobVacancyOmit
 }
 
 /* Types for Logging */

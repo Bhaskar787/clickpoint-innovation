@@ -73,6 +73,16 @@ export type ContactPage = Prisma.ContactPageModel
  */
 export type JourneyPage = Prisma.JourneyPageModel
 /**
+ * Model CareersPage
+ * 
+ */
+export type CareersPage = Prisma.CareersPageModel
+/**
+ * Model NotFoundPage
+ * 
+ */
+export type NotFoundPage = Prisma.NotFoundPageModel
+/**
  * Model CaseStudy
  * 
  */
@@ -98,6 +108,11 @@ export type Testimonial = Prisma.TestimonialModel
  */
 export type Faq = Prisma.FaqModel
 /**
+ * Model FaqCategory
+ * 
+ */
+export type FaqCategory = Prisma.FaqCategoryModel
+/**
  * Model Inquiry
  * 
  */
@@ -107,3 +122,13 @@ export type Inquiry = Prisma.InquiryModel
  * 
  */
 export type ContactInquiry = Prisma.ContactInquiryModel
+/**
+ * Model JobCategory
+ * 
+ */
+export type JobCategory = Prisma.JobCategoryModel
+/**
+ * Model JobVacancy
+ * 
+ */
+export type JobVacancy = Prisma.JobVacancyModel

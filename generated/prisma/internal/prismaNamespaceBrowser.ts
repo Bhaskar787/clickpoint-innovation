@@ -62,13 +62,18 @@ export const ModelName = {
   IndustriesPage: 'IndustriesPage',
   ContactPage: 'ContactPage',
   JourneyPage: 'JourneyPage',
+  CareersPage: 'CareersPage',
+  NotFoundPage: 'NotFoundPage',
   CaseStudy: 'CaseStudy',
   BlogPost: 'BlogPost',
   TestimonialsPage: 'TestimonialsPage',
   Testimonial: 'Testimonial',
   Faq: 'Faq',
+  FaqCategory: 'FaqCategory',
   Inquiry: 'Inquiry',
-  ContactInquiry: 'ContactInquiry'
+  ContactInquiry: 'ContactInquiry',
+  JobCategory: 'JobCategory',
+  JobVacancy: 'JobVacancy'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -225,6 +230,26 @@ export const JourneyPageScalarFieldEnum = {
 export type JourneyPageScalarFieldEnum = (typeof JourneyPageScalarFieldEnum)[keyof typeof JourneyPageScalarFieldEnum]
 
 
+export const CareersPageScalarFieldEnum = {
+  id: 'id',
+  content: 'content',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CareersPageScalarFieldEnum = (typeof CareersPageScalarFieldEnum)[keyof typeof CareersPageScalarFieldEnum]
+
+
+export const NotFoundPageScalarFieldEnum = {
+  id: 'id',
+  content: 'content',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type NotFoundPageScalarFieldEnum = (typeof NotFoundPageScalarFieldEnum)[keyof typeof NotFoundPageScalarFieldEnum]
+
+
 export const CaseStudyScalarFieldEnum = {
   id: 'id',
   slug: 'slug',
@@ -303,13 +328,25 @@ export const FaqScalarFieldEnum = {
   id: 'id',
   question: 'question',
   answer: 'answer',
-  category: 'category',
+  categoryId: 'categoryId',
   order: 'order',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type FaqScalarFieldEnum = (typeof FaqScalarFieldEnum)[keyof typeof FaqScalarFieldEnum]
+
+
+export const FaqCategoryScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FaqCategoryScalarFieldEnum = (typeof FaqCategoryScalarFieldEnum)[keyof typeof FaqCategoryScalarFieldEnum]
 
 
 export const InquiryScalarFieldEnum = {
@@ -344,6 +381,39 @@ export const ContactInquiryScalarFieldEnum = {
 } as const
 
 export type ContactInquiryScalarFieldEnum = (typeof ContactInquiryScalarFieldEnum)[keyof typeof ContactInquiryScalarFieldEnum]
+
+
+export const JobCategoryScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type JobCategoryScalarFieldEnum = (typeof JobCategoryScalarFieldEnum)[keyof typeof JobCategoryScalarFieldEnum]
+
+
+export const JobVacancyScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  categoryId: 'categoryId',
+  type: 'type',
+  location: 'location',
+  experience: 'experience',
+  salary: 'salary',
+  summary: 'summary',
+  responsibilities: 'responsibilities',
+  requirements: 'requirements',
+  featured: 'featured',
+  isActive: 'isActive',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type JobVacancyScalarFieldEnum = (typeof JobVacancyScalarFieldEnum)[keyof typeof JobVacancyScalarFieldEnum]
 
 
 export const SortOrder = {
