@@ -71,18 +71,24 @@ export async function GET(request: Request) {
 
     // Determine precise content-type based on file extension
     const lowerName = (originalName || resumeUrl).toLowerCase();
-    if (lowerName.endsWith(".pdf")) {
+    const lowerUrl = (resumeUrl || "").toLowerCase();
+
+    if (lowerName.endsWith(".pdf") || lowerUrl.includes(".pdf")) {
       contentType = "application/pdf";
-    } else if (lowerName.endsWith(".png")) {
+    } else if (lowerName.endsWith(".png") || lowerUrl.includes(".png")) {
       contentType = "image/png";
-    } else if (lowerName.endsWith(".jpg") || lowerName.endsWith(".jpeg")) {
+    } else if (lowerName.endsWith(".jpg") || lowerName.endsWith(".jpeg") || lowerUrl.includes(".jpg") || lowerUrl.includes(".jpeg")) {
       contentType = "image/jpeg";
-    } else if (lowerName.endsWith(".webp")) {
+    } else if (lowerName.endsWith(".webp") || lowerUrl.includes(".webp")) {
       contentType = "image/webp";
-    } else if (lowerName.endsWith(".docx")) {
+    } else if (lowerName.endsWith(".docx") || lowerUrl.includes(".docx")) {
       contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-    } else if (lowerName.endsWith(".doc")) {
+    } else if (lowerName.endsWith(".doc") || lowerUrl.includes(".doc")) {
       contentType = "application/msword";
+    }
+
+    if (contentType === "application/pdf" && !originalName.toLowerCase().endsWith(".pdf")) {
+      originalName = `${originalName}.pdf`;
     }
 
     const dispositionType = action === "download" ? "attachment" : "inline";

@@ -56,3 +56,7 @@ Thumbs.db
 logs
 .env*
 !.env.example
+
+# User Uploads (Cloudinary hosted — do not commit uploaded media or PDFs)
+/public/uploads/*
+!/public/uploads/.gitkeep

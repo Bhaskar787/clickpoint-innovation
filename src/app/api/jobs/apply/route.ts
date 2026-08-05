@@ -121,23 +121,42 @@ export async function POST(request: Request) {
       resumeProvider = "local";
     }
 
-    // Process cover letter file attachment if uploaded
+    // Process cover letter file attachment if uploaded — Upload to Cloudinary
     let coverLetterFileUrl: string | null = null;
     let coverLetterOriginalName: string | null = null;
 
     if (coverLetterFile && coverLetterFile.size > 0) {
+      coverLetterOriginalName = coverLetterFile.name;
+      const clBytes = await coverLetterFile.arrayBuffer();
+      const clBuffer = Buffer.from(clBytes);
+      const isClImage = coverLetterFile.type.startsWith("image/");
+      const clResourceType = isClImage ? "image" : "raw";
+      const clDataUri = `data:${coverLetterFile.type || "application/octet-stream"};base64,${clBuffer.toString("base64")}`;
+
       try {
-        const clBytes = await coverLetterFile.arrayBuffer();
-        const clBuffer = Buffer.from(clBytes);
-        const clUploadsDir = path.join(process.cwd(), "public", "uploads", "coverletters");
-        await fs.mkdir(clUploadsDir, { recursive: true });
-        const safeClName = coverLetterFile.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
-        const uniqueClName = `${Date.now()}-${randomUUID().slice(0, 8)}-${safeClName}`;
-        await fs.writeFile(path.join(clUploadsDir, uniqueClName), clBuffer);
-        coverLetterFileUrl = `/uploads/coverletters/${uniqueClName}`;
-        coverLetterOriginalName = coverLetterFile.name;
-      } catch (clErr) {
-        console.error("Error saving cover letter file attachment:", clErr);
+        const clUploadResult = await cloudinary.uploader.upload(clDataUri, {
+          folder: "clickpoint_innovation/coverletters",
+          resource_type: clResourceType,
+          public_id: `coverletter_${Date.now()}_${randomUUID().slice(0, 8)}`,
+          overwrite: false,
+          invalidate: true,
+        });
+
+        if (clUploadResult?.secure_url) {
+          coverLetterFileUrl = clUploadResult.secure_url;
+        }
+      } catch (clCloudErr: any) {
+        console.warn("Cloudinary upload for cover letter file returned error (using local fallback):", clCloudErr?.message || clCloudErr);
+        try {
+          const clUploadsDir = path.join(process.cwd(), "public", "uploads", "coverletters");
+          await fs.mkdir(clUploadsDir, { recursive: true });
+          const safeClName = coverLetterFile.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+          const uniqueClName = `${Date.now()}-${randomUUID().slice(0, 8)}-${safeClName}`;
+          await fs.writeFile(path.join(clUploadsDir, uniqueClName), clBuffer);
+          coverLetterFileUrl = `/uploads/coverletters/${uniqueClName}`;
+        } catch (clErr) {
+          console.error("Error saving cover letter file attachment locally:", clErr);
+        }
       }
     }
 

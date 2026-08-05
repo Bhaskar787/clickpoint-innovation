@@ -40,7 +40,11 @@ export async function POST(req: Request) {
 
     // 1. Cloudinary Direct Native Overwrite & Auto-Delete Logic
     try {
-      const resourceType = mimeType.startsWith("video/") ? "video" : "image";
+      const resourceType = mimeType.startsWith("video/")
+        ? "video"
+        : mimeType.startsWith("image/")
+        ? "image"
+        : "raw";
       
       const uploadOptions: any = {
         folder: "clickpoint_innovation",

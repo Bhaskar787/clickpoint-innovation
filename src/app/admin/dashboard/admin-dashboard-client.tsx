@@ -650,7 +650,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
   const selectedSection = currentPageConfig?.sections.find((s) => s.id === selectedSectionId);
 
   return (
-    <div className="min-h-screen w-full overflow-x-hidden bg-[#f8f9fa] dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 flex flex-col lg:flex-row transition-colors duration-200">
+    <div className="h-screen w-full overflow-hidden bg-[#f8f9fa] dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 flex transition-colors duration-200">
       
       {/* Mobile Drawer Overlay Backdrop — use bg-black/* (not bg-slate-900/60) so globals.css dark override does not force a solid scrim */}
       {mobileOpen && (
@@ -771,10 +771,10 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
       </aside>
 
       {/* ================= 2. MAIN CONTENT AREA ================= */}
-      <div className={`flex-1 flex flex-col min-w-0 w-full overflow-x-hidden transition-all duration-300 ${collapsed ? "lg:ml-20" : "lg:ml-64"}`}>
+      <div className={`flex-1 flex flex-col h-screen min-w-0 w-full overflow-hidden transition-all duration-300 ${collapsed ? "lg:ml-20" : "lg:ml-64"}`}>
         
         {/* Top Responsive Navbar Header */}
-        <header className="h-16 bg-white dark:bg-[#131927] border-b border-slate-200/80 dark:border-slate-800 px-3 sm:px-6 flex items-center justify-between sticky top-0 z-30 backdrop-blur-md">
+        <header className="h-16 shrink-0 bg-white dark:bg-[#131927] border-b border-slate-200/80 dark:border-slate-800 px-3 sm:px-6 flex items-center justify-between sticky top-0 z-30 backdrop-blur-md">
           
           <div className="flex items-center gap-2 sm:gap-3 flex-1 max-w-md">
             <button
@@ -961,7 +961,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
         </header>
 
         {/* Dashboard Main Scrollable Content */}
-        <main className="p-3 sm:p-6 space-y-4 sm:space-y-6 min-w-0 w-full overflow-x-hidden">
+        <main className="flex-1 overflow-y-auto min-h-0 p-3 sm:p-6 space-y-4 sm:space-y-6 min-w-0 w-full [scrollbar-width:thin] [scrollbar-color:rgba(148,163,184,0.3)_transparent]">
           
           {/* TAB 1: OVERVIEW DASHBOARD */}
           {activeTab === "dashboard" && (

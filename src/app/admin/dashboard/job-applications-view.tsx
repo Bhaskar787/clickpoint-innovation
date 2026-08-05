@@ -67,13 +67,17 @@ function getResumeDownloadUrl(appId?: string, resumeUrl?: string) {
 }
 
 function isPdfResume(url: string, originalName?: string) {
-  const filename = originalName || url;
-  return /\.pdf$/i.test(filename);
+  if (!url && !originalName) return false;
+  const name = (originalName || "").toLowerCase();
+  const u = (url || "").toLowerCase();
+  return name.endsWith(".pdf") || u.endsWith(".pdf") || u.includes(".pdf") || name.includes(".pdf");
 }
 
 function isImageResume(url: string, originalName?: string) {
-  const filename = originalName || url;
-  return /\.(jpg|jpeg|png|webp)$/i.test(filename);
+  if (!url && !originalName) return false;
+  const name = (originalName || "").toLowerCase();
+  const u = (url || "").toLowerCase();
+  return /\.(jpg|jpeg|png|webp)($|\?)/i.test(name) || /\.(jpg|jpeg|png|webp)($|\?)/i.test(u);
 }
 
 function isPreviewableResume(url: string, originalName?: string) {
@@ -110,13 +114,22 @@ export default function JobApplicationsView() {
     let fileUrl = app?.coverLetterFileUrl || "";
     let originalName = app?.coverLetterOriginalName || "";
 
-    if (!fileUrl && text.includes("[Attached Cover Letter File:")) {
+    if (text && text.includes("[Attached Cover Letter File:")) {
       const match = text.match(/\[Attached Cover Letter File:\s*([^\]]+)\]\s*(?:\(([^)]*)\))?/);
       if (match) {
-        fileUrl = match[1].trim();
-        originalName = match[2] ? match[2].trim() : "cover_letter";
+        if (!fileUrl && match[1]) {
+          fileUrl = match[1].trim();
+        }
+        if (!originalName && match[2]) {
+          originalName = match[2].trim();
+        }
         text = text.replace(/\[Attached Cover Letter File:\s*([^\]]+)\]\s*(?:\(([^)]*)\))?/, "").trim();
       }
+    }
+
+    if (fileUrl && !originalName) {
+      const urlFileName = fileUrl.split("/").pop() || "";
+      originalName = urlFileName || "cover_letter";
     }
 
     return { text, fileUrl, originalName };
@@ -562,8 +575,14 @@ export default function JobApplicationsView() {
 
                 const isPdf = isPdfResume(fileUrl, originalName);
                 const isImg = isImageResume(fileUrl, originalName);
-                const filePreviewUrl = `/api/jobs/resume?url=${encodeURIComponent(fileUrl)}&filename=${encodeURIComponent(originalName || "cover_letter")}&action=inline`;
-                const fileDownloadUrl = `/api/jobs/resume?url=${encodeURIComponent(fileUrl)}&filename=${encodeURIComponent(originalName || "cover_letter")}&action=download`;
+
+                let safeFilename = originalName || (fileUrl ? fileUrl.split("/").pop() : "") || "cover_letter";
+                if (isPdf && !safeFilename.toLowerCase().endsWith(".pdf")) {
+                  safeFilename = `${safeFilename}.pdf`;
+                }
+
+                const filePreviewUrl = `/api/jobs/resume?url=${encodeURIComponent(fileUrl)}&filename=${encodeURIComponent(safeFilename)}&action=inline`;
+                const fileDownloadUrl = `/api/jobs/resume?url=${encodeURIComponent(fileUrl)}&filename=${encodeURIComponent(safeFilename)}&action=download`;
 
                 return (
                   <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-4 shadow-xs">
