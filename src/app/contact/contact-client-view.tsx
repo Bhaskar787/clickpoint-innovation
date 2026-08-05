@@ -18,6 +18,7 @@ import CtaSection from "@/components/sections/cta-section";
 import { Button } from "@/components/ui/button";
 import { ContactPageContent } from "@/types";
 import { DEFAULT_CONTACT_PAGE_DATA } from "@/data/default-contact-data";
+import { broadcastNotification } from "@/lib/realtime-notifications";
 
 interface ContactClientViewProps {
   initialContent: ContactPageContent;
@@ -101,6 +102,19 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
           { id: toastId, duration: 6000 }
         );
         setFormSubmitted(true);
+
+        broadcastNotification({
+          id: json.data?.id || `contact-${Date.now()}`,
+          type: "CONTACT",
+          category: "CONTACT",
+          title: "Contact Lead Inquiry",
+          clientName: name.trim(),
+          email: email.trim(),
+          subtext: selectedObjective ? `${selectedObjective} (${selectedBudget || ""})` : email.trim(),
+          content: message.trim(),
+          createdAt: new Date().toISOString(),
+          targetTab: "contact-page",
+        });
       } else {
         toast.error(json.error || "Failed to send message.", { id: toastId });
       }

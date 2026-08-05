@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { EmailComposerModal, EmailTemplateType } from "@/components/admin/email-composer-modal";
+import { subscribeRealtimeNotifications } from "@/lib/realtime-notifications";
 
 interface JobApplication {
   id: string;
@@ -84,7 +85,13 @@ function isPreviewableResume(url: string, originalName?: string) {
   return isPdfResume(url, originalName) || isImageResume(url, originalName);
 }
 
-export default function JobApplicationsView() {
+interface JobApplicationsViewProps {
+  selectedItemId?: string | null;
+  onClearSelectedItem?: () => void;
+  onMarkItemRead?: (id: string, category: string) => void;
+}
+
+export default function JobApplicationsView({ selectedItemId, onClearSelectedItem, onMarkItemRead }: JobApplicationsViewProps = {}) {
   const [mounted, setMounted] = useState(false);
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [loading, setLoading] = useState(true);
@@ -167,17 +174,7 @@ export default function JobApplicationsView() {
       if (json.success && Array.isArray(json.data)) {
         const fetched: JobApplication[] = json.data;
 
-        if (!isInitialLoadRef.current) {
-          const newApps = fetched.filter((app) => !prevAppIdsRef.current.has(app.id));
-          if (newApps.length > 0) {
-            playNewNotificationSound();
-            newApps.forEach((app) => {
-              toast.info(`New Application Received: ${app.name} applied for ${app.jobTitle}`, {
-                duration: 6000,
-              });
-            });
-          }
-        } else {
+        if (isInitialLoadRef.current) {
           isInitialLoadRef.current = false;
         }
 
@@ -205,19 +202,44 @@ export default function JobApplicationsView() {
     };
     window.addEventListener("focus", handleFocus);
 
+    // Realtime SSE / BroadcastChannel notification listener
+    const unsubscribeRealtime = subscribeRealtimeNotifications((data: any) => {
+      if (data.type === "JOB_APPLICATION" || data.category === "JOB_APPLICATION") {
+        fetchApplications(true);
+      }
+    });
+
     return () => {
       clearInterval(interval);
       window.removeEventListener("focus", handleFocus);
+      unsubscribeRealtime();
     };
   }, [fetchApplications]);
 
-  const markRead = async (id: string) => {
-    await fetch("/api/jobs/applications", {
+  useEffect(() => {
+    if (!selectedItemId) return;
+    const found = applications.find((a) => a.id === selectedItemId);
+    if (found) {
+      setSelectedApp(found);
+      if (!found.isRead) {
+        markRead(found.id);
+      }
+    }
+    onClearSelectedItem?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedItemId, applications]);
+
+  const markRead = (id: string) => {
+    // 1. INSTANT OPTIMISTIC UI UPDATE (0ms)
+    setApplications((prev) => prev.map((a) => (a.id === id ? { ...a, isRead: true } : a)));
+    onMarkItemRead?.(id, "JOB_APPLICATION");
+
+    // 2. Async background DB update
+    fetch("/api/jobs/applications", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "mark-read", id }),
-    });
-    setApplications((prev) => prev.map((a) => a.id === id ? { ...a, isRead: true } : a));
+    }).catch((err) => console.error("Error marking application read", err));
   };
 
   const updateStatus = async (id: string, status: string) => {

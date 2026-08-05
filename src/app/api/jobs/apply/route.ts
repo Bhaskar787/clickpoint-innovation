@@ -239,6 +239,7 @@ export async function POST(request: Request) {
       success: true,
       message: `Application submitted successfully! We'll review your application for ${jobTitle} and get back to you within 48 hours.`,
       applicationId: id,
+      data: { id, jobTitle, name, email },
     });
   } catch (error: any) {
     console.error("POST /api/jobs/apply Error:", error);

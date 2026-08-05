@@ -117,6 +117,7 @@ export default function QuickEnquiryModal({ isOpen, onClose }: QuickEnquiryModal
         broadcastNotification({
           id: json.data?.id || `quick-${Date.now()}`,
           type: "QUICK_INQUIRY",
+          category: "CONTACT",
           title: "Quick Lead Inquiry",
           clientName: name.trim(),
           email: email.trim(),

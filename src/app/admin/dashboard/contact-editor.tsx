@@ -33,15 +33,17 @@ import {
 } from "lucide-react";
 import { DEFAULT_CONTACT_PAGE_DATA } from "@/data/default-contact-data";
 import { ContactInquiryItem, ContactPageContent } from "@/types";
+import { subscribeRealtimeNotifications } from "@/lib/realtime-notifications";
 
 interface ContactEditorProps {
   sectionId: string | null;
   onCloseSection?: () => void;
   selectedItemId?: string | null;
   onClearSelectedItem?: () => void;
+  onMarkItemRead?: (id: string, category: string) => void;
 }
 
-export default function ContactEditor({ sectionId, onCloseSection, selectedItemId, onClearSelectedItem }: ContactEditorProps) {
+export default function ContactEditor({ sectionId, onCloseSection, selectedItemId, onClearSelectedItem, onMarkItemRead }: ContactEditorProps) {
   const [formData, setFormData] = useState<ContactPageContent>(DEFAULT_CONTACT_PAGE_DATA);
   const [inquiries, setInquiries] = useState<ContactInquiryItem[]>([]);
   const [filterTab, setFilterTab] = useState<"ALL" | "UNREAD" | "READ">("ALL");
@@ -127,7 +129,23 @@ export default function ContactEditor({ sectionId, onCloseSection, selectedItemI
       loadContactData(false);
     }, 8000);
 
-    return () => clearInterval(interval);
+    const unsubscribeRealtime = subscribeRealtimeNotifications((data: any) => {
+      if (
+        data.type === "CONTACT" ||
+        data.type === "QUICK_INQUIRY" ||
+        data.type === "INQUIRY" ||
+        data.category === "CONTACT" ||
+        data.category === "QUICK_INQUIRY" ||
+        data.category === "INQUIRY"
+      ) {
+        loadContactData(false);
+      }
+    });
+
+    return () => {
+      clearInterval(interval);
+      unsubscribeRealtime();
+    };
   }, []);
 
   useEffect(() => {
@@ -207,21 +225,19 @@ export default function ContactEditor({ sectionId, onCloseSection, selectedItemI
     }
   }
 
-  async function handleMarkRead(id: string) {
-    try {
-      const res = await fetch("/api/contact", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "update-inquiry", id, isRead: true }),
-      });
-      const json = await res.json();
-      if (json.success) {
-        toast.success("Inquiry marked as read.");
-        loadContactData();
-      }
-    } catch (err) {
-      console.error(err);
-    }
+  function handleMarkRead(id: string) {
+    // 1. INSTANT OPTIMISTIC UI UPDATE (0ms)
+    setInquiries((prev) => prev.map((item) => (item.id === id ? { ...item, isRead: true } : item)));
+    setUnreadCount((prev) => Math.max(0, prev - 1));
+    onMarkItemRead?.(id, "CONTACT");
+    toast.success("Inquiry marked as read.");
+
+    // 2. Async background DB update
+    fetch("/api/contact", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "update-inquiry", id, isRead: true }),
+    }).catch((err) => console.error("Error marking inquiry read", err));
   }
 
   async function handleDeleteInquiry(item: ContactInquiryItem) {

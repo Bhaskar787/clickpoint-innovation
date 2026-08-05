@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { DEFAULT_TESTIMONIALS_PAGE_DATA } from "@/data/default-testimonials-data";
 import { TestimonialItem, TestimonialsPageContent } from "@/types";
+import { subscribeRealtimeNotifications } from "@/lib/realtime-notifications";
 
 function getInitials(name: string): string {
   if (!name || !name.trim()) return "U";
@@ -43,9 +44,10 @@ interface TestimonialsEditorProps {
   onCloseSection?: () => void;
   selectedItemId?: string | null;
   onClearSelectedItem?: () => void;
+  onMarkItemRead?: (id: string, category: string) => void;
 }
 
-export default function TestimonialsEditor({ sectionId, onCloseSection, selectedItemId, onClearSelectedItem }: TestimonialsEditorProps) {
+export default function TestimonialsEditor({ sectionId, onCloseSection, selectedItemId, onClearSelectedItem, onMarkItemRead }: TestimonialsEditorProps) {
   const [formData, setFormData] = useState<TestimonialsPageContent>(DEFAULT_TESTIMONIALS_PAGE_DATA);
   const [testimonials, setTestimonials] = useState<TestimonialItem[]>([]);
   const [filterTab, setFilterTab] = useState<"ALL" | "UNREAD" | "APPROVED">("ALL");
@@ -100,7 +102,16 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
       loadTestimonialsData(false);
     }, 4000);
 
-    return () => clearInterval(interval);
+    const unsubscribeRealtime = subscribeRealtimeNotifications((data: any) => {
+      if (data.type === "REVIEW" || data.category === "REVIEW") {
+        loadTestimonialsData(false);
+      }
+    });
+
+    return () => {
+      clearInterval(interval);
+      unsubscribeRealtime();
+    };
   }, []);
 
   useEffect(() => {
@@ -190,17 +201,19 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
     }
   }
 
-  async function handleMarkRead(id: string) {
-    try {
-      await fetch("/api/testimonials", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "update-testimonial", id, isRead: true }),
-      });
-      loadTestimonialsData();
-    } catch (err) {
-      console.error(err);
-    }
+  function handleMarkRead(id: string) {
+    // 1. INSTANT OPTIMISTIC UI UPDATE (0ms)
+    setTestimonials((prev) => prev.map((item) => (item.id === id ? { ...item, isRead: true } : item)));
+    setUnreadCount((prev) => Math.max(0, prev - 1));
+    onMarkItemRead?.(id, "REVIEW");
+    toast.success("Review marked as read.");
+
+    // 2. Async background DB update
+    fetch("/api/testimonials", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "update-testimonial", id, isRead: true }),
+    }).catch((err) => console.error("Error marking testimonial read", err));
   }
 
   async function handleDelete(item: TestimonialItem) {

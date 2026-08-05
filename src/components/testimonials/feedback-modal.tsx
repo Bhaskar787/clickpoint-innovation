@@ -5,6 +5,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Star, X, UploadCloud, Loader2, MessageSquarePlus, CheckCircle2, User } from "lucide-react";
 import { toast } from "sonner";
+import { broadcastNotification } from "@/lib/realtime-notifications";
 
 interface FeedbackModalProps {
   isOpen: boolean;
@@ -113,6 +114,21 @@ export default function FeedbackModal({ isOpen, onClose, onSuccess }: FeedbackMo
         localStorage.setItem("clickpoint_last_review_time", Date.now().toString());
 
         toast.success("Review submitted successfully! Pending admin approval.", { id: toastId });
+
+        // Broadcast real-time event to Admin Dashboard
+        broadcastNotification({
+          id: data.data?.id || `review-${Date.now()}`,
+          type: "REVIEW",
+          category: "REVIEW",
+          title: "Client Feedback Review",
+          clientName: clientName.trim(),
+          email: userEmail.trim() || undefined,
+          subtext: `${clientRole.trim()}, ${company.trim()}`,
+          content: content.trim(),
+          rating,
+          createdAt: new Date().toISOString(),
+          targetTab: "testimonials-page",
+        });
 
         // Reset Form
         setClientName("");

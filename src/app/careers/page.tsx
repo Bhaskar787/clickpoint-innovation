@@ -32,6 +32,7 @@ import Footer from "@/components/layout/footer";
 import CtaSection from "@/components/sections/cta-section";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { broadcastNotification } from "@/lib/realtime-notifications";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -271,6 +272,20 @@ export default function CareersPage() {
         toast.success(`Application submitted for ${activeJobModal.title}! We'll be in touch within 48 hours.`, {
           duration: 6000,
           position: "top-right",
+        });
+
+        // Broadcast real-time event to Admin Dashboard
+        broadcastNotification({
+          id: json.data?.id || `jobapp-${Date.now()}`,
+          type: "JOB_APPLICATION",
+          category: "JOB_APPLICATION",
+          title: "New Job Application",
+          clientName: formName.trim(),
+          email: formEmail.trim(),
+          subtext: `Applied for: ${activeJobModal.title}`,
+          content: formCoverLetter.trim() || `${formName.trim()} applied for ${activeJobModal.title}`,
+          createdAt: new Date().toISOString(),
+          targetTab: "job-applied",
         });
       } else {
         toast.error(json.error || "Failed to submit. Please try again.", {
