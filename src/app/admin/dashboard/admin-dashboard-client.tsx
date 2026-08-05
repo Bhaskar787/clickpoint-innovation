@@ -144,8 +144,8 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
       return [newItem, ...prev];
     });
 
-    // Play Web Audio notification chime sound
-    playNotificationSound(isReview ? "REVIEW" : isJobApp ? "JOB_APPLICATION" : "CONTACT");
+    // Play Web Audio notification chime sound (uses user's selected ringtone sound)
+    playNotificationSound();
 
     // Display Category-Specific Color-Themed Toast UI
     if (isReview) {

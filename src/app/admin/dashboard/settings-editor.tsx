@@ -4,11 +4,14 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import {
   BellRing,
+  ConciergeBell,
+  Music,
+  Zap,
+  Sparkles,
+  Trophy,
   Volume2,
   VolumeX,
-  Star,
-  Mail,
-  Briefcase,
+  Radio,
   Sliders,
   Shield,
   Lock,
@@ -17,20 +20,22 @@ import {
   Cloud,
   CheckCircle2,
   Save,
-  RotateCcw,
-  Sparkles,
-  Zap,
-  Info,
   Server,
-  ToggleLeft,
-  ToggleRight,
   Play,
+  Check,
+  Mail,
+  Briefcase,
+  Star,
 } from "lucide-react";
-import { playNotificationSound } from "@/lib/realtime-notifications";
+import {
+  playNotificationSound,
+  NOTIFICATION_SOUND_OPTIONS,
+} from "@/lib/realtime-notifications";
 
 export default function SettingsEditor() {
   // Notification Sound State
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
+  const [selectedSoundId, setSelectedSoundId] = useState<string>("crystal-bell");
   const [toastDuration, setToastDuration] = useState<number>(8000);
   const [desktopPushEnabled, setDesktopPushEnabled] = useState<boolean>(true);
   const [emailDigestEnabled, setEmailDigestEnabled] = useState<boolean>(true);
@@ -47,12 +52,16 @@ export default function SettingsEditor() {
   const [activeSettingsTab, setActiveSettingsTab] = useState<"NOTIFICATIONS" | "GENERAL" | "SECURITY" | "INTEGRATIONS">("NOTIFICATIONS");
   const [isSaving, setIsSaving] = useState(false);
 
-  // Load sound setting from localStorage
+  // Load sound setting and selected ringtone from localStorage
   useEffect(() => {
     if (typeof window !== "undefined") {
       const storedSound = localStorage.getItem("clickpoint_notification_sound_enabled");
       if (storedSound !== null) {
         setSoundEnabled(storedSound !== "false");
+      }
+      const storedSelectedSound = localStorage.getItem("clickpoint_selected_notification_sound");
+      if (storedSelectedSound) {
+        setSelectedSoundId(storedSelectedSound);
       }
       const storedDuration = localStorage.getItem("clickpoint_toast_duration");
       if (storedDuration) {
@@ -67,11 +76,20 @@ export default function SettingsEditor() {
       localStorage.setItem("clickpoint_notification_sound_enabled", val ? "true" : "false");
     }
     if (val) {
-      playNotificationSound("CONTACT");
+      playNotificationSound(selectedSoundId);
       toast.success("Notification audio alerts enabled");
     } else {
       toast.info("Notification audio alerts muted");
     }
+  };
+
+  const handleSelectSound = (soundId: string, soundName: string) => {
+    setSelectedSoundId(soundId);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("clickpoint_selected_notification_sound", soundId);
+    }
+    playNotificationSound(soundId);
+    toast.success(`Notification ringtone set to: ${soundName}`);
   };
 
   const handleSaveSettings = () => {
@@ -81,11 +99,37 @@ export default function SettingsEditor() {
     setTimeout(() => {
       if (typeof window !== "undefined") {
         localStorage.setItem("clickpoint_notification_sound_enabled", soundEnabled ? "true" : "false");
+        localStorage.setItem("clickpoint_selected_notification_sound", selectedSoundId);
         localStorage.setItem("clickpoint_toast_duration", toastDuration.toString());
       }
       setIsSaving(false);
       toast.success("System preferences updated successfully!", { id: toastId });
     }, 600);
+  };
+
+  const activeSoundObj = NOTIFICATION_SOUND_OPTIONS.find((s) => s.id === selectedSoundId) || NOTIFICATION_SOUND_OPTIONS[0];
+
+  const renderSoundIcon = (iconName: string) => {
+    switch (iconName) {
+      case "bell":
+        return <BellRing className="h-4 w-4 text-blue-500" />;
+      case "concierge":
+        return <ConciergeBell className="h-4 w-4 text-amber-500" />;
+      case "music":
+        return <Music className="h-4 w-4 text-purple-500" />;
+      case "zap":
+        return <Zap className="h-4 w-4 text-yellow-500" />;
+      case "sparkles":
+        return <Sparkles className="h-4 w-4 text-sky-500" />;
+      case "trophy":
+        return <Trophy className="h-4 w-4 text-emerald-500" />;
+      case "volume":
+        return <Volume2 className="h-4 w-4 text-indigo-500" />;
+      case "radio":
+        return <Radio className="h-4 w-4 text-rose-500" />;
+      default:
+        return <BellRing className="h-4 w-4 text-blue-500" />;
+    }
   };
 
   return (
@@ -105,7 +149,7 @@ export default function SettingsEditor() {
             <span>Admin System Settings</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 max-w-2xl">
-            Configure notification sound chimes, color themes, platform defaults, security policies, and system integration status.
+            Configure notification ringtone sounds, platform defaults, security policies, and system integration status.
           </p>
         </div>
 
@@ -134,7 +178,7 @@ export default function SettingsEditor() {
           }`}
         >
           <BellRing className="h-4 w-4" />
-          <span>Notification & Sound Engine</span>
+          <span>Notification Sound Tones</span>
         </button>
         <button
           onClick={() => setActiveSettingsTab("GENERAL")}
@@ -174,8 +218,8 @@ export default function SettingsEditor() {
       {/* TAB 1: NOTIFICATION & SOUND ENGINE */}
       {activeSettingsTab === "NOTIFICATIONS" && (
         <div className="space-y-6">
-          {/* Main Sound Master Switch Card */}
-          <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 shadow-xs">
+          {/* Master Sound Alert Switch Card */}
+          <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-5 sm:p-6 shadow-xs">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-start gap-4">
                 <div className={`h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 ${
@@ -185,16 +229,16 @@ export default function SettingsEditor() {
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                    Real-time Audio Alert Chimes
+                    Master Real-time Audio Alerts
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-xl">
-                    Play synthesized audio chimes when a new client inquiry, feedback review, or job application is received in real-time.
+                    Enable or disable audio sound alerts across all admin dashboards when new client inquiries, reviews, or job applications arrive.
                   </p>
                 </div>
               </div>
 
-              {/* Master Toggle */}
-              <div className="flex items-center gap-3 shrink-0 bg-slate-50 dark:bg-slate-900 p-2 rounded-xl border border-slate-200 dark:border-slate-800">
+              {/* Master Toggle Switch */}
+              <div className="flex items-center gap-3 shrink-0 bg-slate-50 dark:bg-slate-900 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800">
                 <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
                   {soundEnabled ? "Audio Enabled (ON)" : "Audio Muted (OFF)"}
                 </span>
@@ -213,95 +257,113 @@ export default function SettingsEditor() {
                 </button>
               </div>
             </div>
+          </div>
 
-            {/* Audio Chime Testing Grid */}
-            <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
-              <p className="text-xs font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3">
-                Notification Sound & Color Theme Previews
-              </p>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {/* 1. Testimonial Review Card */}
-                <div className="rounded-xl border border-amber-300 dark:border-amber-900/60 bg-amber-50/40 dark:bg-amber-950/20 p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
-                      <Star className="h-3 w-3 fill-amber-400 text-amber-500" />
-                      Orange / Yellow Theme
-                    </span>
-                    <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400">Review</span>
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-extrabold text-slate-900 dark:text-slate-100">
-                      Client Feedback Review
-                    </h4>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                      Warm double-chime audio frequency (E5 → G5)
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => playNotificationSound("REVIEW")}
-                    disabled={!soundEnabled}
-                    className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer disabled:opacity-50"
-                  >
-                    <Play className="h-3.5 w-3.5 fill-white" />
-                    <span>Test Review Chime</span>
-                  </button>
-                </div>
-
-                {/* 2. Contact Inquiry Card */}
-                <div className="rounded-xl border border-blue-300 dark:border-blue-900/60 bg-blue-50/40 dark:bg-blue-950/20 p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-800">
-                      <Mail className="h-3 w-3 text-blue-600 dark:text-blue-400" />
-                      Blue Theme
-                    </span>
-                    <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">Inquiry</span>
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-extrabold text-slate-900 dark:text-slate-100">
-                      Contact & Lead Inquiry
-                    </h4>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                      Crisp single-chime audio frequency (A5 → D6)
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => playNotificationSound("CONTACT")}
-                    disabled={!soundEnabled}
-                    className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer disabled:opacity-50"
-                  >
-                    <Play className="h-3.5 w-3.5 fill-white" />
-                    <span>Test Inquiry Chime</span>
-                  </button>
-                </div>
-
-                {/* 3. Job Application Card */}
-                <div className="rounded-xl border border-emerald-300 dark:border-emerald-900/60 bg-emerald-50/40 dark:bg-emerald-950/20 p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
-                      <Briefcase className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
-                      Green Theme
-                    </span>
-                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">Job App</span>
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-extrabold text-slate-900 dark:text-slate-100">
-                      Job Application Submission
-                    </h4>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                      Uplifting triple-chime frequency (G5 → C6)
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => playNotificationSound("JOB_APPLICATION")}
-                    disabled={!soundEnabled}
-                    className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer disabled:opacity-50"
-                  >
-                    <Play className="h-3.5 w-3.5 fill-white" />
-                    <span>Test Job App Chime</span>
-                  </button>
-                </div>
+          {/* MOBILE PHONE STYLE TABULAR RINGTONE SELECTION LIST */}
+          <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] shadow-xs overflow-hidden">
+            {/* Table Header */}
+            <div className="p-5 sm:p-6 border-b border-slate-100 dark:border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50 dark:bg-slate-900/30">
+              <div>
+                <h4 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
+                  <BellRing className="h-4 w-4 text-blue-500" />
+                  <span>Notification Sound Ringtone List</span>
+                </h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Select your preferred ringtone tone to play for all incoming submissions (Testimonials, Inquiries & Job Apps)
+                </p>
               </div>
+
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 text-xs font-bold shrink-0 self-start sm:self-auto">
+                {renderSoundIcon(activeSoundObj.iconName)}
+                <span>Selected: {activeSoundObj.name}</span>
+              </div>
+            </div>
+
+            {/* Tabular Ringtone List */}
+            <div className="divide-y divide-slate-100 dark:divide-slate-800/80">
+              {NOTIFICATION_SOUND_OPTIONS.map((sound, index) => {
+                const isSelected = selectedSoundId === sound.id;
+                return (
+                  <div
+                    key={sound.id}
+                    onClick={() => handleSelectSound(sound.id, sound.name)}
+                    className={`p-4 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all cursor-pointer ${
+                      isSelected
+                        ? "bg-blue-50/40 dark:bg-blue-950/20"
+                        : "hover:bg-slate-50/60 dark:hover:bg-slate-900/40"
+                    }`}
+                  >
+                    {/* Left Details */}
+                    <div className="flex items-center gap-3.5 min-w-0">
+                      {/* Radio Circle */}
+                      <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                        isSelected
+                          ? "border-blue-600 bg-blue-600 text-white"
+                          : "border-slate-300 dark:border-slate-700 bg-transparent"
+                      }`}>
+                        {isSelected && <Check className="h-3.5 w-3.5 stroke-[3]" />}
+                      </div>
+
+                      {/* Icon Box */}
+                      <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${
+                        isSelected
+                          ? "bg-blue-500/15 dark:bg-blue-500/20 border border-blue-500/30"
+                          : "bg-slate-100 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60"
+                      }`}>
+                        {renderSoundIcon(sound.iconName)}
+                      </div>
+
+                      {/* Title & Description */}
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h5 className={`text-xs font-black truncate ${
+                            isSelected ? "text-blue-600 dark:text-blue-400" : "text-slate-900 dark:text-white"
+                          }`}>
+                            {sound.name}
+                          </h5>
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shrink-0">
+                            {sound.badge}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">
+                          {sound.description}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Right Actions */}
+                    <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          playNotificationSound(sound.id);
+                        }}
+                        disabled={!soundEnabled}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-[11px] transition-colors cursor-pointer disabled:opacity-40"
+                      >
+                        <Play className="h-3 w-3 fill-current text-blue-500" />
+                        <span>Play Sample</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSelectSound(sound.id, sound.name);
+                        }}
+                        className={`px-3 py-1.5 rounded-xl text-[11px] font-extrabold transition-all cursor-pointer ${
+                          isSelected
+                            ? "bg-blue-600 text-white shadow-xs"
+                            : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                        }`}
+                      >
+                        {isSelected ? "Active Sound" : "Select"}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
