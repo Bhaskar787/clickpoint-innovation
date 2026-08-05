@@ -19,13 +19,13 @@ export default function CtaSection() {
           <div className="pointer-events-none absolute -bottom-24 right-0 h-64 w-64 rounded-full bg-ember-500/30 blur-[100px]" />
 
           <div className="relative">
-            <h2 className="mx-auto max-w-2xl font-display text-2xl sm:text-4xl font-bold text-white">
+            <h2 className="mx-auto max-w-2xl section-title text-white">
               Ready to build your next{" "}
               <span className="text-[#f58220]">
                 AI-first product?
               </span>
             </h2>
-            <p className="mx-auto mt-4 max-w-md text-xs sm:text-base text-white/60">
+            <p className="mx-auto mt-4 max-w-md section-subtitle text-white/60">
               Tell us about your project — we'll get back with a plan and
               timeline within 24 hours.
             </p>

@@ -39,12 +39,18 @@ export type CaseStudyMinAggregateOutputType = {
   slug: string | null
   title: string | null
   client: string | null
+  categoryId: string | null
   category: string | null
   description: string | null
   challenge: string | null
   solution: string | null
   results: string | null
+  impact: string | null
   imageUrl: string | null
+  liveUrl: string | null
+  buttonText: string | null
+  buttonLink: string | null
+  imageGradient: string | null
   featured: boolean | null
   order: number | null
   createdAt: Date | null
@@ -56,12 +62,18 @@ export type CaseStudyMaxAggregateOutputType = {
   slug: string | null
   title: string | null
   client: string | null
+  categoryId: string | null
   category: string | null
   description: string | null
   challenge: string | null
   solution: string | null
   results: string | null
+  impact: string | null
   imageUrl: string | null
+  liveUrl: string | null
+  buttonText: string | null
+  buttonLink: string | null
+  imageGradient: string | null
   featured: boolean | null
   order: number | null
   createdAt: Date | null
@@ -73,6 +85,7 @@ export type CaseStudyCountAggregateOutputType = {
   slug: number
   title: number
   client: number
+  categoryId: number
   category: number
   description: number
   challenge: number
@@ -80,7 +93,12 @@ export type CaseStudyCountAggregateOutputType = {
   results: number
   metrics: number
   techStack: number
+  impact: number
   imageUrl: number
+  liveUrl: number
+  buttonText: number
+  buttonLink: number
+  imageGradient: number
   featured: number
   order: number
   createdAt: number
@@ -102,12 +120,18 @@ export type CaseStudyMinAggregateInputType = {
   slug?: true
   title?: true
   client?: true
+  categoryId?: true
   category?: true
   description?: true
   challenge?: true
   solution?: true
   results?: true
+  impact?: true
   imageUrl?: true
+  liveUrl?: true
+  buttonText?: true
+  buttonLink?: true
+  imageGradient?: true
   featured?: true
   order?: true
   createdAt?: true
@@ -119,12 +143,18 @@ export type CaseStudyMaxAggregateInputType = {
   slug?: true
   title?: true
   client?: true
+  categoryId?: true
   category?: true
   description?: true
   challenge?: true
   solution?: true
   results?: true
+  impact?: true
   imageUrl?: true
+  liveUrl?: true
+  buttonText?: true
+  buttonLink?: true
+  imageGradient?: true
   featured?: true
   order?: true
   createdAt?: true
@@ -136,6 +166,7 @@ export type CaseStudyCountAggregateInputType = {
   slug?: true
   title?: true
   client?: true
+  categoryId?: true
   category?: true
   description?: true
   challenge?: true
@@ -143,7 +174,12 @@ export type CaseStudyCountAggregateInputType = {
   results?: true
   metrics?: true
   techStack?: true
+  impact?: true
   imageUrl?: true
+  liveUrl?: true
+  buttonText?: true
+  buttonLink?: true
+  imageGradient?: true
   featured?: true
   order?: true
   createdAt?: true
@@ -242,6 +278,7 @@ export type CaseStudyGroupByOutputType = {
   slug: string
   title: string
   client: string
+  categoryId: string | null
   category: string
   description: string
   challenge: string | null
@@ -249,7 +286,12 @@ export type CaseStudyGroupByOutputType = {
   results: string | null
   metrics: runtime.JsonValue | null
   techStack: runtime.JsonValue | null
+  impact: string | null
   imageUrl: string | null
+  liveUrl: string | null
+  buttonText: string | null
+  buttonLink: string | null
+  imageGradient: string | null
   featured: boolean
   order: number
   createdAt: Date
@@ -284,6 +326,7 @@ export type CaseStudyWhereInput = {
   slug?: Prisma.StringFilter<"CaseStudy"> | string
   title?: Prisma.StringFilter<"CaseStudy"> | string
   client?: Prisma.StringFilter<"CaseStudy"> | string
+  categoryId?: Prisma.StringNullableFilter<"CaseStudy"> | string | null
   category?: Prisma.StringFilter<"CaseStudy"> | string
   description?: Prisma.StringFilter<"CaseStudy"> | string
   challenge?: Prisma.StringNullableFilter<"CaseStudy"> | string | null
@@ -291,11 +334,17 @@ export type CaseStudyWhereInput = {
   results?: Prisma.StringNullableFilter<"CaseStudy"> | string | null
   metrics?: Prisma.JsonNullableFilter<"CaseStudy">
   techStack?: Prisma.JsonNullableFilter<"CaseStudy">
+  impact?: Prisma.StringNullableFilter<"CaseStudy"> | string | null
   imageUrl?: Prisma.StringNullableFilter<"CaseStudy"> | string | null
+  liveUrl?: Prisma.StringNullableFilter<"CaseStudy"> | string | null
+  buttonText?: Prisma.StringNullableFilter<"CaseStudy"> | string | null
+  buttonLink?: Prisma.StringNullableFilter<"CaseStudy"> | string | null
+  imageGradient?: Prisma.StringNullableFilter<"CaseStudy"> | string | null
   featured?: Prisma.BoolFilter<"CaseStudy"> | boolean
   order?: Prisma.IntFilter<"CaseStudy"> | number
   createdAt?: Prisma.DateTimeFilter<"CaseStudy"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"CaseStudy"> | Date | string
+  categoryRel?: Prisma.XOR<Prisma.CaseStudyCategoryNullableScalarRelationFilter, Prisma.CaseStudyCategoryWhereInput> | null
 }
 
 export type CaseStudyOrderByWithRelationInput = {
@@ -303,6 +352,7 @@ export type CaseStudyOrderByWithRelationInput = {
   slug?: Prisma.SortOrder
   title?: Prisma.SortOrder
   client?: Prisma.SortOrder
+  categoryId?: Prisma.SortOrderInput | Prisma.SortOrder
   category?: Prisma.SortOrder
   description?: Prisma.SortOrder
   challenge?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -310,11 +360,17 @@ export type CaseStudyOrderByWithRelationInput = {
   results?: Prisma.SortOrderInput | Prisma.SortOrder
   metrics?: Prisma.SortOrderInput | Prisma.SortOrder
   techStack?: Prisma.SortOrderInput | Prisma.SortOrder
+  impact?: Prisma.SortOrderInput | Prisma.SortOrder
   imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  liveUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  buttonText?: Prisma.SortOrderInput | Prisma.SortOrder
+  buttonLink?: Prisma.SortOrderInput | Prisma.SortOrder
+  imageGradient?: Prisma.SortOrderInput | Prisma.SortOrder
   featured?: Prisma.SortOrder
   order?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  categoryRel?: Prisma.CaseStudyCategoryOrderByWithRelationInput
 }
 
 export type CaseStudyWhereUniqueInput = Prisma.AtLeast<{
@@ -325,6 +381,7 @@ export type CaseStudyWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.CaseStudyWhereInput | Prisma.CaseStudyWhereInput[]
   title?: Prisma.StringFilter<"CaseStudy"> | string
   client?: Prisma.StringFilter<"CaseStudy"> | string
+  categoryId?: Prisma.StringNullableFilter<"CaseStudy"> | string | null
   category?: Prisma.StringFilter<"CaseStudy"> | string
   description?: Prisma.StringFilter<"CaseStudy"> | string
   challenge?: Prisma.StringNullableFilter<"CaseStudy"> | string | null
@@ -332,11 +389,17 @@ export type CaseStudyWhereUniqueInput = Prisma.AtLeast<{
   results?: Prisma.StringNullableFilter<"CaseStudy"> | string | null
   metrics?: Prisma.JsonNullableFilter<"CaseStudy">
   techStack?: Prisma.JsonNullableFilter<"CaseStudy">
+  impact?: Prisma.StringNullableFilter<"CaseStudy"> | string | null
   imageUrl?: Prisma.StringNullableFilter<"CaseStudy"> | string | null
+  liveUrl?: Prisma.StringNullableFilter<"CaseStudy"> | string | null
+  buttonText?: Prisma.StringNullableFilter<"CaseStudy"> | string | null
+  buttonLink?: Prisma.StringNullableFilter<"CaseStudy"> | string | null
+  imageGradient?: Prisma.StringNullableFilter<"CaseStudy"> | string | null
   featured?: Prisma.BoolFilter<"CaseStudy"> | boolean
   order?: Prisma.IntFilter<"CaseStudy"> | number
   createdAt?: Prisma.DateTimeFilter<"CaseStudy"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"CaseStudy"> | Date | string
+  categoryRel?: Prisma.XOR<Prisma.CaseStudyCategoryNullableScalarRelationFilter, Prisma.CaseStudyCategoryWhereInput> | null
 }, "id" | "slug">
 
 export type CaseStudyOrderByWithAggregationInput = {
@@ -344,6 +407,7 @@ export type CaseStudyOrderByWithAggregationInput = {
   slug?: Prisma.SortOrder
   title?: Prisma.SortOrder
   client?: Prisma.SortOrder
+  categoryId?: Prisma.SortOrderInput | Prisma.SortOrder
   category?: Prisma.SortOrder
   description?: Prisma.SortOrder
   challenge?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -351,7 +415,12 @@ export type CaseStudyOrderByWithAggregationInput = {
   results?: Prisma.SortOrderInput | Prisma.SortOrder
   metrics?: Prisma.SortOrderInput | Prisma.SortOrder
   techStack?: Prisma.SortOrderInput | Prisma.SortOrder
+  impact?: Prisma.SortOrderInput | Prisma.SortOrder
   imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  liveUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  buttonText?: Prisma.SortOrderInput | Prisma.SortOrder
+  buttonLink?: Prisma.SortOrderInput | Prisma.SortOrder
+  imageGradient?: Prisma.SortOrderInput | Prisma.SortOrder
   featured?: Prisma.SortOrder
   order?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -371,6 +440,7 @@ export type CaseStudyScalarWhereWithAggregatesInput = {
   slug?: Prisma.StringWithAggregatesFilter<"CaseStudy"> | string
   title?: Prisma.StringWithAggregatesFilter<"CaseStudy"> | string
   client?: Prisma.StringWithAggregatesFilter<"CaseStudy"> | string
+  categoryId?: Prisma.StringNullableWithAggregatesFilter<"CaseStudy"> | string | null
   category?: Prisma.StringWithAggregatesFilter<"CaseStudy"> | string
   description?: Prisma.StringWithAggregatesFilter<"CaseStudy"> | string
   challenge?: Prisma.StringNullableWithAggregatesFilter<"CaseStudy"> | string | null
@@ -378,7 +448,12 @@ export type CaseStudyScalarWhereWithAggregatesInput = {
   results?: Prisma.StringNullableWithAggregatesFilter<"CaseStudy"> | string | null
   metrics?: Prisma.JsonNullableWithAggregatesFilter<"CaseStudy">
   techStack?: Prisma.JsonNullableWithAggregatesFilter<"CaseStudy">
+  impact?: Prisma.StringNullableWithAggregatesFilter<"CaseStudy"> | string | null
   imageUrl?: Prisma.StringNullableWithAggregatesFilter<"CaseStudy"> | string | null
+  liveUrl?: Prisma.StringNullableWithAggregatesFilter<"CaseStudy"> | string | null
+  buttonText?: Prisma.StringNullableWithAggregatesFilter<"CaseStudy"> | string | null
+  buttonLink?: Prisma.StringNullableWithAggregatesFilter<"CaseStudy"> | string | null
+  imageGradient?: Prisma.StringNullableWithAggregatesFilter<"CaseStudy"> | string | null
   featured?: Prisma.BoolWithAggregatesFilter<"CaseStudy"> | boolean
   order?: Prisma.IntWithAggregatesFilter<"CaseStudy"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"CaseStudy"> | Date | string
@@ -390,18 +465,24 @@ export type CaseStudyCreateInput = {
   slug: string
   title: string
   client: string
-  category: string
+  category?: string
   description: string
   challenge?: string | null
   solution?: string | null
   results?: string | null
   metrics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   techStack?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  impact?: string | null
   imageUrl?: string | null
+  liveUrl?: string | null
+  buttonText?: string | null
+  buttonLink?: string | null
+  imageGradient?: string | null
   featured?: boolean
   order?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  categoryRel?: Prisma.CaseStudyCategoryCreateNestedOneWithoutCaseStudiesInput
 }
 
 export type CaseStudyUncheckedCreateInput = {
@@ -409,14 +490,20 @@ export type CaseStudyUncheckedCreateInput = {
   slug: string
   title: string
   client: string
-  category: string
+  categoryId?: string | null
+  category?: string
   description: string
   challenge?: string | null
   solution?: string | null
   results?: string | null
   metrics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   techStack?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  impact?: string | null
   imageUrl?: string | null
+  liveUrl?: string | null
+  buttonText?: string | null
+  buttonLink?: string | null
+  imageGradient?: string | null
   featured?: boolean
   order?: number
   createdAt?: Date | string
@@ -435,11 +522,17 @@ export type CaseStudyUpdateInput = {
   results?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metrics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   techStack?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  impact?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  liveUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buttonText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buttonLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageGradient?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   order?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  categoryRel?: Prisma.CaseStudyCategoryUpdateOneWithoutCaseStudiesNestedInput
 }
 
 export type CaseStudyUncheckedUpdateInput = {
@@ -447,6 +540,7 @@ export type CaseStudyUncheckedUpdateInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   client?: Prisma.StringFieldUpdateOperationsInput | string
+  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   category?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   challenge?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -454,7 +548,12 @@ export type CaseStudyUncheckedUpdateInput = {
   results?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metrics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   techStack?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  impact?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  liveUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buttonText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buttonLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageGradient?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   order?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -466,14 +565,20 @@ export type CaseStudyCreateManyInput = {
   slug: string
   title: string
   client: string
-  category: string
+  categoryId?: string | null
+  category?: string
   description: string
   challenge?: string | null
   solution?: string | null
   results?: string | null
   metrics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   techStack?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  impact?: string | null
   imageUrl?: string | null
+  liveUrl?: string | null
+  buttonText?: string | null
+  buttonLink?: string | null
+  imageGradient?: string | null
   featured?: boolean
   order?: number
   createdAt?: Date | string
@@ -492,7 +597,12 @@ export type CaseStudyUpdateManyMutationInput = {
   results?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metrics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   techStack?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  impact?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  liveUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buttonText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buttonLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageGradient?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   order?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -504,6 +614,7 @@ export type CaseStudyUncheckedUpdateManyInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   client?: Prisma.StringFieldUpdateOperationsInput | string
+  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   category?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.StringFieldUpdateOperationsInput | string
   challenge?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -511,11 +622,26 @@ export type CaseStudyUncheckedUpdateManyInput = {
   results?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metrics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   techStack?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  impact?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  liveUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buttonText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buttonLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageGradient?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   order?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type CaseStudyListRelationFilter = {
+  every?: Prisma.CaseStudyWhereInput
+  some?: Prisma.CaseStudyWhereInput
+  none?: Prisma.CaseStudyWhereInput
+}
+
+export type CaseStudyOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
 }
 
 export type CaseStudyCountOrderByAggregateInput = {
@@ -523,6 +649,7 @@ export type CaseStudyCountOrderByAggregateInput = {
   slug?: Prisma.SortOrder
   title?: Prisma.SortOrder
   client?: Prisma.SortOrder
+  categoryId?: Prisma.SortOrder
   category?: Prisma.SortOrder
   description?: Prisma.SortOrder
   challenge?: Prisma.SortOrder
@@ -530,7 +657,12 @@ export type CaseStudyCountOrderByAggregateInput = {
   results?: Prisma.SortOrder
   metrics?: Prisma.SortOrder
   techStack?: Prisma.SortOrder
+  impact?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
+  liveUrl?: Prisma.SortOrder
+  buttonText?: Prisma.SortOrder
+  buttonLink?: Prisma.SortOrder
+  imageGradient?: Prisma.SortOrder
   featured?: Prisma.SortOrder
   order?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -546,12 +678,18 @@ export type CaseStudyMaxOrderByAggregateInput = {
   slug?: Prisma.SortOrder
   title?: Prisma.SortOrder
   client?: Prisma.SortOrder
+  categoryId?: Prisma.SortOrder
   category?: Prisma.SortOrder
   description?: Prisma.SortOrder
   challenge?: Prisma.SortOrder
   solution?: Prisma.SortOrder
   results?: Prisma.SortOrder
+  impact?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
+  liveUrl?: Prisma.SortOrder
+  buttonText?: Prisma.SortOrder
+  buttonLink?: Prisma.SortOrder
+  imageGradient?: Prisma.SortOrder
   featured?: Prisma.SortOrder
   order?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -563,12 +701,18 @@ export type CaseStudyMinOrderByAggregateInput = {
   slug?: Prisma.SortOrder
   title?: Prisma.SortOrder
   client?: Prisma.SortOrder
+  categoryId?: Prisma.SortOrder
   category?: Prisma.SortOrder
   description?: Prisma.SortOrder
   challenge?: Prisma.SortOrder
   solution?: Prisma.SortOrder
   results?: Prisma.SortOrder
+  impact?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
+  liveUrl?: Prisma.SortOrder
+  buttonText?: Prisma.SortOrder
+  buttonLink?: Prisma.SortOrder
+  imageGradient?: Prisma.SortOrder
   featured?: Prisma.SortOrder
   order?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -579,6 +723,246 @@ export type CaseStudySumOrderByAggregateInput = {
   order?: Prisma.SortOrder
 }
 
+export type CaseStudyCreateNestedManyWithoutCategoryRelInput = {
+  create?: Prisma.XOR<Prisma.CaseStudyCreateWithoutCategoryRelInput, Prisma.CaseStudyUncheckedCreateWithoutCategoryRelInput> | Prisma.CaseStudyCreateWithoutCategoryRelInput[] | Prisma.CaseStudyUncheckedCreateWithoutCategoryRelInput[]
+  connectOrCreate?: Prisma.CaseStudyCreateOrConnectWithoutCategoryRelInput | Prisma.CaseStudyCreateOrConnectWithoutCategoryRelInput[]
+  createMany?: Prisma.CaseStudyCreateManyCategoryRelInputEnvelope
+  connect?: Prisma.CaseStudyWhereUniqueInput | Prisma.CaseStudyWhereUniqueInput[]
+}
+
+export type CaseStudyUncheckedCreateNestedManyWithoutCategoryRelInput = {
+  create?: Prisma.XOR<Prisma.CaseStudyCreateWithoutCategoryRelInput, Prisma.CaseStudyUncheckedCreateWithoutCategoryRelInput> | Prisma.CaseStudyCreateWithoutCategoryRelInput[] | Prisma.CaseStudyUncheckedCreateWithoutCategoryRelInput[]
+  connectOrCreate?: Prisma.CaseStudyCreateOrConnectWithoutCategoryRelInput | Prisma.CaseStudyCreateOrConnectWithoutCategoryRelInput[]
+  createMany?: Prisma.CaseStudyCreateManyCategoryRelInputEnvelope
+  connect?: Prisma.CaseStudyWhereUniqueInput | Prisma.CaseStudyWhereUniqueInput[]
+}
+
+export type CaseStudyUpdateManyWithoutCategoryRelNestedInput = {
+  create?: Prisma.XOR<Prisma.CaseStudyCreateWithoutCategoryRelInput, Prisma.CaseStudyUncheckedCreateWithoutCategoryRelInput> | Prisma.CaseStudyCreateWithoutCategoryRelInput[] | Prisma.CaseStudyUncheckedCreateWithoutCategoryRelInput[]
+  connectOrCreate?: Prisma.CaseStudyCreateOrConnectWithoutCategoryRelInput | Prisma.CaseStudyCreateOrConnectWithoutCategoryRelInput[]
+  upsert?: Prisma.CaseStudyUpsertWithWhereUniqueWithoutCategoryRelInput | Prisma.CaseStudyUpsertWithWhereUniqueWithoutCategoryRelInput[]
+  createMany?: Prisma.CaseStudyCreateManyCategoryRelInputEnvelope
+  set?: Prisma.CaseStudyWhereUniqueInput | Prisma.CaseStudyWhereUniqueInput[]
+  disconnect?: Prisma.CaseStudyWhereUniqueInput | Prisma.CaseStudyWhereUniqueInput[]
+  delete?: Prisma.CaseStudyWhereUniqueInput | Prisma.CaseStudyWhereUniqueInput[]
+  connect?: Prisma.CaseStudyWhereUniqueInput | Prisma.CaseStudyWhereUniqueInput[]
+  update?: Prisma.CaseStudyUpdateWithWhereUniqueWithoutCategoryRelInput | Prisma.CaseStudyUpdateWithWhereUniqueWithoutCategoryRelInput[]
+  updateMany?: Prisma.CaseStudyUpdateManyWithWhereWithoutCategoryRelInput | Prisma.CaseStudyUpdateManyWithWhereWithoutCategoryRelInput[]
+  deleteMany?: Prisma.CaseStudyScalarWhereInput | Prisma.CaseStudyScalarWhereInput[]
+}
+
+export type CaseStudyUncheckedUpdateManyWithoutCategoryRelNestedInput = {
+  create?: Prisma.XOR<Prisma.CaseStudyCreateWithoutCategoryRelInput, Prisma.CaseStudyUncheckedCreateWithoutCategoryRelInput> | Prisma.CaseStudyCreateWithoutCategoryRelInput[] | Prisma.CaseStudyUncheckedCreateWithoutCategoryRelInput[]
+  connectOrCreate?: Prisma.CaseStudyCreateOrConnectWithoutCategoryRelInput | Prisma.CaseStudyCreateOrConnectWithoutCategoryRelInput[]
+  upsert?: Prisma.CaseStudyUpsertWithWhereUniqueWithoutCategoryRelInput | Prisma.CaseStudyUpsertWithWhereUniqueWithoutCategoryRelInput[]
+  createMany?: Prisma.CaseStudyCreateManyCategoryRelInputEnvelope
+  set?: Prisma.CaseStudyWhereUniqueInput | Prisma.CaseStudyWhereUniqueInput[]
+  disconnect?: Prisma.CaseStudyWhereUniqueInput | Prisma.CaseStudyWhereUniqueInput[]
+  delete?: Prisma.CaseStudyWhereUniqueInput | Prisma.CaseStudyWhereUniqueInput[]
+  connect?: Prisma.CaseStudyWhereUniqueInput | Prisma.CaseStudyWhereUniqueInput[]
+  update?: Prisma.CaseStudyUpdateWithWhereUniqueWithoutCategoryRelInput | Prisma.CaseStudyUpdateWithWhereUniqueWithoutCategoryRelInput[]
+  updateMany?: Prisma.CaseStudyUpdateManyWithWhereWithoutCategoryRelInput | Prisma.CaseStudyUpdateManyWithWhereWithoutCategoryRelInput[]
+  deleteMany?: Prisma.CaseStudyScalarWhereInput | Prisma.CaseStudyScalarWhereInput[]
+}
+
+export type CaseStudyCreateWithoutCategoryRelInput = {
+  id?: string
+  slug: string
+  title: string
+  client: string
+  category?: string
+  description: string
+  challenge?: string | null
+  solution?: string | null
+  results?: string | null
+  metrics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  techStack?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  impact?: string | null
+  imageUrl?: string | null
+  liveUrl?: string | null
+  buttonText?: string | null
+  buttonLink?: string | null
+  imageGradient?: string | null
+  featured?: boolean
+  order?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type CaseStudyUncheckedCreateWithoutCategoryRelInput = {
+  id?: string
+  slug: string
+  title: string
+  client: string
+  category?: string
+  description: string
+  challenge?: string | null
+  solution?: string | null
+  results?: string | null
+  metrics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  techStack?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  impact?: string | null
+  imageUrl?: string | null
+  liveUrl?: string | null
+  buttonText?: string | null
+  buttonLink?: string | null
+  imageGradient?: string | null
+  featured?: boolean
+  order?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type CaseStudyCreateOrConnectWithoutCategoryRelInput = {
+  where: Prisma.CaseStudyWhereUniqueInput
+  create: Prisma.XOR<Prisma.CaseStudyCreateWithoutCategoryRelInput, Prisma.CaseStudyUncheckedCreateWithoutCategoryRelInput>
+}
+
+export type CaseStudyCreateManyCategoryRelInputEnvelope = {
+  data: Prisma.CaseStudyCreateManyCategoryRelInput | Prisma.CaseStudyCreateManyCategoryRelInput[]
+  skipDuplicates?: boolean
+}
+
+export type CaseStudyUpsertWithWhereUniqueWithoutCategoryRelInput = {
+  where: Prisma.CaseStudyWhereUniqueInput
+  update: Prisma.XOR<Prisma.CaseStudyUpdateWithoutCategoryRelInput, Prisma.CaseStudyUncheckedUpdateWithoutCategoryRelInput>
+  create: Prisma.XOR<Prisma.CaseStudyCreateWithoutCategoryRelInput, Prisma.CaseStudyUncheckedCreateWithoutCategoryRelInput>
+}
+
+export type CaseStudyUpdateWithWhereUniqueWithoutCategoryRelInput = {
+  where: Prisma.CaseStudyWhereUniqueInput
+  data: Prisma.XOR<Prisma.CaseStudyUpdateWithoutCategoryRelInput, Prisma.CaseStudyUncheckedUpdateWithoutCategoryRelInput>
+}
+
+export type CaseStudyUpdateManyWithWhereWithoutCategoryRelInput = {
+  where: Prisma.CaseStudyScalarWhereInput
+  data: Prisma.XOR<Prisma.CaseStudyUpdateManyMutationInput, Prisma.CaseStudyUncheckedUpdateManyWithoutCategoryRelInput>
+}
+
+export type CaseStudyScalarWhereInput = {
+  AND?: Prisma.CaseStudyScalarWhereInput | Prisma.CaseStudyScalarWhereInput[]
+  OR?: Prisma.CaseStudyScalarWhereInput[]
+  NOT?: Prisma.CaseStudyScalarWhereInput | Prisma.CaseStudyScalarWhereInput[]
+  id?: Prisma.StringFilter<"CaseStudy"> | string
+  slug?: Prisma.StringFilter<"CaseStudy"> | string
+  title?: Prisma.StringFilter<"CaseStudy"> | string
+  client?: Prisma.StringFilter<"CaseStudy"> | string
+  categoryId?: Prisma.StringNullableFilter<"CaseStudy"> | string | null
+  category?: Prisma.StringFilter<"CaseStudy"> | string
+  description?: Prisma.StringFilter<"CaseStudy"> | string
+  challenge?: Prisma.StringNullableFilter<"CaseStudy"> | string | null
+  solution?: Prisma.StringNullableFilter<"CaseStudy"> | string | null
+  results?: Prisma.StringNullableFilter<"CaseStudy"> | string | null
+  metrics?: Prisma.JsonNullableFilter<"CaseStudy">
+  techStack?: Prisma.JsonNullableFilter<"CaseStudy">
+  impact?: Prisma.StringNullableFilter<"CaseStudy"> | string | null
+  imageUrl?: Prisma.StringNullableFilter<"CaseStudy"> | string | null
+  liveUrl?: Prisma.StringNullableFilter<"CaseStudy"> | string | null
+  buttonText?: Prisma.StringNullableFilter<"CaseStudy"> | string | null
+  buttonLink?: Prisma.StringNullableFilter<"CaseStudy"> | string | null
+  imageGradient?: Prisma.StringNullableFilter<"CaseStudy"> | string | null
+  featured?: Prisma.BoolFilter<"CaseStudy"> | boolean
+  order?: Prisma.IntFilter<"CaseStudy"> | number
+  createdAt?: Prisma.DateTimeFilter<"CaseStudy"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"CaseStudy"> | Date | string
+}
+
+export type CaseStudyCreateManyCategoryRelInput = {
+  id?: string
+  slug: string
+  title: string
+  client: string
+  category?: string
+  description: string
+  challenge?: string | null
+  solution?: string | null
+  results?: string | null
+  metrics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  techStack?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  impact?: string | null
+  imageUrl?: string | null
+  liveUrl?: string | null
+  buttonText?: string | null
+  buttonLink?: string | null
+  imageGradient?: string | null
+  featured?: boolean
+  order?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type CaseStudyUpdateWithoutCategoryRelInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  client?: Prisma.StringFieldUpdateOperationsInput | string
+  category?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  challenge?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  solution?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  results?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  metrics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  techStack?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  impact?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  liveUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buttonText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buttonLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageGradient?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  order?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type CaseStudyUncheckedUpdateWithoutCategoryRelInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  client?: Prisma.StringFieldUpdateOperationsInput | string
+  category?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  challenge?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  solution?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  results?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  metrics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  techStack?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  impact?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  liveUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buttonText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buttonLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageGradient?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  order?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type CaseStudyUncheckedUpdateManyWithoutCategoryRelInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  client?: Prisma.StringFieldUpdateOperationsInput | string
+  category?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  challenge?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  solution?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  results?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  metrics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  techStack?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  impact?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  liveUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buttonText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buttonLink?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageGradient?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  order?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 
 
 export type CaseStudySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -586,6 +970,7 @@ export type CaseStudySelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   slug?: boolean
   title?: boolean
   client?: boolean
+  categoryId?: boolean
   category?: boolean
   description?: boolean
   challenge?: boolean
@@ -593,11 +978,17 @@ export type CaseStudySelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   results?: boolean
   metrics?: boolean
   techStack?: boolean
+  impact?: boolean
   imageUrl?: boolean
+  liveUrl?: boolean
+  buttonText?: boolean
+  buttonLink?: boolean
+  imageGradient?: boolean
   featured?: boolean
   order?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  categoryRel?: boolean | Prisma.CaseStudy$categoryRelArgs<ExtArgs>
 }, ExtArgs["result"]["caseStudy"]>
 
 export type CaseStudySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -605,6 +996,7 @@ export type CaseStudySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   slug?: boolean
   title?: boolean
   client?: boolean
+  categoryId?: boolean
   category?: boolean
   description?: boolean
   challenge?: boolean
@@ -612,11 +1004,17 @@ export type CaseStudySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   results?: boolean
   metrics?: boolean
   techStack?: boolean
+  impact?: boolean
   imageUrl?: boolean
+  liveUrl?: boolean
+  buttonText?: boolean
+  buttonLink?: boolean
+  imageGradient?: boolean
   featured?: boolean
   order?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  categoryRel?: boolean | Prisma.CaseStudy$categoryRelArgs<ExtArgs>
 }, ExtArgs["result"]["caseStudy"]>
 
 export type CaseStudySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -624,6 +1022,7 @@ export type CaseStudySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   slug?: boolean
   title?: boolean
   client?: boolean
+  categoryId?: boolean
   category?: boolean
   description?: boolean
   challenge?: boolean
@@ -631,11 +1030,17 @@ export type CaseStudySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   results?: boolean
   metrics?: boolean
   techStack?: boolean
+  impact?: boolean
   imageUrl?: boolean
+  liveUrl?: boolean
+  buttonText?: boolean
+  buttonLink?: boolean
+  imageGradient?: boolean
   featured?: boolean
   order?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  categoryRel?: boolean | Prisma.CaseStudy$categoryRelArgs<ExtArgs>
 }, ExtArgs["result"]["caseStudy"]>
 
 export type CaseStudySelectScalar = {
@@ -643,6 +1048,7 @@ export type CaseStudySelectScalar = {
   slug?: boolean
   title?: boolean
   client?: boolean
+  categoryId?: boolean
   category?: boolean
   description?: boolean
   challenge?: boolean
@@ -650,23 +1056,40 @@ export type CaseStudySelectScalar = {
   results?: boolean
   metrics?: boolean
   techStack?: boolean
+  impact?: boolean
   imageUrl?: boolean
+  liveUrl?: boolean
+  buttonText?: boolean
+  buttonLink?: boolean
+  imageGradient?: boolean
   featured?: boolean
   order?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type CaseStudyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "title" | "client" | "category" | "description" | "challenge" | "solution" | "results" | "metrics" | "techStack" | "imageUrl" | "featured" | "order" | "createdAt" | "updatedAt", ExtArgs["result"]["caseStudy"]>
+export type CaseStudyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "title" | "client" | "categoryId" | "category" | "description" | "challenge" | "solution" | "results" | "metrics" | "techStack" | "impact" | "imageUrl" | "liveUrl" | "buttonText" | "buttonLink" | "imageGradient" | "featured" | "order" | "createdAt" | "updatedAt", ExtArgs["result"]["caseStudy"]>
+export type CaseStudyInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  categoryRel?: boolean | Prisma.CaseStudy$categoryRelArgs<ExtArgs>
+}
+export type CaseStudyIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  categoryRel?: boolean | Prisma.CaseStudy$categoryRelArgs<ExtArgs>
+}
+export type CaseStudyIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  categoryRel?: boolean | Prisma.CaseStudy$categoryRelArgs<ExtArgs>
+}
 
 export type $CaseStudyPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "CaseStudy"
-  objects: {}
+  objects: {
+    categoryRel: Prisma.$CaseStudyCategoryPayload<ExtArgs> | null
+  }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     slug: string
     title: string
     client: string
+    categoryId: string | null
     category: string
     description: string
     challenge: string | null
@@ -674,7 +1097,12 @@ export type $CaseStudyPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     results: string | null
     metrics: runtime.JsonValue | null
     techStack: runtime.JsonValue | null
+    impact: string | null
     imageUrl: string | null
+    liveUrl: string | null
+    buttonText: string | null
+    buttonLink: string | null
+    imageGradient: string | null
     featured: boolean
     order: number
     createdAt: Date
@@ -1073,6 +1501,7 @@ readonly fields: CaseStudyFieldRefs;
  */
 export interface Prisma__CaseStudyClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  categoryRel<T extends Prisma.CaseStudy$categoryRelArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CaseStudy$categoryRelArgs<ExtArgs>>): Prisma.Prisma__CaseStudyCategoryClient<runtime.Types.Result.GetResult<Prisma.$CaseStudyCategoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1106,6 +1535,7 @@ export interface CaseStudyFieldRefs {
   readonly slug: Prisma.FieldRef<"CaseStudy", 'String'>
   readonly title: Prisma.FieldRef<"CaseStudy", 'String'>
   readonly client: Prisma.FieldRef<"CaseStudy", 'String'>
+  readonly categoryId: Prisma.FieldRef<"CaseStudy", 'String'>
   readonly category: Prisma.FieldRef<"CaseStudy", 'String'>
   readonly description: Prisma.FieldRef<"CaseStudy", 'String'>
   readonly challenge: Prisma.FieldRef<"CaseStudy", 'String'>
@@ -1113,7 +1543,12 @@ export interface CaseStudyFieldRefs {
   readonly results: Prisma.FieldRef<"CaseStudy", 'String'>
   readonly metrics: Prisma.FieldRef<"CaseStudy", 'Json'>
   readonly techStack: Prisma.FieldRef<"CaseStudy", 'Json'>
+  readonly impact: Prisma.FieldRef<"CaseStudy", 'String'>
   readonly imageUrl: Prisma.FieldRef<"CaseStudy", 'String'>
+  readonly liveUrl: Prisma.FieldRef<"CaseStudy", 'String'>
+  readonly buttonText: Prisma.FieldRef<"CaseStudy", 'String'>
+  readonly buttonLink: Prisma.FieldRef<"CaseStudy", 'String'>
+  readonly imageGradient: Prisma.FieldRef<"CaseStudy", 'String'>
   readonly featured: Prisma.FieldRef<"CaseStudy", 'Boolean'>
   readonly order: Prisma.FieldRef<"CaseStudy", 'Int'>
   readonly createdAt: Prisma.FieldRef<"CaseStudy", 'DateTime'>
@@ -1135,6 +1570,10 @@ export type CaseStudyFindUniqueArgs<ExtArgs extends runtime.Types.Extensions.Int
    */
   omit?: Prisma.CaseStudyOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CaseStudyInclude<ExtArgs> | null
+  /**
    * Filter, which CaseStudy to fetch.
    */
   where: Prisma.CaseStudyWhereUniqueInput
@@ -1153,6 +1592,10 @@ export type CaseStudyFindUniqueOrThrowArgs<ExtArgs extends runtime.Types.Extensi
    */
   omit?: Prisma.CaseStudyOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CaseStudyInclude<ExtArgs> | null
+  /**
    * Filter, which CaseStudy to fetch.
    */
   where: Prisma.CaseStudyWhereUniqueInput
@@ -1170,6 +1613,10 @@ export type CaseStudyFindFirstArgs<ExtArgs extends runtime.Types.Extensions.Inte
    * Omit specific fields from the CaseStudy
    */
   omit?: Prisma.CaseStudyOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CaseStudyInclude<ExtArgs> | null
   /**
    * Filter, which CaseStudy to fetch.
    */
@@ -1219,6 +1666,10 @@ export type CaseStudyFindFirstOrThrowArgs<ExtArgs extends runtime.Types.Extensio
    */
   omit?: Prisma.CaseStudyOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CaseStudyInclude<ExtArgs> | null
+  /**
    * Filter, which CaseStudy to fetch.
    */
   where?: Prisma.CaseStudyWhereInput
@@ -1266,6 +1717,10 @@ export type CaseStudyFindManyArgs<ExtArgs extends runtime.Types.Extensions.Inter
    * Omit specific fields from the CaseStudy
    */
   omit?: Prisma.CaseStudyOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CaseStudyInclude<ExtArgs> | null
   /**
    * Filter, which CaseStudies to fetch.
    */
@@ -1315,6 +1770,10 @@ export type CaseStudyCreateArgs<ExtArgs extends runtime.Types.Extensions.Interna
    */
   omit?: Prisma.CaseStudyOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CaseStudyInclude<ExtArgs> | null
+  /**
    * The data needed to create a CaseStudy.
    */
   data: Prisma.XOR<Prisma.CaseStudyCreateInput, Prisma.CaseStudyUncheckedCreateInput>
@@ -1348,6 +1807,10 @@ export type CaseStudyCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Exten
    */
   data: Prisma.CaseStudyCreateManyInput | Prisma.CaseStudyCreateManyInput[]
   skipDuplicates?: boolean
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CaseStudyIncludeCreateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1362,6 +1825,10 @@ export type CaseStudyUpdateArgs<ExtArgs extends runtime.Types.Extensions.Interna
    * Omit specific fields from the CaseStudy
    */
   omit?: Prisma.CaseStudyOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CaseStudyInclude<ExtArgs> | null
   /**
    * The data needed to update a CaseStudy.
    */
@@ -1414,6 +1881,10 @@ export type CaseStudyUpdateManyAndReturnArgs<ExtArgs extends runtime.Types.Exten
    * Limit how many CaseStudies to update.
    */
   limit?: number
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CaseStudyIncludeUpdateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1428,6 +1899,10 @@ export type CaseStudyUpsertArgs<ExtArgs extends runtime.Types.Extensions.Interna
    * Omit specific fields from the CaseStudy
    */
   omit?: Prisma.CaseStudyOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CaseStudyInclude<ExtArgs> | null
   /**
    * The filter to search for the CaseStudy to update in case it exists.
    */
@@ -1455,6 +1930,10 @@ export type CaseStudyDeleteArgs<ExtArgs extends runtime.Types.Extensions.Interna
    */
   omit?: Prisma.CaseStudyOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CaseStudyInclude<ExtArgs> | null
+  /**
    * Filter which CaseStudy to delete.
    */
   where: Prisma.CaseStudyWhereUniqueInput
@@ -1475,6 +1954,25 @@ export type CaseStudyDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Int
 }
 
 /**
+ * CaseStudy.categoryRel
+ */
+export type CaseStudy$categoryRelArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CaseStudyCategory
+   */
+  select?: Prisma.CaseStudyCategorySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CaseStudyCategory
+   */
+  omit?: Prisma.CaseStudyCategoryOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CaseStudyCategoryInclude<ExtArgs> | null
+  where?: Prisma.CaseStudyCategoryWhereInput
+}
+
+/**
  * CaseStudy without action
  */
 export type CaseStudyDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1486,4 +1984,8 @@ export type CaseStudyDefaultArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * Omit specific fields from the CaseStudy
    */
   omit?: Prisma.CaseStudyOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CaseStudyInclude<ExtArgs> | null
 }

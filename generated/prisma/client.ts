@@ -107,6 +107,16 @@ export type CareersPage = Prisma.CareersPageModel
  */
 export type NotFoundPage = Prisma.NotFoundPageModel
 /**
+ * Model CaseStudiesPage
+ * 
+ */
+export type CaseStudiesPage = Prisma.CaseStudiesPageModel
+/**
+ * Model CaseStudyCategory
+ * 
+ */
+export type CaseStudyCategory = Prisma.CaseStudyCategoryModel
+/**
  * Model CaseStudy
  * 
  */
@@ -156,3 +166,8 @@ export type JobCategory = Prisma.JobCategoryModel
  * 
  */
 export type JobVacancy = Prisma.JobVacancyModel
+/**
+ * Model JobApplication
+ * 
+ */
+export type JobApplication = Prisma.JobApplicationModel

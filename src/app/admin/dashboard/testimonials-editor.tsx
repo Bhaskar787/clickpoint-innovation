@@ -289,10 +289,10 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
   }
 
   return (
-    <div className="w-full max-w-full space-y-4 sm:space-y-6 text-slate-900 dark:text-white">
+    <div className="w-full min-w-0 max-w-full overflow-hidden space-y-4 sm:space-y-6 text-slate-900 dark:text-white">
       {/* HEADER CONTROLS */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-white dark:bg-[#131927] border border-slate-200/80 dark:border-slate-800 shadow-xs">
-        <div className="space-y-1">
+      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 overflow-hidden p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-white dark:bg-[#131927] border border-slate-200/80 dark:border-slate-800 shadow-xs">
+        <div className="space-y-1 min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 text-violet-600 dark:text-violet-400 shrink-0" />
             <h2 className="text-sm sm:text-base font-extrabold tracking-tight">
@@ -310,7 +310,7 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
           </p>
         </div>
 
-        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 shrink-0 w-full lg:w-auto">
           <button
             type="button"
             onClick={() => setFormData(DEFAULT_TESTIMONIALS_PAGE_DATA)}
@@ -772,7 +772,7 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
       {selectedTestimonial &&
         typeof window !== "undefined" &&
         createPortal(
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-200">
             <div className="w-full max-w-xl max-h-[90vh] flex flex-col bg-white dark:bg-[#131927] border border-slate-200 dark:border-slate-800 rounded-xl sm:rounded-2xl shadow-2xl p-4 sm:p-6 space-y-4 sm:space-y-5 overflow-y-auto">
               <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-3 shrink-0">
                 <div className="flex items-center gap-3">

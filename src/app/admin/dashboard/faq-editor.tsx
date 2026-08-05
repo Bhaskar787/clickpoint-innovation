@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import {
   Save,
@@ -307,7 +308,7 @@ export default function FaqEditor({ sectionId, onCloseSection }: FaqEditorProps)
   const showFaqs = !sectionId || sectionId === "faq-editor";
 
   return (
-    <div className="w-full max-w-full space-y-6 sm:space-y-8 text-slate-900 dark:text-white">
+    <div className="w-full min-w-0 max-w-full overflow-hidden space-y-6 sm:space-y-8 text-slate-900 dark:text-white">
       {/* FAQ CATEGORY MANAGER */}
       {showCategories && (
         <div className="space-y-4">
@@ -598,8 +599,8 @@ export default function FaqEditor({ sectionId, onCloseSection }: FaqEditorProps)
           </div>
 
           {/* Add / Edit Modal */}
-          {isFormOpen && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 animate-in fade-in duration-150">
+          {isFormOpen && typeof window !== "undefined" && createPortal(
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/70 backdrop-blur-md p-3 sm:p-4 animate-in fade-in duration-150">
               <div className="w-full max-w-lg max-h-[90vh] flex flex-col rounded-xl sm:rounded-2xl bg-white dark:bg-[#0f1524] border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">
                 <div className="flex items-center justify-between p-3.5 sm:p-4 px-4 sm:px-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 shrink-0">
                   <h3 className="text-xs font-bold uppercase tracking-wider flex items-center gap-2">
@@ -687,7 +688,8 @@ export default function FaqEditor({ sectionId, onCloseSection }: FaqEditorProps)
                   </div>
                 </form>
               </div>
-            </div>
+            </div>,
+            document.body
           )}
         </div>
       )}

@@ -289,6 +289,7 @@ export type JobVacancyWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"JobVacancy"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"JobVacancy"> | Date | string
   category?: Prisma.XOR<Prisma.JobCategoryScalarRelationFilter, Prisma.JobCategoryWhereInput>
+  applications?: Prisma.JobApplicationListRelationFilter
 }
 
 export type JobVacancyOrderByWithRelationInput = {
@@ -308,6 +309,7 @@ export type JobVacancyOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   category?: Prisma.JobCategoryOrderByWithRelationInput
+  applications?: Prisma.JobApplicationOrderByRelationAggregateInput
 }
 
 export type JobVacancyWhereUniqueInput = Prisma.AtLeast<{
@@ -330,6 +332,7 @@ export type JobVacancyWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"JobVacancy"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"JobVacancy"> | Date | string
   category?: Prisma.XOR<Prisma.JobCategoryScalarRelationFilter, Prisma.JobCategoryWhereInput>
+  applications?: Prisma.JobApplicationListRelationFilter
 }, "id">
 
 export type JobVacancyOrderByWithAggregationInput = {
@@ -392,6 +395,7 @@ export type JobVacancyCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   category: Prisma.JobCategoryCreateNestedOneWithoutVacanciesInput
+  applications?: Prisma.JobApplicationCreateNestedManyWithoutJobVacancyInput
 }
 
 export type JobVacancyUncheckedCreateInput = {
@@ -410,6 +414,7 @@ export type JobVacancyUncheckedCreateInput = {
   order?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  applications?: Prisma.JobApplicationUncheckedCreateNestedManyWithoutJobVacancyInput
 }
 
 export type JobVacancyUpdateInput = {
@@ -428,6 +433,7 @@ export type JobVacancyUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   category?: Prisma.JobCategoryUpdateOneRequiredWithoutVacanciesNestedInput
+  applications?: Prisma.JobApplicationUpdateManyWithoutJobVacancyNestedInput
 }
 
 export type JobVacancyUncheckedUpdateInput = {
@@ -446,6 +452,7 @@ export type JobVacancyUncheckedUpdateInput = {
   order?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  applications?: Prisma.JobApplicationUncheckedUpdateManyWithoutJobVacancyNestedInput
 }
 
 export type JobVacancyCreateManyInput = {
@@ -569,6 +576,11 @@ export type JobVacancySumOrderByAggregateInput = {
   order?: Prisma.SortOrder
 }
 
+export type JobVacancyScalarRelationFilter = {
+  is?: Prisma.JobVacancyWhereInput
+  isNot?: Prisma.JobVacancyWhereInput
+}
+
 export type JobVacancyCreateNestedManyWithoutCategoryInput = {
   create?: Prisma.XOR<Prisma.JobVacancyCreateWithoutCategoryInput, Prisma.JobVacancyUncheckedCreateWithoutCategoryInput> | Prisma.JobVacancyCreateWithoutCategoryInput[] | Prisma.JobVacancyUncheckedCreateWithoutCategoryInput[]
   connectOrCreate?: Prisma.JobVacancyCreateOrConnectWithoutCategoryInput | Prisma.JobVacancyCreateOrConnectWithoutCategoryInput[]
@@ -611,6 +623,20 @@ export type JobVacancyUncheckedUpdateManyWithoutCategoryNestedInput = {
   deleteMany?: Prisma.JobVacancyScalarWhereInput | Prisma.JobVacancyScalarWhereInput[]
 }
 
+export type JobVacancyCreateNestedOneWithoutApplicationsInput = {
+  create?: Prisma.XOR<Prisma.JobVacancyCreateWithoutApplicationsInput, Prisma.JobVacancyUncheckedCreateWithoutApplicationsInput>
+  connectOrCreate?: Prisma.JobVacancyCreateOrConnectWithoutApplicationsInput
+  connect?: Prisma.JobVacancyWhereUniqueInput
+}
+
+export type JobVacancyUpdateOneRequiredWithoutApplicationsNestedInput = {
+  create?: Prisma.XOR<Prisma.JobVacancyCreateWithoutApplicationsInput, Prisma.JobVacancyUncheckedCreateWithoutApplicationsInput>
+  connectOrCreate?: Prisma.JobVacancyCreateOrConnectWithoutApplicationsInput
+  upsert?: Prisma.JobVacancyUpsertWithoutApplicationsInput
+  connect?: Prisma.JobVacancyWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.JobVacancyUpdateToOneWithWhereWithoutApplicationsInput, Prisma.JobVacancyUpdateWithoutApplicationsInput>, Prisma.JobVacancyUncheckedUpdateWithoutApplicationsInput>
+}
+
 export type JobVacancyCreateWithoutCategoryInput = {
   id?: string
   title: string
@@ -626,6 +652,7 @@ export type JobVacancyCreateWithoutCategoryInput = {
   order?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  applications?: Prisma.JobApplicationCreateNestedManyWithoutJobVacancyInput
 }
 
 export type JobVacancyUncheckedCreateWithoutCategoryInput = {
@@ -643,6 +670,7 @@ export type JobVacancyUncheckedCreateWithoutCategoryInput = {
   order?: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  applications?: Prisma.JobApplicationUncheckedCreateNestedManyWithoutJobVacancyInput
 }
 
 export type JobVacancyCreateOrConnectWithoutCategoryInput = {
@@ -692,6 +720,94 @@ export type JobVacancyScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"JobVacancy"> | Date | string
 }
 
+export type JobVacancyCreateWithoutApplicationsInput = {
+  id?: string
+  title: string
+  type?: string
+  location?: string
+  experience?: string
+  salary?: string
+  summary?: string
+  responsibilities?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  requirements?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  featured?: boolean
+  isActive?: boolean
+  order?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  category: Prisma.JobCategoryCreateNestedOneWithoutVacanciesInput
+}
+
+export type JobVacancyUncheckedCreateWithoutApplicationsInput = {
+  id?: string
+  title: string
+  categoryId: string
+  type?: string
+  location?: string
+  experience?: string
+  salary?: string
+  summary?: string
+  responsibilities?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  requirements?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  featured?: boolean
+  isActive?: boolean
+  order?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type JobVacancyCreateOrConnectWithoutApplicationsInput = {
+  where: Prisma.JobVacancyWhereUniqueInput
+  create: Prisma.XOR<Prisma.JobVacancyCreateWithoutApplicationsInput, Prisma.JobVacancyUncheckedCreateWithoutApplicationsInput>
+}
+
+export type JobVacancyUpsertWithoutApplicationsInput = {
+  update: Prisma.XOR<Prisma.JobVacancyUpdateWithoutApplicationsInput, Prisma.JobVacancyUncheckedUpdateWithoutApplicationsInput>
+  create: Prisma.XOR<Prisma.JobVacancyCreateWithoutApplicationsInput, Prisma.JobVacancyUncheckedCreateWithoutApplicationsInput>
+  where?: Prisma.JobVacancyWhereInput
+}
+
+export type JobVacancyUpdateToOneWithWhereWithoutApplicationsInput = {
+  where?: Prisma.JobVacancyWhereInput
+  data: Prisma.XOR<Prisma.JobVacancyUpdateWithoutApplicationsInput, Prisma.JobVacancyUncheckedUpdateWithoutApplicationsInput>
+}
+
+export type JobVacancyUpdateWithoutApplicationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.StringFieldUpdateOperationsInput | string
+  location?: Prisma.StringFieldUpdateOperationsInput | string
+  experience?: Prisma.StringFieldUpdateOperationsInput | string
+  salary?: Prisma.StringFieldUpdateOperationsInput | string
+  summary?: Prisma.StringFieldUpdateOperationsInput | string
+  responsibilities?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  requirements?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  order?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  category?: Prisma.JobCategoryUpdateOneRequiredWithoutVacanciesNestedInput
+}
+
+export type JobVacancyUncheckedUpdateWithoutApplicationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  categoryId?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.StringFieldUpdateOperationsInput | string
+  location?: Prisma.StringFieldUpdateOperationsInput | string
+  experience?: Prisma.StringFieldUpdateOperationsInput | string
+  salary?: Prisma.StringFieldUpdateOperationsInput | string
+  summary?: Prisma.StringFieldUpdateOperationsInput | string
+  responsibilities?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  requirements?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  order?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 export type JobVacancyCreateManyCategoryInput = {
   id?: string
   title: string
@@ -724,6 +840,7 @@ export type JobVacancyUpdateWithoutCategoryInput = {
   order?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  applications?: Prisma.JobApplicationUpdateManyWithoutJobVacancyNestedInput
 }
 
 export type JobVacancyUncheckedUpdateWithoutCategoryInput = {
@@ -741,6 +858,7 @@ export type JobVacancyUncheckedUpdateWithoutCategoryInput = {
   order?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  applications?: Prisma.JobApplicationUncheckedUpdateManyWithoutJobVacancyNestedInput
 }
 
 export type JobVacancyUncheckedUpdateManyWithoutCategoryInput = {
@@ -761,6 +879,35 @@ export type JobVacancyUncheckedUpdateManyWithoutCategoryInput = {
 }
 
 
+/**
+ * Count Type JobVacancyCountOutputType
+ */
+
+export type JobVacancyCountOutputType = {
+  applications: number
+}
+
+export type JobVacancyCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  applications?: boolean | JobVacancyCountOutputTypeCountApplicationsArgs
+}
+
+/**
+ * JobVacancyCountOutputType without action
+ */
+export type JobVacancyCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the JobVacancyCountOutputType
+   */
+  select?: Prisma.JobVacancyCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * JobVacancyCountOutputType without action
+ */
+export type JobVacancyCountOutputTypeCountApplicationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.JobApplicationWhereInput
+}
+
 
 export type JobVacancySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -779,6 +926,8 @@ export type JobVacancySelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   createdAt?: boolean
   updatedAt?: boolean
   category?: boolean | Prisma.JobCategoryDefaultArgs<ExtArgs>
+  applications?: boolean | Prisma.JobVacancy$applicationsArgs<ExtArgs>
+  _count?: boolean | Prisma.JobVacancyCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["jobVacancy"]>
 
 export type JobVacancySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -840,6 +989,8 @@ export type JobVacancySelectScalar = {
 export type JobVacancyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "categoryId" | "type" | "location" | "experience" | "salary" | "summary" | "responsibilities" | "requirements" | "featured" | "isActive" | "order" | "createdAt" | "updatedAt", ExtArgs["result"]["jobVacancy"]>
 export type JobVacancyInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   category?: boolean | Prisma.JobCategoryDefaultArgs<ExtArgs>
+  applications?: boolean | Prisma.JobVacancy$applicationsArgs<ExtArgs>
+  _count?: boolean | Prisma.JobVacancyCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type JobVacancyIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   category?: boolean | Prisma.JobCategoryDefaultArgs<ExtArgs>
@@ -852,6 +1003,7 @@ export type $JobVacancyPayload<ExtArgs extends runtime.Types.Extensions.Internal
   name: "JobVacancy"
   objects: {
     category: Prisma.$JobCategoryPayload<ExtArgs>
+    applications: Prisma.$JobApplicationPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1264,6 +1416,7 @@ readonly fields: JobVacancyFieldRefs;
 export interface Prisma__JobVacancyClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   category<T extends Prisma.JobCategoryDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.JobCategoryDefaultArgs<ExtArgs>>): Prisma.Prisma__JobCategoryClient<runtime.Types.Result.GetResult<Prisma.$JobCategoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  applications<T extends Prisma.JobVacancy$applicationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.JobVacancy$applicationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$JobApplicationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1706,6 +1859,30 @@ export type JobVacancyDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.In
    * Limit how many JobVacancies to delete.
    */
   limit?: number
+}
+
+/**
+ * JobVacancy.applications
+ */
+export type JobVacancy$applicationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the JobApplication
+   */
+  select?: Prisma.JobApplicationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the JobApplication
+   */
+  omit?: Prisma.JobApplicationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.JobApplicationInclude<ExtArgs> | null
+  where?: Prisma.JobApplicationWhereInput
+  orderBy?: Prisma.JobApplicationOrderByWithRelationInput | Prisma.JobApplicationOrderByWithRelationInput[]
+  cursor?: Prisma.JobApplicationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.JobApplicationScalarFieldEnum | Prisma.JobApplicationScalarFieldEnum[]
 }
 
 /**

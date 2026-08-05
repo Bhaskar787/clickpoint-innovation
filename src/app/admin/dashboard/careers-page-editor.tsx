@@ -709,11 +709,11 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
   }
 
   return (
-    <div className="w-full max-w-full space-y-4 sm:space-y-6 text-slate-900 dark:text-white">
+    <div className="w-full min-w-0 max-w-full overflow-hidden space-y-4 sm:space-y-6 text-slate-900 dark:text-white">
 
       {/* ACTION HEADER */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#131927] p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
-        <div>
+      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 overflow-hidden bg-white dark:bg-[#131927] p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
+        <div className="min-w-0 flex-1">
           <h2 className="text-base sm:text-lg font-bold flex items-center gap-2">
             <Briefcase className="h-5 w-5 text-violet-600 shrink-0" />
             Careers Page Editor — Full Dynamic Control
@@ -722,7 +722,7 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
             Edit hero text, stats, perks section headings, manage job categories, and create/edit vacancies.
           </p>
         </div>
-        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 shrink-0 w-full lg:w-auto">
           <button
             onClick={handleResetContent}
             className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 transition-colors"

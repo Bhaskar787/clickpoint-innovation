@@ -12,14 +12,14 @@ export default function IndustriesSection() {
         
         {/* Section Header */}
         <div className="mb-14 max-w-2xl">
-          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-violet-50 dark:bg-slate-800 px-3.5 py-1 text-xs font-semibold uppercase tracking-widest text-violet-600 dark:text-violet-300">
+          <div className="section-badge mb-3 inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-violet-50 dark:bg-slate-800 px-3.5 py-1 text-violet-600 dark:text-violet-300">
             <Building2 className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
             Industry Specialization
           </div>
-          <h2 className="font-display text-2xl sm:text-4xl font-bold text-ink dark:text-white">
+          <h2 className="section-title text-ink dark:text-white">
             Tailored digital solutions for <span className="text-violet-600 dark:text-[#f58220]">high-growth sectors</span>
           </h2>
-          <p className="mt-3 text-xs sm:text-base text-ink/70 dark:text-slate-300">
+          <p className="mt-3 section-subtitle text-ink/70 dark:text-slate-300">
             Deep domain expertise across regulation, data pipelines, and user expectations in core industries.
           </p>
         </div>
@@ -46,34 +46,39 @@ export default function IndustriesSection() {
                         <Icon className="h-6 w-6 text-violet-600 dark:text-violet-300 group-hover:text-white transition-colors" />
                       </span>
                     )}
-                    <span className="rounded-full bg-violet-50 dark:bg-slate-800 px-2.5 py-1 text-[11px] font-bold text-violet-600 dark:text-violet-300 border border-violet-100 dark:border-slate-700">
+                    <span className="rounded-full bg-violet-50 dark:bg-slate-800 px-2.5 py-1 text-fluid-2xs font-bold text-violet-600 dark:text-violet-300 border border-violet-100 dark:border-slate-700">
                       {ind.keyMetrics?.[0]?.value} {ind.keyMetrics?.[0]?.label}
                     </span>
                   </div>
 
-                  <h3 className="font-display text-base sm:text-xl font-bold text-ink dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-300 transition-colors">
+                  <h3 className="card-title text-ink dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-300 transition-colors">
                     {ind.title}
                   </h3>
 
-                  <p className="mt-2 text-xs sm:text-sm leading-relaxed text-ink/65 dark:text-slate-300">
+                  <p className="mt-2 card-body text-ink/65 dark:text-slate-300">
                     {ind.desc}
                   </p>
 
                   {/* Featured Projects Preview Links */}
                   <div className="mt-6 pt-4 border-t border-violet-100 dark:border-slate-800 space-y-2">
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-ink/40 dark:text-slate-400">
+                    <p className="text-label text-ink/40 dark:text-slate-400">
                       Featured Case Studies & Live Work
                     </p>
                     {ind.projects.map((proj: any) => (
-                      <div key={proj.id} className="flex items-center justify-between text-xs py-1">
-                        <span className="font-semibold text-ink/80 dark:text-slate-200 group-hover:text-ink dark:group-hover:text-white">
+                      <div key={proj.id} className="flex items-center justify-between text-fluid-xs py-1 gap-2">
+                        <span className="font-semibold text-ink/80 dark:text-slate-200 group-hover:text-ink dark:group-hover:text-white truncate">
                           {proj.title}
                         </span>
+                        {proj.impact && (
+                          <span className="text-fluid-2xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 shrink-0">
+                            {proj.impact}
+                          </span>
+                        )}
                         <a
                           href={proj.liveUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-[11px] font-semibold text-violet-600 dark:text-violet-300 hover:text-violet-800 dark:hover:text-violet-200 transition-colors"
+                          className="inline-flex items-center gap-1 text-fluid-2xs font-semibold text-violet-600 dark:text-violet-300 hover:text-violet-800 dark:hover:text-violet-200 transition-colors shrink-0"
                           onClick={(e) => e.stopPropagation()}
                         >
                           Live <ExternalLink className="h-3 w-3 text-violet-600 dark:text-violet-300" />
@@ -87,7 +92,7 @@ export default function IndustriesSection() {
                 <div className="mt-8 pt-4 border-t border-violet-100 dark:border-slate-800">
                   <Link
                     href={`/industries/${ind.id}`}
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-violet-600 dark:text-violet-300 hover:text-violet-800 dark:hover:text-violet-200 transition-colors group/link"
+                    className="inline-flex items-center gap-1.5 text-fluid-xs font-bold text-violet-600 dark:text-violet-300 hover:text-violet-800 dark:hover:text-violet-200 transition-colors group/link"
                   >
                     Explore Industry Solutions
                     <ArrowUpRight className="h-4 w-4 text-violet-600 dark:text-violet-300 transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />

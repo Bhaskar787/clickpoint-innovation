@@ -1,6 +1,6 @@
 // Unified Notification Domain Model
 
-export type NotificationCategory = "REVIEW" | "CONTACT" | "QUICK_INQUIRY";
+export type NotificationCategory = "REVIEW" | "CONTACT" | "QUICK_INQUIRY" | "JOB_APPLICATION";
 
 export interface AppNotification {
   id: string;
@@ -22,4 +22,5 @@ export interface NotificationSummaryResponse {
   unreadCount: number;
   unreadReviewsCount: number;
   unreadContactsCount: number;
+  unreadJobAppsCount: number;
 }

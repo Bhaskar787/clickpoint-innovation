@@ -34,7 +34,7 @@ function CounterNumber({ value, suffix }: { value: number; suffix: string }) {
   }, [isInView, value]);
 
   return (
-    <span ref={ref} className="font-display text-2xl sm:text-4xl lg:text-5xl font-extrabold text-ink dark:text-white">
+    <span ref={ref} className="stat-number text-ink dark:text-white">
       {displayValue}
       <span className="text-violet-600 dark:text-violet-300 font-extrabold">{suffix}</span>
     </span>
@@ -48,16 +48,16 @@ export default function StatsSection() {
         
         {/* Section Header */}
         <div className="mb-14 max-w-2xl">
-          <span className="mb-3 inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-violet-50 dark:bg-slate-800 px-3.5 py-1 text-xs font-semibold uppercase tracking-widest text-violet-600 dark:text-violet-300">
+          <span className="section-badge mb-3 inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-violet-50 dark:bg-slate-800 px-3.5 py-1 text-violet-600 dark:text-violet-300">
             Growth Story
           </span>
-          <h2 className="font-display text-2xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-ink dark:text-white">
+          <h2 className="section-title text-ink dark:text-white">
             Numbers that back our{" "}
             <span className="text-violet-600 dark:text-[#f58220]">
               product obsession
             </span>
           </h2>
-          <p className="mt-3 text-xs sm:text-base text-ink/70 dark:text-slate-300">
+          <p className="mt-3 section-subtitle text-ink/70 dark:text-slate-300">
             Proven engineering impact delivered for high-growth tech startups and Fortune 500 enterprises.
           </p>
         </div>
@@ -75,7 +75,7 @@ export default function StatsSection() {
             >
               <div>
                 <CounterNumber value={s.value} suffix={s.suffix || ""} />
-                <p className="mt-2 text-xs leading-relaxed font-semibold text-ink/75 dark:text-slate-300 group-hover:text-violet-600 dark:group-hover:text-violet-300 transition-colors">
+                <p className="mt-2 text-fluid-xs leading-relaxed font-semibold text-ink/75 dark:text-slate-300 group-hover:text-violet-600 dark:group-hover:text-violet-300 transition-colors">
                   {s.label}
                 </p>
               </div>

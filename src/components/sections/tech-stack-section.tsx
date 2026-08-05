@@ -104,19 +104,19 @@ export default function TechStackSection() {
         
         {/* Section Header */}
         <div className="max-w-2xl text-left mb-12">
-          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-violet-50 dark:bg-slate-800 px-3.5 py-1 text-xs font-semibold uppercase tracking-widest text-violet-600 dark:text-violet-300">
+          <div className="section-badge mb-3 inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-violet-50 dark:bg-slate-800 px-3.5 py-1 text-violet-600 dark:text-violet-300">
             <Layers className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
             Our Technology Stack
           </div>
 
-          <h2 className="font-display text-2xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-ink dark:text-white">
+          <h2 className="section-title text-ink dark:text-white">
             Technologies We Rely On to{" "}
             <span className="text-violet-600 dark:text-[#f58220]">
               Achieve Success
             </span>
           </h2>
 
-          <p className="mt-4 text-xs sm:text-base md:text-lg leading-relaxed text-ink/70 dark:text-slate-300">
+          <p className="mt-4 section-subtitle text-ink/70 dark:text-slate-300">
             Battle-tested frameworks, cloud infrastructure, and modern languages powering scalable enterprise applications.
           </p>
         </div>
@@ -130,7 +130,7 @@ export default function TechStackSection() {
               <button
                 key={cat.value}
                 onClick={() => setActiveCategory(cat.value)}
-                className={`flex items-center gap-2 rounded-full px-4 py-2 text-xs sm:text-sm font-semibold transition-all duration-300 ${
+                className={`flex items-center gap-2 rounded-full px-4 py-2 text-fluid-sm font-semibold transition-all duration-300 ${
                   isActive
                     ? "bg-violet-600 text-white shadow-md shadow-violet-600/30 scale-105"
                     : "bg-cloud-100/90 text-ink/75 hover:bg-violet-50 hover:text-violet-700 border border-violet-100 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-white dark:border-slate-700"
@@ -139,7 +139,7 @@ export default function TechStackSection() {
                 <Icon className="h-4 w-4" />
                 <span>{cat.label}</span>
                 {cat.value === "ALL" && (
-                  <span className="rounded-full bg-violet-100 text-violet-700 dark:bg-slate-700 dark:text-violet-300 px-1.5 py-0.2 text-[10px] font-bold">
+                  <span className="rounded-full bg-violet-100 text-violet-700 dark:bg-slate-700 dark:text-violet-300 px-1.5 py-0.2 text-fluid-2xs font-bold">
                     {TECH_STACK_DATA.length}
                   </span>
                 )}
@@ -168,15 +168,15 @@ export default function TechStackSection() {
                   </div>
 
                   <div className="mt-3.5">
-                    <h4 className="font-display text-sm font-bold text-ink dark:text-white group-hover:text-violet-700 dark:group-hover:text-violet-300 transition-colors">
+                    <h4 className="font-display text-fluid-sm font-bold text-ink dark:text-white group-hover:text-violet-700 dark:group-hover:text-violet-300 transition-colors">
                       {tech.name}
                     </h4>
-                    <p className="mt-1 text-[11px] leading-tight text-ink/55 dark:text-slate-400 font-medium line-clamp-2">
+                    <p className="mt-1 text-fluid-2xs leading-tight text-ink/55 dark:text-slate-400 font-medium line-clamp-2">
                       {tech.tagline}
                     </p>
                   </div>
 
-                  <span className="mt-3 rounded-md bg-cloud-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-semibold text-violet-700 dark:text-violet-300 border border-violet-100 dark:border-slate-700">
+                  <span className="mt-3 rounded-md bg-cloud-100 dark:bg-slate-800 px-2 py-0.5 text-fluid-2xs font-semibold text-violet-700 dark:text-violet-300 border border-violet-100 dark:border-slate-700">
                     {tech.category}
                   </span>
                 </motion.div>

@@ -61,14 +61,14 @@ export default function TestimonialsSection() {
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
           <div className="max-w-2xl">
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-violet-50 dark:bg-slate-800 px-3.5 py-1 text-xs font-semibold uppercase tracking-widest text-violet-600 dark:text-violet-300">
+            <div className="section-badge mb-3 inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-violet-50 dark:bg-slate-800 px-3.5 py-1 text-violet-600 dark:text-violet-300">
               <MessageSquare className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
               {heroContent.badge || "Client Proof & Verified Reviews"}
             </div>
-            <h2 className="font-display text-2xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-ink dark:text-white">
+            <h2 className="section-title text-ink dark:text-white">
               {heroContent.title || "Trusted by tech leaders worldwide"}
             </h2>
-            <p className="mt-3 text-xs sm:text-base text-ink/70 dark:text-slate-300">
+            <p className="mt-3 section-subtitle text-ink/70 dark:text-slate-300">
               {heroContent.subtitle || "See how our AI & software engineering pods drive measurable ROI."}
             </p>
           </div>
@@ -76,7 +76,7 @@ export default function TestimonialsSection() {
           <div className="flex flex-wrap items-center gap-3 shrink-0">
             <button
               onClick={() => setIsModalOpen(true)}
-              className="inline-flex items-center gap-2 rounded-full bg-violet-600 hover:bg-violet-700 text-white px-5 py-2.5 text-xs sm:text-sm font-bold shadow-lg shadow-violet-600/25 transition-all hover:scale-105"
+              className="inline-flex items-center gap-2 rounded-full bg-violet-600 hover:bg-violet-700 text-white px-5 py-2.5 text-fluid-sm font-bold shadow-lg shadow-violet-600/25 transition-all hover:scale-105"
             >
               <MessageSquarePlus className="h-4 w-4" />
               <span>{heroContent.reviewModalButtonText || "Give Review / Feedback"}</span>
@@ -84,7 +84,7 @@ export default function TestimonialsSection() {
 
             <Link
               href="/testimonials"
-              className="inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-white dark:bg-slate-800 px-5 py-2.5 text-xs sm:text-sm font-bold text-violet-600 dark:text-violet-300 transition-all hover:bg-violet-600 hover:text-white hover:shadow-lg hover:shadow-violet-600/25"
+              className="inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-white dark:bg-slate-800 px-5 py-2.5 text-fluid-sm font-bold text-violet-600 dark:text-violet-300 transition-all hover:bg-violet-600 hover:text-white hover:shadow-lg hover:shadow-violet-600/25"
             >
               <span>Explore All Testimonials</span>
               <ArrowRight className="h-4 w-4" />
@@ -97,10 +97,10 @@ export default function TestimonialsSection() {
           <div className="mb-14 grid grid-cols-1 sm:grid-cols-3 gap-4 border-y border-violet-200/60 dark:border-slate-800 py-6 bg-white/40 dark:bg-slate-900/40 rounded-2xl backdrop-blur-xs">
             {metrics.map((m, idx) => (
               <div key={idx} className="text-center px-4">
-                <p className="font-display text-2xl sm:text-3xl font-extrabold text-violet-600 dark:text-violet-400">
+                <p className="stat-number text-violet-600 dark:text-violet-400">
                   {m.value}
                 </p>
-                <p className="mt-1 text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                <p className="mt-1 text-fluid-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                   {m.label}
                 </p>
               </div>
@@ -126,20 +126,20 @@ export default function TestimonialsSection() {
                       <Star key={i} className="h-4 w-4 fill-current" />
                     ))}
                   </div>
-                  <span className="rounded-full bg-violet-50 dark:bg-slate-800 px-2.5 py-0.5 text-[10px] font-bold text-violet-600 dark:text-violet-300 border border-violet-100 dark:border-slate-700">
+                  <span className="rounded-full bg-violet-50 dark:bg-slate-800 px-2.5 py-0.5 text-fluid-2xs font-bold text-violet-600 dark:text-violet-300 border border-violet-100 dark:border-slate-700">
                     Verified Review
                   </span>
                 </div>
 
                 <Quote className="h-8 w-8 text-violet-200 dark:text-slate-700 mb-2" />
 
-                <p className="text-xs leading-relaxed text-ink/80 dark:text-slate-300 font-medium italic">
+                <p className="card-body text-ink/80 dark:text-slate-300 font-medium italic">
                   "{item.content}"
                 </p>
               </div>
 
               <div className="mt-6 pt-5 border-t border-violet-100 dark:border-slate-800 flex items-center gap-3">
-                <div className="relative shrink-0 h-10 w-10 rounded-xl overflow-hidden bg-gradient-to-tr from-violet-600 to-indigo-800 text-white font-bold text-xs flex items-center justify-center shadow-xs">
+                <div className="relative shrink-0 h-10 w-10 rounded-xl overflow-hidden bg-gradient-to-tr from-violet-600 to-indigo-800 text-white font-bold text-fluid-xs flex items-center justify-center shadow-xs">
                   {item.avatarUrl ? (
                     <Image src={item.avatarUrl} alt={item.clientName} fill className="object-cover" />
                   ) : (
@@ -148,11 +148,11 @@ export default function TestimonialsSection() {
                 </div>
 
                 <div>
-                  <h4 className="font-display text-sm font-bold text-ink dark:text-white flex items-center gap-1">
+                  <h4 className="font-display text-fluid-sm font-bold text-ink dark:text-white flex items-center gap-1">
                     {item.clientName}
                     <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
                   </h4>
-                  <p className="text-[11px] font-semibold text-violet-600 dark:text-violet-300">
+                  <p className="text-fluid-2xs font-semibold text-violet-600 dark:text-violet-300">
                     {item.clientRole}, {item.company}
                   </p>
                 </div>

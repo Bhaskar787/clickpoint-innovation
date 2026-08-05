@@ -174,27 +174,55 @@ model NotFoundPage {
   @@map("not_found_page")
 }
 
+model CaseStudiesPage {
+  id        String   @id @default("default")
+  content   Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("case_studies_page")
+}
+
 // -----------------------------------------------------------------------------
 // 3. FEATURE & CONTENT ENTITY MODELS
 // -----------------------------------------------------------------------------
 
+model CaseStudyCategory {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  description String?
+  order       Int         @default(0)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  caseStudies CaseStudy[]
+
+  @@map("case_study_categories")
+}
+
 model CaseStudy {
-  id          String   @id @default(cuid())
-  slug        String   @unique
-  title       String
-  client      String
-  category    String
-  description String
-  challenge   String?
-  solution    String?
-  results     String?
-  metrics     Json?    // E.g. [{ label: "Growth", value: "+250%" }]
-  techStack   Json?    // E.g. ["Next.js", "Python", "Cloud"]
-  imageUrl    String?
-  featured    Boolean  @default(false)
-  order       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String             @id @default(cuid())
+  slug          String             @unique
+  title         String
+  client        String
+  categoryId    String?
+  categoryRel   CaseStudyCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  category      String             @default("General")
+  description   String
+  challenge     String?
+  solution      String?
+  results       String?
+  metrics       Json?              // E.g. [{ label: "Growth", value: "+250%" }]
+  techStack     Json?              // E.g. ["Next.js", "Python", "Cloud"]
+  impact        String?
+  imageUrl      String?
+  liveUrl       String?
+  buttonText    String?            @default("Explore Live Platform")
+  buttonLink    String?
+  imageGradient String?            @default("from-violet-600 to-indigo-800")
+  featured      Boolean            @default(false)
+  order         Int                @default(0)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
 
   @@map("case_studies")
 }
@@ -306,7 +334,7 @@ model ContactInquiry {
 }
 
 // -----------------------------------------------------------------------------
-// 4. CAREERS — CATEGORIES & VACANCIES
+// 4. CAREERS — CATEGORIES, VACANCIES & JOB APPLICATIONS
 // -----------------------------------------------------------------------------
 
 model JobCategory {
@@ -322,25 +350,55 @@ model JobCategory {
 }
 
 model JobVacancy {
-  id               String      @id @default(cuid())
+  id               String           @id @default(cuid())
   title            String
   categoryId       String
-  category         JobCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  type             String      @default("Full-Time")
-  location         String      @default("Remote (Global)")
-  experience       String      @default("Senior")
-  salary           String      @default("")
-  summary          String      @default("")
-  responsibilities Json        @default("[]") // String[]
-  requirements     Json        @default("[]") // String[]
-  featured         Boolean     @default(false)
-  isActive         Boolean     @default(true)
-  order            Int         @default(0)
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
+  category         JobCategory      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  type             String           @default("Full-Time")
+  location         String           @default("Remote (Global)")
+  experience       String           @default("Senior")
+  salary           String           @default("")
+  summary          String           @default("")
+  responsibilities Json             @default("[]") // String[]
+  requirements     Json             @default("[]") // String[]
+  featured         Boolean          @default(false)
+  isActive         Boolean          @default(true)
+  order            Int              @default(0)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  applications     JobApplication[]
 
   @@map("job_vacancies")
 }
+
+model JobApplication {
+  id                 String            @id @default(cuid())
+  jobVacancyId       String
+  jobVacancy         JobVacancy        @relation(fields: [jobVacancyId], references: [id], onDelete: Cascade)
+  jobTitle           String
+  name               String
+  email              String
+  phone              String?
+  linkedIn           String?
+  portfolio          String?
+  coverLetter        String?
+  coverLetterFileUrl String?
+  coverLetterOriginalName String?
+  resumeUrl          String
+  resumeOriginalName String?
+  resumeProvider     String            @default("local")
+  status             ApplicationStatus @default(PENDING)
+  isRead             Boolean           @default(false)
+  ipAddress          String?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  @@map("job_applications")
+}
+
+// -----------------------------------------------------------------------------
+// 5. ENUMS
+// -----------------------------------------------------------------------------
 
 enum InquiryStatus {
   PENDING
@@ -348,4 +406,12 @@ enum InquiryStatus {
   CONTACTED
   COMPLETED
   ARCHIVED
+}
+
+enum ApplicationStatus {
+  PENDING
+  REVIEWING
+  SHORTLISTED
+  REJECTED
+  HIRED
 }

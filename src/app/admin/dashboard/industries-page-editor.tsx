@@ -199,10 +199,10 @@ export default function IndustriesPageEditor({ sectionId, onCloseSection }: Indu
   }
 
   return (
-    <div className="w-full max-w-full space-y-4 sm:space-y-6 text-slate-900 dark:text-white">
+    <div className="w-full min-w-0 max-w-full overflow-hidden space-y-4 sm:space-y-6 text-slate-900 dark:text-white">
       {/* HEADER CONTROLS */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-white dark:bg-[#131927] border border-slate-200/80 dark:border-slate-800 shadow-xs">
-        <div className="space-y-1">
+      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 overflow-hidden p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-white dark:bg-[#131927] border border-slate-200/80 dark:border-slate-800 shadow-xs">
+        <div className="space-y-1 min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <Building2 className="h-4 w-4 sm:h-5 sm:w-5 text-violet-600 dark:text-violet-400 shrink-0" />
             <h2 className="text-sm sm:text-base font-extrabold tracking-tight">
@@ -214,7 +214,7 @@ export default function IndustriesPageEditor({ sectionId, onCloseSection }: Indu
           </p>
         </div>
 
-        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 shrink-0 w-full lg:w-auto">
           <button
             type="button"
             onClick={() => setFormData(DEFAULT_INDUSTRIES_PAGE_DATA)}
@@ -820,6 +820,112 @@ export default function IndustriesPageEditor({ sectionId, onCloseSection }: Indu
                             }}
                             className="w-full rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1 text-xs font-mono text-violet-600 dark:text-violet-400"
                           />
+                        </div>
+
+                        {/* Tech Stack Badges Management */}
+                        <div className="sm:col-span-3 space-y-2 pt-3 mt-1 border-t border-slate-200/80 dark:border-slate-800">
+                          <div className="flex items-center justify-between">
+                            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
+                              <Tag className="h-3 w-3 text-violet-500" />
+                              <span>Tech Stack Badges ({proj.techStack?.length || 0})</span>
+                            </label>
+                            <span className="text-[10px] text-slate-400">
+                              Type tag & press Enter or comma
+                            </span>
+                          </div>
+
+                          {/* Existing Badges List */}
+                          <div className="flex flex-wrap items-center gap-1.5 p-2 rounded-lg bg-slate-50 dark:bg-[#080b11] border border-slate-200 dark:border-slate-800 min-h-[36px]">
+                            {proj.techStack && proj.techStack.length > 0 ? (
+                              proj.techStack.map((tech: string, tIdx: number) => (
+                                <span
+                                  key={tIdx}
+                                  className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-semibold bg-white dark:bg-[#131c31] text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-800 shadow-2xs"
+                                >
+                                  <span>{tech}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const updated = [...formData.industries];
+                                      const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
+                                      if (idx !== -1) {
+                                        const currentStack = updated[idx].projects[pIdx].techStack || [];
+                                        updated[idx].projects[pIdx].techStack = currentStack.filter((_: string, i: number) => i !== tIdx);
+                                        setFormData({ ...formData, industries: updated });
+                                        toast.success(`Removed "${tech}"`);
+                                      }
+                                    }}
+                                    className="text-slate-400 hover:text-red-500 p-0.5 rounded transition-colors"
+                                    title={`Remove ${tech}`}
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </button>
+                                </span>
+                              ))
+                            ) : (
+                              <span className="text-[11px] text-slate-400 italic font-medium px-1">
+                                No tech stack tags added yet. Add tags below (e.g. Next.js, Python, Plaid API).
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Add New Tech Stack Tag Input */}
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              placeholder="Add tech stack tag (e.g. Next.js, TypeScript, Python, Plaid API)..."
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === ",") {
+                                  e.preventDefault();
+                                  const val = (e.target as HTMLInputElement).value.trim().replace(/,/g, "");
+                                  if (val) {
+                                    const updated = [...formData.industries];
+                                    const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
+                                    if (idx !== -1) {
+                                      const currentStack = updated[idx].projects[pIdx].techStack || [];
+                                      if (!currentStack.includes(val)) {
+                                        updated[idx].projects[pIdx].techStack = [...currentStack, val];
+                                        setFormData({ ...formData, industries: updated });
+                                        (e.target as HTMLInputElement).value = "";
+                                        toast.success(`Added tag "${val}"`);
+                                      } else {
+                                        toast.error(`"${val}" already exists`);
+                                      }
+                                    }
+                                  }
+                                }
+                              }}
+                              className="flex-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3 py-1.5 text-xs text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-violet-500/20"
+                            />
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                const input = (e.currentTarget.previousElementSibling as HTMLInputElement);
+                                if (input) {
+                                  const val = input.value.trim().replace(/,/g, "");
+                                  if (val) {
+                                    const updated = [...formData.industries];
+                                    const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
+                                    if (idx !== -1) {
+                                      const currentStack = updated[idx].projects[pIdx].techStack || [];
+                                      if (!currentStack.includes(val)) {
+                                        updated[idx].projects[pIdx].techStack = [...currentStack, val];
+                                        setFormData({ ...formData, industries: updated });
+                                        input.value = "";
+                                        toast.success(`Added tag "${val}"`);
+                                      } else {
+                                        toast.error(`"${val}" already exists`);
+                                      }
+                                    }
+                                  }
+                                }
+                              }}
+                              className="px-3 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold transition-colors shrink-0 flex items-center gap-1"
+                            >
+                              <Plus className="h-3 w-3" />
+                              <span>Add Tag</span>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export const DEFAULT_CAREERS_CONTENT = {
+const DEFAULT_CAREERS_CONTENT = {
   hero: {
     badge: "We're Hiring • Global Remote Pods",
     title: "Build the Next Generation of",

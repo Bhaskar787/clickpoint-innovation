@@ -142,7 +142,7 @@ export default function Timeline({ initialContent }: TimelineProps) {
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="mb-3 inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-violet-50 dark:bg-slate-800 px-3.5 py-1 text-xs font-semibold uppercase tracking-widest text-violet-600 dark:text-violet-300"
+            className="section-badge mb-3 inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-violet-50 dark:bg-slate-800 px-3.5 py-1 text-violet-600 dark:text-violet-300"
           >
             <Milestone className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
             {heroBadge}
@@ -153,7 +153,7 @@ export default function Timeline({ initialContent }: TimelineProps) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="font-display text-3xl font-bold tracking-tight text-ink dark:text-white sm:text-4xl lg:text-5xl"
+            className="section-title text-ink dark:text-white"
           >
             {heroTitle}
           </motion.h2>
@@ -163,7 +163,7 @@ export default function Timeline({ initialContent }: TimelineProps) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="mt-4 text-base text-ink/75 dark:text-slate-300 sm:text-lg"
+            className="mt-4 section-subtitle text-ink/75 dark:text-slate-300"
           >
             {heroSubtitle}
           </motion.p>
@@ -235,19 +235,19 @@ export default function Timeline({ initialContent }: TimelineProps) {
                     >
                       <div>
                         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                          <span className="font-display text-2xl sm:text-3xl font-extrabold text-violet-600 dark:text-violet-300">
+                          <span className="font-display text-fluid-3xl font-extrabold text-violet-600 dark:text-violet-300">
                             {displayYear}
                           </span>
-                          <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-100 dark:border-slate-800 bg-violet-50 dark:bg-slate-800 px-3 py-1 text-xs font-bold text-violet-600 dark:text-violet-300">
+                          <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-100 dark:border-slate-800 bg-violet-50 dark:bg-slate-800 px-3 py-1 text-fluid-xs font-bold text-violet-600 dark:text-violet-300">
                             <CheckCircle2 className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
                             {era.subtitle}
                           </span>
                         </div>
 
-                        <h3 className="font-display text-lg sm:text-xl font-bold text-ink dark:text-white">
+                        <h3 className="card-title text-ink dark:text-white">
                           {era.title}
                         </h3>
-                        <p className="mt-2 text-xs sm:text-sm leading-relaxed text-ink/75 dark:text-slate-300">
+                        <p className="mt-2 card-body text-ink/75 dark:text-slate-300">
                           {description}
                         </p>
                       </div>
@@ -257,7 +257,7 @@ export default function Timeline({ initialContent }: TimelineProps) {
                           {tags.map((tag: string, i: number) => (
                             <span
                               key={i}
-                              className="rounded-md bg-violet-50 dark:bg-slate-800 px-2.5 py-1 text-[11px] font-semibold text-violet-600 dark:text-violet-300 transition-colors group-hover:bg-violet-600 group-hover:text-white"
+                              className="rounded-md bg-violet-50 dark:bg-slate-800 px-2.5 py-1 text-fluid-2xs font-semibold text-violet-600 dark:text-violet-300 transition-colors group-hover:bg-violet-600 group-hover:text-white"
                             >
                               {tag}
                             </span>
@@ -279,17 +279,17 @@ export default function Timeline({ initialContent }: TimelineProps) {
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/30 to-transparent" />
                           <div className="absolute bottom-3.5 left-3.5 right-3.5 flex items-center justify-between text-white z-10">
-                            <span className="rounded-full bg-violet-600/80 px-3 py-1 text-[11px] font-bold text-white backdrop-blur-md border border-violet-400/40 shadow-sm">
+                            <span className="rounded-full bg-violet-600/80 px-3 py-1 text-fluid-2xs font-bold text-white backdrop-blur-md border border-violet-400/40 shadow-sm">
                               {displayYear} Era
                             </span>
-                            <span className="text-[11px] font-medium text-white/90 drop-shadow-md truncate max-w-[180px]">
+                            <span className="text-fluid-2xs font-medium text-white/90 drop-shadow-md truncate max-w-[180px]">
                               {era.subtitle}
                             </span>
                           </div>
                         </div>
                       </div>
                     ) : (
-                      <div className="flex-1 rounded-2xl border border-dashed border-violet-200 dark:border-slate-800 bg-violet-50/40 dark:bg-slate-900/30 flex items-center justify-center p-6 text-center text-xs text-ink/50 dark:text-slate-500">
+                      <div className="flex-1 rounded-2xl border border-dashed border-violet-200 dark:border-slate-800 bg-violet-50/40 dark:bg-slate-900/30 flex items-center justify-center p-6 text-center text-fluid-xs text-ink/50 dark:text-slate-500">
                         {era.title}
                       </div>
                     )}
@@ -304,7 +304,7 @@ export default function Timeline({ initialContent }: TimelineProps) {
         <div className="mt-16 text-center">
           <Link
             href="/journey"
-            className="inline-flex items-center gap-2 rounded-full bg-violet-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-violet-600/30 transition-all hover:bg-violet-700 dark:hover:bg-amber-600 hover:shadow-xl hover:scale-105"
+            className="inline-flex items-center gap-2 rounded-full bg-violet-600 px-6 py-3.5 text-fluid-sm font-bold text-white shadow-lg shadow-violet-600/30 transition-all hover:bg-violet-700 dark:hover:bg-amber-600 hover:shadow-xl hover:scale-105"
           >
             <span>{ctaBtnText}</span>
             <ArrowRight className="h-4 w-4 text-white" />

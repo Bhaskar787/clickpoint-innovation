@@ -410,6 +410,8 @@ export const ModelName = {
   JourneyPage: 'JourneyPage',
   CareersPage: 'CareersPage',
   NotFoundPage: 'NotFoundPage',
+  CaseStudiesPage: 'CaseStudiesPage',
+  CaseStudyCategory: 'CaseStudyCategory',
   CaseStudy: 'CaseStudy',
   BlogPost: 'BlogPost',
   TestimonialsPage: 'TestimonialsPage',
@@ -419,7 +421,8 @@ export const ModelName = {
   Inquiry: 'Inquiry',
   ContactInquiry: 'ContactInquiry',
   JobCategory: 'JobCategory',
-  JobVacancy: 'JobVacancy'
+  JobVacancy: 'JobVacancy',
+  JobApplication: 'JobApplication'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -435,7 +438,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "admin" | "user" | "session" | "account" | "verification" | "landingPage" | "aboutPage" | "servicesPage" | "industriesPage" | "contactPage" | "journeyPage" | "careersPage" | "notFoundPage" | "caseStudy" | "blogPost" | "testimonialsPage" | "testimonial" | "faq" | "faqCategory" | "inquiry" | "contactInquiry" | "jobCategory" | "jobVacancy"
+    modelProps: "admin" | "user" | "session" | "account" | "verification" | "landingPage" | "aboutPage" | "servicesPage" | "industriesPage" | "contactPage" | "journeyPage" | "careersPage" | "notFoundPage" | "caseStudiesPage" | "caseStudyCategory" | "caseStudy" | "blogPost" | "testimonialsPage" | "testimonial" | "faq" | "faqCategory" | "inquiry" | "contactInquiry" | "jobCategory" | "jobVacancy" | "jobApplication"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1401,6 +1404,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    CaseStudiesPage: {
+      payload: Prisma.$CaseStudiesPagePayload<ExtArgs>
+      fields: Prisma.CaseStudiesPageFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CaseStudiesPageFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CaseStudiesPagePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CaseStudiesPageFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CaseStudiesPagePayload>
+        }
+        findFirst: {
+          args: Prisma.CaseStudiesPageFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CaseStudiesPagePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CaseStudiesPageFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CaseStudiesPagePayload>
+        }
+        findMany: {
+          args: Prisma.CaseStudiesPageFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CaseStudiesPagePayload>[]
+        }
+        create: {
+          args: Prisma.CaseStudiesPageCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CaseStudiesPagePayload>
+        }
+        createMany: {
+          args: Prisma.CaseStudiesPageCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CaseStudiesPageCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CaseStudiesPagePayload>[]
+        }
+        delete: {
+          args: Prisma.CaseStudiesPageDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CaseStudiesPagePayload>
+        }
+        update: {
+          args: Prisma.CaseStudiesPageUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CaseStudiesPagePayload>
+        }
+        deleteMany: {
+          args: Prisma.CaseStudiesPageDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CaseStudiesPageUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CaseStudiesPageUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CaseStudiesPagePayload>[]
+        }
+        upsert: {
+          args: Prisma.CaseStudiesPageUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CaseStudiesPagePayload>
+        }
+        aggregate: {
+          args: Prisma.CaseStudiesPageAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCaseStudiesPage>
+        }
+        groupBy: {
+          args: Prisma.CaseStudiesPageGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CaseStudiesPageGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CaseStudiesPageCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CaseStudiesPageCountAggregateOutputType> | number
+        }
+      }
+    }
+    CaseStudyCategory: {
+      payload: Prisma.$CaseStudyCategoryPayload<ExtArgs>
+      fields: Prisma.CaseStudyCategoryFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CaseStudyCategoryFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CaseStudyCategoryPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CaseStudyCategoryFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CaseStudyCategoryPayload>
+        }
+        findFirst: {
+          args: Prisma.CaseStudyCategoryFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CaseStudyCategoryPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CaseStudyCategoryFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CaseStudyCategoryPayload>
+        }
+        findMany: {
+          args: Prisma.CaseStudyCategoryFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CaseStudyCategoryPayload>[]
+        }
+        create: {
+          args: Prisma.CaseStudyCategoryCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CaseStudyCategoryPayload>
+        }
+        createMany: {
+          args: Prisma.CaseStudyCategoryCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CaseStudyCategoryCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CaseStudyCategoryPayload>[]
+        }
+        delete: {
+          args: Prisma.CaseStudyCategoryDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CaseStudyCategoryPayload>
+        }
+        update: {
+          args: Prisma.CaseStudyCategoryUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CaseStudyCategoryPayload>
+        }
+        deleteMany: {
+          args: Prisma.CaseStudyCategoryDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CaseStudyCategoryUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CaseStudyCategoryUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CaseStudyCategoryPayload>[]
+        }
+        upsert: {
+          args: Prisma.CaseStudyCategoryUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CaseStudyCategoryPayload>
+        }
+        aggregate: {
+          args: Prisma.CaseStudyCategoryAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCaseStudyCategory>
+        }
+        groupBy: {
+          args: Prisma.CaseStudyCategoryGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CaseStudyCategoryGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CaseStudyCategoryCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CaseStudyCategoryCountAggregateOutputType> | number
+        }
+      }
+    }
     CaseStudy: {
       payload: Prisma.$CaseStudyPayload<ExtArgs>
       fields: Prisma.CaseStudyFieldRefs
@@ -2141,6 +2292,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    JobApplication: {
+      payload: Prisma.$JobApplicationPayload<ExtArgs>
+      fields: Prisma.JobApplicationFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.JobApplicationFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobApplicationPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.JobApplicationFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobApplicationPayload>
+        }
+        findFirst: {
+          args: Prisma.JobApplicationFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobApplicationPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.JobApplicationFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobApplicationPayload>
+        }
+        findMany: {
+          args: Prisma.JobApplicationFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobApplicationPayload>[]
+        }
+        create: {
+          args: Prisma.JobApplicationCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobApplicationPayload>
+        }
+        createMany: {
+          args: Prisma.JobApplicationCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.JobApplicationCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobApplicationPayload>[]
+        }
+        delete: {
+          args: Prisma.JobApplicationDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobApplicationPayload>
+        }
+        update: {
+          args: Prisma.JobApplicationUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobApplicationPayload>
+        }
+        deleteMany: {
+          args: Prisma.JobApplicationDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.JobApplicationUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.JobApplicationUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobApplicationPayload>[]
+        }
+        upsert: {
+          args: Prisma.JobApplicationUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobApplicationPayload>
+        }
+        aggregate: {
+          args: Prisma.JobApplicationAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateJobApplication>
+        }
+        groupBy: {
+          args: Prisma.JobApplicationGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.JobApplicationGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.JobApplicationCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.JobApplicationCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -2338,11 +2563,34 @@ export const NotFoundPageScalarFieldEnum = {
 export type NotFoundPageScalarFieldEnum = (typeof NotFoundPageScalarFieldEnum)[keyof typeof NotFoundPageScalarFieldEnum]
 
 
+export const CaseStudiesPageScalarFieldEnum = {
+  id: 'id',
+  content: 'content',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CaseStudiesPageScalarFieldEnum = (typeof CaseStudiesPageScalarFieldEnum)[keyof typeof CaseStudiesPageScalarFieldEnum]
+
+
+export const CaseStudyCategoryScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CaseStudyCategoryScalarFieldEnum = (typeof CaseStudyCategoryScalarFieldEnum)[keyof typeof CaseStudyCategoryScalarFieldEnum]
+
+
 export const CaseStudyScalarFieldEnum = {
   id: 'id',
   slug: 'slug',
   title: 'title',
   client: 'client',
+  categoryId: 'categoryId',
   category: 'category',
   description: 'description',
   challenge: 'challenge',
@@ -2350,7 +2598,12 @@ export const CaseStudyScalarFieldEnum = {
   results: 'results',
   metrics: 'metrics',
   techStack: 'techStack',
+  impact: 'impact',
   imageUrl: 'imageUrl',
+  liveUrl: 'liveUrl',
+  buttonText: 'buttonText',
+  buttonLink: 'buttonLink',
+  imageGradient: 'imageGradient',
   featured: 'featured',
   order: 'order',
   createdAt: 'createdAt',
@@ -2504,6 +2757,31 @@ export const JobVacancyScalarFieldEnum = {
 export type JobVacancyScalarFieldEnum = (typeof JobVacancyScalarFieldEnum)[keyof typeof JobVacancyScalarFieldEnum]
 
 
+export const JobApplicationScalarFieldEnum = {
+  id: 'id',
+  jobVacancyId: 'jobVacancyId',
+  jobTitle: 'jobTitle',
+  name: 'name',
+  email: 'email',
+  phone: 'phone',
+  linkedIn: 'linkedIn',
+  portfolio: 'portfolio',
+  coverLetter: 'coverLetter',
+  coverLetterFileUrl: 'coverLetterFileUrl',
+  coverLetterOriginalName: 'coverLetterOriginalName',
+  resumeUrl: 'resumeUrl',
+  resumeOriginalName: 'resumeOriginalName',
+  resumeProvider: 'resumeProvider',
+  status: 'status',
+  isRead: 'isRead',
+  ipAddress: 'ipAddress',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type JobApplicationScalarFieldEnum = (typeof JobApplicationScalarFieldEnum)[keyof typeof JobApplicationScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -2646,6 +2924,20 @@ export type EnumInquiryStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Pr
  * Reference to a field of type 'InquiryStatus[]'
  */
 export type ListEnumInquiryStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InquiryStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ApplicationStatus'
+ */
+export type EnumApplicationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ApplicationStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'ApplicationStatus[]'
+ */
+export type ListEnumApplicationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ApplicationStatus[]'>
     
 
 
@@ -2826,6 +3118,8 @@ export type GlobalOmitConfig = {
   journeyPage?: Prisma.JourneyPageOmit
   careersPage?: Prisma.CareersPageOmit
   notFoundPage?: Prisma.NotFoundPageOmit
+  caseStudiesPage?: Prisma.CaseStudiesPageOmit
+  caseStudyCategory?: Prisma.CaseStudyCategoryOmit
   caseStudy?: Prisma.CaseStudyOmit
   blogPost?: Prisma.BlogPostOmit
   testimonialsPage?: Prisma.TestimonialsPageOmit
@@ -2836,6 +3130,7 @@ export type GlobalOmitConfig = {
   contactInquiry?: Prisma.ContactInquiryOmit
   jobCategory?: Prisma.JobCategoryOmit
   jobVacancy?: Prisma.JobVacancyOmit
+  jobApplication?: Prisma.JobApplicationOmit
 }
 
 /* Types for Logging */

@@ -116,17 +116,17 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
       <Navbar />
 
       {/* Hero Header */}
-      <section className="pt-28 pb-8 lg:pt-32">
+      <section className="overflow-hidden pt-28 pb-8 lg:pt-32">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl text-center">
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-3.5 py-1 text-xs font-semibold uppercase tracking-widest text-violet-700 dark:border-slate-700 dark:bg-slate-800 dark:text-violet-300">
-              <Sparkles className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
-              {hero.badge}
+          <div className="mx-auto max-w-3xl min-w-0 text-center">
+            <div className="mb-3 inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-[10px] sm:px-3.5 sm:text-xs font-semibold uppercase tracking-widest text-violet-700 dark:border-slate-700 dark:bg-slate-800 dark:text-violet-300">
+              <Sparkles className="h-3.5 w-3.5 shrink-0 text-violet-600 dark:text-violet-300" />
+              <span className="break-words">{hero.badge}</span>
             </div>
-            <h1 className="font-display text-3xl font-bold text-ink dark:text-white sm:text-4xl lg:text-5xl">
+            <h1 className="font-display text-[1.65rem] leading-tight min-[400px]:text-2xl font-bold text-ink dark:text-white sm:text-4xl lg:text-5xl break-words">
               {hero.title}
             </h1>
-            <p className="mt-3 text-base text-ink/75 dark:text-slate-300">
+            <p className="mt-3 text-sm sm:text-base text-ink/75 dark:text-slate-300 break-words">
               {hero.subtitle}
             </p>
           </div>
@@ -136,20 +136,20 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
       {/* Main Interactive Contact Section */}
       <section className="py-12 lg:py-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-12 lg:grid-cols-[1.2fr_0.8fr] lg:gap-16 items-start">
+          <div className="grid min-w-0 items-start gap-12 lg:grid-cols-[1.2fr_0.8fr] lg:gap-16">
             
             {/* Left Column: Interactive Project Inquiry Form */}
-            <div className="rounded-3xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-7 sm:p-10 shadow-xl shadow-violet-950/[0.04]">
+            <div className="min-w-0 w-full rounded-3xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-5 sm:p-7 lg:p-10 shadow-xl shadow-violet-950/[0.04]">
               {!formSubmitted ? (
                 <form
                   onSubmit={handleSubmit}
                   className="space-y-8"
                 >
                   <div>
-                    <h3 className="font-display text-2xl font-bold text-ink dark:text-white">
+                    <h3 className="font-display text-xl sm:text-2xl font-bold text-ink dark:text-white break-words">
                       {hero.formTitle}
                     </h3>
-                    <p className="mt-1 text-xs text-ink/65 dark:text-slate-300">
+                    <p className="mt-1 text-xs text-ink/65 dark:text-slate-300 break-words">
                       {hero.formSubtitle}
                     </p>
                   </div>
@@ -159,7 +159,7 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
                     <label className="block text-xs font-bold uppercase tracking-wider text-ink/60 dark:text-slate-400 mb-3">
                       1. Select Primary Objective *
                     </label>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                    <div className="grid grid-cols-1 min-[400px]:grid-cols-2 sm:grid-cols-3 gap-2.5">
                       {OBJECTIVES.map((obj) => {
                         const isSelected = selectedObjective === obj;
                         return (
@@ -167,7 +167,7 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
                             type="button"
                             key={obj}
                             onClick={() => setSelectedObjective(obj)}
-                            className={`rounded-xl p-3 text-xs font-bold text-left transition-all duration-200 border ${
+                            className={`rounded-xl p-3 text-xs font-bold text-left transition-all duration-200 border break-words ${
                               isSelected
                                 ? "bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-600/25"
                                 : "bg-cloud-100/60 text-ink/75 border-violet-100 hover:bg-violet-50 hover:text-violet-700 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-700 dark:hover:text-white"
@@ -185,7 +185,7 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
                     <label className="block text-xs font-bold uppercase tracking-wider text-ink/60 dark:text-slate-400 mb-3">
                       2. Target Investment / Budget Range *
                     </label>
-                    <div className="grid grid-cols-2 gap-2.5">
+                    <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-2.5">
                       {BUDGET_RANGES.map((b) => {
                         const isSelected = selectedBudget === b;
                         return (
@@ -193,7 +193,7 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
                             type="button"
                             key={b}
                             onClick={() => setSelectedBudget(b)}
-                            className={`rounded-xl p-3 text-xs font-bold text-center transition-all duration-200 border ${
+                            className={`rounded-xl p-3 text-xs font-bold text-center transition-all duration-200 border break-words ${
                               isSelected
                                 ? "bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-600/25"
                                 : "bg-cloud-100/60 text-ink/75 border-violet-100 hover:bg-violet-50 hover:text-violet-700 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-700 dark:hover:text-white"
@@ -274,14 +274,14 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
                   </Button>
                 </form>
               ) : (
-                <div className="py-16 text-center space-y-5">
+                <div className="py-12 sm:py-16 text-center space-y-5 px-2">
                   <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 shadow-lg shadow-emerald-500/20">
                     <CheckCircle2 className="h-10 w-10" />
                   </div>
-                  <h3 className="font-display text-3xl font-bold text-ink dark:text-white">
+                  <h3 className="font-display text-2xl sm:text-3xl font-bold text-ink dark:text-white break-words">
                     Inquiry Received!
                   </h3>
-                  <p className="text-sm max-w-md mx-auto text-ink/75 dark:text-slate-300 leading-relaxed">
+                  <p className="text-sm max-w-md mx-auto text-ink/75 dark:text-slate-300 leading-relaxed break-words">
                     Thank you for reaching out. Our principal engineering architect has received your RFP for <span className="font-bold text-violet-700 dark:text-violet-300">{selectedObjective}</span> and will respond to your email within <span className="font-bold text-violet-700 dark:text-violet-300">2 hours</span>.
                   </p>
                   <Button
@@ -304,70 +304,70 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
             </div>
 
             {/* Right Column: Sticky Hanging Global Engineering Hubs & Direct Channels */}
-            <div className="sticky top-24 self-start space-y-8">
+            <div className="sticky top-24 z-10 min-w-0 self-start space-y-8">
               
               {/* Office / HQ Card */}
-              <div className="rounded-3xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-7 shadow-md transition-all hover:shadow-xl">
-                <div className="flex items-center gap-3 pb-4 border-b border-violet-100 dark:border-slate-800 mb-5">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 dark:bg-slate-800 text-violet-600 dark:text-violet-300 border border-violet-100 dark:border-slate-700 font-bold shadow-md">
+              <div className="rounded-3xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-5 sm:p-7 shadow-md transition-all hover:shadow-xl">
+                <div className="flex items-start gap-3 pb-4 border-b border-violet-100 dark:border-slate-800 mb-5 sm:items-center">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-50 dark:bg-slate-800 text-violet-600 dark:text-violet-300 border border-violet-100 dark:border-slate-700 font-bold shadow-md">
                     <MapPin className="h-5 w-5 text-violet-600 dark:text-violet-300" />
                   </div>
-                  <div>
-                    <h3 className="font-display text-base font-bold text-ink dark:text-white">{contactInfo.address}</h3>
-                    <p className="text-xs font-semibold text-violet-600 dark:text-violet-300">{contactInfo.addressSubtext}</p>
+                  <div className="min-w-0">
+                    <h3 className="font-display text-base font-bold text-ink dark:text-white break-words">{contactInfo.address}</h3>
+                    <p className="text-xs font-semibold text-violet-600 dark:text-violet-300 break-words">{contactInfo.addressSubtext}</p>
                   </div>
                 </div>
 
                 <div className="space-y-3 text-xs text-ink/80 dark:text-slate-300">
-                  <div className="flex items-start gap-2.5">
+                  <div className="flex items-start gap-2.5 min-w-0">
                     <MapPin className="h-4 w-4 text-violet-600 dark:text-violet-300 shrink-0 mt-0.5" />
-                    <span>{contactInfo.address}</span>
+                    <span className="break-words">{contactInfo.address}</span>
                   </div>
-                  <div className="flex items-center gap-2.5">
-                    <Phone className="h-4 w-4 text-violet-600 dark:text-violet-300 shrink-0" />
-                    <a href={telHref} className="hover:text-violet-600 dark:hover:text-violet-300 font-bold transition-colors">
+                  <div className="flex items-start gap-2.5 min-w-0">
+                    <Phone className="h-4 w-4 text-violet-600 dark:text-violet-300 shrink-0 mt-0.5" />
+                    <a href={telHref} className="break-all hover:text-violet-600 dark:hover:text-violet-300 font-bold transition-colors">
                       {contactInfo.phone}
                     </a>
                   </div>
-                  <div className="flex items-center gap-2.5">
-                    <Mail className="h-4 w-4 text-violet-600 dark:text-violet-300 shrink-0" />
-                    <a href={mailHref} className="hover:text-violet-600 dark:hover:text-violet-300 font-medium transition-colors">
+                  <div className="flex items-start gap-2.5 min-w-0">
+                    <Mail className="h-4 w-4 text-violet-600 dark:text-violet-300 shrink-0 mt-0.5" />
+                    <a href={mailHref} className="break-all hover:text-violet-600 dark:hover:text-violet-300 font-medium transition-colors">
                       {contactInfo.email}
                     </a>
                   </div>
-                  <div className="flex items-center gap-2.5">
-                    <Clock className="h-4 w-4 text-violet-600 dark:text-violet-300 shrink-0" />
-                    <span>{contactInfo.hours}</span>
+                  <div className="flex items-start gap-2.5 min-w-0">
+                    <Clock className="h-4 w-4 text-violet-600 dark:text-violet-300 shrink-0 mt-0.5" />
+                    <span className="break-words">{contactInfo.hours}</span>
                   </div>
                 </div>
               </div>
 
             
               {/* Direct Channels Box */}
-              <div className="rounded-3xl border border-violet-100 bg-gradient-to-br from-[#1b4397] via-[#153880] to-[#0e2764] p-7 text-white shadow-xl">
-                <h4 className="font-display text-lg font-bold text-white mb-2">
+              <div className="rounded-3xl border border-violet-100 bg-gradient-to-br from-[#1b4397] via-[#153880] to-[#0e2764] p-5 sm:p-7 text-white shadow-xl">
+                <h4 className="font-display text-lg font-bold text-white mb-2 break-words">
                   {contactInfo.directChannelsTitle || "Direct Executive Email Channels"}
                 </h4>
-                <p className="text-xs text-violet-200/80 leading-relaxed mb-4">
+                <p className="text-xs text-violet-200/80 leading-relaxed mb-4 break-words">
                   {contactInfo.directChannelsSubtitle || "For urgent technical RFPs or enterprise partnership inquiries:"}
                 </p>
 
                 <div className="space-y-2 text-xs">
-                  <div className="flex justify-between py-1.5 border-b border-white/10">
-                    <span className="text-violet-300">Client Inquiries</span>
-                    <a href={mailHref} className="font-mono text-white font-bold hover:underline">
+                  <div className="flex flex-col gap-1 py-1.5 border-b border-white/10 sm:flex-row sm:items-center sm:justify-between">
+                    <span className="shrink-0 text-violet-300">Client Inquiries</span>
+                    <a href={mailHref} className="font-mono text-white font-bold hover:underline break-all sm:text-right">
                       {contactInfo.email}
                     </a>
                   </div>
-                  <div className="flex justify-between py-1.5 border-b border-white/10">
-                    <span className="text-violet-300">Direct Contact</span>
-                    <a href={telHref} className="font-mono text-white font-bold hover:underline">
+                  <div className="flex flex-col gap-1 py-1.5 border-b border-white/10 sm:flex-row sm:items-center sm:justify-between">
+                    <span className="shrink-0 text-violet-300">Direct Contact</span>
+                    <a href={telHref} className="font-mono text-white font-bold hover:underline break-all sm:text-right">
                       {contactInfo.phone}
                     </a>
                   </div>
-                  <div className="flex justify-between py-1.5">
-                    <span className="text-violet-300">Working Hours</span>
-                    <span className="font-mono text-white font-bold">
+                  <div className="flex flex-col gap-1 py-1.5 sm:flex-row sm:items-center sm:justify-between">
+                    <span className="shrink-0 text-violet-300">Working Hours</span>
+                    <span className="font-mono text-white font-bold break-words sm:text-right">
                       {contactInfo.hours}
                     </span>
                   </div>
@@ -381,17 +381,17 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
       </section>
 
       {/* Landscape Google Location Map Section */}
-      <section className="py-16 lg:py-24 bg-cloud-100/70 border-t border-violet-100">
+      <section className="overflow-hidden py-16 lg:py-24 bg-cloud-100/70 border-t border-violet-100">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl text-center mb-12">
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-3.5 py-1 text-xs font-semibold uppercase tracking-widest text-violet-700">
-              <MapPin className="h-3.5 w-3.5 text-violet-600" />
-              {contactInfo.mapBadge || "Visit Our Headquarters"}
+          <div className="mx-auto max-w-3xl min-w-0 text-center mb-12">
+            <div className="mb-3 inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-[10px] sm:px-3.5 sm:text-xs font-semibold uppercase tracking-widest text-violet-700">
+              <MapPin className="h-3.5 w-3.5 shrink-0 text-violet-600" />
+              <span className="break-words">{contactInfo.mapBadge || "Visit Our Headquarters"}</span>
             </div>
-            <h2 className="font-display text-3xl font-bold text-ink sm:text-4xl lg:text-5xl">
+            <h2 className="font-display text-[1.65rem] leading-tight min-[400px]:text-2xl font-bold text-ink sm:text-4xl lg:text-5xl break-words">
               {contactInfo.mapTitle || "Locate Click Point Innovations"}
             </h2>
-            <p className="mt-3 text-base text-ink/75">
+            <p className="mt-3 text-sm sm:text-base text-ink/75 break-words">
               {contactInfo.mapSubtitle || `${contactInfo.address} — ${contactInfo.hours}`}
             </p>
           </div>

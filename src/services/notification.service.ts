@@ -5,7 +5,8 @@ import { broadcastNotification } from "@/lib/realtime-notifications";
 
 export class NotificationService {
   /**
-   * Fetch unified list of unread notifications from Testimonials, Contact Inquiries & Quick Inquiries
+   * Fetch unified list of unread notifications from Testimonials, Contact Inquiries,
+   * Quick Inquiries & Job Applications
    */
   static async getUnifiedNotifications(): Promise<NotificationSummaryResponse> {
     try {
@@ -27,10 +28,19 @@ export class NotificationService {
         orderBy: { createdAt: "desc" },
       });
 
+      // 4. Fetch unread Job Applications
+      const dbJobApps = await prisma.$queryRaw<any[]>`
+        SELECT id, name, email, "jobTitle", "coverLetter", "createdAt"
+        FROM "job_applications"
+        WHERE "isRead" = false
+        ORDER BY "createdAt" DESC
+      `;
+
       const unreadReviewsCount = dbTestimonials.length;
       const unreadContactsCount = dbInquiries.length + dbQuickInquiries.length;
+      const unreadJobAppsCount = dbJobApps.length;
 
-      // 4. Map Testimonials to Unified AppNotification
+      // 5. Map Testimonials to Unified AppNotification
       const reviewNotifications: AppNotification[] = dbTestimonials.map((t) => ({
         id: t.id,
         category: "REVIEW",
@@ -45,7 +55,7 @@ export class NotificationService {
         targetTab: "testimonials-page",
       }));
 
-      // 5. Map Contact Inquiries to Unified AppNotification
+      // 6. Map Contact Inquiries to Unified AppNotification
       const contactNotifications: AppNotification[] = dbInquiries.map((i) => ({
         id: i.id,
         category: "CONTACT",
@@ -59,7 +69,7 @@ export class NotificationService {
         targetTab: "contact-page",
       }));
 
-      // 6. Map Quick Inquiries to Unified AppNotification
+      // 7. Map Quick Inquiries to Unified AppNotification
       const quickInquiryNotifications: AppNotification[] = dbQuickInquiries.map((q) => ({
         id: q.id,
         category: "QUICK_INQUIRY",
@@ -73,11 +83,26 @@ export class NotificationService {
         targetTab: "inquiries",
       }));
 
-      // 7. Combine & Sort Descending by Timestamp
+      // 8. Map Job Applications to Unified AppNotification
+      const jobAppNotifications: AppNotification[] = dbJobApps.map((a) => ({
+        id: a.id,
+        category: "JOB_APPLICATION",
+        title: "New Job Application",
+        clientName: a.name,
+        email: a.email,
+        subtext: `Applied for: ${a.jobTitle}`,
+        content: a.coverLetter || `${a.name} applied for ${a.jobTitle}`,
+        isRead: false,
+        createdAt: new Date(a.createdAt).toISOString(),
+        targetTab: "job-applied",
+      }));
+
+      // 9. Combine & Sort Descending by Timestamp
       const notifications = [
         ...reviewNotifications,
         ...contactNotifications,
         ...quickInquiryNotifications,
+        ...jobAppNotifications,
       ].sort((a, b) => {
         const timeA = new Date(a.createdAt).getTime();
         const timeB = new Date(b.createdAt).getTime();
@@ -90,6 +115,7 @@ export class NotificationService {
         unreadCount: notifications.length,
         unreadReviewsCount,
         unreadContactsCount,
+        unreadJobAppsCount,
       };
     } catch (error: any) {
       console.error("NotificationService.getUnifiedNotifications Error:", error);
@@ -99,6 +125,7 @@ export class NotificationService {
         unreadCount: 0,
         unreadReviewsCount: 0,
         unreadContactsCount: 0,
+        unreadJobAppsCount: 0,
       };
     }
   }
@@ -109,20 +136,15 @@ export class NotificationService {
   static async markAsRead(id: string, category?: string): Promise<boolean> {
     try {
       if (category === "REVIEW") {
-        await prisma.testimonial.update({
-          where: { id },
-          data: { isRead: true },
-        });
+        await prisma.testimonial.update({ where: { id }, data: { isRead: true } });
       } else if (category === "QUICK_INQUIRY") {
-        await prisma.inquiry.update({
-          where: { id },
-          data: { status: "COMPLETED" },
-        });
+        await prisma.inquiry.update({ where: { id }, data: { status: "COMPLETED" } });
+      } else if (category === "JOB_APPLICATION") {
+        await prisma.$executeRaw`
+          UPDATE "job_applications" SET "isRead" = true, "updatedAt" = NOW() WHERE id = ${id}
+        `;
       } else {
-        await prisma.contactInquiry.update({
-          where: { id },
-          data: { isRead: true },
-        });
+        await prisma.contactInquiry.update({ where: { id }, data: { isRead: true } });
       }
       return true;
     } catch (error) {
@@ -137,18 +159,10 @@ export class NotificationService {
   static async archiveAll(): Promise<boolean> {
     try {
       await Promise.all([
-        prisma.testimonial.updateMany({
-          where: { isRead: false },
-          data: { isRead: true },
-        }),
-        prisma.contactInquiry.updateMany({
-          where: { isRead: false },
-          data: { isRead: true },
-        }),
-        prisma.inquiry.updateMany({
-          where: { status: "PENDING" },
-          data: { status: "COMPLETED" },
-        }),
+        prisma.testimonial.updateMany({ where: { isRead: false }, data: { isRead: true } }),
+        prisma.contactInquiry.updateMany({ where: { isRead: false }, data: { isRead: true } }),
+        prisma.inquiry.updateMany({ where: { status: "PENDING" }, data: { status: "COMPLETED" } }),
+        prisma.$executeRaw`UPDATE "job_applications" SET "isRead" = true, "updatedAt" = NOW() WHERE "isRead" = false`,
       ]);
       return true;
     } catch (error) {
@@ -158,13 +172,13 @@ export class NotificationService {
   }
 
   /**
-   * Broadcast real-time notification to all active subscribers
+   * Broadcast real-time notification to all active SSE subscribers and BroadcastChannel
    */
   static notifyRealtime(notification: AppNotification) {
     notifySSESubscribers({ type: "NEW_NOTIFICATION", notification });
     broadcastNotification({
       id: notification.id,
-      type: notification.category,
+      type: notification.category as any,
       title: notification.title,
       clientName: notification.clientName,
       email: notification.email,

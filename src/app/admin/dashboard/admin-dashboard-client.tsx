@@ -73,6 +73,8 @@ import NotFoundPageEditor from "./not-found-page-editor";
 import { subscribeRealtimeNotifications } from "@/lib/realtime-notifications";
 import CareersPageEditor from "./careers-page-editor";
 import FaqEditor from "./faq-editor";
+import JobApplicationsView from "./job-applications-view";
+import CaseStudiesEditor from "./case-studies-editor";
 
 interface AdminDashboardClientProps {
   userEmail: string;
@@ -326,12 +328,14 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [unreadTestimonialsCount, setUnreadTestimonialsCount] = useState<number>(0);
   const [unreadContactCount, setUnreadContactCount] = useState<number>(0);
+  const [unreadJobAppsCount, setUnreadJobAppsCount] = useState<number>(0);
   const [notificationsList, setNotificationsList] = useState<any[]>([]);
   const [showNotificationsDropdown, setShowNotificationsDropdown] = useState<boolean>(false);
   const [selectedNotificationItemId, setSelectedNotificationItemId] = useState<string | null>(null);
   const isInitialMount = useRef(true);
   const prevUnreadCountRef = useRef<number>(0);
   const prevContactCountRef = useRef<number>(0);
+  const prevJobAppsCountRef = useRef<number>(0);
   const { theme, toggleTheme } = useTheme();
 
   // Global Real-time Polling & WebSocket/SSE Subscription via Unified Notification API
@@ -344,10 +348,12 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
           const list = json.notifications || [];
           const newReviewCount = json.unreadReviewsCount || 0;
           const newContactCount = json.unreadContactsCount || 0;
+          const newJobAppsCount = json.unreadJobAppsCount || 0;
 
           setNotificationsList(list);
           setUnreadTestimonialsCount(newReviewCount);
           setUnreadContactCount(newContactCount);
+          setUnreadJobAppsCount(newJobAppsCount);
 
           // 1. Real-Time Toast for NEW Review (Amber Theme)
           if (!isInitialMount.current && newReviewCount > prevUnreadCountRef.current) {
@@ -423,8 +429,48 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
             );
           }
 
+          // 3. Real-Time Toast for NEW Job Application (Green Theme)
+          if (!isInitialMount.current && newJobAppsCount > prevJobAppsCountRef.current) {
+            const latestApp = list.find((n: any) => n.category === "JOB_APPLICATION" || n.type === "JOB_APPLICATION");
+            toast.custom(
+              (tId) => (
+                <div className="flex items-start gap-3 p-4 rounded-2xl bg-emerald-50 dark:bg-[#0a1f14] border border-emerald-200 dark:border-emerald-900/60 shadow-xl max-w-sm">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-600 text-white shrink-0 shadow-xs">
+                    <Briefcase className="h-4 w-4" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-extrabold text-emerald-950 dark:text-emerald-100">
+                        New Job Application!
+                      </h4>
+                      <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">Just now</span>
+                    </div>
+                    <p className="text-xs text-emerald-900 dark:text-emerald-200 mt-1 leading-snug font-medium line-clamp-2">
+                      {latestApp
+                        ? `${latestApp.clientName} applied — ${latestApp.subtext || "New application received"}`
+                        : "A new job application has been submitted."}
+                    </p>
+                    <button
+                      onClick={() => {
+                        toast.dismiss(tId);
+                        setActiveTab("job-applied");
+                        setSelectedSectionId(null);
+                      }}
+                      className="mt-2 text-xs font-extrabold text-emerald-700 dark:text-emerald-300 hover:underline inline-flex items-center gap-1"
+                    >
+                      <span>View Application</span>
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ),
+              { duration: 7000 }
+            );
+          }
+
           prevUnreadCountRef.current = newReviewCount;
           prevContactCountRef.current = newContactCount;
+          prevJobAppsCountRef.current = newJobAppsCount;
           isInitialMount.current = false;
         }
       } catch (err) {
@@ -485,6 +531,8 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
       setNotificationsList((prev) => prev.filter((n) => n.id !== item.id));
       if (category === "REVIEW") {
         setUnreadTestimonialsCount((prev) => Math.max(0, prev - 1));
+      } else if (category === "JOB_APPLICATION") {
+        setUnreadJobAppsCount((prev) => Math.max(0, prev - 1));
       } else {
         setUnreadContactCount((prev) => Math.max(0, prev - 1));
       }
@@ -509,6 +557,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
       setNotificationsList([]);
       setUnreadTestimonialsCount(0);
       setUnreadContactCount(0);
+      setUnreadJobAppsCount(0);
       toast.success("All notifications archived & marked as read!");
     } catch (err) {
       console.error(err);
@@ -580,6 +629,12 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
           icon: MessageSquare,
           badge: unreadContactCount > 0 ? `${unreadContactCount} NEW` : undefined,
         },
+        {
+          id: "job-applied",
+          label: "Job Applied",
+          icon: Briefcase,
+          badge: unreadJobAppsCount > 0 ? `${unreadJobAppsCount} NEW` : undefined,
+        },
       ],
     },
     {
@@ -595,13 +650,14 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
   const selectedSection = currentPageConfig?.sections.find((s) => s.id === selectedSectionId);
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa] dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 flex flex-col lg:flex-row transition-colors duration-200">
+    <div className="min-h-screen w-full overflow-x-hidden bg-[#f8f9fa] dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 flex flex-col lg:flex-row transition-colors duration-200">
       
-      {/* Mobile Drawer Overlay Backdrop */}
+      {/* Mobile Drawer Overlay Backdrop — use bg-black/* (not bg-slate-900/60) so globals.css dark override does not force a solid scrim */}
       {mobileOpen && (
         <div
           onClick={() => setMobileOpen(false)}
-          className="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-xs lg:hidden transition-opacity"
+          className="fixed inset-0 z-40 bg-black/50 dark:bg-black/40 backdrop-blur-[2px] lg:hidden transition-opacity"
+          aria-hidden="true"
         />
       )}
 
@@ -678,6 +734,8 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                                 className={`ml-2 rounded-full px-2 py-0.5 text-[9px] font-extrabold shrink-0 ${
                                   item.id === "testimonials-page"
                                     ? "bg-amber-500 text-white animate-pulse shadow-sm"
+                                    : item.id === "job-applied"
+                                    ? "bg-emerald-500 text-white animate-pulse shadow-sm"
                                     : "bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300"
                                 }`}
                               >
@@ -713,7 +771,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
       </aside>
 
       {/* ================= 2. MAIN CONTENT AREA ================= */}
-      <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${collapsed ? "lg:ml-20" : "lg:ml-64"}`}>
+      <div className={`flex-1 flex flex-col min-w-0 w-full overflow-x-hidden transition-all duration-300 ${collapsed ? "lg:ml-20" : "lg:ml-64"}`}>
         
         {/* Top Responsive Navbar Header */}
         <header className="h-16 bg-white dark:bg-[#131927] border-b border-slate-200/80 dark:border-slate-800 px-3 sm:px-6 flex items-center justify-between sticky top-0 z-30 backdrop-blur-md">
@@ -753,12 +811,12 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                 onClick={() => setShowNotificationsDropdown(!showNotificationsDropdown)}
                 className="relative flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors focus:outline-none"
                 aria-label="Notifications"
-                title={unreadTestimonialsCount + unreadContactCount > 0 ? `${unreadTestimonialsCount + unreadContactCount} Unread Notifications` : "Notifications"}
+                title={(unreadTestimonialsCount + unreadContactCount + unreadJobAppsCount) > 0 ? `${unreadTestimonialsCount + unreadContactCount + unreadJobAppsCount} Unread Notifications` : "Notifications"}
               >
                 <Bell className="h-4 w-4" />
-                {unreadTestimonialsCount + unreadContactCount > 0 ? (
+                {(unreadTestimonialsCount + unreadContactCount + unreadJobAppsCount) > 0 ? (
                   <span className="absolute -top-1 -right-1 sm:-top-1.5 sm:-right-1.5 flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] sm:text-[11px] font-black text-white shadow-md border-2 border-white dark:border-[#131927]">
-                    {unreadTestimonialsCount + unreadContactCount > 9 ? "9+" : unreadTestimonialsCount + unreadContactCount}
+                    {(unreadTestimonialsCount + unreadContactCount + unreadJobAppsCount) > 9 ? "9+" : (unreadTestimonialsCount + unreadContactCount + unreadJobAppsCount)}
                   </span>
                 ) : (
                   <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-slate-300 dark:bg-slate-700" />
@@ -823,10 +881,16 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                               className={`shrink-0 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
                                 (item.category || item.type) === "REVIEW"
                                   ? "bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400"
+                                  : (item.category || item.type) === "JOB_APPLICATION"
+                                  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400"
                                   : "bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-400"
                               }`}
                             >
-                              {(item.category || item.type) === "REVIEW" ? "Review" : "Inquiry"}
+                              {(item.category || item.type) === "REVIEW"
+                                ? "Review"
+                                : (item.category || item.type) === "JOB_APPLICATION"
+                                ? "Applied"
+                                : "Inquiry"}
                             </span>
 
                             <div className="min-w-0 flex-1 flex items-center gap-1.5 sm:gap-2">
@@ -897,7 +961,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
         </header>
 
         {/* Dashboard Main Scrollable Content */}
-        <main className="p-3 sm:p-6 space-y-4 sm:space-y-6">
+        <main className="p-3 sm:p-6 space-y-4 sm:space-y-6 min-w-0 w-full overflow-x-hidden">
           
           {/* TAB 1: OVERVIEW DASHBOARD */}
           {activeTab === "dashboard" && (
@@ -1169,12 +1233,19 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
             </>
           )}
 
+          {/* Job Applied — Applications received from candidates (standalone, no page config needed) */}
+          {activeTab === "job-applied" && (
+            <div className="mt-2">
+              <JobApplicationsView />
+            </div>
+          )}
+
           {/* DYNAMIC PAGE CONTENT MANAGEMENT VIEW */}
-          {currentPageConfig && activeTab !== "dashboard" && (
-            <div className="space-y-4 sm:space-y-6">
+          {currentPageConfig && activeTab !== "dashboard" && activeTab !== "job-applied" && (
+            <div className="space-y-4 sm:space-y-6 min-w-0 w-full overflow-hidden">
               
-              <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
+              <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4 overflow-hidden">
+                <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2 mb-1">
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
                       <LayoutTemplate className="h-3 w-3" />
@@ -1192,7 +1263,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex flex-wrap items-center gap-2 shrink-0 w-full lg:w-auto">
                   <a
                     href={
                       activeTab === "landing-management"
@@ -1334,7 +1405,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
               )}
 
               {activeTab === "about-page" && (
-                <div className="mt-6 sm:mt-8">
+                <div className="mt-6 sm:mt-8 min-w-0 w-full overflow-hidden">
                   <AboutPageEditor
                     sectionId={selectedSectionId}
                     onCloseSection={() => setSelectedSectionId(null)}
@@ -1343,7 +1414,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
               )}
 
               {activeTab === "services-page" && (
-                <div className="mt-6 sm:mt-8">
+                <div className="mt-6 sm:mt-8 min-w-0 w-full overflow-hidden">
                   <ServicesPageEditor
                     sectionId={selectedSectionId}
                     onCloseSection={() => setSelectedSectionId(null)}
@@ -1352,7 +1423,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
               )}
 
               {activeTab === "industries-page" && (
-                <div className="mt-6 sm:mt-8">
+                <div className="mt-6 sm:mt-8 min-w-0 w-full overflow-hidden">
                   <IndustriesPageEditor
                     sectionId={selectedSectionId}
                     onCloseSection={() => setSelectedSectionId(null)}
@@ -1361,7 +1432,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
               )}
 
               {activeTab === "testimonials-page" && (
-                <div className="mt-6 sm:mt-8">
+                <div className="mt-6 sm:mt-8 min-w-0 w-full overflow-hidden">
                   <TestimonialsEditor
                       sectionId={selectedSectionId}
                       selectedItemId={selectedNotificationItemId}
@@ -1372,7 +1443,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
               )}
 
               {activeTab === "journey-page" && (
-                <div className="mt-6 sm:mt-8">
+                <div className="mt-6 sm:mt-8 min-w-0 w-full overflow-hidden">
                   <JourneyEditor
                     sectionId={selectedSectionId || undefined}
                   />
@@ -1380,13 +1451,13 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
               )}
 
               {activeTab === "landing-management" && selectedSectionId === "timeline" && (
-                <div className="mt-6 sm:mt-8">
+                <div className="mt-6 sm:mt-8 min-w-0 w-full overflow-hidden">
                   <JourneyEditor sectionId="timeline" />
                 </div>
               )}
 
               {(activeTab === "contact-page" || activeTab === "inquiries") && (
-                <div className="mt-6 sm:mt-8">
+                <div className="mt-6 sm:mt-8 min-w-0 w-full overflow-hidden">
                   <ContactEditor
                     sectionId={selectedSectionId}
                     selectedItemId={selectedNotificationItemId}
@@ -1397,7 +1468,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
               )}
 
               {activeTab === "careers-page" && (
-                <div className="mt-6 sm:mt-8">
+                <div className="mt-6 sm:mt-8 min-w-0 w-full overflow-hidden">
                   <CareersPageEditor
                     sectionId={selectedSectionId}
                     onCloseSection={() => setSelectedSectionId(null)}
@@ -1406,7 +1477,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
               )}
 
               {activeTab === "faqs-page" && (
-                <div className="mt-6 sm:mt-8">
+                <div className="mt-6 sm:mt-8 min-w-0 w-full overflow-hidden">
                   <FaqEditor
                     sectionId={selectedSectionId}
                     onCloseSection={() => setSelectedSectionId(null)}
@@ -1414,8 +1485,14 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                 </div>
               )}
 
+              {activeTab === "case-studies-page" && (
+                <div className="mt-6 sm:mt-8 min-w-0 w-full overflow-hidden">
+                  <CaseStudiesEditor />
+                </div>
+              )}
+
               {activeTab === "not-found-page" && (
-                <div className="mt-6 sm:mt-8">
+                <div className="mt-6 sm:mt-8 min-w-0 w-full overflow-hidden">
                   <NotFoundPageEditor
                     sectionId={selectedSectionId}
                     onCloseSection={() => setSelectedSectionId(null)}
@@ -1423,7 +1500,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                 </div>
               )}
 
-              {activeTab !== "about-page" && activeTab !== "services-page" && activeTab !== "industries-page" && activeTab !== "testimonials-page" && activeTab !== "journey-page" && activeTab !== "contact-page" && activeTab !== "inquiries" && activeTab !== "careers-page" && activeTab !== "not-found-page" && selectedSection && selectedSection.id !== "timeline" && (
+              {activeTab !== "about-page" && activeTab !== "services-page" && activeTab !== "industries-page" && activeTab !== "case-studies-page" && activeTab !== "testimonials-page" && activeTab !== "journey-page" && activeTab !== "contact-page" && activeTab !== "inquiries" && activeTab !== "careers-page" && activeTab !== "not-found-page" && selectedSection && selectedSection.id !== "timeline" && (
                 <div className="mt-6 sm:mt-8 rounded-xl sm:rounded-2xl border border-blue-500/30 bg-blue-500/5 dark:bg-blue-950/20 p-4 sm:p-6 shadow-sm">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-blue-500/20">
                     <div className="flex items-center gap-3">

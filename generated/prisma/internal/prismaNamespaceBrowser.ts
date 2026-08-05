@@ -64,6 +64,8 @@ export const ModelName = {
   JourneyPage: 'JourneyPage',
   CareersPage: 'CareersPage',
   NotFoundPage: 'NotFoundPage',
+  CaseStudiesPage: 'CaseStudiesPage',
+  CaseStudyCategory: 'CaseStudyCategory',
   CaseStudy: 'CaseStudy',
   BlogPost: 'BlogPost',
   TestimonialsPage: 'TestimonialsPage',
@@ -73,7 +75,8 @@ export const ModelName = {
   Inquiry: 'Inquiry',
   ContactInquiry: 'ContactInquiry',
   JobCategory: 'JobCategory',
-  JobVacancy: 'JobVacancy'
+  JobVacancy: 'JobVacancy',
+  JobApplication: 'JobApplication'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -250,11 +253,34 @@ export const NotFoundPageScalarFieldEnum = {
 export type NotFoundPageScalarFieldEnum = (typeof NotFoundPageScalarFieldEnum)[keyof typeof NotFoundPageScalarFieldEnum]
 
 
+export const CaseStudiesPageScalarFieldEnum = {
+  id: 'id',
+  content: 'content',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CaseStudiesPageScalarFieldEnum = (typeof CaseStudiesPageScalarFieldEnum)[keyof typeof CaseStudiesPageScalarFieldEnum]
+
+
+export const CaseStudyCategoryScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CaseStudyCategoryScalarFieldEnum = (typeof CaseStudyCategoryScalarFieldEnum)[keyof typeof CaseStudyCategoryScalarFieldEnum]
+
+
 export const CaseStudyScalarFieldEnum = {
   id: 'id',
   slug: 'slug',
   title: 'title',
   client: 'client',
+  categoryId: 'categoryId',
   category: 'category',
   description: 'description',
   challenge: 'challenge',
@@ -262,7 +288,12 @@ export const CaseStudyScalarFieldEnum = {
   results: 'results',
   metrics: 'metrics',
   techStack: 'techStack',
+  impact: 'impact',
   imageUrl: 'imageUrl',
+  liveUrl: 'liveUrl',
+  buttonText: 'buttonText',
+  buttonLink: 'buttonLink',
+  imageGradient: 'imageGradient',
   featured: 'featured',
   order: 'order',
   createdAt: 'createdAt',
@@ -414,6 +445,31 @@ export const JobVacancyScalarFieldEnum = {
 } as const
 
 export type JobVacancyScalarFieldEnum = (typeof JobVacancyScalarFieldEnum)[keyof typeof JobVacancyScalarFieldEnum]
+
+
+export const JobApplicationScalarFieldEnum = {
+  id: 'id',
+  jobVacancyId: 'jobVacancyId',
+  jobTitle: 'jobTitle',
+  name: 'name',
+  email: 'email',
+  phone: 'phone',
+  linkedIn: 'linkedIn',
+  portfolio: 'portfolio',
+  coverLetter: 'coverLetter',
+  coverLetterFileUrl: 'coverLetterFileUrl',
+  coverLetterOriginalName: 'coverLetterOriginalName',
+  resumeUrl: 'resumeUrl',
+  resumeOriginalName: 'resumeOriginalName',
+  resumeProvider: 'resumeProvider',
+  status: 'status',
+  isRead: 'isRead',
+  ipAddress: 'ipAddress',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type JobApplicationScalarFieldEnum = (typeof JobApplicationScalarFieldEnum)[keyof typeof JobApplicationScalarFieldEnum]
 
 
 export const SortOrder = {

@@ -10,10 +10,10 @@ export default function Services() {
     <section id="services" className="relative py-20 lg:py-28">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-14 max-w-2xl">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-violet-600 dark:text-violet-300">
+          <p className="section-badge mb-3 text-violet-600 dark:text-violet-300">
             Our Core Services
           </p>
-          <h2 className="font-display text-2xl sm:text-4xl font-bold text-ink dark:text-white">
+          <h2 className="section-title text-ink dark:text-white">
             Partnerships that extend your{" "}
             <span className="text-violet-600 dark:text-[#f58220]">capabilities</span>
           </h2>
@@ -42,12 +42,12 @@ export default function Services() {
                         <Icon className="h-5 w-5" />
                       </span>
                     )}
-                    <h3 className="mb-2 flex items-center gap-1.5 font-display text-sm sm:text-base md:text-lg font-bold text-ink dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-300 transition-colors">
+                    <h3 className="mb-2 flex items-center gap-1.5 card-title text-ink dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-300 transition-colors">
                       {s.title}
                       <ArrowUpRight className="h-4 w-4 -translate-y-0.5 opacity-0 transition-all group-hover:translate-y-0 group-hover:opacity-100 text-violet-600 dark:text-violet-300" />
                     </h3>
-                    <p className="text-xs sm:text-sm leading-relaxed text-ink/65 dark:text-slate-300">{s.desc}</p>
-                    <span className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-violet-600 dark:text-violet-300 group-hover:translate-x-1 transition-transform">
+                    <p className="card-body text-ink/65 dark:text-slate-300">{s.desc}</p>
+                    <span className="mt-4 inline-flex items-center gap-1 text-fluid-xs font-bold text-violet-600 dark:text-violet-300 group-hover:translate-x-1 transition-transform">
                       Learn More & Details →
                     </span>
                   </div>

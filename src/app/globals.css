@@ -25,6 +25,52 @@ html.dark {
   }
 }
 
+@layer components {
+  .section-badge {
+    @apply text-fluid-xs font-semibold uppercase tracking-widest;
+  }
+
+  .section-title {
+    @apply font-display text-fluid-5xl font-bold tracking-tight;
+  }
+
+  .section-subtitle {
+    @apply text-fluid-base leading-relaxed;
+  }
+
+  .hero-title {
+    @apply font-display text-fluid-6xl font-extrabold tracking-tight leading-tight break-words;
+  }
+
+  .hero-subtitle {
+    @apply text-fluid-xl leading-relaxed;
+  }
+
+  .card-title {
+    @apply font-display text-fluid-2xl font-bold;
+  }
+
+  .card-body {
+    @apply text-fluid-sm leading-relaxed;
+  }
+
+  .stat-number {
+    @apply font-display text-fluid-stat font-extrabold;
+  }
+
+  .text-label {
+    @apply text-fluid-2xs font-semibold uppercase tracking-wider;
+  }
+
+  .text-badge {
+    @apply text-fluid-xs font-semibold;
+  }
+
+  .text-caption {
+    @apply text-fluid-2xs;
+  }
+}
+
 * {
   scroll-behavior: smooth;
   font-family: var(--font-poppins), "Poppins", ui-sans-serif, system-ui, sans-serif;
