@@ -164,7 +164,9 @@ export default function JourneyClientView({ initialContent }: JourneyClientViewP
                             <p className="font-display text-lg font-extrabold text-violet-600 dark:text-violet-300 sm:text-xl">
                               {st.value}
                             </p>
-                            <p className="text-[11px] font-semibold text-ink/60 dark:text-slate-400">{st.label}</p>
+                            <p className="text-[11px] font-semibold text-ink/60 dark:text-slate-400">
+                              {st.sublabel || st.label}
+                            </p>
                           </div>
                         ))}
                       </div>
@@ -275,13 +277,16 @@ export default function JourneyClientView({ initialContent }: JourneyClientViewP
               <div className="max-w-2xl">
                 <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-violet-50 dark:bg-slate-800 px-3.5 py-1 text-xs font-semibold uppercase tracking-widest text-violet-600 dark:text-violet-300">
                   <Camera className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
-                  {content.eventsSection?.badge || DEFAULT_JOURNEY_PAGE_DATA.eventsSection!.badge}
+                  {content.eventsSection?.badge || DEFAULT_JOURNEY_PAGE_DATA.eventsSection?.badge || "Company Culture & Events"}
                 </div>
                 <h2 className="font-display text-3xl font-bold tracking-tight text-ink dark:text-white sm:text-4xl lg:text-5xl">
-                  {content.eventsSection?.title || DEFAULT_JOURNEY_PAGE_DATA.eventsSection!.title}
+                  {content.eventsSection?.title || DEFAULT_JOURNEY_PAGE_DATA.eventsSection?.title || "Moments That Define Our"}{" "}
+                  <span className="text-[#f58220]">
+                    {content.eventsSection?.highlightText || DEFAULT_JOURNEY_PAGE_DATA.eventsSection?.highlightText || "Engineering Spirit"}
+                  </span>
                 </h2>
                 <p className="mt-3 text-base text-ink/75 dark:text-slate-300">
-                  {content.eventsSection?.subtitle || DEFAULT_JOURNEY_PAGE_DATA.eventsSection!.subtitle}
+                  {content.eventsSection?.subtitle || DEFAULT_JOURNEY_PAGE_DATA.eventsSection?.subtitle || "Explore photos, hackathons, global tech expos, and team celebrations across our engineering hubs."}
                 </p>
               </div>
 

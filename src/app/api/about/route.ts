@@ -118,9 +118,13 @@ const DEFAULT_ABOUT_DATA = {
         role: "Head of Enterprise Solutions & Cloud Security",
         bio: "Cloud security specialist enforcing SOC2 Type II compliance, multi-tenant database isolation, and zero-trust infrastructure.",
         imageUrl: "",
-        expertise: ["Cloud Security", "SOC2 Compliance", "Terraform & AWS"],
       },
     ],
+  },
+  timelineHeader: {
+    badge: "Our Journey",
+    title: "From a 4-person studio to an AI-first partner",
+    subtitle: "A decade of engineering excellence, technical milestones, and continuous growth.",
   },
 };
 

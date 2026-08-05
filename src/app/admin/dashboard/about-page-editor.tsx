@@ -444,6 +444,11 @@ export const DEFAULT_ABOUT_DATA = {
       },
     ],
   },
+  timelineHeader: {
+    badge: "Our Journey",
+    title: "From a 4-person studio to an AI-first partner",
+    subtitle: "A decade of engineering excellence, technical milestones, and continuous growth.",
+  },
 };
 
 interface AboutPageEditorProps {
@@ -1309,6 +1314,91 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* SECTION 5: TIMELINE JOURNEY SECTION HEADER (ABOUT PAGE ONLY) */}
+      {(!sectionId || sectionId === "about-journey" || sectionId === "05") && (
+        <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4">
+          <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
+            <span className="font-mono text-[10px] sm:text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
+              #05
+            </span>
+            <h3 className="text-xs sm:text-sm font-bold">
+              Timeline & Journey Section Header (About Page Only)
+            </h3>
+          </div>
+
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Customize the section badge, main title, and narrative description specifically for the About page timeline. Milestone era nodes are synchronized live from the Journey page database records.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+            <div>
+              <label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                <Tag className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+                Badge Tag (e.g. Our Journey)
+              </label>
+              <input
+                type="text"
+                value={formData.timelineHeader?.badge || "Our Journey"}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    timelineHeader: {
+                      badge: e.target.value,
+                      title: formData.timelineHeader?.title || "From a 4-person studio to an AI-first partner",
+                      subtitle: formData.timelineHeader?.subtitle || "A decade of engineering excellence, technical milestones, and continuous growth.",
+                    },
+                  })
+                }
+                className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-semibold"
+              />
+            </div>
+
+            <div>
+              <label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                <Type className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+                Main Title (e.g. From a 4-person studio to an AI-first partner)
+              </label>
+              <input
+                type="text"
+                value={formData.timelineHeader?.title || "From a 4-person studio to an AI-first partner"}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    timelineHeader: {
+                      badge: formData.timelineHeader?.badge || "Our Journey",
+                      title: e.target.value,
+                      subtitle: formData.timelineHeader?.subtitle || "A decade of engineering excellence, technical milestones, and continuous growth.",
+                    },
+                  })
+                }
+                className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-bold"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Subtitle Description
+              </label>
+              <textarea
+                rows={2}
+                value={formData.timelineHeader?.subtitle || "A decade of engineering excellence, technical milestones, and continuous growth."}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    timelineHeader: {
+                      badge: formData.timelineHeader?.badge || "Our Journey",
+                      title: formData.timelineHeader?.title || "From a 4-person studio to an AI-first partner",
+                      subtitle: e.target.value,
+                    },
+                  })
+                }
+                className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-medium"
+              />
+            </div>
           </div>
         </div>
       )}

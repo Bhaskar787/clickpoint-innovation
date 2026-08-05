@@ -67,20 +67,24 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
       if (json.success && json.data) {
         if (isInitial) {
           const loadedHero = json.data.hero || {};
-          const loadedMetrics: any = json.data.metrics || {};
+          let loadedMetrics = json.data.metrics;
+
+          if (!Array.isArray(loadedMetrics)) {
+            loadedMetrics = DEFAULT_TESTIMONIALS_PAGE_DATA.metrics;
+          }
 
           setFormData({
             hero: {
               badge: loadedHero.badge || DEFAULT_TESTIMONIALS_PAGE_DATA.hero.badge,
               title: loadedHero.title || DEFAULT_TESTIMONIALS_PAGE_DATA.hero.title,
               subtitle: loadedHero.subtitle || DEFAULT_TESTIMONIALS_PAGE_DATA.hero.subtitle,
+              ctaButtonText: loadedHero.ctaButtonText || DEFAULT_TESTIMONIALS_PAGE_DATA.hero.ctaButtonText,
+              reviewModalButtonText:
+                loadedHero.reviewModalButtonText ||
+                DEFAULT_TESTIMONIALS_PAGE_DATA.hero.reviewModalButtonText ||
+                "Give Review / Feedback",
             },
-            metrics: {
-              averageRating: loadedMetrics.averageRating || "4.9 / 5.0",
-              totalReviews: loadedMetrics.totalReviews || "350+",
-              satisfactionRate: loadedMetrics.satisfactionRate || "99.4%",
-              recommendationRate: loadedMetrics.recommendationRate || "98%",
-            },
+            metrics: loadedMetrics,
           });
         }
 
@@ -130,18 +134,22 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
     setIsSaving(true);
     const toastId = toast.loading("Saving Testimonials page content & metrics to database...");
 
+    const metricsToSave = Array.isArray(formData.metrics) && formData.metrics.length > 0
+      ? formData.metrics
+      : DEFAULT_TESTIMONIALS_PAGE_DATA.metrics;
+
     const payloadToSave: TestimonialsPageContent = {
       hero: {
         badge: formData.hero?.badge || DEFAULT_TESTIMONIALS_PAGE_DATA.hero.badge,
         title: formData.hero?.title || DEFAULT_TESTIMONIALS_PAGE_DATA.hero.title,
         subtitle: formData.hero?.subtitle || DEFAULT_TESTIMONIALS_PAGE_DATA.hero.subtitle,
+        ctaButtonText: formData.hero?.ctaButtonText || DEFAULT_TESTIMONIALS_PAGE_DATA.hero.ctaButtonText,
+        reviewModalButtonText:
+          formData.hero?.reviewModalButtonText ||
+          DEFAULT_TESTIMONIALS_PAGE_DATA.hero.reviewModalButtonText ||
+          "Give Review / Feedback",
       },
-      metrics: {
-        averageRating: (formData.metrics as any)?.averageRating || "4.9 / 5.0",
-        totalReviews: (formData.metrics as any)?.totalReviews || "350+",
-        satisfactionRate: (formData.metrics as any)?.satisfactionRate || "99.4%",
-        recommendationRate: (formData.metrics as any)?.recommendationRate || "98%",
-      },
+      metrics: metricsToSave,
     };
 
     try {

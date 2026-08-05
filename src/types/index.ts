@@ -125,6 +125,11 @@ export interface AboutPageContent {
     subtitle: string;
     metrics: StatMetric[];
   };
+  timelineHeader?: {
+    badge: string;
+    title: string;
+    subtitle: string;
+  };
   leadership: {
     tag: string;
     title: string;
@@ -419,7 +424,7 @@ export interface TimelineEra {
   quoteText?: string;
   quoteAuthor?: string;
   imageUrl: string;
-  stats: { label: string; value: string }[];
+  stats: { label: string; value: string; sublabel?: string }[];
   achievements: string[];
 }
 
@@ -464,6 +469,7 @@ export interface JourneyPageContent {
   eventsSection?: {
     badge: string;
     title: string;
+    highlightText?: string;
     subtitle: string;
   };
   ethosSection?: {

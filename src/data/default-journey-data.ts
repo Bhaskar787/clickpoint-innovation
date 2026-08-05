@@ -36,9 +36,9 @@ export const DEFAULT_JOURNEY_PAGE_DATA: JourneyPageContent = {
       quoteAuthor: "Founding Engineering Team",
       imageUrl: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=1200&auto=format&fit=crop",
       stats: [
-        { label: "Founding Team", value: "4 Engineers" },
-        { label: "First Year MVPs", value: "12 Shipped" },
-        { label: "Core Protocol", value: "100% TDD" },
+        { value: "4 Engineers", label: "Engineers", sublabel: "Founding Team" },
+        { value: "12 Shipped", label: "Shipped", sublabel: "First Year MVPs" },
+        { value: "100% TDD", label: "TDD", sublabel: "Core Protocol" },
       ],
       achievements: [
         "Inaugurated first engineering office in Kathmandu",
@@ -175,6 +175,13 @@ export const DEFAULT_JOURNEY_PAGE_DATA: JourneyPageContent = {
     "Product Launches",
     "AI Workshop",
   ],
+  eventsSection: {
+    badge: "Company Culture & Events",
+    title: "Moments That Define Our",
+    highlightText: "Engineering Spirit",
+    subtitle:
+      "Explore photos, hackathons, global tech expos, and team celebrations across our engineering hubs.",
+  },
   events: [
     {
       id: "ai-summit-2025",
@@ -257,12 +264,6 @@ export const DEFAULT_JOURNEY_PAGE_DATA: JourneyPageContent = {
         "Culture is the engine behind Clickpoint's technical excellence. Our annual offsite brought together team members from across 5 timezones for high-energy strategy workshops, outdoor adventures, and team celebrations.",
     },
   ],
-  eventsSection: {
-    badge: "Company Culture & Events",
-    title: "Moments That Define Our Engineering Spirit",
-    subtitle:
-      "Explore photos, hackathons, global tech expos, and team celebrations across our engineering hubs.",
-  },
   ethosSection: {
     badge: "Engineering Ethos",
     title: "The 4 Pillars That Guide Our Work",

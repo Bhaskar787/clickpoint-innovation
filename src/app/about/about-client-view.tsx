@@ -338,8 +338,13 @@ export default function AboutClientView({ initialContent, journeyContent }: Abou
         </div>
       </section>
 
-      {/* Embedded Milestone Timeline */}
-      <Timeline initialContent={journeyContent} />
+      {/* Embedded Milestone Timeline with About-specific dynamic header */}
+      <Timeline
+        initialContent={journeyContent}
+        customBadge={content.timelineHeader?.badge}
+        customTitle={content.timelineHeader?.title}
+        customSubtitle={content.timelineHeader?.subtitle}
+      />
 
       {/* CTA Section */}
       <CtaSection />

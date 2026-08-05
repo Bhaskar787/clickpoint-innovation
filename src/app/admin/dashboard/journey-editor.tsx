@@ -701,6 +701,59 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
                   />
                 </div>
 
+                {/* Dynamic Era Metric Badges (3 Badges) */}
+                <div className="p-3 sm:p-3.5 rounded-xl border border-violet-100 dark:border-slate-800 bg-violet-50/40 dark:bg-slate-900/50 space-y-2">
+                  <label className="text-[11px] font-bold text-violet-700 dark:text-violet-300 flex items-center gap-1.5 uppercase tracking-wider">
+                    <Sparkles className="h-3.5 w-3.5 text-violet-600 shrink-0" />
+                    Era Key Stats / Badges (e.g. "4 Engineers", "12 Shipped", "100% TDD")
+                  </label>
+                  <div className="grid gap-2.5 sm:gap-3 grid-cols-1 sm:grid-cols-3">
+                    {(era.stats?.length ? era.stats : [
+                      { value: "4 Engineers", label: "Engineers", sublabel: "Founding Team" },
+                      { value: "12 Shipped", label: "Shipped", sublabel: "First Year MVPs" },
+                      { value: "100% TDD", label: "TDD", sublabel: "Core Protocol" }
+                    ]).map((st, stIdx) => (
+                      <div key={stIdx} className="p-2.5 rounded-lg bg-white dark:bg-[#0b0f19] border border-slate-200 dark:border-slate-800 space-y-1.5 shadow-2xs">
+                        <span className="text-[10px] font-extrabold text-violet-600 dark:text-violet-400 uppercase">Stat #{stIdx + 1}</span>
+                        <div>
+                          <label className="text-[9px] font-bold text-slate-500 uppercase block">Big Value (e.g. 4 Engineers)</label>
+                          <input
+                            type="text"
+                            value={st.value || ""}
+                            placeholder="e.g. 4 Engineers"
+                            onChange={(e) => {
+                              const currentEras = [...formData.eras];
+                              const currentStats = [...(currentEras[idx].stats || [])];
+                              if (!currentStats[stIdx]) currentStats[stIdx] = { value: "", label: "", sublabel: "" };
+                              currentStats[stIdx] = { ...currentStats[stIdx], value: e.target.value };
+                              currentEras[idx].stats = currentStats;
+                              setFormData({ ...formData, eras: currentEras });
+                            }}
+                            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-1 text-xs text-violet-600 dark:text-violet-300 font-extrabold"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[9px] font-bold text-slate-400 uppercase block">Sublabel / Tag (e.g. Founding Team)</label>
+                          <input
+                            type="text"
+                            value={st.sublabel || st.label || ""}
+                            placeholder="e.g. Founding Team"
+                            onChange={(e) => {
+                              const currentEras = [...formData.eras];
+                              const currentStats = [...(currentEras[idx].stats || [])];
+                              if (!currentStats[stIdx]) currentStats[stIdx] = { value: "", label: "", sublabel: "" };
+                              currentStats[stIdx] = { ...currentStats[stIdx], sublabel: e.target.value, label: e.target.value };
+                              currentEras[idx].stats = currentStats;
+                              setFormData({ ...formData, eras: currentEras });
+                            }}
+                            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-1 text-[11px] text-slate-700 dark:text-slate-300 font-semibold"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 <div>
                   <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1 block">
                     Story Narrative Paragraphs (Separate paragraphs with new line)
@@ -804,22 +857,42 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
               />
             </div>
 
-            <div>
-              <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1 block">
-                Title
-              </label>
-              <input
-                type="text"
-                value={formData.eventsSection?.title ?? DEFAULT_JOURNEY_PAGE_DATA.eventsSection!.title}
-                onChange={(e) => {
-                  const current = formData.eventsSection || DEFAULT_JOURNEY_PAGE_DATA.eventsSection!;
-                  setFormData({
-                    ...formData,
-                    eventsSection: { ...current, title: e.target.value },
-                  });
-                }}
-                className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 dark:text-white font-medium"
-              />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1 block">
+                  Title Prefix Text
+                </label>
+                <input
+                  type="text"
+                  value={formData.eventsSection?.title ?? DEFAULT_JOURNEY_PAGE_DATA.eventsSection!.title}
+                  onChange={(e) => {
+                    const current = formData.eventsSection || DEFAULT_JOURNEY_PAGE_DATA.eventsSection!;
+                    setFormData({
+                      ...formData,
+                      eventsSection: { ...current, title: e.target.value },
+                    });
+                  }}
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 dark:text-white font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1 block">
+                  Title Highlighted Text (Orange Accent)
+                </label>
+                <input
+                  type="text"
+                  value={formData.eventsSection?.highlightText ?? DEFAULT_JOURNEY_PAGE_DATA.eventsSection!.highlightText}
+                  onChange={(e) => {
+                    const current = formData.eventsSection || DEFAULT_JOURNEY_PAGE_DATA.eventsSection!;
+                    setFormData({
+                      ...formData,
+                      eventsSection: { ...current, highlightText: e.target.value },
+                    });
+                  }}
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs text-amber-600 dark:text-amber-400 font-extrabold"
+                />
+              </div>
             </div>
 
             <div>

@@ -30,9 +30,17 @@ const ICON_LIST = [Zap, Code2, Users, Bot, Trophy, Rocket, Globe, Sparkles];
 
 interface TimelineProps {
   initialContent?: JourneyPageContent;
+  customBadge?: string;
+  customTitle?: string;
+  customSubtitle?: string;
 }
 
-export default function Timeline({ initialContent }: TimelineProps) {
+export default function Timeline({
+  initialContent,
+  customBadge,
+  customTitle,
+  customSubtitle,
+}: TimelineProps) {
   const [content, setContent] = useState<JourneyPageContent>(
     initialContent || DEFAULT_JOURNEY_PAGE_DATA
   );
@@ -65,11 +73,16 @@ export default function Timeline({ initialContent }: TimelineProps) {
   const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
 
   const heroBadge =
-    content.landingTimelineHeader?.badge || content.hero?.badge || "Our Journey";
+    customBadge ||
+    content.landingTimelineHeader?.badge ||
+    content.hero?.badge ||
+    "Our Journey";
   const heroTitle =
+    customTitle ||
     content.landingTimelineHeader?.title ||
     "From a 4-person studio to an AI-first partner";
   const heroSubtitle =
+    customSubtitle ||
     content.landingTimelineHeader?.subtitle ||
     "A decade of engineering excellence, technical milestones, and continuous growth.";
   const ctaBtnText =

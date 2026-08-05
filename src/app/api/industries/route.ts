@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_INDUSTRIES_PAGE_DATA } from "@/data/default-industries-data";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 /**
  * Strips Lucide component functions / non-serializable objects before JSON response
@@ -34,11 +38,20 @@ export async function GET() {
 
     const sanitizedContent = sanitizeIndustriesData(pageRecord.content);
 
-    return NextResponse.json({
-      success: true,
-      data: sanitizedContent,
-      updatedAt: pageRecord.updatedAt,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        data: sanitizedContent,
+        updatedAt: pageRecord.updatedAt,
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
+      }
+    );
   } catch (error: any) {
     console.error("GET /api/industries error:", error);
     return NextResponse.json(
@@ -57,7 +70,7 @@ export async function PUT(req: Request) {
   try {
     const body = await req.json();
 
-    if (!body || !body.hero || !Array.isArray(body.industries)) {
+    if (!body) {
       return NextResponse.json(
         { success: false, error: "Invalid payload structure" },
         { status: 400 }
@@ -65,7 +78,6 @@ export async function PUT(req: Request) {
     }
 
     const existing = await prisma.industriesPage.findFirst();
-
     const sanitizedToSave = sanitizeIndustriesData(body);
 
     let updatedRecord;
@@ -85,6 +97,10 @@ export async function PUT(req: Request) {
       });
     }
 
+    revalidateTag("industries-page");
+    revalidatePath("/industries");
+    revalidatePath("/admin/dashboard");
+
     return NextResponse.json({
       success: true,
       data: sanitizeIndustriesData(updatedRecord.content),
@@ -97,4 +113,9 @@ export async function PUT(req: Request) {
       { status: 500 }
     );
   }
+}
+
+// POST /api/industries — Alias for PUT to handle both POST and PUT methods and avoid 405 Method Not Allowed errors
+export async function POST(req: Request) {
+  return PUT(req);
 }
