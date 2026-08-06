@@ -1,27 +1,105 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowUpRight } from "lucide-react";
+import {
+  ArrowUpRight,
+  Bot,
+  Code2,
+  Palette,
+  LineChart,
+  Boxes,
+  Cpu,
+  Sparkles,
+} from "lucide-react";
+import { DEFAULT_LANDING_DATA } from "@/data/default-landing-data";
 import { SERVICES_DATA } from "@/data/landing-data";
 
-export default function Services() {
+// Number of services shown in the homepage preview grid before linking out to /services
+const HOMEPAGE_SERVICES_PREVIEW_COUNT = 6;
+
+// Fallback icon lookup keyed by known service ids (matches admin-seeded defaults);
+// unknown/custom services added later in admin cycle through the fallback list below.
+const SERVICE_ICON_MAP: Record<string, any> = {
+  "ai-eng": Bot,
+  "web-dev": Code2,
+  "ui-ux": Palette,
+  growth: LineChart,
+  "platform-mod": Boxes,
+  mlops: Cpu,
+};
+const FALLBACK_ICONS = [Sparkles, Boxes, Code2, Cpu, LineChart, Palette];
+
+function resolveServiceIcon(id: string, idx: number) {
+  return SERVICE_ICON_MAP[id] || FALLBACK_ICONS[idx % FALLBACK_ICONS.length];
+}
+
+interface ServicesProps {
+  initialHeader?: any;
+  initialServices?: any[];
+}
+
+export default function Services({ initialHeader, initialServices }: ServicesProps = {}) {
+  const [servicesHeader, setServicesHeader] = useState(
+    initialHeader || DEFAULT_LANDING_DATA.servicesHeader
+  );
+  const [services, setServices] = useState<any[]>(
+    initialServices && initialServices.length > 0 ? initialServices : SERVICES_DATA
+  );
+
+  useEffect(() => {
+    async function loadDynamicServicesHeader() {
+      try {
+        const res = await fetch("/api/landing");
+        const json = await res.json();
+        if (json.success && json.data && json.data.servicesHeader) {
+          setServicesHeader({ ...DEFAULT_LANDING_DATA.servicesHeader, ...json.data.servicesHeader });
+        }
+      } catch (err) {
+        console.warn("Using default services header content:", err);
+      }
+    }
+
+    async function loadDynamicServicesCatalog() {
+      try {
+        const res = await fetch("/api/services");
+        const json = await res.json();
+        if (json.success && json.data && Array.isArray(json.data.services) && json.data.services.length > 0) {
+          setServices(json.data.services);
+        }
+      } catch (err) {
+        console.warn("Using default services catalog content:", err);
+      }
+    }
+
+    if (!initialHeader) loadDynamicServicesHeader();
+    if (!initialServices || initialServices.length === 0) loadDynamicServicesCatalog();
+  }, [initialHeader, initialServices]);
+
+  const displayItems = services.slice(0, HOMEPAGE_SERVICES_PREVIEW_COUNT);
+
   return (
     <section id="services" className="relative py-20 lg:py-28">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-14 max-w-2xl">
           <p className="section-badge mb-3 text-violet-600 dark:text-violet-300">
-            Our Core Services
+            {servicesHeader.badge}
           </p>
           <h2 className="section-title text-ink dark:text-white">
-            Partnerships that extend your{" "}
-            <span className="text-violet-600 dark:text-[#f58220]">capabilities</span>
+            {servicesHeader.title}{" "}
+            <span className="text-violet-600 dark:text-[#f58220]">{servicesHeader.titleHighlight}</span>
           </h2>
+          {servicesHeader.subtitle && (
+            <p className="mt-3 section-subtitle text-ink/70 dark:text-slate-300">
+              {servicesHeader.subtitle}
+            </p>
+          )}
         </div>
 
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {SERVICES_DATA.map((s, idx) => {
-            const Icon = s.icon;
+          {displayItems.map((s, idx) => {
+            const Icon = s.icon || resolveServiceIcon(s.id, idx);
             return (
               <motion.div
                 key={s.id}
@@ -48,7 +126,7 @@ export default function Services() {
                     </h3>
                     <p className="card-body text-ink/65 dark:text-slate-300">{s.desc}</p>
                     <span className="mt-4 inline-flex items-center gap-1 text-fluid-xs font-bold text-violet-600 dark:text-violet-300 group-hover:translate-x-1 transition-transform">
-                      Learn More & Details →
+                      {s.buttonText || "Learn More & Details"} →
                     </span>
                   </div>
                 </Link>

@@ -47,6 +47,109 @@ export const DEFAULT_TECH_ITEMS = [
   { id: "digitalocean", name: "DigitalOcean", category: "Cloud Platform", tagline: "Developer Cloud Droplets", iconUrl: "" },
 ];
 
+export const DEFAULT_STATS_HEADER = {
+  badge: "Growth Story",
+  title: "Numbers that back our",
+  titleHighlight: "product obsession",
+  subtitle:
+    "Proven engineering impact delivered for high-growth tech startups and Fortune 500 enterprises.",
+};
+
+export const DEFAULT_STATS_DATA = [
+  { id: "growth-rate", value: 89, suffix: "%", label: "Growth in driving business value" },
+  { id: "projects-delivered", value: 350, suffix: "+", label: "Successful projects delivered" },
+  { id: "team-size", value: 150, suffix: "+", label: "Skilled engineering professionals" },
+  { id: "tech-experts", value: 50, suffix: "+", label: "Cutting-edge tech stack experts" },
+  { id: "active-clients", value: 200, suffix: "+", label: "Global clients trusting our solutions" },
+  { id: "years-exp", value: 8, suffix: "+", label: "Years pioneering AI-driven products" },
+];
+
+export const DEFAULT_BLOG_HEADER = {
+  badge: "Insights & Engineering Blog",
+  title: "Our Latest &",
+  titleHighlight: "Popular Blogs",
+  subtitle: "Technical guides, AI integration blueprints, and full-stack software insights from our engineering leads.",
+};
+
+export const DEFAULT_TIMELINE_HEADER = {
+  badge: "Our Growth Story",
+  title: "A Decade of Technical",
+  titleHighlight: "Excellence",
+  subtitle: "From a 4-person studio to an AI-first digital partner.",
+};
+
+export const DEFAULT_TESTIMONIALS_HEADER = {
+  badge: "Client Proof & Verified Reviews",
+  title: "Trusted by tech leaders",
+  titleHighlight: "worldwide",
+  subtitle: "See how our AI & software engineering pods drive measurable ROI for startups and enterprise platforms.",
+};
+
+export const DEFAULT_FAQ_HEADER = {
+  badge: "Interactive Knowledgebase",
+  title: "Frequently Asked",
+  titleHighlight: "Questions",
+  subtitle: "Scroll down to watch our stacked FAQ cards settle in place as you explore answers.",
+  selectedFaqIds: [] as string[],
+};
+
+export const DEFAULT_FAQ_PAGE_HEADER = {
+  badge: "Interactive Knowledgebase",
+  title: "Frequently Asked",
+  titleHighlight: "Questions",
+  subtitle: "Everything you need to know about our engineering pods, security, billing, and AI capabilities.",
+};
+
+export const DEFAULT_FOOTER_DATA = {
+  logoUrl: "/images/clickpointfinal.png",
+  logoText: "Clickpoint Innovations",
+  description: "An AI-first digital partner helping ambitious teams design, build, and scale software that compounds.",
+  socialLinks: {
+    linkedin: "https://linkedin.com",
+    twitter: "https://twitter.com",
+    instagram: "https://instagram.com",
+    youtube: "https://youtube.com",
+  },
+  columns: [
+    {
+      title: "Company",
+      links: [
+        { label: "About Us", href: "/about" },
+        { label: "Our Journey", href: "/journey" },
+        { label: "Careers", href: "/careers" },
+        { label: "Case Studies", href: "/case-studies" },
+        { label: "Testimonials", href: "/testimonials" },
+        { label: "Blog & Insights", href: "/blog" },
+        { label: "FAQs", href: "/faqs" },
+        { label: "Contact Us", href: "/contact" },
+      ],
+    },
+    {
+      title: "Services",
+      links: [
+        { label: "AI MVP Development", href: "/services/ai-mvp-development" },
+        { label: "Custom Software Engineering", href: "/services/custom-software-engineering" },
+        { label: "Autonomous AI Agents", href: "/services/autonomous-ai-agents" },
+        { label: "Cloud & DevOps Scaling", href: "/services/cloud-devops-scaling" },
+      ],
+    },
+    {
+      title: "Industries",
+      links: [
+        { label: "FinTech & Banking", href: "/industries/fintech-banking" },
+        { label: "HealthTech & MedTech", href: "/industries/healthtech-medtech" },
+        { label: "SaaS & Enterprise", href: "/industries/saas-enterprise" },
+        { label: "E-Commerce & Retail", href: "/industries/ecommerce-retail" },
+      ],
+    },
+  ],
+  copyrightText: "© 2026 Clickpoint Innovation Technologies. All rights reserved.",
+  bottomLinks: [
+    { label: "Privacy Policy", href: "/contact" },
+    { label: "Terms of Service", href: "/contact" },
+  ],
+};
+
 export const DEFAULT_LANDING_DATA = {
   navbar: DEFAULT_NAVBAR_DATA,
   hero: {
@@ -77,6 +180,8 @@ export const DEFAULT_LANDING_DATA = {
     showcaseBadgeTopLeft: "99.9% Uptime SLA",
     showcaseBadgeBottomRight: "Autonomous AI RAG Engine",
   },
+  statsHeader: DEFAULT_STATS_HEADER,
+  stats: DEFAULT_STATS_DATA,
   servicesHeader: {
     badge: "Core Engineering Capabilities",
     title: "Software Solutions Built for",
@@ -97,12 +202,15 @@ export const DEFAULT_LANDING_DATA = {
     titleHighlight: "Industry Sector",
     subtitle: "We build specialized software architectures compliant with strict industry regulations and security standards.",
   },
-  journeyHeader: {
-    badge: "Our Growth Story",
-    title: "A Decade of Technical",
-    titleHighlight: "Excellence",
-    subtitle: "From a 4-person studio to an AI-first digital partner.",
-  },
+  journeyHeader: DEFAULT_TIMELINE_HEADER,
+  timelineHeader: DEFAULT_TIMELINE_HEADER,
+  testimonialsHeader: DEFAULT_TESTIMONIALS_HEADER,
+  blogHeader: DEFAULT_BLOG_HEADER,
+  faqHeader: DEFAULT_FAQ_HEADER,
+  faqsHeader: DEFAULT_FAQ_HEADER,
+  faqPageHeader: DEFAULT_FAQ_PAGE_HEADER,
+  footer: DEFAULT_FOOTER_DATA,
+  footerData: DEFAULT_FOOTER_DATA,
   ctaBanner: {
     badge: "Ready to Scale?",
     title: "Let's Build Your Next",

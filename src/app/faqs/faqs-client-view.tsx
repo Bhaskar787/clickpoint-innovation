@@ -17,11 +17,14 @@ import CtaSection from "@/components/sections/cta-section";
 import QuickEnquiryModal from "@/components/common/quick-enquiry-modal";
 import { FaqItem } from "@/types";
 
+import { DEFAULT_LANDING_DATA, DEFAULT_FAQ_PAGE_HEADER } from "@/data/default-landing-data";
+
 const STACK_TOP = 80;
 const STACK_OFFSET = 12;
 const MAX_DEPTH = 5;
 
 interface FaqsClientViewProps {
+  header?: any;
   faqs: FaqItem[];
   /** Category names in the order the admin arranged them in the FAQ Category Manager. */
   categories: string[];
@@ -29,13 +32,34 @@ interface FaqsClientViewProps {
   phoneSubtext: string;
 }
 
-export default function FaqsClientView({ faqs, categories: categoryNames, phone, phoneSubtext }: FaqsClientViewProps) {
+export default function FaqsClientView({ header, faqs, categories: categoryNames, phone, phoneSubtext }: FaqsClientViewProps) {
   const [activeCategory, setActiveCategory] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [openIndex, setOpenIndex] = useState<number | null>(0);
   const [quickEnquiryOpen, setQuickEnquiryOpen] = useState<boolean>(false);
   const [depths, setDepths] = useState<number[]>([]);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  const [headerContent, setHeaderContent] = useState<any>(
+    header || DEFAULT_LANDING_DATA.faqPageHeader || DEFAULT_FAQ_PAGE_HEADER
+  );
+
+  useEffect(() => {
+    if (!header) {
+      async function loadHeader() {
+        try {
+          const res = await fetch("/api/landing");
+          const json = await res.json();
+          if (json.success && json.data && json.data.faqPageHeader) {
+            setHeaderContent({ ...DEFAULT_FAQ_PAGE_HEADER, ...json.data.faqPageHeader });
+          }
+        } catch (err) {
+          console.warn("Failed to fetch landing FAQ page header:", err);
+        }
+      }
+      loadHeader();
+    }
+  }, [header]);
 
   // Category tabs follow the admin-defined order from the FAQ Category Manager.
   const categories = useMemo(() => {
@@ -124,18 +148,20 @@ export default function FaqsClientView({ faqs, categories: categoryNames, phone,
           <div className="mx-auto max-w-4xl text-center space-y-4">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-violet-50 dark:bg-violet-950/60 border border-violet-200 dark:border-violet-800/60 text-violet-600 dark:text-violet-300 text-xs font-extrabold uppercase tracking-widest shadow-xs">
               <HelpCircle className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
-              <span>Interactive Knowledgebase</span>
+              <span>{headerContent.badge || "Interactive Knowledgebase"}</span>
             </div>
 
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.12]">
-              Frequently Asked{" "}
-              <span className="text-violet-600 dark:text-orange-500">
-                Questions
-              </span>
+              {headerContent.title}{" "}
+              {headerContent.titleHighlight && (
+                <span className="text-violet-600 dark:text-orange-500">
+                  {headerContent.titleHighlight}
+                </span>
+              )}
             </h1>
 
             <p className="text-sm sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto font-medium pt-1">
-              Everything you need to know about our engineering pods, security, billing, and AI capabilities.
+              {headerContent.subtitle || "Everything you need to know about our engineering pods, security, billing, and AI capabilities."}
             </p>
 
             {/* Search Bar */}

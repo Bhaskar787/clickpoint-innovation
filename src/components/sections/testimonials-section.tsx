@@ -8,6 +8,8 @@ import { Star, ArrowRight, Quote, CheckCircle2, MessageSquarePlus } from "lucide
 import FeedbackModal from "@/components/testimonials/feedback-modal";
 import { TestimonialItem } from "@/types";
 
+import { DEFAULT_LANDING_DATA, DEFAULT_TESTIMONIALS_HEADER } from "@/data/default-landing-data";
+
 function getInitials(name: string): string {
   if (!name.trim()) return "U";
   const parts = name.trim().split(/\s+/);
@@ -17,15 +19,17 @@ function getInitials(name: string): string {
   return parts[0].slice(0, 2).toUpperCase();
 }
 
-export default function TestimonialsSection() {
+interface TestimonialsSectionProps {
+  initialHeader?: any;
+  initialTestimonials?: TestimonialItem[];
+}
+
+export default function TestimonialsSection({ initialHeader, initialTestimonials }: TestimonialsSectionProps = {}) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [testimonials, setTestimonials] = useState<TestimonialItem[]>([]);
-  const [heroContent, setHeroContent] = useState<any>({
-    badge: "Client Proof & Verified Reviews",
-    title: "Trusted by tech leaders worldwide",
-    subtitle: "See how our AI & software engineering pods drive measurable ROI for startups and enterprise platforms.",
-    reviewModalButtonText: "Give Review / Feedback",
-  });
+  const [testimonials, setTestimonials] = useState<TestimonialItem[]>(initialTestimonials || []);
+  const [headerContent, setHeaderContent] = useState<any>(
+    initialHeader || DEFAULT_LANDING_DATA.testimonialsHeader || DEFAULT_TESTIMONIALS_HEADER
+  );
   const [metrics, setMetrics] = useState<any[]>([
     { label: "Average Client Rating", value: "4.9 / 5.0" },
     { label: "Verified Reviews", value: "350+" },
@@ -34,13 +38,22 @@ export default function TestimonialsSection() {
 
   async function loadDynamicTestimonials() {
     try {
-      const res = await fetch("/api/testimonials");
-      const json = await res.json();
-      if (json.success && json.data) {
-        if (json.data.hero) setHeroContent(json.data.hero);
-        if (json.data.metrics && json.data.metrics.length > 0) setMetrics(json.data.metrics);
-        if (json.data.testimonials && json.data.testimonials.length > 0) {
-          setTestimonials(json.data.testimonials);
+      if (!initialHeader) {
+        const landingRes = await fetch("/api/landing");
+        const landingJson = await landingRes.json();
+        if (landingJson.success && landingJson.data && landingJson.data.testimonialsHeader) {
+          setHeaderContent({ ...DEFAULT_TESTIMONIALS_HEADER, ...landingJson.data.testimonialsHeader });
+        }
+      }
+
+      if (!initialTestimonials || initialTestimonials.length === 0) {
+        const res = await fetch("/api/testimonials");
+        const json = await res.json();
+        if (json.success && json.data) {
+          if (json.data.metrics && json.data.metrics.length > 0) setMetrics(json.data.metrics);
+          if (json.data.testimonials && json.data.testimonials.length > 0) {
+            setTestimonials(json.data.testimonials);
+          }
         }
       }
     } catch (err) {
@@ -49,8 +62,10 @@ export default function TestimonialsSection() {
   }
 
   useEffect(() => {
-    loadDynamicTestimonials();
-  }, []);
+    if (!initialHeader || !initialTestimonials || initialTestimonials.length === 0) {
+      loadDynamicTestimonials();
+    }
+  }, [initialHeader, initialTestimonials]);
 
   const displayItems = testimonials.slice(0, 3);
 
@@ -62,29 +77,20 @@ export default function TestimonialsSection() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
           <div className="max-w-2xl space-y-3 text-left">
             <span className="text-[11px] font-extrabold uppercase tracking-widest text-violet-600 dark:text-violet-400">
-              {heroContent.badge || "Client Proof & Verified Reviews"}
+              {headerContent.badge || "Client Proof & Verified Reviews"}
             </span>
 
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.15]">
-              {heroContent.title ? (
-                <>
-                  {heroContent.title.split(" ").slice(0, -1).join(" ")}{" "}
-                  <span className="text-violet-600 dark:text-orange-500">
-                    {heroContent.title.split(" ").slice(-1).join(" ")}
-                  </span>
-                </>
-              ) : (
-                <>
-                  Trusted by tech leaders{" "}
-                  <span className="text-violet-600 dark:text-orange-500">
-                    worldwide
-                  </span>
-                </>
+              {headerContent.title}{" "}
+              {headerContent.titleHighlight && (
+                <span className="text-violet-600 dark:text-orange-500">
+                  {headerContent.titleHighlight}
+                </span>
               )}
             </h2>
 
             <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 max-w-2xl font-medium pt-1">
-              {heroContent.subtitle || "See how our AI & software engineering pods drive measurable ROI for startups and enterprise platforms."}
+              {headerContent.subtitle || "See how our AI & software engineering pods drive measurable ROI for startups and enterprise platforms."}
             </p>
           </div>
 
@@ -94,14 +100,14 @@ export default function TestimonialsSection() {
               className="inline-flex items-center gap-2 rounded-full bg-violet-600 hover:bg-violet-700 text-white px-5 py-2.5 text-fluid-sm font-bold shadow-lg shadow-violet-600/25 transition-all hover:scale-105 cursor-pointer"
             >
               <MessageSquarePlus className="h-4 w-4" />
-              <span>{heroContent.reviewModalButtonText || "Give Review / Feedback"}</span>
+              <span>{headerContent.reviewModalButtonText || "Give Review / Feedback"}</span>
             </button>
 
             <Link
               href="/testimonials"
               className="inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-white dark:bg-slate-800 px-5 py-2.5 text-fluid-sm font-bold text-violet-600 dark:text-violet-300 transition-all hover:bg-violet-600 hover:text-white hover:shadow-lg hover:shadow-violet-600/25"
             >
-              <span>Explore All Testimonials</span>
+              <span>{headerContent.ctaButtonText || "Explore All Testimonials"}</span>
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>

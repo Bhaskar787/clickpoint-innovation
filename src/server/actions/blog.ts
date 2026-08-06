@@ -11,9 +11,17 @@ import { BlogPostItem } from "@/types";
  */
 const getBlogPostsCached = unstable_cache(
   async () => {
-    return await prisma.blogPost.findMany({
+    const posts = await prisma.blogPost.findMany({
       orderBy: { publishedAt: "desc" },
     });
+    return posts.map((p) => ({
+      ...p,
+      publishedAt: p.publishedAt
+        ? new Date(p.publishedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+        : "Recent",
+      createdAt: p.createdAt ? p.createdAt.toISOString() : undefined,
+      updatedAt: p.updatedAt ? p.updatedAt.toISOString() : undefined,
+    }));
   },
   ["blog-posts-public"],
   { revalidate: 300, tags: ["blog-posts"] }

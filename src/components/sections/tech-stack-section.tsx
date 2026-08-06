@@ -69,38 +69,54 @@ const BUILTIN_ICONS: Record<string, React.ComponentType<{ className?: string }>>
   digitalocean: DigitalOceanIcon,
 };
 
-export default function TechStackSection() {
+interface TechStackSectionProps {
+  initialHeader?: any;
+  initialCategories?: any[];
+  initialItems?: any[];
+}
+
+export default function TechStackSection({
+  initialHeader,
+  initialCategories,
+  initialItems,
+}: TechStackSectionProps = {}) {
   const [activeCategory, setActiveCategory] = useState<string>("ALL");
-  const [techHeader, setTechHeader] = useState<any>(DEFAULT_LANDING_DATA.techStackHeader);
-  const [categories, setCategories] = useState<any[]>(DEFAULT_TECH_CATEGORIES);
-  const [techItems, setTechItems] = useState<any[]>(DEFAULT_TECH_ITEMS);
+  const [techHeader, setTechHeader] = useState<any>(initialHeader || DEFAULT_LANDING_DATA.techStackHeader);
+  const [categories, setCategories] = useState<any[]>(
+    initialCategories && initialCategories.length > 0 ? initialCategories : DEFAULT_TECH_CATEGORIES
+  );
+  const [techItems, setTechItems] = useState<any[]>(
+    initialItems && initialItems.length > 0 ? initialItems : DEFAULT_TECH_ITEMS
+  );
 
   useEffect(() => {
-    async function loadTechStackData() {
-      try {
-        const res = await fetch("/api/landing");
-        const json = await res.json();
-        if (json.success && json.data) {
-          if (json.data.techStackHeader) {
-            setTechHeader({
-              ...DEFAULT_LANDING_DATA.techStackHeader,
-              ...json.data.techStackHeader,
-            });
+    if (!initialHeader || !initialCategories || !initialItems) {
+      async function loadTechStackData() {
+        try {
+          const res = await fetch("/api/landing");
+          const json = await res.json();
+          if (json.success && json.data) {
+            if (json.data.techStackHeader && !initialHeader) {
+              setTechHeader({
+                ...DEFAULT_LANDING_DATA.techStackHeader,
+                ...json.data.techStackHeader,
+              });
+            }
+            if (json.data.techCategories && json.data.techCategories.length > 0 && !initialCategories) {
+              setCategories(json.data.techCategories);
+            }
+            if (json.data.techItems && json.data.techItems.length > 0 && !initialItems) {
+              setTechItems(json.data.techItems);
+            }
           }
-          if (json.data.techCategories && json.data.techCategories.length > 0) {
-            setCategories(json.data.techCategories);
-          }
-          if (json.data.techItems && json.data.techItems.length > 0) {
-            setTechItems(json.data.techItems);
-          }
+        } catch (err) {
+          console.warn("Using default tech stack data:", err);
         }
-      } catch (err) {
-        console.warn("Using default tech stack data:", err);
       }
-    }
 
-    loadTechStackData();
-  }, []);
+      loadTechStackData();
+    }
+  }, [initialHeader, initialCategories, initialItems]);
 
   const filteredTech =
     activeCategory === "ALL" || activeCategory === "all"

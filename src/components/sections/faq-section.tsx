@@ -256,21 +256,71 @@ import { HelpCircle, ChevronDown, ArrowRight, MessageSquare, Phone } from "lucid
 import QuickEnquiryModal from "@/components/common/quick-enquiry-modal";
 import { FaqItem } from "@/types";
 
+import { DEFAULT_LANDING_DATA, DEFAULT_FAQ_HEADER } from "@/data/default-landing-data";
+
 const STACK_TOP = 80; // px top sticky offset right under navbar (navbar height ~64px-72px)
 const STACK_OFFSET = 12; // px stacked card offset
 const MAX_DEPTH = 5;
 
 interface FaqSectionProps {
-  faqs: FaqItem[];
-  phone: string;
-  phoneSubtext: string;
+  initialHeader?: any;
+  initialFaqs?: FaqItem[];
+  faqs?: FaqItem[];
+  phone?: string;
+  phoneSubtext?: string;
 }
 
-export default function FaqSection({ faqs, phone, phoneSubtext }: FaqSectionProps) {
+export default function FaqSection({
+  initialHeader,
+  initialFaqs,
+  faqs: propFaqs,
+  phone = "+977-981846632",
+  phoneSubtext = "Hours: Sun - Fri, 9:00 AM - 6:00 PM",
+}: FaqSectionProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
   const [depths, setDepths] = useState<number[]>([]);
   const [quickEnquiryOpen, setQuickEnquiryOpen] = useState<boolean>(false);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  const [headerContent, setHeaderContent] = useState<any>(
+    initialHeader || DEFAULT_LANDING_DATA.faqHeader || DEFAULT_FAQ_HEADER
+  );
+  const [faqsList, setFaqsList] = useState<FaqItem[]>(
+    initialFaqs && initialFaqs.length > 0
+      ? initialFaqs
+      : propFaqs && propFaqs.length > 0
+      ? propFaqs
+      : []
+  );
+
+  useEffect(() => {
+    async function loadDynamicFaqData() {
+      try {
+        if (!initialHeader) {
+          const landingRes = await fetch("/api/landing");
+          const landingJson = await landingRes.json();
+          if (landingJson.success && landingJson.data && (landingJson.data.faqHeader || landingJson.data.faqsHeader)) {
+            const h = landingJson.data.faqHeader || landingJson.data.faqsHeader;
+            setHeaderContent({ ...DEFAULT_FAQ_HEADER, ...h });
+          }
+        }
+
+        if ((!initialFaqs || initialFaqs.length === 0) && (!propFaqs || propFaqs.length === 0)) {
+          const res = await fetch("/api/faqs");
+          const json = await res.json();
+          if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+            setFaqsList(json.data.slice(0, 6));
+          }
+        }
+      } catch (err) {
+        console.warn("Using fallback FAQs data:", err);
+      }
+    }
+
+    if (!initialHeader || (!initialFaqs && !propFaqs)) {
+      loadDynamicFaqData();
+    }
+  }, [initialHeader, initialFaqs, propFaqs]);
 
   // Calculate sticky stacking depth
   const measure = useCallback(() => {
@@ -311,7 +361,7 @@ export default function FaqSection({ faqs, phone, phoneSubtext }: FaqSectionProp
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };
-  }, [measure, faqs.length]);
+  }, [measure, faqsList.length]);
 
   const telHref = `tel:${phone.replace(/[^+\d]/g, "")}`;
 
@@ -324,13 +374,18 @@ export default function FaqSection({ faqs, phone, phoneSubtext }: FaqSectionProp
           <div className="max-w-2xl">
             <div className="section-badge mb-3 inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-violet-50 dark:bg-slate-800 px-3.5 py-1 text-violet-600 dark:text-violet-300">
               <HelpCircle className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
-              Interactive Knowledgebase
+              {headerContent.badge || "Interactive Knowledgebase"}
             </div>
             <h2 className="section-title text-ink dark:text-white">
-              Frequently Asked <span className="text-violet-600 dark:text-[#f58220]">Questions</span>
+              {headerContent.title}{" "}
+              {headerContent.titleHighlight && (
+                <span className="text-violet-600 dark:text-[#f58220]">
+                  {headerContent.titleHighlight}
+                </span>
+              )}
             </h2>
             <p className="mt-3 section-subtitle text-ink/70 dark:text-slate-300">
-              Scroll down to watch our stacked FAQ cards settle in place as you explore answers.
+              {headerContent.subtitle || "Scroll down to watch our stacked FAQ cards settle in place as you explore answers."}
             </p>
           </div>
 
@@ -348,7 +403,7 @@ export default function FaqSection({ faqs, phone, phoneSubtext }: FaqSectionProp
           
           {/* Left Column: Stacking Sticky FAQ Cards */}
           <div className="flex flex-col gap-3 relative min-w-0">
-            {faqs.map((faq, i) => {
+            {faqsList.map((faq, i) => {
               const isOpen = openIndex === i;
               const top = STACK_TOP + i * STACK_OFFSET;
               const depth = depths[i] ?? 0;
@@ -419,7 +474,7 @@ export default function FaqSection({ faqs, phone, phoneSubtext }: FaqSectionProp
             })}
 
             {/* Spacer height for stacking scroll clearance */}
-            <div aria-hidden style={{ height: `${faqs.length * STACK_OFFSET + 30}px` }} />
+            <div aria-hidden style={{ height: `${faqsList.length * STACK_OFFSET + 30}px` }} />
           </div>
 
           {/* Right Column: Sticky Guidance Box */}

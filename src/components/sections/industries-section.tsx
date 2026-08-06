@@ -1,11 +1,85 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowUpRight, ExternalLink, Building2 } from "lucide-react";
+import {
+  ArrowUpRight,
+  ExternalLink,
+  Building2,
+  Wallet,
+  HeartPulse,
+  ShoppingBag,
+  Layers,
+  Truck,
+  GraduationCap,
+} from "lucide-react";
+import { DEFAULT_LANDING_DATA } from "@/data/default-landing-data";
 import { INDUSTRIES_DATA } from "@/data/landing-data";
 
-export default function IndustriesSection() {
+// Number of industries shown in the homepage preview grid before linking out to /industries
+const HOMEPAGE_INDUSTRIES_PREVIEW_COUNT = 6;
+
+// Fallback icon lookup keyed by known industry ids (matches admin-seeded defaults);
+// unknown/custom industries added later in admin cycle through the fallback list below.
+const INDUSTRY_ICON_MAP: Record<string, any> = {
+  fintech: Wallet,
+  healthcare: HeartPulse,
+  ecommerce: ShoppingBag,
+  saas: Layers,
+  logistics: Truck,
+  edtech: GraduationCap,
+};
+const FALLBACK_ICONS = [Building2, Layers, Wallet, HeartPulse, ShoppingBag, Truck];
+
+function resolveIndustryIcon(id: string, idx: number) {
+  return INDUSTRY_ICON_MAP[id] || FALLBACK_ICONS[idx % FALLBACK_ICONS.length];
+}
+
+interface IndustriesSectionProps {
+  initialHeader?: any;
+  initialIndustries?: any[];
+}
+
+export default function IndustriesSection({ initialHeader, initialIndustries }: IndustriesSectionProps = {}) {
+  const [industriesHeader, setIndustriesHeader] = useState(
+    initialHeader || DEFAULT_LANDING_DATA.industriesHeader
+  );
+  const [industries, setIndustries] = useState<any[]>(
+    initialIndustries && initialIndustries.length > 0 ? initialIndustries : INDUSTRIES_DATA
+  );
+
+  useEffect(() => {
+    async function loadDynamicIndustriesHeader() {
+      try {
+        const res = await fetch("/api/landing");
+        const json = await res.json();
+        if (json.success && json.data && json.data.industriesHeader) {
+          setIndustriesHeader({ ...DEFAULT_LANDING_DATA.industriesHeader, ...json.data.industriesHeader });
+        }
+      } catch (err) {
+        console.warn("Using default industries header content:", err);
+      }
+    }
+
+    async function loadDynamicIndustriesCatalog() {
+      try {
+        const res = await fetch("/api/industries");
+        const json = await res.json();
+        if (json.success && json.data && Array.isArray(json.data.industries) && json.data.industries.length > 0) {
+          setIndustries(json.data.industries);
+        }
+      } catch (err) {
+        console.warn("Using default industries catalog content:", err);
+      }
+    }
+
+    if (!initialHeader) loadDynamicIndustriesHeader();
+    if (!initialIndustries || initialIndustries.length === 0) loadDynamicIndustriesCatalog();
+  }, [initialHeader, initialIndustries]);
+
+  const displayItems = industries.slice(0, HOMEPAGE_INDUSTRIES_PREVIEW_COUNT);
+
   return (
     <section id="industries" className="relative py-20 lg:py-28 bg-cloud-100/70 border-y border-violet-100/80">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -14,20 +88,21 @@ export default function IndustriesSection() {
         <div className="mb-14 max-w-2xl">
           <div className="section-badge mb-3 inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-violet-50 dark:bg-slate-800 px-3.5 py-1 text-violet-600 dark:text-violet-300">
             <Building2 className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
-            Industry Specialization
+            {industriesHeader.badge}
           </div>
           <h2 className="section-title text-ink dark:text-white">
-            Tailored digital solutions for <span className="text-violet-600 dark:text-[#f58220]">high-growth sectors</span>
+            {industriesHeader.title}{" "}
+            <span className="text-violet-600 dark:text-[#f58220]">{industriesHeader.titleHighlight}</span>
           </h2>
           <p className="mt-3 section-subtitle text-ink/70 dark:text-slate-300">
-            Deep domain expertise across regulation, data pipelines, and user expectations in core industries.
+            {industriesHeader.subtitle}
           </p>
         </div>
 
         {/* Industry Cards Grid */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {INDUSTRIES_DATA.map((ind, idx) => {
-            const Icon = ind.icon;
+          {displayItems.map((ind, idx) => {
+            const Icon = ind.icon || resolveIndustryIcon(ind.id, idx);
             return (
               <motion.div
                 key={ind.id}
@@ -46,9 +121,11 @@ export default function IndustriesSection() {
                         <Icon className="h-6 w-6 text-violet-600 dark:text-violet-300 group-hover:text-white transition-colors" />
                       </span>
                     )}
-                    <span className="rounded-full bg-violet-50 dark:bg-slate-800 px-2.5 py-1 text-fluid-2xs font-bold text-violet-600 dark:text-violet-300 border border-violet-100 dark:border-slate-700">
-                      {ind.keyMetrics?.[0]?.value} {ind.keyMetrics?.[0]?.label}
-                    </span>
+                    {ind.keyMetrics?.[0] && (
+                      <span className="rounded-full bg-violet-50 dark:bg-slate-800 px-2.5 py-1 text-fluid-2xs font-bold text-violet-600 dark:text-violet-300 border border-violet-100 dark:border-slate-700">
+                        {ind.keyMetrics[0].value} {ind.keyMetrics[0].label}
+                      </span>
+                    )}
                   </div>
 
                   <h3 className="card-title text-ink dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-300 transition-colors">
@@ -60,32 +137,36 @@ export default function IndustriesSection() {
                   </p>
 
                   {/* Featured Projects Preview Links */}
-                  <div className="mt-6 pt-4 border-t border-violet-100 dark:border-slate-800 space-y-2">
-                    <p className="text-label text-ink/40 dark:text-slate-400">
-                      Featured Case Studies & Live Work
-                    </p>
-                    {ind.projects.map((proj: any) => (
-                      <div key={proj.id} className="flex items-center justify-between text-fluid-xs py-1 gap-2">
-                        <span className="font-semibold text-ink/80 dark:text-slate-200 group-hover:text-ink dark:group-hover:text-white truncate">
-                          {proj.title}
-                        </span>
-                        {proj.impact && (
-                          <span className="text-fluid-2xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 shrink-0">
-                            {proj.impact}
+                  {ind.projects && ind.projects.length > 0 && (
+                    <div className="mt-6 pt-4 border-t border-violet-100 dark:border-slate-800 space-y-2">
+                      <p className="text-label text-ink/40 dark:text-slate-400">
+                        Featured Case Studies & Live Work
+                      </p>
+                      {ind.projects.map((proj: any, projIdx: number) => (
+                        <div key={proj.id || projIdx} className="flex items-center justify-between text-fluid-xs py-1 gap-2">
+                          <span className="font-semibold text-ink/80 dark:text-slate-200 group-hover:text-ink dark:group-hover:text-white truncate">
+                            {proj.title}
                           </span>
-                        )}
-                        <a
-                          href={proj.liveUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-fluid-2xs font-semibold text-violet-600 dark:text-violet-300 hover:text-violet-800 dark:hover:text-violet-200 transition-colors shrink-0"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          Live <ExternalLink className="h-3 w-3 text-violet-600 dark:text-violet-300" />
-                        </a>
-                      </div>
-                    ))}
-                  </div>
+                          {proj.impact && (
+                            <span className="text-fluid-2xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 shrink-0">
+                              {proj.impact}
+                            </span>
+                          )}
+                          {proj.liveUrl && (
+                            <a
+                              href={proj.liveUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-fluid-2xs font-semibold text-violet-600 dark:text-violet-300 hover:text-violet-800 dark:hover:text-violet-200 transition-colors shrink-0"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              Live <ExternalLink className="h-3 w-3 text-violet-600 dark:text-violet-300" />
+                            </a>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Bottom Action Link */}

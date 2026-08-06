@@ -6,27 +6,33 @@ import { ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DEFAULT_LANDING_DATA } from "@/data/default-landing-data";
 
-export default function CtaSection() {
-  const [ctaData, setCtaData] = useState<any>(DEFAULT_LANDING_DATA.ctaBanner);
+interface CtaSectionProps {
+  initialData?: any;
+}
+
+export default function CtaSection({ initialData }: CtaSectionProps = {}) {
+  const [ctaData, setCtaData] = useState<any>(initialData || DEFAULT_LANDING_DATA.ctaBanner);
 
   useEffect(() => {
-    async function loadCtaData() {
-      try {
-        const res = await fetch("/api/landing");
-        const json = await res.json();
-        if (json.success && json.data && json.data.ctaBanner) {
-          setCtaData({
-            ...DEFAULT_LANDING_DATA.ctaBanner,
-            ...json.data.ctaBanner,
-          });
+    if (!initialData) {
+      async function loadCtaData() {
+        try {
+          const res = await fetch("/api/landing");
+          const json = await res.json();
+          if (json.success && json.data && json.data.ctaBanner) {
+            setCtaData({
+              ...DEFAULT_LANDING_DATA.ctaBanner,
+              ...json.data.ctaBanner,
+            });
+          }
+        } catch (err) {
+          console.warn("Using default CTA banner content:", err);
         }
-      } catch (err) {
-        console.warn("Using default CTA banner content:", err);
       }
-    }
 
-    loadCtaData();
-  }, []);
+      loadCtaData();
+    }
+  }, [initialData]);
 
   return (
     <section className="relative py-20 lg:py-24 transition-colors duration-300">

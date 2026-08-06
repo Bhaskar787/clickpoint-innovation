@@ -54,6 +54,65 @@ export default function FaqEditor({ sectionId, onCloseSection }: FaqEditorProps)
   const [newCategoryDesc, setNewCategoryDesc] = useState("");
   const [isSavingCategory, setIsSavingCategory] = useState(false);
 
+  // FAQ Page / Section Hero Header State
+  const [headerContent, setHeaderContent] = useState<any>({
+    badge: "Interactive Knowledgebase",
+    title: "Frequently Asked",
+    titleHighlight: "Questions",
+    subtitle: "Everything you need to know about our engineering pods, security, billing, and AI capabilities.",
+  });
+  const [isSavingHeader, setIsSavingHeader] = useState(false);
+
+  async function loadHeader() {
+    try {
+      const res = await fetch("/api/landing");
+      const json = await res.json();
+      if (json.success && json.data) {
+        const h = json.data.faqPageHeader;
+        if (h) {
+          setHeaderContent({
+            badge: h.badge || "Interactive Knowledgebase",
+            title: h.title || "Frequently Asked",
+            titleHighlight: h.titleHighlight || "Questions",
+            subtitle: h.subtitle || "Everything you need to know about our engineering pods, security, billing, and AI capabilities.",
+          });
+        }
+      }
+    } catch (err) {
+      console.warn("Failed to load FAQ header in editor:", err);
+    }
+  }
+
+  async function handleSaveHeader() {
+    try {
+      setIsSavingHeader(true);
+      const res = await fetch("/api/landing");
+      const json = await res.json();
+      const existing = json.data || {};
+
+      const updated = {
+        ...existing,
+        faqPageHeader: { ...existing.faqPageHeader, ...headerContent },
+      };
+
+      const saveRes = await fetch("/api/landing", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updated),
+      });
+      const saveJson = await saveRes.json();
+      if (saveJson.success) {
+        toast.success("Full FAQ Page (/faqs) Hero Header saved successfully!");
+      } else {
+        toast.error(saveJson.error || "Failed to save FAQ page header configuration.");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to save FAQ page header configuration.");
+    } finally {
+      setIsSavingHeader(false);
+    }
+  }
+
   async function loadFaqs() {
     try {
       const res = await fetch("/api/faqs");
@@ -87,6 +146,7 @@ export default function FaqEditor({ sectionId, onCloseSection }: FaqEditorProps)
   useEffect(() => {
     loadFaqs();
     loadCategories();
+    loadHeader();
   }, []);
 
   const categoryFilterOptions = useMemo(() => {
@@ -309,6 +369,84 @@ export default function FaqEditor({ sectionId, onCloseSection }: FaqEditorProps)
 
   return (
     <div className="w-full min-w-0 max-w-full overflow-hidden space-y-6 sm:space-y-8 text-slate-900 dark:text-white">
+      {/* FAQ HERO & SECTION HEADER CONFIGURATION */}
+      <div className="p-4 sm:p-5 rounded-2xl border border-violet-200 dark:border-violet-800/60 bg-violet-50/50 dark:bg-violet-950/20 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-base sm:text-lg font-bold flex items-center gap-2 text-violet-900 dark:text-violet-200">
+              <HelpCircle className="h-5 w-5 text-violet-600 shrink-0" />
+              Full FAQ Page (/faqs) Hero Header Copy
+            </h2>
+            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+              Configure the badge tag, title, and subtitle shown specifically on the main <span className="font-bold text-violet-600 dark:text-violet-300">/faqs</span> page hero banner. (The landing page FAQ section copy is configured separately in the Landing Page Editor).
+            </p>
+          </div>
+
+          <button
+            onClick={handleSaveHeader}
+            disabled={isSavingHeader}
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs shadow-md shadow-violet-600/25 transition-all disabled:opacity-50 shrink-0 cursor-pointer"
+          >
+            {isSavingHeader ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            <span>Save Header Copy</span>
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              Section Pill Badge Text
+            </label>
+            <input
+              type="text"
+              value={headerContent.badge}
+              onChange={(e) => setHeaderContent({ ...headerContent, badge: e.target.value })}
+              placeholder="e.g. Interactive Knowledgebase"
+              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-bold"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              Section Title Prefix
+            </label>
+            <input
+              type="text"
+              value={headerContent.title}
+              onChange={(e) => setHeaderContent({ ...headerContent, title: e.target.value })}
+              placeholder="e.g. Frequently Asked"
+              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-bold"
+            />
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              Section Title Highlight (Orange/Gradient Accent)
+            </label>
+            <input
+              type="text"
+              value={headerContent.titleHighlight}
+              onChange={(e) => setHeaderContent({ ...headerContent, titleHighlight: e.target.value })}
+              placeholder="e.g. Questions"
+              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-amber-500 font-extrabold"
+            />
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              Section Subtitle / Description Paragraph
+            </label>
+            <textarea
+              rows={2}
+              value={headerContent.subtitle}
+              onChange={(e) => setHeaderContent({ ...headerContent, subtitle: e.target.value })}
+              placeholder="e.g. Everything you need to know about our engineering pods..."
+              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] p-3 text-xs text-slate-900 dark:text-white font-medium"
+            />
+          </div>
+        </div>
+      </div>
+
       {/* FAQ CATEGORY MANAGER */}
       {showCategories && (
         <div className="space-y-4">

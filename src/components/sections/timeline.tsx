@@ -30,6 +30,7 @@ const ICON_LIST = [Zap, Code2, Users, Bot, Trophy, Rocket, Globe, Sparkles];
 
 interface TimelineProps {
   initialContent?: JourneyPageContent;
+  landingHeader?: any;
   customBadge?: string;
   customTitle?: string;
   customSubtitle?: string;
@@ -44,6 +45,25 @@ export default function Timeline({
   const [content, setContent] = useState<JourneyPageContent>(
     initialContent || DEFAULT_JOURNEY_PAGE_DATA
   );
+  const [landingHeader, setLandingHeader] = useState<any>(null);
+
+  useEffect(() => {
+    async function loadLandingHeader() {
+      try {
+        const res = await fetch("/api/landing");
+        const json = await res.json();
+        if (json.success && json.data) {
+          const header = json.data.timelineHeader || json.data.journeyHeader;
+          if (header) {
+            setLandingHeader(header);
+          }
+        }
+      } catch (err) {
+        console.warn("Timeline landing header fetch error:", err);
+      }
+    }
+    loadLandingHeader();
+  }, []);
 
   useEffect(() => {
     if (!initialContent) {
@@ -74,17 +94,27 @@ export default function Timeline({
 
   const heroBadge =
     customBadge ||
+    landingHeader?.badge ||
     content.landingTimelineHeader?.badge ||
     content.hero?.badge ||
     "Our Journey";
+
   const heroTitle =
     customTitle ||
+    landingHeader?.title ||
     content.landingTimelineHeader?.title ||
-    "From a 4-person studio to an AI-first partner";
+    "A Decade of Technical";
+
+  const heroTitleHighlight =
+    landingHeader?.titleHighlight ||
+    "Excellence";
+
   const heroSubtitle =
     customSubtitle ||
+    landingHeader?.subtitle ||
     content.landingTimelineHeader?.subtitle ||
-    "A decade of engineering excellence, technical milestones, and continuous growth.";
+    "From a 4-person studio to an AI-first digital partner.";
+
   const ctaBtnText =
     content.landingTimelineHeader?.ctaText ||
     "Explore Complete Company Journey & Events Gallery";
@@ -164,10 +194,12 @@ export default function Timeline({
             transition={{ delay: 0.1 }}
             className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.15]"
           >
-            {heroTitle.split(" ").slice(0, -3).join(" ")}{" "}
-            <span className="text-violet-600 dark:text-orange-500">
-              {heroTitle.split(" ").slice(-3).join(" ")}
-            </span>
+            {heroTitle}{" "}
+            {heroTitleHighlight && (
+              <span className="text-violet-600 dark:text-orange-500">
+                {heroTitleHighlight}
+              </span>
+            )}
           </motion.h2>
 
           <motion.p

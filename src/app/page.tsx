@@ -10,7 +10,10 @@ import TestimonialsSection from "@/components/sections/testimonials-section";
 import BlogSection from "@/components/sections/blog-section";
 import FaqSection from "@/components/sections/faq-section";
 import CtaSection from "@/components/sections/cta-section";
+import { getLandingPageData } from "@/server/actions/landing";
+import { getBlogPosts } from "@/server/actions/blog";
 import { getJourneyPage } from "@/server/actions/journey";
+import { getApprovedTestimonials } from "@/server/actions/testimonials";
 import { getFaqs } from "@/server/actions/faqs";
 import { getContactPage } from "@/server/actions/contact";
 
@@ -20,30 +23,44 @@ export const dynamic = "force-dynamic";
 const HOMEPAGE_FAQ_PREVIEW_COUNT = 6;
 
 export default async function Home() {
-  const [journeyContent, faqs, contactContent] = await Promise.all([
+  const [landingData, blogPosts, journeyContent, approvedTestimonials, faqs, contactContent] = await Promise.all([
+    getLandingPageData(),
+    getBlogPosts(),
     getJourneyPage(),
+    getApprovedTestimonials(),
     getFaqs(),
     getContactPage(),
   ]);
 
+  const selectedFaqIds: string[] =
+    landingData?.faqHeader?.selectedFaqIds ||
+    landingData?.faqsHeader?.selectedFaqIds ||
+    [];
+
+  const landingFaqs =
+    selectedFaqIds.length > 0
+      ? faqs.filter((f) => selectedFaqIds.includes(f.id))
+      : faqs.slice(0, HOMEPAGE_FAQ_PREVIEW_COUNT);
+
   return (
     <main className="relative bg-background text-ink">
       <Navbar />
-      <Hero />
-      <StatsSection />
-      <Services />
-      <TechStackSection />
-      <IndustriesSection />
-      <Timeline initialContent={journeyContent} />
-      <TestimonialsSection />
-      <BlogSection />
+      <Hero initialData={landingData?.hero} />
+      <StatsSection initialHeader={landingData?.statsHeader} initialStats={landingData?.stats} />
+      <Services initialHeader={landingData?.servicesHeader} />
+      <TechStackSection initialHeader={landingData?.techStackHeader} initialCategories={landingData?.techCategories} initialItems={landingData?.techItems} />
+      <IndustriesSection initialHeader={landingData?.industriesHeader} />
+      <Timeline initialContent={journeyContent} landingHeader={landingData?.timelineHeader || landingData?.journeyHeader} />
+      <TestimonialsSection initialHeader={landingData?.testimonialsHeader} initialTestimonials={approvedTestimonials} />
+      <BlogSection initialHeader={landingData?.blogHeader} initialBlogs={blogPosts} />
       <FaqSection
-        faqs={faqs.slice(0, HOMEPAGE_FAQ_PREVIEW_COUNT)}
+        initialHeader={landingData?.faqHeader || landingData?.faqsHeader}
+        initialFaqs={landingFaqs}
         phone={contactContent.contactInfo.phone}
         phoneSubtext={contactContent.contactInfo.phoneSubtext}
       />
-      <CtaSection />
-      <Footer />
+      <CtaSection initialData={landingData?.ctaBanner} />
+      <Footer initialData={landingData?.footer || landingData?.footerData} />
     </main>
   );
 }

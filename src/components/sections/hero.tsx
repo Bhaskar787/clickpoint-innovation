@@ -28,15 +28,19 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } },
 };
 
-export default function Hero() {
+interface HeroProps {
+  initialData?: any;
+}
+
+export default function Hero({ initialData }: HeroProps = {}) {
   const blobRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
 
   // Interactivity state
   const [projectScope, setProjectScope] = useState<"mvp" | "scale">("mvp");
 
-  // Dynamic Landing Content State (Initialized null to prevent old image flash)
-  const [heroData, setHeroData] = useState<any>(null);
+  // Dynamic Landing Content State
+  const [heroData, setHeroData] = useState<any>(initialData || null);
 
   // Dynamic Testimonial Ratings State
   const [ratingStats, setRatingStats] = useState<{
