@@ -135,7 +135,9 @@ export default function CaseStudiesPage() {
   let displayTestimonials: any[] = [];
 
   if (selectedIds.length > 0 && dbTestimonials.length > 0) {
-    displayTestimonials = dbTestimonials.filter((t: any) => selectedIds.includes(String(t.id)));
+    displayTestimonials = dbTestimonials
+      .filter((t: any) => selectedIds.includes(String(t.id)))
+      .slice(0, 3);
   }
 
   if (displayTestimonials.length === 0 && dbTestimonials.length > 0) {

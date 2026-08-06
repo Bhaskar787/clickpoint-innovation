@@ -49,7 +49,7 @@ export default function BlogSection({ initialHeader, initialBlogs }: BlogSection
     if (!initialBlogs || initialBlogs.length === 0) loadDynamicBlogs();
   }, [initialHeader, initialBlogs]);
 
-  const featuredBlogs = blogs.slice(0, 3);
+  const featuredBlogs = initialBlogs && initialBlogs.length > 0 ? blogs : blogs.slice(0, 3);
 
   return (
     <section id="blog" className="relative py-20 lg:py-28 bg-white dark:bg-[#0b0f19] border-t border-violet-100 dark:border-slate-800">

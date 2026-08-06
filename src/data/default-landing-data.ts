@@ -69,6 +69,7 @@ export const DEFAULT_BLOG_HEADER = {
   title: "Our Latest &",
   titleHighlight: "Popular Blogs",
   subtitle: "Technical guides, AI integration blueprints, and full-stack software insights from our engineering leads.",
+  selectedBlogIds: [] as string[],
 };
 
 export const DEFAULT_TIMELINE_HEADER = {

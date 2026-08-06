@@ -1172,15 +1172,53 @@ export default function CaseStudiesEditor() {
 
       {/* STEP 6: EXECUTIVE ENDORSEMENTS & TESTIMONIALS SELECTOR */}
       <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131927] space-y-4 shadow-xs">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 flex items-center gap-2">
-          <Quote className="h-4 w-4 text-violet-500" />
-          Step 6: Executive Endorsements & Dynamic Testimonials Selector
-        </h3>
-        <p className="text-[11px] text-slate-500">
-          Customize section title, badge tag, and select which testimonials from your CMS to feature on the Case Studies page.
-        </p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-violet-600 dark:text-violet-400 flex items-center gap-2">
+              <Quote className="h-4 w-4 text-violet-500" />
+              Step 6: Executive Endorsements & Dynamic Testimonials Selector (Max 3 Allowed)
+            </h3>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+              Customize section title, badge tag, and select up to 3 testimonials from your CMS to feature on the Case Studies page.
+            </p>
+          </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                const top3Ids = allTestimonials.slice(0, 3).map((t: any) => String(t.id));
+                setPageContent({
+                  ...pageContent,
+                  testimonialsSection: {
+                    ...(pageContent.testimonialsSection || {}),
+                    selectedTestimonialIds: top3Ids,
+                  },
+                });
+              }}
+              className="px-2.5 py-1 text-[11px] font-bold rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+            >
+              Select Top 3
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setPageContent({
+                  ...pageContent,
+                  testimonialsSection: {
+                    ...(pageContent.testimonialsSection || {}),
+                    selectedTestimonialIds: [],
+                  },
+                });
+              }}
+              className="px-2.5 py-1 text-[11px] font-bold rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 cursor-pointer"
+            >
+              Clear Selection
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
           <div>
             <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
               Section Badge Tag
@@ -1223,72 +1261,80 @@ export default function CaseStudiesEditor() {
         </div>
 
         {/* Testimonials Selection Grid */}
-        <div className="pt-3 border-t border-slate-200/80 dark:border-slate-800 space-y-3">
-          <div className="flex items-center justify-between">
-            <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
-              Select Testimonials to Showcase on Case Studies Page ({(pageContent.testimonialsSection?.selectedTestimonialIds || []).length} selected)
-            </label>
-            <span className="text-[10px] text-slate-400">
-              Click any testimonial to select or deselect. If none selected, top 3 approved testimonials are shown by default.
+        <div className="pt-4 border-t border-slate-200/80 dark:border-slate-800 space-y-3">
+          <div className="text-xs font-bold text-slate-600 dark:text-slate-300 flex items-center justify-between">
+            <span>
+              Currently Selected:{" "}
+              <span className="text-violet-600 dark:text-violet-400 font-extrabold">
+                {(pageContent.testimonialsSection?.selectedTestimonialIds || []).length} / 3 Testimonials
+              </span>
             </span>
+            {(pageContent.testimonialsSection?.selectedTestimonialIds || []).length >= 3 && (
+              <span className="text-[11px] text-amber-500 dark:text-amber-400 font-bold">
+                Max 3 selected limit reached
+              </span>
+            )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[380px] overflow-y-auto pr-1">
             {allTestimonials.map((testi: any) => {
               const selectedIds: string[] = (pageContent.testimonialsSection?.selectedTestimonialIds || []).map((id: any) => String(id));
               const currentId = String(testi.id);
-              const isSelected = selectedIds.includes(currentId);
+              const isChecked = selectedIds.includes(currentId);
 
               return (
-                <div
+                <label
                   key={testi.id}
-                  onClick={() => {
-                    let updated: string[];
-                    if (isSelected) {
-                      updated = selectedIds.filter((id: string) => id !== currentId);
-                    } else {
-                      updated = [...selectedIds, currentId];
-                    }
-                    setPageContent({
-                      ...pageContent,
-                      testimonialsSection: {
-                        ...(pageContent.testimonialsSection || {}),
-                        selectedTestimonialIds: updated,
-                      },
-                    });
-                  }}
-                  className={`p-3.5 rounded-xl border transition-all cursor-pointer space-y-2 relative ${
-                    isSelected
-                      ? "border-violet-500 bg-violet-50/70 dark:bg-violet-950/40 shadow-sm"
-                      : "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#0b0f19] hover:border-slate-300"
+                  className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
+                    isChecked
+                      ? "border-violet-500/60 bg-violet-50/50 dark:bg-violet-950/20"
+                      : selectedIds.length >= 3
+                      ? "border-slate-200/60 dark:border-slate-800/60 bg-slate-100/50 dark:bg-[#0b0f19]/50 opacity-60"
+                      : "border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#0b0f19]"
                   }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1 text-amber-500">
-                      {Array.from({ length: testi.rating || 5 }).map((_, i) => (
-                        <Star key={i} className="h-3.5 w-3.5 fill-current" />
-                      ))}
+                  <input
+                    type="checkbox"
+                    checked={isChecked}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        if (selectedIds.length >= 3) {
+                          toast.error("You can select a maximum of 3 testimonials for the Case Studies page.");
+                          return;
+                        }
+                        setPageContent({
+                          ...pageContent,
+                          testimonialsSection: {
+                            ...(pageContent.testimonialsSection || {}),
+                            selectedTestimonialIds: [...selectedIds, currentId],
+                          },
+                        });
+                      } else {
+                        setPageContent({
+                          ...pageContent,
+                          testimonialsSection: {
+                            ...(pageContent.testimonialsSection || {}),
+                            selectedTestimonialIds: selectedIds.filter((id) => id !== currentId),
+                          },
+                        });
+                      }
+                    }}
+                    className="mt-0.5 rounded border-slate-300 text-violet-600 focus:ring-violet-500 shrink-0"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs font-extrabold text-slate-900 dark:text-white">
+                        {testi.name || testi.clientName}
+                      </span>
+                      <span className="text-[10px] text-slate-500">
+                        {testi.role || testi.clientRole}{testi.company ? ` @ ${testi.company}` : ''}
+                      </span>
                     </div>
-                    <span
-                      className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded ${
-                        isSelected
-                          ? "bg-violet-600 text-white"
-                          : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
-                      }`}
-                    >
-                      {isSelected ? "Selected" : "Click to select"}
-                    </span>
+                    <p className="text-[11px] text-slate-600 dark:text-slate-300 italic line-clamp-2">
+                      "{testi.content || testi.quote}"
+                    </p>
                   </div>
-
-                  <p className="text-xs text-slate-700 dark:text-slate-300 font-medium italic line-clamp-2">
-                    "{testi.content}"
-                  </p>
-
-                  <div className="pt-2 border-t border-slate-200/60 dark:border-slate-800 flex items-center justify-between text-[11px]">
-                    <span className="font-bold text-slate-900 dark:text-white">{testi.clientName}</span>
-                    <span className="text-violet-600 dark:text-violet-400 font-semibold">{testi.company}</span>
-                  </div>
-                </div>
+                </label>
               );
             })}
           </div>

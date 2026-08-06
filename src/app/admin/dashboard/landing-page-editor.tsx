@@ -19,6 +19,7 @@ import {
   X,
   ImageIcon,
   CheckCircle2,
+  Boxes,
   Layers,
   ArrowUp,
   ArrowDown,
@@ -52,6 +53,7 @@ import {
   DEFAULT_STATS_DATA,
   DEFAULT_FOOTER_DATA,
 } from "@/data/default-landing-data";
+import { SERVICES_DATA, INDUSTRIES_DATA } from "@/data/landing-data";
 
 interface FileUploadControlProps {
   label: string;
@@ -312,8 +314,12 @@ export default function LandingPageEditor({ sectionId, onCloseSection }: Landing
     }
   }, [sectionId]);
 
-  // Available FAQs for manual selection on landing page
+  // Available items for manual selection on landing page
   const [availableFaqs, setAvailableFaqs] = useState<any[]>([]);
+  const [availableServices, setAvailableServices] = useState<any[]>([]);
+  const [availableIndustries, setAvailableIndustries] = useState<any[]>([]);
+  const [availableTestimonials, setAvailableTestimonials] = useState<any[]>([]);
+  const [availableBlogPosts, setAvailableBlogPosts] = useState<any[]>([]);
 
   useEffect(() => {
     if (activeSectionId === "faqs" || activeSectionId === "faq") {
@@ -329,6 +335,77 @@ export default function LandingPageEditor({ sectionId, onCloseSection }: Landing
         }
       }
       loadFaqsForSelector();
+    }
+
+    if (activeSectionId === "services") {
+      async function loadServicesForSelector() {
+        try {
+          const res = await fetch("/api/services");
+          const json = await res.json();
+          if (json.success && json.data && Array.isArray(json.data.services) && json.data.services.length > 0) {
+            setAvailableServices(json.data.services);
+          } else {
+            setAvailableServices(SERVICES_DATA);
+          }
+        } catch (err) {
+          setAvailableServices(SERVICES_DATA);
+        }
+      }
+      loadServicesForSelector();
+    }
+
+    if (activeSectionId === "industries") {
+      async function loadIndustriesForSelector() {
+        try {
+          const res = await fetch("/api/industries");
+          const json = await res.json();
+          if (json.success && json.data && Array.isArray(json.data.industries) && json.data.industries.length > 0) {
+            setAvailableIndustries(json.data.industries);
+          } else {
+            setAvailableIndustries(INDUSTRIES_DATA);
+          }
+        } catch (err) {
+          setAvailableIndustries(INDUSTRIES_DATA);
+        }
+      }
+      loadIndustriesForSelector();
+    }
+
+    if (activeSectionId === "testimonials") {
+      async function loadTestimonialsForSelector() {
+        try {
+          const res = await fetch("/api/testimonials");
+          const json = await res.json();
+          if (json.success && json.data && Array.isArray(json.data.testimonials)) {
+            const approved = json.data.testimonials.filter((t: any) => t.status === "APPROVED" || !t.status);
+            setAvailableTestimonials(approved);
+          }
+        } catch (err) {
+          console.warn("Failed to load testimonials for selector:", err);
+        }
+      }
+      loadTestimonialsForSelector();
+    }
+
+    if (activeSectionId === "blog") {
+      async function loadBlogsForSelector() {
+        try {
+          const res = await fetch("/api/blog/posts");
+          const json = await res.json();
+          if (json.success && Array.isArray(json.data)) {
+            setAvailableBlogPosts(json.data);
+          } else {
+            const res2 = await fetch("/api/blog");
+            const json2 = await res2.json();
+            if (json2.success && json2.data && Array.isArray(json2.data.posts)) {
+              setAvailableBlogPosts(json2.data.posts);
+            }
+          }
+        } catch (err) {
+          console.warn("Failed to load blog posts for selector:", err);
+        }
+      }
+      loadBlogsForSelector();
     }
   }, [activeSectionId]);
 
@@ -2824,6 +2901,401 @@ export default function LandingPageEditor({ sectionId, onCloseSection }: Landing
                             </p>
                             <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
                               {faq.answer}
+                            </p>
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* SERVICES MANUAL SELECTOR */}
+              {activeSectionId === "services" && (
+                <div className="md:col-span-2 pt-6 border-t border-slate-200 dark:border-slate-800 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <h4 className="text-xs font-extrabold uppercase tracking-wider text-violet-600 dark:text-violet-400 flex items-center gap-2">
+                        <Boxes className="h-4 w-4" />
+                        Landing Page Manual Services Selector ({availableServices.length} Available)
+                      </h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        Select specific engineering capabilities below to feature on the homepage. If no services are checked, the top 6 services will be shown automatically.
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const allIds = availableServices.map((s) => s.id);
+                          setLandingData({
+                            ...landingData,
+                            servicesHeader: { ...landingData.servicesHeader, selectedServiceIds: allIds },
+                          });
+                        }}
+                        className="px-2.5 py-1 text-[11px] font-bold rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                      >
+                        Select All
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setLandingData({
+                            ...landingData,
+                            servicesHeader: { ...landingData.servicesHeader, selectedServiceIds: [] },
+                          });
+                        }}
+                        className="px-2.5 py-1 text-[11px] font-bold rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 cursor-pointer"
+                      >
+                        Clear Selection
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="text-xs font-bold text-slate-600 dark:text-slate-300">
+                    Currently Selected:{" "}
+                    <span className="text-violet-600 dark:text-violet-400 font-extrabold">
+                      {(landingData.servicesHeader?.selectedServiceIds || []).length} Services
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[380px] overflow-y-auto pr-1">
+                    {availableServices.map((srv) => {
+                      const selectedIds: string[] = landingData.servicesHeader?.selectedServiceIds || [];
+                      const isChecked = selectedIds.includes(srv.id);
+
+                      return (
+                        <label
+                          key={srv.id}
+                          className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
+                            isChecked
+                              ? "border-violet-500/60 bg-violet-50/50 dark:bg-violet-950/20"
+                              : "border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#0b0f19]"
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={(e) => {
+                              const nextIds = e.target.checked
+                                ? [...selectedIds, srv.id]
+                                : selectedIds.filter((id) => id !== srv.id);
+                              setLandingData({
+                                ...landingData,
+                                servicesHeader: { ...landingData.servicesHeader, selectedServiceIds: nextIds },
+                              });
+                            }}
+                            className="mt-0.5 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <span className="inline-block px-2 py-0.5 text-[10px] font-bold rounded bg-violet-100 dark:bg-slate-800 text-violet-600 dark:text-violet-300 mb-1">
+                              {srv.badge || srv.category || "Capability"}
+                            </span>
+                            <p className="text-xs font-bold text-slate-900 dark:text-white leading-snug line-clamp-1">
+                              {srv.title}
+                            </p>
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
+                              {srv.description || srv.subtitle || srv.shortDesc}
+                            </p>
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* INDUSTRIES MANUAL SELECTOR */}
+              {activeSectionId === "industries" && (
+                <div className="md:col-span-2 pt-6 border-t border-slate-200 dark:border-slate-800 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <h4 className="text-xs font-extrabold uppercase tracking-wider text-violet-600 dark:text-violet-400 flex items-center gap-2">
+                        <Building className="h-4 w-4" />
+                        Landing Page Manual Industries Selector ({availableIndustries.length} Available)
+                      </h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        Select specific Industry sectors below to feature on the homepage. If no industries are checked, the top 6 sectors will be shown automatically.
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const allIds = availableIndustries.map((ind) => ind.id);
+                          setLandingData({
+                            ...landingData,
+                            industriesHeader: { ...landingData.industriesHeader, selectedIndustryIds: allIds },
+                          });
+                        }}
+                        className="px-2.5 py-1 text-[11px] font-bold rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                      >
+                        Select All
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setLandingData({
+                            ...landingData,
+                            industriesHeader: { ...landingData.industriesHeader, selectedIndustryIds: [] },
+                          });
+                        }}
+                        className="px-2.5 py-1 text-[11px] font-bold rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 cursor-pointer"
+                      >
+                        Clear Selection
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="text-xs font-bold text-slate-600 dark:text-slate-300">
+                    Currently Selected:{" "}
+                    <span className="text-violet-600 dark:text-violet-400 font-extrabold">
+                      {(landingData.industriesHeader?.selectedIndustryIds || []).length} Industries
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[380px] overflow-y-auto pr-1">
+                    {availableIndustries.map((ind) => {
+                      const selectedIds: string[] = landingData.industriesHeader?.selectedIndustryIds || [];
+                      const isChecked = selectedIds.includes(ind.id);
+
+                      return (
+                        <label
+                          key={ind.id}
+                          className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
+                            isChecked
+                              ? "border-violet-500/60 bg-violet-50/50 dark:bg-violet-950/20"
+                              : "border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#0b0f19]"
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={(e) => {
+                              const nextIds = e.target.checked
+                                ? [...selectedIds, ind.id]
+                                : selectedIds.filter((id) => id !== ind.id);
+                              setLandingData({
+                                ...landingData,
+                                industriesHeader: { ...landingData.industriesHeader, selectedIndustryIds: nextIds },
+                              });
+                            }}
+                            className="mt-0.5 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <span className="inline-block px-2 py-0.5 text-[10px] font-bold rounded bg-violet-100 dark:bg-slate-800 text-violet-600 dark:text-violet-300 mb-1">
+                              {ind.badge || "Domain"}
+                            </span>
+                            <p className="text-xs font-bold text-slate-900 dark:text-white leading-snug line-clamp-1">
+                              {ind.title}
+                            </p>
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
+                              {ind.description || ind.subtitle}
+                            </p>
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* TESTIMONIALS MANUAL SELECTOR */}
+              {activeSectionId === "testimonials" && (
+                <div className="md:col-span-2 pt-6 border-t border-slate-200 dark:border-slate-800 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <h4 className="text-xs font-extrabold uppercase tracking-wider text-violet-600 dark:text-violet-400 flex items-center gap-2">
+                        <Star className="h-4 w-4 text-amber-400 fill-amber-400" />
+                        Landing Page Manual Testimonials Selector ({availableTestimonials.length} Available)
+                      </h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        Select specific verified client reviews below to feature on the homepage. If no reviews are checked, the top 3 approved testimonials will be shown automatically.
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const allIds = availableTestimonials.map((t) => t.id);
+                          setLandingData({
+                            ...landingData,
+                            testimonialsHeader: { ...landingData.testimonialsHeader, selectedTestimonialIds: allIds },
+                          });
+                        }}
+                        className="px-2.5 py-1 text-[11px] font-bold rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                      >
+                        Select All
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setLandingData({
+                            ...landingData,
+                            testimonialsHeader: { ...landingData.testimonialsHeader, selectedTestimonialIds: [] },
+                          });
+                        }}
+                        className="px-2.5 py-1 text-[11px] font-bold rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 cursor-pointer"
+                      >
+                        Clear Selection
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="text-xs font-bold text-slate-600 dark:text-slate-300">
+                    Currently Selected:{" "}
+                    <span className="text-violet-600 dark:text-violet-400 font-extrabold">
+                      {(landingData.testimonialsHeader?.selectedTestimonialIds || []).length} Testimonials
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[380px] overflow-y-auto pr-1">
+                    {availableTestimonials.map((t) => {
+                      const selectedIds: string[] = landingData.testimonialsHeader?.selectedTestimonialIds || [];
+                      const isChecked = selectedIds.includes(t.id);
+
+                      return (
+                        <label
+                          key={t.id}
+                          className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
+                            isChecked
+                              ? "border-violet-500/60 bg-violet-50/50 dark:bg-violet-950/20"
+                              : "border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#0b0f19]"
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={(e) => {
+                              const nextIds = e.target.checked
+                                ? [...selectedIds, t.id]
+                                : selectedIds.filter((id) => id !== t.id);
+                              setLandingData({
+                                ...landingData,
+                                testimonialsHeader: { ...landingData.testimonialsHeader, selectedTestimonialIds: nextIds },
+                              });
+                            }}
+                            className="mt-0.5 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-xs font-extrabold text-slate-900 dark:text-white">
+                                {t.name}
+                              </span>
+                              <span className="text-[10px] text-slate-500">
+                                {t.role}{t.company ? ` @ ${t.company}` : ''}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-600 dark:text-slate-300 italic line-clamp-2">
+                              "{t.content}"
+                            </p>
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* BLOG MANUAL SELECTOR */}
+              {activeSectionId === "blog" && (
+                <div className="md:col-span-2 pt-6 border-t border-slate-200 dark:border-slate-800 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <h4 className="text-xs font-extrabold uppercase tracking-wider text-violet-600 dark:text-violet-400 flex items-center gap-2">
+                        <BookOpen className="h-4 w-4" />
+                        Landing Page Manual Blog Selector ({availableBlogPosts.length} Available)
+                      </h4>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        Select specific blog articles below to feature on the homepage. If no articles are checked, the top 3 latest published blogs will be shown automatically.
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const allIds = availableBlogPosts.map((b) => b.id || b.slug);
+                          setLandingData({
+                            ...landingData,
+                            blogHeader: { ...landingData.blogHeader, selectedBlogIds: allIds },
+                          });
+                        }}
+                        className="px-2.5 py-1 text-[11px] font-bold rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                      >
+                        Select All
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setLandingData({
+                            ...landingData,
+                            blogHeader: { ...landingData.blogHeader, selectedBlogIds: [] },
+                          });
+                        }}
+                        className="px-2.5 py-1 text-[11px] font-bold rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 cursor-pointer"
+                      >
+                        Clear Selection
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="text-xs font-bold text-slate-600 dark:text-slate-300">
+                    Currently Selected:{" "}
+                    <span className="text-violet-600 dark:text-violet-400 font-extrabold">
+                      {(landingData.blogHeader?.selectedBlogIds || []).length} Articles
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[380px] overflow-y-auto pr-1">
+                    {availableBlogPosts.map((post) => {
+                      const postId = post.id || post.slug;
+                      const selectedIds: string[] = landingData.blogHeader?.selectedBlogIds || [];
+                      const isChecked = selectedIds.includes(postId);
+                      const postImg = post.imageUrl || post.image || post.coverImage;
+
+                      return (
+                        <label
+                          key={postId}
+                          className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
+                            isChecked
+                              ? "border-violet-500/60 bg-violet-50/50 dark:bg-violet-950/20"
+                              : "border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#0b0f19]"
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={(e) => {
+                              const nextIds = e.target.checked
+                                ? [...selectedIds, postId]
+                                : selectedIds.filter((id) => id !== postId);
+                              setLandingData({
+                                ...landingData,
+                                blogHeader: { ...landingData.blogHeader, selectedBlogIds: nextIds },
+                              });
+                            }}
+                            className="mt-0.5 rounded border-slate-300 text-violet-600 focus:ring-violet-500 shrink-0"
+                          />
+                          {postImg && (
+                            <img
+                              src={postImg}
+                              alt={post.title}
+                              className="h-12 w-16 object-cover rounded-lg border border-slate-200 dark:border-slate-700 shrink-0"
+                            />
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <span className="inline-block px-2 py-0.5 text-[10px] font-bold rounded bg-violet-100 dark:bg-slate-800 text-violet-600 dark:text-violet-300 mb-1">
+                              {post.category || "Article"}
+                            </span>
+                            <p className="text-xs font-bold text-slate-900 dark:text-white leading-snug line-clamp-1">
+                              {post.title}
+                            </p>
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
+                              {post.excerpt}
                             </p>
                           </div>
                         </label>
