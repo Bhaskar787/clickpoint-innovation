@@ -302,73 +302,154 @@ export default function Hero({ initialData }: HeroProps = {}) {
           </motion.div>
 
           {/* ================= RIGHT COLUMN: BIGGER DYNAMIC IMAGE SHOWCASE (NO TABS, CLEAN SHADOWLESS FRAME) ================= */}
-          <div className="relative mx-auto w-full min-w-0 max-w-lg lg:max-w-none">
-            <div className="relative flex min-h-[460px] sm:min-h-[520px] lg:min-h-[560px] w-full items-center justify-center">
-              
-              {/* Dashed Rotating Circular Ring (Centered) */}
-              <div ref={ringRef} className="absolute h-[380px] w-[380px] sm:h-[460px] sm:w-[460px] lg:h-[500px] lg:w-[500px] rounded-full border border-dashed border-violet-300/50 dark:border-violet-700/50 pointer-events-none" />
-              
-              {/* Centered Glowing Ambient Orb */}
-              <div ref={blobRef} className="absolute h-64 w-64 sm:h-80 sm:w-80 rounded-[45%_55%_60%_40%/45%_40%_60%_55%] bg-gradient-to-br from-violet-500/30 via-indigo-400/20 to-amber-400/30 dark:from-violet-600/25 dark:via-indigo-500/15 dark:to-amber-500/15 blur-2xl opacity-75 pointer-events-none" />
+    {/* ================= RIGHT COLUMN: HIGH-TECH DYNAMIC SHOWCASE ================= */}
+<div className="relative mx-auto w-full min-w-0 max-w-lg lg:max-w-none">
+  <div className="relative flex min-h-[480px] sm:min-h-[540px] lg:min-h-[580px] w-full items-center justify-center">
+    
+    {/* Animated Radial Background Orbs */}
+    <div 
+      ref={ringRef} 
+      className="absolute h-[380px] w-[380px] sm:h-[480px] sm:w-[480px] lg:h-[520px] lg:w-[520px] rounded-full border border-dashed border-violet-500/20 dark:border-violet-500/30 pointer-events-none" 
+    />
+    <div 
+      ref={blobRef} 
+      className="absolute h-72 w-72 sm:h-96 sm:w-96 rounded-full bg-gradient-to-tr from-violet-600/30 via-indigo-500/20 to-amber-500/20 blur-[100px] pointer-events-none" 
+    />
 
-              {/* Glassmorphic Browser Showcase Window (No Muddy Shadow) */}
-              <div className="relative z-10 w-full rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 text-slate-900 dark:text-slate-100 overflow-hidden backdrop-blur-xl transition-all duration-300">
-                
-                {/* Clean Browser Header Bar (NO TABS - ONLY DOTS & DYNAMIC TITLE) */}
-                <div className="flex items-center justify-between px-4 py-3 bg-slate-100/90 dark:bg-slate-950/90 border-b border-slate-200/80 dark:border-slate-800">
-                  <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full bg-red-500/80" />
-                    <div className="h-3 w-3 rounded-full bg-yellow-500/80" />
-                    <div className="h-3 w-3 rounded-full bg-green-500/80" />
+    {/* Floating Metric Badge - Top Left */}
+    <motion.div 
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.5, duration: 0.6 }}
+      className="absolute -top-3 left-4 sm:-left-4 z-30 flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 shadow-xl backdrop-blur-md"
+    >
+      <div className="flex h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
+      <Activity className="h-4 w-4 text-emerald-500" />
+      <div className="flex flex-col text-left">
+        <span className="text-[10px] uppercase font-bold text-slate-400 leading-none">{currentHero.showcaseBadgeTopLeftLabel || "System SLA"}</span>
+        <span className="text-xs font-bold text-slate-800 dark:text-slate-100">{currentHero.showcaseBadgeTopLeft || "99.9% Uptime"}</span>
+      </div>
+    </motion.div>
+
+    {/* Floating Metric Badge - Bottom Right */}
+    <motion.div 
+      initial={{ opacity: 0, y: -15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.7, duration: 0.6 }}
+      className="absolute -bottom-3 right-4 sm:-right-4 z-30 flex items-center gap-2.5 px-3.5 py-2 rounded-2xl bg-white/90 dark:bg-slate-900/90 border border-violet-500/30 shadow-xl backdrop-blur-md"
+    >
+      <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-violet-600/10 text-violet-600 dark:text-violet-400">
+        <Cpu className="h-4 w-4" />
+      </div>
+      <div className="flex flex-col text-left">
+        <span className="text-[10px] uppercase font-bold text-slate-400 leading-none">{currentHero.showcaseBadgeBottomRightLabel || "AI Core"}</span>
+        <span className="text-xs font-bold text-violet-600 dark:text-violet-300">{currentHero.showcaseBadgeBottomRight || "Autonomous RAG"}</span>
+      </div>
+    </motion.div>
+
+    {/* Glassmorphic App Window Frame */}
+    <div className="relative z-10 w-full rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 shadow-2xl backdrop-blur-xl overflow-hidden transition-all duration-300">
+      
+      {/* Window Title Bar */}
+      <div className="flex items-center justify-between px-4 py-3 bg-slate-100/80 dark:bg-slate-950/80 border-b border-slate-200/80 dark:border-slate-800">
+        <div className="flex items-center gap-2">
+          <span className="h-3 w-3 rounded-full bg-red-500/80 inline-block" />
+          <span className="h-3 w-3 rounded-full bg-amber-500/80 inline-block" />
+          <span className="h-3 w-3 rounded-full bg-emerald-500/80 inline-block" />
+        </div>
+
+        <div className="flex items-center gap-1.5 px-3 py-1 rounded-md bg-slate-200/50 dark:bg-slate-900/60 border border-slate-300/40 dark:border-slate-800 text-[11px] font-mono text-slate-600 dark:text-slate-400">
+          <span className="h-1.5 w-1.5 rounded-full bg-violet-500 animate-pulse" />
+          <span className="truncate max-w-[180px] sm:max-w-none">{currentHero.showcaseTitle || "clickpoint-studio-v2.ts"}</span>
+        </div>
+
+        <div className="flex items-center gap-2 text-slate-400">
+          <div className="h-2 w-8 rounded-full bg-slate-300/60 dark:bg-slate-800" />
+        </div>
+      </div>
+
+      {/* Main Showcase Canvas */}
+      <div className="p-3 sm:p-4">
+        <div className="relative h-80 sm:h-96 lg:h-[420px] w-full rounded-xl overflow-hidden border border-slate-200/80 dark:border-slate-800 bg-slate-950 group">
+          {imageUrl ? (
+            <>
+              {/* Dynamic Image View with Gradient Overlay */}
+              <img
+                src={imageUrl}
+                alt="Studio Showcase"
+                className="h-full w-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-slate-950/20 opacity-80 transition-opacity group-hover:opacity-60" />
+            </>
+          ) : (
+            /* Interactive Simulated UI Dashboard Placeholder (Renders when no image is supplied) */
+            <div className="h-full w-full bg-[#070913] p-4 sm:p-6 flex flex-col justify-between relative overflow-hidden font-sans">
+              
+              {/* Subtle Grid Pattern Overlay */}
+              <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:16px_16px]" />
+
+              {/* Top Dashboard Controls */}
+              <div className="relative z-10 flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-lg bg-violet-600/20 border border-violet-500/30 flex items-center justify-center text-violet-400">
+                    <Zap className="h-4 w-4" />
                   </div>
+                  <div>
+                    <div className="h-2.5 w-24 rounded bg-slate-200 dark:bg-slate-700 font-bold text-xs text-slate-200">AI Cluster #01</div>
+                    <div className="h-2 w-16 rounded bg-slate-500 dark:bg-slate-500 mt-1" />
+                  </div>
+                </div>
+                <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-2.5 py-1 rounded-full">
+                  LIVE AGENTS
+                </span>
+              </div>
 
-                  {/* Dynamic Window Title */}
-                  <span className="text-xs font-mono font-bold text-slate-600 dark:text-slate-300 truncate max-w-[240px] sm:max-w-none">
-                    {currentHero.showcaseTitle || "clickpoint-studio-v2.ts"}
-                  </span>
-
-                  <div className="w-12" />
+              {/* Animated Interactive Graph & Stats Bars */}
+              <div className="relative z-10 my-auto space-y-4">
+                <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                  <div className="p-2.5 rounded-lg bg-slate-900/80 border border-slate-800">
+                    <span className="text-[10px] text-slate-400 block font-medium">Latencies</span>
+                    <span className="text-sm font-bold text-white font-mono">14.2ms</span>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-slate-900/80 border border-slate-800">
+                    <span className="text-[10px] text-slate-400 block font-medium">Throughput</span>
+                    <span className="text-sm font-bold text-violet-400 font-mono">1.2k/s</span>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-slate-900/80 border border-slate-800">
+                    <span className="text-[10px] text-slate-400 block font-medium">Accuracy</span>
+                    <span className="text-sm font-bold text-amber-400 font-mono">99.4%</span>
+                  </div>
                 </div>
 
-                {/* BIGGER DYNAMIC IMAGE PLACEHOLDER CANVAS */}
-                <div className="relative group p-3 sm:p-4">
-                  {/* Dynamic Top-Left Badge */}
-                  <div className="absolute top-6 left-6 z-20 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-slate-900/90 text-white border border-slate-700/90 text-fluid-2xs font-bold shadow-md backdrop-blur-md">
-                    <Activity className="h-3.5 w-3.5 text-emerald-400 animate-pulse shrink-0" />
-                    <span>{currentHero.showcaseBadgeTopLeft || "99.9% Uptime SLA"}</span>
-                  </div>
-
-                  {/* Dynamic Bottom-Right Badge */}
-                  <div className="absolute bottom-6 right-6 z-20 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-violet-950/90 text-violet-200 border border-violet-700/90 text-fluid-2xs font-bold shadow-md backdrop-blur-md">
-                    <Cpu className="h-3.5 w-3.5 text-violet-400 shrink-0" />
-                    <span>{currentHero.showcaseBadgeBottomRight || "Autonomous AI RAG Engine"}</span>
-                  </div>
-
-                  {/* Image Container (Bigger Height: 340px to 440px) */}
-                  <div className="relative h-80 sm:h-96 lg:h-[420px] w-full rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-950 flex items-center justify-center">
-                    {imageUrl ? (
-                      <>
-                        <img
-                          src={imageUrl}
-                          alt="Hero Studio Showcase"
-                          className="h-full w-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent pointer-events-none" />
-                      </>
-                    ) : (
-                      <div className="h-full w-full bg-gradient-to-tr from-slate-950 via-slate-900 to-violet-950/40 animate-pulse flex flex-col items-center justify-center p-6 space-y-3">
-                        <div className="h-10 w-10 rounded-2xl bg-violet-600/20 border border-violet-500/30 flex items-center justify-center text-violet-400">
-                          <Zap className="h-5 w-5 animate-spin" />
-                        </div>
-                        <p className="text-xs font-mono font-bold text-slate-400">Loading Dynamic Studio Showcase...</p>
-                      </div>
-                    )}
-                  </div>
+                {/* Simulated Chart Bars */}
+                <div className="h-28 w-full rounded-lg bg-slate-900/60 border border-slate-800/80 p-3 flex items-end justify-between gap-1.5 sm:gap-2">
+                  {[40, 65, 45, 80, 55, 90, 75, 100, 85, 95].map((height, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ height: "10%" }}
+                      animate={{ height: `${height}%` }}
+                      transition={{ duration: 1, delay: i * 0.05, repeat: Infinity, repeatType: "reverse" }}
+                      className="w-full bg-gradient-to-t from-violet-700 to-indigo-500 rounded-t-sm opacity-80 hover:opacity-100 transition-opacity"
+                    />
+                  ))}
                 </div>
+              </div>
 
+              {/* Bottom Console Activity Line */}
+              <div className="relative z-10 flex items-center justify-between text-[11px] font-mono text-slate-400 pt-2 border-t border-slate-800/80">
+                <div className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-violet-400 animate-ping" />
+                  <span className="text-slate-300">Processing vector pipelines...</span>
+                </div>
+                <span className="text-slate-500">v2.4.0</span>
               </div>
             </div>
-          </div>
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
         </div>
       </div>

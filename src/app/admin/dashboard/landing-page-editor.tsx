@@ -1489,11 +1489,30 @@ export default function LandingPageEditor({ sectionId, onCloseSection }: Landing
 
                   <div>
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      Overlay Badge (Top Left)
+                      Top-Left Badge Label
                     </label>
                     <input
                       type="text"
-                      value={landingData.hero?.showcaseBadgeTopLeft || "99.9% Uptime SLA"}
+                      value={landingData.hero?.showcaseBadgeTopLeftLabel || "System SLA"}
+                      placeholder="e.g. System SLA"
+                      onChange={(e) =>
+                        setLandingData({
+                          ...landingData,
+                          hero: { ...landingData.hero, showcaseBadgeTopLeftLabel: e.target.value },
+                        })
+                      }
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs font-bold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Top-Left Badge Value
+                    </label>
+                    <input
+                      type="text"
+                      value={landingData.hero?.showcaseBadgeTopLeft || "99.9% Uptime"}
+                      placeholder="e.g. 99.9% Uptime"
                       onChange={(e) =>
                         setLandingData({
                           ...landingData,
@@ -1506,11 +1525,30 @@ export default function LandingPageEditor({ sectionId, onCloseSection }: Landing
 
                   <div>
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      Overlay Badge (Bottom Right)
+                      Bottom-Right Badge Label
                     </label>
                     <input
                       type="text"
-                      value={landingData.hero?.showcaseBadgeBottomRight || "Autonomous AI RAG Engine"}
+                      value={landingData.hero?.showcaseBadgeBottomRightLabel || "AI Core"}
+                      placeholder="e.g. AI Core"
+                      onChange={(e) =>
+                        setLandingData({
+                          ...landingData,
+                          hero: { ...landingData.hero, showcaseBadgeBottomRightLabel: e.target.value },
+                        })
+                      }
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs font-bold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Bottom-Right Badge Value
+                    </label>
+                    <input
+                      type="text"
+                      value={landingData.hero?.showcaseBadgeBottomRight || "Autonomous RAG"}
+                      placeholder="e.g. Autonomous RAG"
                       onChange={(e) =>
                         setLandingData({
                           ...landingData,
