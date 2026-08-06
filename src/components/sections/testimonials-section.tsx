@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Star, ArrowRight, Quote, MessageSquare, CheckCircle2, MessageSquarePlus } from "lucide-react";
+import { Star, ArrowRight, Quote, CheckCircle2, MessageSquarePlus } from "lucide-react";
 import FeedbackModal from "@/components/testimonials/feedback-modal";
 import { TestimonialItem } from "@/types";
 
@@ -58,25 +58,40 @@ export default function TestimonialsSection() {
     <section id="testimonials" className="relative py-20 lg:py-28 bg-cloud-100/70 border-t border-violet-100 dark:border-slate-800">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Section Header */}
+        {/* LEFT-ALIGNED SECTION HEADER & CTA BUTTONS */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
-          <div className="max-w-2xl">
-            <div className="section-badge mb-3 inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-violet-50 dark:bg-slate-800 px-3.5 py-1 text-violet-600 dark:text-violet-300">
-              <MessageSquare className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
+          <div className="max-w-2xl space-y-3 text-left">
+            <span className="text-[11px] font-extrabold uppercase tracking-widest text-violet-600 dark:text-violet-400">
               {heroContent.badge || "Client Proof & Verified Reviews"}
-            </div>
-            <h2 className="section-title text-ink dark:text-white">
-              {heroContent.title || "Trusted by tech leaders worldwide"}
+            </span>
+
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.15]">
+              {heroContent.title ? (
+                <>
+                  {heroContent.title.split(" ").slice(0, -1).join(" ")}{" "}
+                  <span className="text-violet-600 dark:text-orange-500">
+                    {heroContent.title.split(" ").slice(-1).join(" ")}
+                  </span>
+                </>
+              ) : (
+                <>
+                  Trusted by tech leaders{" "}
+                  <span className="text-violet-600 dark:text-orange-500">
+                    worldwide
+                  </span>
+                </>
+              )}
             </h2>
-            <p className="mt-3 section-subtitle text-ink/70 dark:text-slate-300">
-              {heroContent.subtitle || "See how our AI & software engineering pods drive measurable ROI."}
+
+            <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 max-w-2xl font-medium pt-1">
+              {heroContent.subtitle || "See how our AI & software engineering pods drive measurable ROI for startups and enterprise platforms."}
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3 shrink-0">
             <button
               onClick={() => setIsModalOpen(true)}
-              className="inline-flex items-center gap-2 rounded-full bg-violet-600 hover:bg-violet-700 text-white px-5 py-2.5 text-fluid-sm font-bold shadow-lg shadow-violet-600/25 transition-all hover:scale-105"
+              className="inline-flex items-center gap-2 rounded-full bg-violet-600 hover:bg-violet-700 text-white px-5 py-2.5 text-fluid-sm font-bold shadow-lg shadow-violet-600/25 transition-all hover:scale-105 cursor-pointer"
             >
               <MessageSquarePlus className="h-4 w-4" />
               <span>{heroContent.reviewModalButtonText || "Give Review / Feedback"}</span>

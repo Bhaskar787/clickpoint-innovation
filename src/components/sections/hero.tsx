@@ -1,28 +1,19 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { gsap } from "gsap";
 import {
   ArrowRight,
   Zap,
-  ShieldCheck,
-  TrendingUp,
-  Bot,
-  Layers,
-  Activity,
   Star,
   CheckCircle2,
-  Code2,
-  Terminal,
-  Sparkles,
-  Cpu,
   Calculator,
-  Copy,
-  Check,
+  Activity,
+  Cpu,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CLIENT_LOGOS_DATA } from "@/data/landing-data";
+import { DEFAULT_LANDING_DATA } from "@/data/default-landing-data";
 
 // Container animations
 const containerVariants = {
@@ -37,381 +28,345 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } },
 };
 
-// Interactive Terminal Code Examples
-const CODE_SNIPPETS = {
-  agent: `// Initialize Custom Enterprise AI Agent
-import { ClickpointAI } from '@clickpoint/sdk';
-
-const agent = new ClickpointAI({
-  model: 'gpt-4o-enterprise',
-  ragPipeline: 'vector-db-pgvector',
-  soc2Compliant: true,
-});
-
-await agent.deployWorkflow({
-  automation: 'enterprise-data-pipeline',
-  latencyTarget: '< 200ms'
-});`,
-  web: `// Full-Stack Next.js 15 & High-Performance API
-export async function GET(req: Request) {
-  const data = await postgres.query(\`
-    SELECT * FROM analytics_stream 
-    WHERE latency < 10
-  \`);
-
-  return Response.json({ success: true, payload: data });
-}`,
-};
-
 export default function Hero() {
   const blobRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
 
   // Interactivity state
-  const [activeTab, setActiveTab] = useState<"agent" | "web">("agent");
-  const [copied, setCopied] = useState(false);
   const [projectScope, setProjectScope] = useState<"mvp" | "scale">("mvp");
-  const [estimatedWeeks, setEstimatedWeeks] = useState(3);
 
-  // Copy code handler
-  const handleCopy = () => {
-    navigator.clipboard.writeText(CODE_SNIPPETS[activeTab]);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  // Dynamic Landing Content State (Initialized null to prevent old image flash)
+  const [heroData, setHeroData] = useState<any>(null);
+
+  // Dynamic Testimonial Ratings State
+  const [ratingStats, setRatingStats] = useState<{
+    avgRating: string;
+    totalReviews: number;
+    avatars: { initials: string; avatarUrl?: string; name: string }[];
+  }>({
+    avgRating: "4.9",
+    totalReviews: 50,
+    avatars: [
+      { initials: "AK", name: "Alex K." },
+      { initials: "SR", name: "Sarah R." },
+      { initials: "MP", name: "Marcus P." },
+      { initials: "EK", name: "Elena K." },
+    ],
+  });
+
+  // Fetch dynamic Hero landing configuration & real testimonials rating
+  useEffect(() => {
+    async function loadDynamicHeroData() {
+      try {
+        // 1. Fetch Landing Page Config
+        const landingRes = await fetch("/api/landing");
+        const landingJson = await landingRes.json();
+        if (landingJson.success && landingJson.data && landingJson.data.hero) {
+          setHeroData({
+            ...DEFAULT_LANDING_DATA.hero,
+            ...landingJson.data.hero,
+          });
+        } else {
+          setHeroData(DEFAULT_LANDING_DATA.hero);
+        }
+      } catch (err) {
+        console.warn("Using default hero content:", err);
+        setHeroData(DEFAULT_LANDING_DATA.hero);
+      }
+
+      try {
+        // 2. Fetch Real Testimonials from DB for dynamic rating & trust metrics
+        const testimonialsRes = await fetch("/api/testimonials");
+        const testimonialsJson = await testimonialsRes.json();
+        if (testimonialsJson.success && testimonialsJson.data) {
+          const list = testimonialsJson.data.testimonials || [];
+          if (list.length > 0) {
+            const sumRating = list.reduce((acc: number, item: any) => acc + (item.rating || 5), 0);
+            const avg = (sumRating / list.length).toFixed(1);
+            const clientAvatars = list.slice(0, 4).map((t: any) => ({
+              initials: (t.name || t.clientName || "CL").slice(0, 2).toUpperCase(),
+              avatarUrl: t.avatarUrl || t.avatar || t.imageUrl,
+              name: t.name || t.clientName || "Client",
+            }));
+
+            setRatingStats({
+              avgRating: avg,
+              totalReviews: list.length,
+              avatars: clientAvatars,
+            });
+          }
+        }
+      } catch (err) {
+        console.warn("Using default rating stats:", err);
+      }
+    }
+
+    loadDynamicHeroData();
+  }, []);
 
   // GSAP Background Animations
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.to(blobRef.current, {
-        rotate: 360,
-        duration: 40,
-        ease: "none",
-        repeat: -1,
-      });
-      gsap.to(ringRef.current, {
-        rotate: -360,
-        duration: 60,
-        ease: "none",
-        repeat: -1,
-      });
+      if (blobRef.current) {
+        gsap.to(blobRef.current, {
+          rotate: 360,
+          duration: 40,
+          ease: "none",
+          repeat: -1,
+        });
+      }
+      if (ringRef.current) {
+        gsap.to(ringRef.current, {
+          rotate: -360,
+          duration: 60,
+          ease: "none",
+          repeat: -1,
+        });
+      }
     });
     return () => ctx.revert();
   }, []);
+
+  // Fallback while loading initial data (Prevents old image flash)
+  const currentHero = heroData || DEFAULT_LANDING_DATA.hero;
+
+  const mvpWeeks = Number(currentHero.estimatorMvpWeeks) || 3;
+  const scaleWeeks = Number(currentHero.estimatorScaleWeeks) || 8;
+  const estimatedWeeks = projectScope === "mvp" ? mvpWeeks : scaleWeeks;
+
+  const pillars = currentHero.pillars || DEFAULT_LANDING_DATA.hero.pillars;
+  const imageUrl = currentHero.imageUrl || DEFAULT_LANDING_DATA.hero.imageUrl;
 
   return (
     <section className="relative overflow-hidden pt-28 pb-20 lg:pt-36 lg:pb-28 transition-colors duration-300 bg-slate-50 dark:bg-[#0b0d22] text-slate-900 dark:text-slate-100">
       
       {/* ================= SPOTLIGHT & GRAPH GRID BACKGROUND ================= */}
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        
-        {/* Fine Linear Graph Grid with Radial Mask (fades grid smoothly near edges) */}
         <div 
           className="absolute inset-0 bg-[linear-gradient(to_right,#0000000a_1px,transparent_1px),linear-gradient(to_bottom,#0000000a_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#ffffff0d_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0d_1px,transparent_1px)] bg-[size:36px_36px] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_40%,#000_60%,transparent_100%)]" 
         />
-
-        {/* Central Ambient Purple/Blue Radial Spotlight Glow */}
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[550px] w-[850px] rounded-full bg-gradient-to-tr from-violet-600/25 via-indigo-600/20 to-blue-500/10 dark:from-violet-600/30 dark:via-indigo-500/20 dark:to-purple-500/15 blur-[130px]" />
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid min-w-0 items-center gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-12">
           
-          {/* ================= LEFT COLUMN: COPY & CONVERSION ================= */}
+          {/* ================= LEFT COLUMN: COPY & DYNAMIC CONVERSION ================= */}
           <motion.div variants={containerVariants} initial="hidden" animate="show" className="min-w-0">
             
-            {/* Top Pill Badge */}
+            {/* DYNAMIC TOP PILL BADGE */}
             <motion.div variants={itemVariants} className="inline-flex max-w-full">
-              <div className="inline-flex max-w-full flex-wrap items-center gap-x-2 gap-y-1 rounded-full border border-violet-200/80 bg-violet-50/90 dark:border-violet-800/60 dark:bg-violet-950/60 px-3 py-1 sm:px-4 sm:py-1.5 text-fluid-xs font-semibold text-violet-600 dark:text-violet-300 shadow-sm backdrop-blur-md">
+              <div className="inline-flex max-w-full flex-wrap items-center gap-x-2 gap-y-1 rounded-full border border-violet-200/80 bg-violet-50/90 dark:border-violet-800/60 dark:bg-violet-950/60 px-3 py-1 sm:px-4 sm:py-1.5 text-fluid-xs font-semibold text-violet-600 dark:text-violet-300 shadow-xs backdrop-blur-md">
                 <Zap className="h-3.5 w-3.5 shrink-0 text-violet-600 dark:text-violet-300 animate-pulse" />
-                <span className="break-words">Next-Gen Engineering Studio</span>
-                <span className="hidden h-1 w-1 shrink-0 rounded-full bg-violet-400 dark:bg-violet-500 min-[400px]:inline-block" />
-                <span className="text-violet-600 dark:text-violet-300 font-medium break-words">AI & Cloud Architecture</span>
+                <span className="break-words">{currentHero.badge || "Next-Gen Engineering Studio"}</span>
+                {currentHero.badgeSubtext && (
+                  <>
+                    <span className="hidden h-1 w-1 shrink-0 rounded-full bg-violet-400 dark:bg-violet-500 min-[400px]:inline-block" />
+                    <span className="text-violet-600 dark:text-violet-300 font-medium break-words">
+                      {currentHero.badgeSubtext}
+                    </span>
+                  </>
+                )}
               </div>
             </motion.div>
 
-            {/* Main Headline */}
+            {/* DYNAMIC MAIN HEADLINE */}
             <motion.h1
               variants={itemVariants}
               className="mt-6 hero-title sm:leading-[1.12]"
             >
-              Empowering Business with{" "}
+              {currentHero.title || "Empowering Business with"}{" "}
               <span className="bg-gradient-to-r from-orange-500 via-amber-500 to-violet-600 dark:from-orange-400 dark:via-amber-400 dark:to-violet-400 bg-clip-text text-transparent">
-                Clickpoint Precision
+                {currentHero.titleHighlight || "Clickpoint Precision"}
               </span>
             </motion.h1>
 
-            {/* Subtitle */}
+            {/* DYNAMIC SUBTITLE */}
             <motion.p
               variants={itemVariants}
               className="mt-6 max-w-xl hero-subtitle text-slate-600 dark:text-slate-300"
             >
-              From Autonomous AI Agents to enterprise-grade web applications, we design and scale custom software built to outpace your competition.
+              {currentHero.subtitle || "From Autonomous AI Agents to enterprise-grade web applications, we design and scale custom software built to outpace your competition."}
             </motion.p>
 
-            {/* Key Value Pillars */}
-            <motion.div variants={itemVariants} className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-fluid-sm text-slate-700 dark:text-slate-300 font-medium">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-violet-600 dark:text-violet-400 shrink-0" />
-                <span>Custom AI & LLM Systems</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-violet-600 dark:text-violet-400 shrink-0" />
-                <span>High-Performance Backend</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-violet-600 dark:text-violet-400 shrink-0" />
-                <span>Enterprise SOC2 Security</span>
-              </div>
-            </motion.div>
+            {/* DYNAMIC VALUE PILLARS */}
+            {pillars && pillars.length > 0 && (
+              <motion.div variants={itemVariants} className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-fluid-sm text-slate-700 dark:text-slate-300 font-medium">
+                {pillars.map((pillarText: string, idx: number) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-violet-600 dark:text-violet-400 shrink-0" />
+                    <span>{pillarText}</span>
+                  </div>
+                ))}
+              </motion.div>
+            )}
 
-            {/* Primary Action Buttons */}
+            {/* DYNAMIC PRIMARY & SECONDARY ACTION BUTTONS */}
             <motion.div variants={itemVariants} className="mt-8 flex flex-col gap-3 min-[400px]:flex-row min-[400px]:flex-wrap min-[400px]:items-center min-[400px]:gap-4">
-              <a href="/contact" className="w-full min-[400px]:w-auto"> 
-                <Button size="lg" className="group w-full min-[400px]:w-auto shadow-lg shadow-violet-600/25 bg-violet-600 hover:bg-violet-700 dark:bg-violet-600 dark:hover:bg-violet-500 text-white font-semibold px-6 py-3 rounded-xl transition-all">
-                  Start Your Project
+              <a href={currentHero.primaryCtaLink || "/contact"} className="w-full min-[400px]:w-auto"> 
+                <Button size="lg" className="group w-full min-[400px]:w-auto shadow-md shadow-violet-600/20 bg-violet-600 hover:bg-violet-700 dark:bg-violet-600 dark:hover:bg-violet-500 text-white font-semibold px-6 py-3 rounded-xl transition-all">
+                  <span>{currentHero.primaryCtaText || "Start Your Project"}</span>
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Button>
               </a>
 
-              <a href="/case-studies" className="w-full min-[400px]:w-auto">
+              <a href={currentHero.secondaryCtaLink || "/case-studies"} className="w-full min-[400px]:w-auto">
                 <Button variant="outline" size="lg" className="w-full min-[400px]:w-auto border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-900 text-slate-700 dark:text-slate-200 font-semibold px-6 py-3 rounded-xl">
-                  Explore Case Studies
+                  <span>{currentHero.secondaryCtaText || "Explore Case Studies"}</span>
                 </Button>
               </a>
             </motion.div>
 
-            {/* Interactive Speed & Estimation Mini Widget */}
-            <motion.div variants={itemVariants} className="mt-8 w-full min-w-0 max-w-lg rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-[#0c0e22]/70 p-3.5 sm:p-4 shadow-sm backdrop-blur-md">
+            {/* 100% DYNAMIC INSTANT DEVELOPMENT ESTIMATOR WIDGET */}
+            <motion.div variants={itemVariants} className="mt-8 w-full min-w-0 max-w-lg rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-[#0c0e22]/80 p-3.5 sm:p-4 backdrop-blur-md">
               <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <span className="text-fluid-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5 min-w-0">
                   <Calculator className="h-3.5 w-3.5 shrink-0 text-violet-600 dark:text-violet-400" />
-                  <span className="break-words">Instant Development Estimator</span>
+                  <span className="break-words">{currentHero.estimatorTitle || "Instant Development Estimator"}</span>
                 </span>
                 <span className="shrink-0 self-start text-fluid-xs font-bold text-violet-600 dark:text-violet-300 bg-violet-50 dark:bg-violet-950/80 px-2.5 py-0.5 rounded-full border border-violet-100 dark:border-violet-800/50 whitespace-nowrap">
                   {estimatedWeeks} Weeks Avg. Delivery
                 </span>
               </div>
+
               <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-2 text-fluid-sm font-medium">
                 <button
-                  onClick={() => { setProjectScope("mvp"); setEstimatedWeeks(3); }}
-                  className={`py-2 px-3 rounded-lg border text-left transition-all ${
+                  onClick={() => setProjectScope("mvp")}
+                  className={`py-2.5 px-3.5 rounded-xl border text-left transition-all cursor-pointer ${
                     projectScope === "mvp"
-                      ? "border-violet-600 bg-violet-50/80 text-violet-900 dark:border-violet-500 dark:bg-violet-950/80 dark:text-violet-300 shadow-sm"
+                      ? "border-violet-600 bg-violet-50/90 text-violet-900 dark:border-violet-500 dark:bg-violet-950/90 dark:text-violet-300 shadow-xs"
                       : "border-slate-200 dark:border-slate-800 bg-white dark:bg-[#090b1c] text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50"
                   }`}
                 >
-                  <p className="font-bold">AI MVP / Prototype</p>
-                  <p className="text-fluid-2xs text-slate-500 dark:text-slate-400">Fast 2-4 week launch</p>
+                  <div className="flex items-center justify-between">
+                    <p className="font-bold text-xs">{currentHero.estimatorMvpTitle || "AI MVP / Prototype"}</p>
+                    <span className="text-[10px] font-extrabold text-violet-600 dark:text-violet-400">{mvpWeeks} wks</span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{currentHero.estimatorMvpSubtext || "Fast 2-4 week launch"}</p>
                 </button>
+
                 <button
-                  onClick={() => { setProjectScope("scale"); setEstimatedWeeks(8); }}
-                  className={`py-2 px-3 rounded-lg border text-left transition-all ${
+                  onClick={() => setProjectScope("scale")}
+                  className={`py-2.5 px-3.5 rounded-xl border text-left transition-all cursor-pointer ${
                     projectScope === "scale"
-                      ? "border-violet-600 bg-violet-50/80 text-violet-900 dark:border-violet-500 dark:bg-violet-950/80 dark:text-violet-300 shadow-sm"
+                      ? "border-violet-600 bg-violet-50/90 text-violet-900 dark:border-violet-500 dark:bg-violet-950/90 dark:text-violet-300 shadow-xs"
                       : "border-slate-200 dark:border-slate-800 bg-white dark:bg-[#090b1c] text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50"
                   }`}
                 >
-                  <p className="font-bold">Full Enterprise Product</p>
-                  <p className="text-fluid-2xs text-slate-500 dark:text-slate-400">Scalable Architecture</p>
+                  <div className="flex items-center justify-between">
+                    <p className="font-bold text-xs">{currentHero.estimatorScaleTitle || "Full Enterprise Product"}</p>
+                    <span className="text-[10px] font-extrabold text-violet-600 dark:text-violet-400">{scaleWeeks} wks</span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{currentHero.estimatorScaleSubtext || "Scalable Architecture"}</p>
                 </button>
               </div>
             </motion.div>
 
-            {/* Social Proof Rating */}
+            {/* DYNAMIC SOCIAL PROOF & TESTIMONIALS RATING BAR */}
             <motion.div variants={itemVariants} className="mt-8 flex flex-col gap-4 pt-4 border-t border-slate-200/80 dark:border-slate-800/80 min-[400px]:flex-row min-[400px]:items-center">
+              {/* Dynamic Real Testimonial Client Avatars */}
               <div className="flex -space-x-2 overflow-hidden shrink-0">
-                <div className="inline-block h-9 w-9 rounded-full ring-2 ring-white dark:ring-[#070814] bg-gradient-to-tr from-violet-500 to-indigo-600 flex items-center justify-center text-white text-fluid-xs font-bold">AK</div>
-                <div className="inline-block h-9 w-9 rounded-full ring-2 ring-white dark:ring-[#070814] bg-gradient-to-tr from-amber-500 to-orange-500 flex items-center justify-center text-white text-fluid-xs font-bold">SR</div>
-                <div className="inline-block h-9 w-9 rounded-full ring-2 ring-white dark:ring-[#070814] bg-gradient-to-tr from-emerald-500 to-teal-600 flex items-center justify-center text-white text-fluid-xs font-bold">MP</div>
-                <div className="inline-block h-9 w-9 rounded-full ring-2 ring-white dark:ring-[#070814] bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center text-white text-fluid-xs font-bold">+99</div>
+                {ratingStats.avatars.map((client, i) => (
+                  <div
+                    key={i}
+                    className="inline-block h-9 w-9 rounded-full ring-2 ring-white dark:ring-[#070814] bg-gradient-to-tr from-violet-500 to-indigo-600 overflow-hidden flex items-center justify-center text-white text-fluid-xs font-bold shrink-0 shadow-xs"
+                    title={client.name}
+                  >
+                    {client.avatarUrl ? (
+                      <img src={client.avatarUrl} alt={client.name} className="h-full w-full object-cover" />
+                    ) : (
+                      <span>{client.initials}</span>
+                    )}
+                  </div>
+                ))}
               </div>
+
               <div>
                 <div className="flex items-center gap-1 text-amber-500 text-fluid-sm">
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
                   ))}
-                  <span className="ml-1 text-fluid-xs font-bold text-slate-800 dark:text-slate-200">4.9/5 Rating</span>
+                  <span className="ml-1 text-fluid-xs font-bold text-slate-800 dark:text-slate-200">
+                    {ratingStats.avgRating}/5 Rating ({ratingStats.totalReviews}+ Verified Reviews)
+                  </span>
                 </div>
-                <p className="text-fluid-xs text-slate-500 dark:text-slate-400 font-medium">Engineered 50+ successful web & AI applications</p>
+                <p className="text-fluid-xs text-slate-500 dark:text-slate-400 font-medium">
+                  {currentHero.socialProofText || "Engineered 50+ successful web & AI applications"}
+                </p>
               </div>
             </motion.div>
           </motion.div>
 
-          {/* ================= RIGHT COLUMN: INTERACTIVE TECH STUDIO DASHBOARD ================= */}
-          <div className="relative mx-auto w-full min-w-0 max-w-lg overflow-hidden lg:max-w-none">
-            <div className="relative flex min-h-[420px] w-full items-center justify-center min-[400px]:min-h-[480px] sm:min-h-[520px]">
+          {/* ================= RIGHT COLUMN: BIGGER DYNAMIC IMAGE SHOWCASE (NO TABS, CLEAN SHADOWLESS FRAME) ================= */}
+          <div className="relative mx-auto w-full min-w-0 max-w-lg lg:max-w-none">
+            <div className="relative flex min-h-[460px] sm:min-h-[520px] lg:min-h-[560px] w-full items-center justify-center">
               
-              {/* Outer Dashed Rotating Radar Graph Ring */}
-              <div ref={ringRef} className="absolute inset-0 rounded-full border border-dashed border-violet-300/40 dark:border-violet-700/40" />
+              {/* Dashed Rotating Circular Ring (Centered) */}
+              <div ref={ringRef} className="absolute h-[380px] w-[380px] sm:h-[460px] sm:w-[460px] lg:h-[500px] lg:w-[500px] rounded-full border border-dashed border-violet-300/50 dark:border-violet-700/50 pointer-events-none" />
               
-              {/* Inner Glowing Orb */}
-              <div ref={blobRef} className="absolute h-56 w-56 min-[400px]:h-72 min-[400px]:w-72 sm:h-80 sm:w-80 rounded-[45%_55%_60%_40%/45%_40%_60%_55%] bg-gradient-to-br from-violet-500/40 via-indigo-400/30 to-amber-400/40 dark:from-violet-600/30 dark:via-indigo-500/20 dark:to-amber-500/20 blur-xl opacity-80" />
+              {/* Centered Glowing Ambient Orb */}
+              <div ref={blobRef} className="absolute h-64 w-64 sm:h-80 sm:w-80 rounded-[45%_55%_60%_40%/45%_40%_60%_55%] bg-gradient-to-br from-violet-500/30 via-indigo-400/20 to-amber-400/30 dark:from-violet-600/25 dark:via-indigo-500/15 dark:to-amber-500/15 blur-2xl opacity-75 pointer-events-none" />
 
-              {/* Main Interactive Studio Dashboard */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                className="relative z-10 w-full rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white/90 dark:bg-[#0c0e22]/90 p-5 shadow-2xl shadow-violet-950/10 dark:shadow-black/70 backdrop-blur-xl"
-              >
-                {/* Header with Switchable Tabs */}
-                <div className="flex flex-col gap-3 border-b border-slate-100 dark:border-slate-800 pb-3 min-[400px]:flex-row min-[400px]:items-center min-[400px]:justify-between">
-                  <div className="flex min-w-0 items-center gap-2">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-violet-600 text-white shadow-md shadow-violet-600/30">
-                      <Bot className="h-5 w-5" />
-                    </div>
-                    <div className="min-w-0">
-                      <h4 className="font-display text-fluid-sm font-bold text-slate-900 dark:text-slate-100 truncate">Clickpoint Tech Engine</h4>
-                      <p className="text-fluid-2xs text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
-                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500 animate-ping" />
-                        Live Engine Sandbox
-                      </p>
-                    </div>
+              {/* Glassmorphic Browser Showcase Window (No Muddy Shadow) */}
+              <div className="relative z-10 w-full rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 text-slate-900 dark:text-slate-100 overflow-hidden backdrop-blur-xl transition-all duration-300">
+                
+                {/* Clean Browser Header Bar (NO TABS - ONLY DOTS & DYNAMIC TITLE) */}
+                <div className="flex items-center justify-between px-4 py-3 bg-slate-100/90 dark:bg-slate-950/90 border-b border-slate-200/80 dark:border-slate-800">
+                  <div className="flex items-center gap-2">
+                    <div className="h-3 w-3 rounded-full bg-red-500/80" />
+                    <div className="h-3 w-3 rounded-full bg-yellow-500/80" />
+                    <div className="h-3 w-3 rounded-full bg-green-500/80" />
                   </div>
 
-                  {/* Switcher Tabs */}
-                  <div className="flex shrink-0 items-center gap-1 self-start rounded-lg bg-slate-100 dark:bg-slate-800/80 p-1 min-[400px]:self-auto">
-                    <button
-                      onClick={() => setActiveTab("agent")}
-                      className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-fluid-xs font-semibold transition-all ${
-                        activeTab === "agent"
-                          ? "bg-white dark:bg-slate-700 text-violet-700 dark:text-violet-300 shadow-sm"
-                          : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-                      }`}
-                    >
-                      <Sparkles className="h-3 w-3" /> AI Agent
-                    </button>
-                    <button
-                      onClick={() => setActiveTab("web")}
-                      className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-fluid-xs font-semibold transition-all ${
-                        activeTab === "web"
-                          ? "bg-white dark:bg-slate-700 text-violet-700 dark:text-violet-300 shadow-sm"
-                          : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-                      }`}
-                    >
-                      <Code2 className="h-3 w-3" /> Web API
-                    </button>
+                  {/* Dynamic Window Title */}
+                  <span className="text-xs font-mono font-bold text-slate-600 dark:text-slate-300 truncate max-w-[240px] sm:max-w-none">
+                    {currentHero.showcaseTitle || "clickpoint-studio-v2.ts"}
+                  </span>
+
+                  <div className="w-12" />
+                </div>
+
+                {/* BIGGER DYNAMIC IMAGE PLACEHOLDER CANVAS */}
+                <div className="relative group p-3 sm:p-4">
+                  {/* Dynamic Top-Left Badge */}
+                  <div className="absolute top-6 left-6 z-20 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-slate-900/90 text-white border border-slate-700/90 text-fluid-2xs font-bold shadow-md backdrop-blur-md">
+                    <Activity className="h-3.5 w-3.5 text-emerald-400 animate-pulse shrink-0" />
+                    <span>{currentHero.showcaseBadgeTopLeft || "99.9% Uptime SLA"}</span>
+                  </div>
+
+                  {/* Dynamic Bottom-Right Badge */}
+                  <div className="absolute bottom-6 right-6 z-20 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-violet-950/90 text-violet-200 border border-violet-700/90 text-fluid-2xs font-bold shadow-md backdrop-blur-md">
+                    <Cpu className="h-3.5 w-3.5 text-violet-400 shrink-0" />
+                    <span>{currentHero.showcaseBadgeBottomRight || "Autonomous AI RAG Engine"}</span>
+                  </div>
+
+                  {/* Image Container (Bigger Height: 340px to 440px) */}
+                  <div className="relative h-80 sm:h-96 lg:h-[420px] w-full rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-950 flex items-center justify-center">
+                    {imageUrl ? (
+                      <>
+                        <img
+                          src={imageUrl}
+                          alt="Hero Studio Showcase"
+                          className="h-full w-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent pointer-events-none" />
+                      </>
+                    ) : (
+                      <div className="h-full w-full bg-gradient-to-tr from-slate-950 via-slate-900 to-violet-950/40 animate-pulse flex flex-col items-center justify-center p-6 space-y-3">
+                        <div className="h-10 w-10 rounded-2xl bg-violet-600/20 border border-violet-500/30 flex items-center justify-center text-violet-400">
+                          <Zap className="h-5 w-5 animate-spin" />
+                        </div>
+                        <p className="text-xs font-mono font-bold text-slate-400">Loading Dynamic Studio Showcase...</p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                {/* Metrics Grid */}
-                <div className="mt-3 grid grid-cols-2 gap-2.5">
-                  <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/40 p-3">
-                    <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-fluid-2xs">
-                      <span>Response Latency</span>
-                      <Activity className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400" />
-                    </div>
-                    <p className="font-display text-fluid-lg font-extrabold text-slate-900 dark:text-slate-100">&lt; 140ms</p>
-                    <p className="text-fluid-2xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5">
-                      <TrendingUp className="h-3 w-3" /> Optimized for speed
-                    </p>
-                  </div>
-
-                  <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/40 p-3">
-                    <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-fluid-2xs">
-                      <span>Architecture</span>
-                      <Cpu className="h-3.5 w-3.5 text-amber-500" />
-                    </div>
-                    <p className="font-display text-fluid-lg font-extrabold text-slate-900 dark:text-slate-100">Cloud-Native</p>
-                    <p className="text-fluid-2xs font-semibold text-violet-600 dark:text-violet-400 flex items-center gap-0.5">
-                      <ShieldCheck className="h-3 w-3" /> Auto-scalable
-                    </p>
-                  </div>
-                </div>
-
-                {/* Live Code Viewer Window */}
-                <div className="relative mt-3 rounded-xl bg-slate-950 p-3.5 text-fluid-xs text-slate-200 font-mono shadow-inner border border-slate-800">
-                  <div className="flex items-center justify-between text-slate-400 text-fluid-2xs mb-2 font-sans border-b border-slate-800 pb-1.5">
-                    <span className="flex items-center gap-1.5 text-slate-300 font-medium">
-                      <Terminal className="h-3.5 w-3.5 text-violet-400" />
-                      {activeTab === "agent" ? "agent-orchestrator.ts" : "api-route.ts"}
-                    </span>
-                    <button
-                      onClick={handleCopy}
-                      className="flex items-center gap-1 text-slate-400 hover:text-white transition-colors"
-                    >
-                      {copied ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
-                      <span>{copied ? "Copied" : "Copy"}</span>
-                    </button>
-                  </div>
-
-                  <AnimatePresence mode="wait">
-                    <motion.pre
-                      key={activeTab}
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -5 }}
-                      transition={{ duration: 0.2 }}
-                      className="overflow-x-auto text-fluid-2xs leading-relaxed text-slate-300 font-mono"
-                    >
-                      <code>{CODE_SNIPPETS[activeTab]}</code>
-                    </motion.pre>
-                  </AnimatePresence>
-                </div>
-              </motion.div>
-
-              {/* Floating Badge Top-Right */}
-              <motion.div
-                animate={{ y: [0, -8, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute right-1 top-1 z-20 hidden min-[400px]:block sm:-right-2 sm:top-2 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white/95 dark:bg-[#0c0e22]/95 px-3 py-2 sm:px-3.5 sm:py-2.5 shadow-xl backdrop-blur-md"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300">
-                    <TrendingUp className="h-3.5 w-3.5" />
-                  </div>
-                  <div>
-                    <p className="text-label text-slate-400">Time to MVP</p>
-                    <p className="font-display text-fluid-xs font-bold text-slate-900 dark:text-slate-100">2-3 Weeks</p>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Floating Badge Bottom-Left */}
-              <motion.div
-                animate={{ y: [0, 8, 0] }}
-                transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                className="absolute left-1 bottom-1 z-20 hidden min-[400px]:block sm:-left-3 sm:bottom-2 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white/95 dark:bg-[#0c0e22]/95 px-3 py-2 sm:px-3.5 sm:py-2.5 shadow-xl backdrop-blur-md"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-950/80 text-violet-700 dark:text-violet-300">
-                    <Layers className="h-3.5 w-3.5" />
-                  </div>
-                  <div>
-                    <p className="text-label text-slate-400">Deployment</p>
-                    <p className="font-display text-fluid-xs font-bold text-slate-900 dark:text-slate-100">Zero Downtime CI/CD</p>
-                  </div>
-                </div>
-              </motion.div>
-
+              </div>
             </div>
           </div>
 
         </div>
-
-        {/* Client Logos Infinite Scroll Marquee */}
-        <div className="mt-16 border-t border-slate-200/80 dark:border-slate-800/80 pt-10">
-          <p className="mb-6 text-center text-fluid-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500">
-            Trusted by fast-growing startups & market innovators
-          </p>
-          
-          <div className="relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_15%,black_85%,transparent)]">
-            <div className="flex w-max animate-marquee items-center gap-12 sm:gap-16">
-              {[...CLIENT_LOGOS_DATA, ...CLIENT_LOGOS_DATA].map((logo, i) => (
-                <div key={`${logo.name}-${i}`} className="flex items-center gap-2 group cursor-pointer">
-                  <span className="font-display text-fluid-lg font-bold text-slate-400 dark:text-slate-500 transition-colors group-hover:text-violet-600 dark:group-hover:text-violet-400">
-                    {logo.name}
-                  </span>
-                  <span className="rounded-full bg-violet-50 dark:bg-violet-950/80 px-2 py-0.5 text-fluid-2xs font-semibold text-violet-600 dark:text-violet-300 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {logo.category}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
       </div>
     </section>
   );

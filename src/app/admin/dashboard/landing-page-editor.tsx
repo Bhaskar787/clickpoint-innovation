@@ -40,9 +40,11 @@ import {
   Milestone,
   FileCode,
   SlidersHorizontal,
+  Calculator,
+  Code2,
 } from "lucide-react";
 import { DEFAULT_NAVBAR_DATA, DEFAULT_COMPANY_NAV_LINKS, CompanyNavItem } from "@/data/default-navbar-data";
-import { DEFAULT_LANDING_DATA } from "@/data/default-landing-data";
+import { DEFAULT_LANDING_DATA, DEFAULT_TECH_CATEGORIES, DEFAULT_TECH_ITEMS } from "@/data/default-landing-data";
 
 interface FileUploadControlProps {
   label: string;
@@ -436,6 +438,159 @@ export default function LandingPageEditor({ sectionId, onCloseSection }: Landing
     setLandingData({
       ...landingData,
       navbar: { ...navbarData, companyLinks: currentLinks },
+    });
+  }
+
+  // New Pillar Input State (Inside Hero Config)
+  const [newPillarText, setNewPillarText] = useState("");
+
+  // Hero Value Pillars CRUD Handlers
+  function handleAddPillar() {
+    if (!newPillarText || !newPillarText.trim()) {
+      toast.error("Please enter pillar title text");
+      return;
+    }
+    const currentPillars = landingData.hero?.pillars || DEFAULT_LANDING_DATA.hero.pillars;
+    setLandingData({
+      ...landingData,
+      hero: {
+        ...landingData.hero,
+        pillars: [...currentPillars, newPillarText.trim()],
+      },
+    });
+    setNewPillarText("");
+    toast.success(`Added value pillar "${newPillarText.trim()}"`);
+  }
+
+  function handleUpdatePillar(index: number, value: string) {
+    const currentPillars = [...(landingData.hero?.pillars || DEFAULT_LANDING_DATA.hero.pillars)];
+    currentPillars[index] = value;
+    setLandingData({
+      ...landingData,
+      hero: { ...landingData.hero, pillars: currentPillars },
+    });
+  }
+
+  function handleDeletePillar(index: number) {
+    const currentPillars = [...(landingData.hero?.pillars || DEFAULT_LANDING_DATA.hero.pillars)];
+    const removed = currentPillars[index];
+    currentPillars.splice(index, 1);
+    setLandingData({
+      ...landingData,
+      hero: { ...landingData.hero, pillars: currentPillars },
+    });
+    toast.info(`Removed pillar "${removed}"`);
+  }
+
+  function handleMovePillar(index: number, direction: "up" | "down") {
+    const currentPillars = [...(landingData.hero?.pillars || DEFAULT_LANDING_DATA.hero.pillars)];
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= currentPillars.length) return;
+    const temp = currentPillars[index];
+    currentPillars[index] = currentPillars[targetIndex];
+    currentPillars[targetIndex] = temp;
+    setLandingData({
+      ...landingData,
+      hero: { ...landingData.hero, pillars: currentPillars },
+    });
+  }
+
+  // Tech Stack & Categories Input State (Inside TechStack Config)
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [newTechName, setNewTechName] = useState("");
+  const [newTechCategory, setNewTechCategory] = useState("Web Development");
+  const [newTechTagline, setNewTechTagline] = useState("");
+  const [newTechIconUrl, setNewTechIconUrl] = useState("");
+
+  // Tech Category CRUD Handlers
+  function handleAddTechCategory() {
+    if (!newCategoryName || !newCategoryName.trim()) {
+      toast.error("Please enter a Category name");
+      return;
+    }
+    const name = newCategoryName.trim();
+    const id = name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    const currentCategories = landingData.techCategories || DEFAULT_TECH_CATEGORIES;
+    setLandingData({
+      ...landingData,
+      techCategories: [...currentCategories, { id, name }],
+    });
+    setNewCategoryName("");
+    toast.success(`Created tech category "${name}"`);
+  }
+
+  function handleDeleteTechCategory(id: string) {
+    const currentCategories = [...(landingData.techCategories || DEFAULT_TECH_CATEGORIES)];
+    const filtered = currentCategories.filter((c) => c.id !== id);
+    setLandingData({
+      ...landingData,
+      techCategories: filtered,
+    });
+    toast.info("Deleted tech category");
+  }
+
+  // Tech Item CRUD Handlers
+  function handleAddTechItem() {
+    if (!newTechName || !newTechName.trim()) {
+      toast.error("Please enter technology name");
+      return;
+    }
+    const name = newTechName.trim();
+    const id = name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    const currentItems = landingData.techItems || DEFAULT_TECH_ITEMS;
+
+    const newItem = {
+      id,
+      name,
+      category: newTechCategory,
+      tagline: newTechTagline.trim() || `${name} Integration`,
+      iconUrl: newTechIconUrl.trim(),
+    };
+
+    setLandingData({
+      ...landingData,
+      techItems: [newItem, ...currentItems],
+    });
+
+    setNewTechName("");
+    setNewTechTagline("");
+    setNewTechIconUrl("");
+    toast.success(`Added technology "${name}" under ${newTechCategory}!`);
+  }
+
+  function handleUpdateTechItem(index: number, key: string, value: any) {
+    const currentItems = [...(landingData.techItems || DEFAULT_TECH_ITEMS)];
+    currentItems[index] = {
+      ...currentItems[index],
+      [key]: value,
+    };
+    setLandingData({
+      ...landingData,
+      techItems: currentItems,
+    });
+  }
+
+  function handleDeleteTechItem(index: number) {
+    const currentItems = [...(landingData.techItems || DEFAULT_TECH_ITEMS)];
+    const removed = currentItems[index];
+    currentItems.splice(index, 1);
+    setLandingData({
+      ...landingData,
+      techItems: currentItems,
+    });
+    toast.info(`Removed "${removed.name}" from tech stack`);
+  }
+
+  function handleMoveTechItem(index: number, direction: "up" | "down") {
+    const currentItems = [...(landingData.techItems || DEFAULT_TECH_ITEMS)];
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= currentItems.length) return;
+    const temp = currentItems[index];
+    currentItems[index] = currentItems[targetIndex];
+    currentItems[targetIndex] = temp;
+    setLandingData({
+      ...landingData,
+      techItems: currentItems,
     });
   }
 
@@ -882,6 +1037,89 @@ export default function LandingPageEditor({ sectionId, onCloseSection }: Landing
                 />
               </div>
 
+              {/* HERO VALUE PILLARS CONFIGURATOR (FULL CRUD: ADD, EDIT, DELETE, REORDER) */}
+              <div className="md:col-span-2 p-4 rounded-xl bg-violet-500/10 border border-violet-200 dark:border-slate-800 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-violet-600" />
+                    <h4 className="text-xs font-extrabold uppercase tracking-wider text-violet-700 dark:text-violet-300">
+                      Hero Key Value Pillars (Checkmark Badges)
+                    </h4>
+                  </div>
+                  <span className="text-[10px] font-semibold text-slate-500">
+                    {(landingData.hero?.pillars || DEFAULT_LANDING_DATA.hero.pillars).length} Pillars Active
+                  </span>
+                </div>
+
+                {/* Add New Pillar Input Bar */}
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    placeholder="Enter new value pillar (e.g. SOC2 Type II Certified)..."
+                    value={newPillarText}
+                    onChange={(e) => setNewPillarText(e.target.value)}
+                    className="flex-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs font-bold text-slate-900 dark:text-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddPillar}
+                    className="px-4 py-2 rounded-xl bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 transition-colors flex items-center gap-1 shrink-0 cursor-pointer"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    <span>Add Pillar</span>
+                  </button>
+                </div>
+
+                {/* List of Hero Value Pillars with Edit, Move, Delete */}
+                <div className="space-y-2">
+                  {(landingData.hero?.pillars || DEFAULT_LANDING_DATA.hero.pillars).map((pillar: string, idx: number) => (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-white dark:bg-[#0b0f19] border border-slate-200 dark:border-slate-800"
+                    >
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                        <input
+                          type="text"
+                          value={pillar}
+                          onChange={(e) => handleUpdatePillar(idx, e.target.value)}
+                          className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-3 py-1 text-xs font-bold text-slate-900 dark:text-white"
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          type="button"
+                          disabled={idx === 0}
+                          onClick={() => handleMovePillar(idx, "up")}
+                          className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-violet-600 disabled:opacity-30 cursor-pointer"
+                          title="Move Up"
+                        >
+                          <ArrowUp className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          disabled={idx === (landingData.hero?.pillars || DEFAULT_LANDING_DATA.hero.pillars).length - 1}
+                          onClick={() => handleMovePillar(idx, "down")}
+                          className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-violet-600 disabled:opacity-30 cursor-pointer"
+                          title="Move Down"
+                        >
+                          <ArrowDown className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeletePillar(idx)}
+                          className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-red-500 cursor-pointer ml-1"
+                          title="Delete Pillar"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                   Primary Button Text
@@ -901,6 +1139,23 @@ export default function LandingPageEditor({ sectionId, onCloseSection }: Landing
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Primary Button Redirect URL Link
+                </label>
+                <input
+                  type="text"
+                  value={landingData.hero?.primaryCtaLink || "/contact"}
+                  onChange={(e) =>
+                    setLandingData({
+                      ...landingData,
+                      hero: { ...landingData.hero, primaryCtaLink: e.target.value },
+                    })
+                  }
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-violet-600 dark:text-violet-400 font-mono font-bold"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                   Secondary Button Text
                 </label>
                 <input
@@ -915,12 +1170,678 @@ export default function LandingPageEditor({ sectionId, onCloseSection }: Landing
                   className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-bold"
                 />
               </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Secondary Button Redirect URL Link
+                </label>
+                <input
+                  type="text"
+                  value={landingData.hero?.secondaryCtaLink || "/case-studies"}
+                  onChange={(e) =>
+                    setLandingData({
+                      ...landingData,
+                      hero: { ...landingData.hero, secondaryCtaLink: e.target.value },
+                    })
+                  }
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-violet-600 dark:text-violet-400 font-mono font-bold"
+                />
+              </div>
+
+              {/* ESTIMATOR WIDGET CONTROLS */}
+              <div className="md:col-span-2 pt-4 border-t border-slate-100 dark:border-slate-800 space-y-4">
+                <div className="flex items-center gap-2">
+                  <Calculator className="h-4 w-4 text-violet-600" />
+                  <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                    Instant Development Estimator Configurator
+                  </h4>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                      Estimator Box Header Title
+                    </label>
+                    <input
+                      type="text"
+                      value={landingData.hero?.estimatorTitle || "Instant Development Estimator"}
+                      onChange={(e) =>
+                        setLandingData({
+                          ...landingData,
+                          hero: { ...landingData.hero, estimatorTitle: e.target.value },
+                        })
+                      }
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3 py-1.5 text-xs font-bold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                      Option 1 (MVP) Title & Weeks
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Title..."
+                        value={landingData.hero?.estimatorMvpTitle || "AI MVP / Prototype"}
+                        onChange={(e) =>
+                          setLandingData({
+                            ...landingData,
+                            hero: { ...landingData.hero, estimatorMvpTitle: e.target.value },
+                          })
+                        }
+                        className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3 py-1.5 text-xs font-bold"
+                      />
+                      <input
+                        type="number"
+                        placeholder="Wks"
+                        value={landingData.hero?.estimatorMvpWeeks || 3}
+                        onChange={(e) =>
+                          setLandingData({
+                            ...landingData,
+                            hero: { ...landingData.hero, estimatorMvpWeeks: Number(e.target.value) },
+                          })
+                        }
+                        className="w-16 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-2 py-1.5 text-xs font-bold font-mono text-center"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
+                      Option 2 (Enterprise) Title & Weeks
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Title..."
+                        value={landingData.hero?.estimatorScaleTitle || "Full Enterprise Product"}
+                        onChange={(e) =>
+                          setLandingData({
+                            ...landingData,
+                            hero: { ...landingData.hero, estimatorScaleTitle: e.target.value },
+                          })
+                        }
+                        className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3 py-1.5 text-xs font-bold"
+                      />
+                      <input
+                        type="number"
+                        placeholder="Wks"
+                        value={landingData.hero?.estimatorScaleWeeks || 8}
+                        onChange={(e) =>
+                          setLandingData({
+                            ...landingData,
+                            hero: { ...landingData.hero, estimatorScaleWeeks: Number(e.target.value) },
+                          })
+                        }
+                        className="w-16 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-2 py-1.5 text-xs font-bold font-mono text-center"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* HERO RIGHT SHOWCASE MEDIA & CLOUDINARY UPLOAD */}
+              <div className="md:col-span-2 pt-4 border-t border-slate-100 dark:border-slate-800 space-y-4">
+                <div className="flex items-center gap-2">
+                  <ImageIcon className="h-4 w-4 text-violet-600" />
+                  <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                    Hero Right Media Showcase & Image Configurator
+                  </h4>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Showcase Window Title Label
+                    </label>
+                    <input
+                      type="text"
+                      value={landingData.hero?.showcaseTitle || "clickpoint-studio-v2.ts"}
+                      onChange={(e) =>
+                        setLandingData({
+                          ...landingData,
+                          hero: { ...landingData.hero, showcaseTitle: e.target.value },
+                        })
+                      }
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs font-mono font-bold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Overlay Badge (Top Left)
+                    </label>
+                    <input
+                      type="text"
+                      value={landingData.hero?.showcaseBadgeTopLeft || "99.9% Uptime SLA"}
+                      onChange={(e) =>
+                        setLandingData({
+                          ...landingData,
+                          hero: { ...landingData.hero, showcaseBadgeTopLeft: e.target.value },
+                        })
+                      }
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs font-bold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Overlay Badge (Bottom Right)
+                    </label>
+                    <input
+                      type="text"
+                      value={landingData.hero?.showcaseBadgeBottomRight || "Autonomous AI RAG Engine"}
+                      onChange={(e) =>
+                        setLandingData({
+                          ...landingData,
+                          hero: { ...landingData.hero, showcaseBadgeBottomRight: e.target.value },
+                        })
+                      }
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs font-bold"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <FileUploadControl
+                      label="Hero Right Showcase Image (Cloudinary Supported)"
+                      value={landingData.hero?.imageUrl || ""}
+                      placeholder="e.g. Unsplash URL or Upload Cloudinary Image"
+                      helperText="Displayed inside 3D glassmorphic studio canvas"
+                      onChange={(val) =>
+                        setLandingData({
+                          ...landingData,
+                          hero: { ...landingData.hero, imageUrl: val },
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="md:col-span-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Social Proof Text (Displayed under Testimonials Rating)
+                </label>
+                <input
+                  type="text"
+                  value={landingData.hero?.socialProofText || "Engineered 50+ successful web & AI applications"}
+                  onChange={(e) =>
+                    setLandingData({
+                      ...landingData,
+                      hero: { ...landingData.hero, socialProofText: e.target.value },
+                    })
+                  }
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-medium"
+                />
+              </div>
             </div>
           </div>
         )}
 
-        {/* GENERIC SECTION FORM EDITOR FOR SECTIONS #03 TO #12 */}
-        {["services", "industries", "timeline", "cta"].includes(activeSectionId) && (
+        {/* SECTION 05: TECH STACK & ARCHITECTURE CONFIGURATOR */}
+        {activeSectionId === "techstack" && (
+          <div className="space-y-6">
+            {/* HEADER COPY CONFIGURATOR */}
+            <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-5">
+              <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
+                <span className="font-mono text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">
+                  05.A
+                </span>
+                <h3 className="text-sm font-bold">Tech Stack Section Header Copy</h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Section Pill Badge Text
+                  </label>
+                  <input
+                    type="text"
+                    value={landingData.techStackHeader?.badge || "Tech Stack & Architecture"}
+                    onChange={(e) =>
+                      setLandingData({
+                        ...landingData,
+                        techStackHeader: { ...landingData.techStackHeader, badge: e.target.value },
+                      })
+                    }
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs font-bold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Section Title Prefix Text
+                  </label>
+                  <input
+                    type="text"
+                    value={landingData.techStackHeader?.title || "Built with Modern"}
+                    onChange={(e) =>
+                      setLandingData({
+                        ...landingData,
+                        techStackHeader: { ...landingData.techStackHeader, title: e.target.value },
+                      })
+                    }
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs font-bold"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Section Title Highlight (Orange/Gradient Text)
+                  </label>
+                  <input
+                    type="text"
+                    value={landingData.techStackHeader?.titleHighlight || "Battle-Tested Technologies"}
+                    onChange={(e) =>
+                      setLandingData({
+                        ...landingData,
+                        techStackHeader: { ...landingData.techStackHeader, titleHighlight: e.target.value },
+                      })
+                    }
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-amber-500 font-extrabold"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Section Subtitle Description
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={landingData.techStackHeader?.subtitle || "We leverage cutting-edge frameworks, cloud platforms, and AI SDKs to build enterprise-grade software."}
+                    onChange={(e) =>
+                      setLandingData({
+                        ...landingData,
+                        techStackHeader: { ...landingData.techStackHeader, subtitle: e.target.value },
+                      })
+                    }
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] p-3 text-xs font-medium"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* TECH CATEGORIES CONFIGURATOR (FULL CRUD) */}
+            <div className="rounded-2xl border border-violet-200/80 dark:border-slate-800 bg-gradient-to-b from-white via-violet-50/20 to-white dark:from-[#131927] dark:to-[#131927] p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">
+                    05.B
+                  </span>
+                  <h3 className="text-sm font-bold flex items-center gap-2">
+                    <Layers className="h-4 w-4 text-violet-600" />
+                    Tech Stack Categories ({(landingData.techCategories || DEFAULT_TECH_CATEGORIES).length} Categories)
+                  </h3>
+                </div>
+              </div>
+
+              {/* Add New Category Box */}
+              <div className="flex items-center gap-2 p-3 rounded-xl bg-violet-500/10 border border-violet-200 dark:border-slate-800">
+                <input
+                  type="text"
+                  placeholder="Create new Tech Category (e.g. AI & LLM Infra)..."
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  className="flex-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs font-bold"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddTechCategory}
+                  className="px-4 py-2 rounded-xl bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 transition-colors flex items-center gap-1 shrink-0 cursor-pointer"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Add Category</span>
+                </button>
+              </div>
+
+              {/* Category Badges Pills */}
+              <div className="flex flex-wrap gap-2 pt-2">
+                {(landingData.techCategories || DEFAULT_TECH_CATEGORIES).map((cat: any) => (
+                  <div
+                    key={cat.id || cat.name}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-[#0b0f19] border border-slate-200 dark:border-slate-800 text-xs font-bold"
+                  >
+                    <span>{cat.name}</span>
+                    {cat.id !== "all" && cat.name !== "All Technologies" && (
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteTechCategory(cat.id)}
+                        className="text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
+                        title="Delete Category"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* TECH STACK ITEMS CONFIGURATOR (FULL CRUD WITH CLOUDINARY LOGO UPLOAD) */}
+            <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-5">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">
+                    05.C
+                  </span>
+                  <h3 className="text-sm font-bold flex items-center gap-2">
+                    <FileCode className="h-4 w-4 text-violet-600" />
+                    Tech Stack Items Grid ({(landingData.techItems || DEFAULT_TECH_ITEMS).length} Technologies)
+                  </h3>
+                </div>
+              </div>
+
+              {/* Add New Tech Stack Item Box */}
+              <div className="p-4 rounded-xl bg-violet-500/10 border border-violet-200 dark:border-slate-800 space-y-3">
+                <p className="text-xs font-bold text-violet-700 dark:text-violet-300">Add New Technology to Stack</p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <input
+                    type="text"
+                    placeholder="Tech Name (e.g. OpenAI GPT-4o)..."
+                    value={newTechName}
+                    onChange={(e) => setNewTechName(e.target.value)}
+                    className="rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs font-bold"
+                  />
+
+                  <select
+                    value={newTechCategory}
+                    onChange={(e) => setNewTechCategory(e.target.value)}
+                    className="rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs font-bold"
+                  >
+                    {(landingData.techCategories || DEFAULT_TECH_CATEGORIES)
+                      .filter((c: any) => c.id !== "all" && c.name !== "All Technologies")
+                      .map((c: any) => (
+                        <option key={c.id || c.name} value={c.name}>
+                          {c.name}
+                        </option>
+                      ))}
+                  </select>
+
+                  <input
+                    type="text"
+                    placeholder="Tagline / Subtext (e.g. LLM RAG Pipeline)..."
+                    value={newTechTagline}
+                    onChange={(e) => setNewTechTagline(e.target.value)}
+                    className="rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs font-medium"
+                  />
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1">
+                  <div className="flex-1">
+                    <FileUploadControl
+                      label="Tech Logo Image (PNG / SVG via Cloudinary)"
+                      value={newTechIconUrl}
+                      placeholder="e.g. Cloudinary Image URL or PNG link..."
+                      onChange={(val) => setNewTechIconUrl(val)}
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleAddTechItem}
+                    className="px-5 py-2.5 rounded-xl bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 transition-colors flex items-center justify-center gap-1.5 shrink-0 cursor-pointer self-end"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span>Add Technology</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* LIST OF TECH STACK ITEMS */}
+              <div className="space-y-3">
+                {(landingData.techItems || DEFAULT_TECH_ITEMS).map((item: any, idx: number) => (
+                  <div
+                    key={item.id || idx}
+                    className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-white dark:bg-[#0b0f19] border border-slate-200 dark:border-slate-800 shadow-2xs group"
+                  >
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <span className="font-mono text-xs font-bold text-slate-400 w-6 shrink-0">
+                        {idx + 1}
+                      </span>
+
+                      {/* Image Logo Thumbnail */}
+                      <div className="h-10 w-10 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1 shrink-0 flex items-center justify-center overflow-hidden">
+                        {item.iconUrl ? (
+                          <img src={item.iconUrl} alt={item.name} className="h-full w-full object-contain" />
+                        ) : (
+                          <Code2 className="h-5 w-5 text-violet-600" />
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 flex-1 min-w-0">
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-400 uppercase">Tech Name</label>
+                          <input
+                            type="text"
+                            value={item.name || ""}
+                            onChange={(e) => handleUpdateTechItem(idx, "name", e.target.value)}
+                            className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-1 text-xs text-slate-900 dark:text-white font-bold"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-400 uppercase">Category</label>
+                          <select
+                            value={item.category || "Web Development"}
+                            onChange={(e) => handleUpdateTechItem(idx, "category", e.target.value)}
+                            className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-1 text-xs text-slate-900 dark:text-white font-bold"
+                          >
+                            {(landingData.techCategories || DEFAULT_TECH_CATEGORIES)
+                              .filter((c: any) => c.id !== "all" && c.name !== "All Technologies")
+                              .map((c: any) => (
+                                <option key={c.id || c.name} value={c.name}>
+                                  {c.name}
+                                </option>
+                              ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-400 uppercase">Tagline / Subtext</label>
+                          <input
+                            type="text"
+                            value={item.tagline || ""}
+                            onChange={(e) => handleUpdateTechItem(idx, "tagline", e.target.value)}
+                            className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-1 text-xs text-slate-700 dark:text-slate-300 font-medium"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-end gap-1 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800">
+                      <button
+                        type="button"
+                        disabled={idx === 0}
+                        onClick={() => handleMoveTechItem(idx, "up")}
+                        className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-violet-600 disabled:opacity-30 transition-colors cursor-pointer"
+                        title="Move Up"
+                      >
+                        <ArrowUp className="h-3.5 w-3.5" />
+                      </button>
+
+                      <button
+                        type="button"
+                        disabled={idx === (landingData.techItems || DEFAULT_TECH_ITEMS).length - 1}
+                        onClick={() => handleMoveTechItem(idx, "down")}
+                        className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-violet-600 disabled:opacity-30 transition-colors cursor-pointer"
+                        title="Move Down"
+                      >
+                        <ArrowDown className="h-3.5 w-3.5" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteTechItem(idx)}
+                        className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-400 hover:text-red-500 transition-colors cursor-pointer ml-1"
+                        title="Delete Tech Item"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* SECTION 11: CALL TO ACTION (CTA) BANNER CONFIGURATOR */}
+        {activeSectionId === "cta" && (
+          <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-5">
+            <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
+              <span className="font-mono text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">
+                11
+              </span>
+              <h3 className="text-sm font-bold">Universal Call to Action (CTA) Banner Configurator</h3>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              This CTA section is rendered above the footer across <strong>ALL website pages</strong> (Landing Page, About Us, Services, Case Studies, Careers, Blog, Contact, FAQs).
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Top Pill Badge Text
+                </label>
+                <input
+                  type="text"
+                  value={landingData.ctaBanner?.badge || "Ready to Scale?"}
+                  onChange={(e) =>
+                    setLandingData({
+                      ...landingData,
+                      ctaBanner: { ...landingData.ctaBanner, badge: e.target.value },
+                    })
+                  }
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-bold"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Headline Prefix Text
+                </label>
+                <input
+                  type="text"
+                  value={landingData.ctaBanner?.title || "Let's Build Your Next"}
+                  onChange={(e) =>
+                    setLandingData({
+                      ...landingData,
+                      ctaBanner: { ...landingData.ctaBanner, title: e.target.value },
+                    })
+                  }
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-bold"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Headline Gradient Highlight Text
+                </label>
+                <input
+                  type="text"
+                  value={landingData.ctaBanner?.titleHighlight || "Breakthrough Product"}
+                  onChange={(e) =>
+                    setLandingData({
+                      ...landingData,
+                      ctaBanner: { ...landingData.ctaBanner, titleHighlight: e.target.value },
+                    })
+                  }
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-amber-500 font-extrabold"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  CTA Banner Subtitle / Description Paragraph
+                </label>
+                <textarea
+                  rows={3}
+                  value={landingData.ctaBanner?.subtitle || "Partner with our engineering team to design, build, and launch software systems that outperform."}
+                  onChange={(e) =>
+                    setLandingData({
+                      ...landingData,
+                      ctaBanner: { ...landingData.ctaBanner, subtitle: e.target.value },
+                    })
+                  }
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] p-3 text-xs text-slate-900 dark:text-white font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Primary CTA Button Label Text
+                </label>
+                <input
+                  type="text"
+                  value={landingData.ctaBanner?.buttonText || "Schedule Technical Consultation"}
+                  onChange={(e) =>
+                    setLandingData({
+                      ...landingData,
+                      ctaBanner: { ...landingData.ctaBanner, buttonText: e.target.value },
+                    })
+                  }
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-bold"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Primary CTA Button Redirect URL Route
+                </label>
+                <input
+                  type="text"
+                  value={landingData.ctaBanner?.buttonLink || "/contact"}
+                  onChange={(e) =>
+                    setLandingData({
+                      ...landingData,
+                      ctaBanner: { ...landingData.ctaBanner, buttonLink: e.target.value },
+                    })
+                  }
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-violet-600 dark:text-violet-400 font-mono font-bold"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Secondary Button Label Text
+                </label>
+                <input
+                  type="text"
+                  value={landingData.ctaBanner?.secondaryButtonText || "Explore Case Studies"}
+                  onChange={(e) =>
+                    setLandingData({
+                      ...landingData,
+                      ctaBanner: { ...landingData.ctaBanner, secondaryButtonText: e.target.value },
+                    })
+                  }
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-bold"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Secondary Button Redirect URL Route
+                </label>
+                <input
+                  type="text"
+                  value={landingData.ctaBanner?.secondaryButtonLink || "/case-studies"}
+                  onChange={(e) =>
+                    setLandingData({
+                      ...landingData,
+                      ctaBanner: { ...landingData.ctaBanner, secondaryButtonLink: e.target.value },
+                    })
+                  }
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-violet-600 dark:text-violet-400 font-mono font-bold"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* GENERIC SECTION FORM EDITOR FOR SECTIONS #03 TO #10 AND #12 */}
+        {["services", "industries", "timeline"].includes(activeSectionId) && (
           <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-5">
             <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
               <span className="font-mono text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">

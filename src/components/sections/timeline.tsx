@@ -150,25 +150,24 @@ export default function Timeline({
       className="relative overflow-hidden bg-cloud-100 dark:bg-[#0f172a]/40 py-20 lg:py-28 text-ink dark:text-white"
     >
       <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-2xl text-left mb-14">
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="section-badge mb-3 inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-violet-50 dark:bg-slate-800 px-3.5 py-1 text-violet-600 dark:text-violet-300"
-          >
-            <Milestone className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
+        
+        {/* LEFT-ALIGNED SECTION HEADER */}
+        <div className="text-left max-w-3xl space-y-3 mb-14">
+          <span className="text-[11px] font-extrabold uppercase tracking-widest text-violet-600 dark:text-violet-400">
             {heroBadge}
-          </motion.div>
+          </span>
 
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="section-title text-ink dark:text-white"
+            className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.15]"
           >
-            {heroTitle}
+            {heroTitle.split(" ").slice(0, -3).join(" ")}{" "}
+            <span className="text-violet-600 dark:text-orange-500">
+              {heroTitle.split(" ").slice(-3).join(" ")}
+            </span>
           </motion.h2>
 
           <motion.p
@@ -176,7 +175,7 @@ export default function Timeline({
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="mt-4 section-subtitle text-ink/75 dark:text-slate-300"
+            className="text-sm sm:text-base text-slate-600 dark:text-slate-300 max-w-2xl font-medium pt-1"
           >
             {heroSubtitle}
           </motion.p>

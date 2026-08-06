@@ -25,6 +25,7 @@ import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import { Button } from "@/components/ui/button";
 import QuickEnquiryModal from "@/components/common/quick-enquiry-modal";
+import CtaSection from "@/components/sections/cta-section";
 import { JourneyPageContent, TimelineEra, EventItem } from "@/types";
 import { DEFAULT_JOURNEY_PAGE_DATA } from "@/data/default-journey-data";
 
@@ -501,50 +502,8 @@ export default function JourneyClientView({ initialContent }: JourneyClientViewP
         </div>
       </section>
 
-      {/* ================= CALL TO ACTION ================= */}
-      <section className="relative py-20 lg:py-24">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.97 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true, amount: 0.4 }}
-            transition={{ duration: 0.6 }}
-            className="relative overflow-hidden rounded-[2rem] bg-ink px-8 py-16 text-center sm:px-16"
-          >
-            <div className="pointer-events-none absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-violet-600/40 blur-[100px]" />
-            <div className="pointer-events-none absolute -bottom-24 right-0 h-64 w-64 rounded-full bg-ember-500/30 blur-[100px]" />
-
-            <div className="relative">
-              <h2 className="mx-auto max-w-2xl font-display text-3xl font-bold text-white sm:text-4xl lg:text-5xl">
-                {ctaSection?.title || "Ready to Build Your Next High-Impact Product With Us?"}
-              </h2>
-              <p className="mx-auto mt-4 max-w-md text-white/60">
-                {ctaSection?.subtitle || "Partner with Clickpoint Innovation to design, engineer, and deploy resilient cloud architecture and AI copilots."}
-              </p>
-              <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
-                <Button
-                  variant="primary"
-                  size="lg"
-                  onClick={() => setIsQuickEnquiryOpen(true)}
-                  className="group font-bold shadow-lg shadow-violet-600/30 cursor-pointer"
-                >
-                  <span>{ctaSection?.buttonText || "Start Project Inquiry"}</span>
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </Button>
-                <Link href="/careers">
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="border-white/20 text-white hover:bg-white/10 hover:border-white/30 font-bold"
-                  >
-                    Explore Careers
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+      {/* ================= DYNAMIC UNIVERSAL CALL TO ACTION ================= */}
+      <CtaSection />
 
       <Footer />
 
