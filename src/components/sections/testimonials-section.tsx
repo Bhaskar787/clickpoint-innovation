@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -36,7 +36,7 @@ export default function TestimonialsSection({ initialHeader, initialTestimonials
     { label: "Client Retention Rate", value: "89%" },
   ]);
 
-  async function loadDynamicTestimonials() {
+  const loadDynamicTestimonials = useCallback(async () => {
     try {
       if (!initialHeader) {
         const landingRes = await fetch("/api/landing");
@@ -59,13 +59,13 @@ export default function TestimonialsSection({ initialHeader, initialTestimonials
     } catch (err) {
       console.error("Failed to load testimonials:", err);
     }
-  }
+  }, [initialHeader, initialTestimonials]);
 
   useEffect(() => {
     if (!initialHeader || !initialTestimonials || initialTestimonials.length === 0) {
       loadDynamicTestimonials();
     }
-  }, [initialHeader, initialTestimonials]);
+  }, [initialHeader, initialTestimonials, loadDynamicTestimonials]);
 
   const displayItems = testimonials.slice(0, 3);
 
@@ -193,3 +193,4 @@ export default function TestimonialsSection({ initialHeader, initialTestimonials
     </section>
   );
 }
+
