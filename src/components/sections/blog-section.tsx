@@ -87,7 +87,7 @@ export default function BlogSection({ initialHeader, initialBlogs }: BlogSection
         {/* 3-Card Grid */}
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {featuredBlogs.map((post, idx) => {
-            const postImage = post.image || post.coverImage || "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=1200&q=80";
+            const postImage = post.imageUrl || post.image || post.coverImage || "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80";
             const rawDate = post.publishedAt || post.date || post.createdAt;
             let postDate = "Recent";
             if (rawDate) {
