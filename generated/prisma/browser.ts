@@ -98,6 +98,16 @@ export type CaseStudyCategory = Prisma.CaseStudyCategoryModel
  */
 export type CaseStudy = Prisma.CaseStudyModel
 /**
+ * Model BlogPage
+ * 
+ */
+export type BlogPage = Prisma.BlogPageModel
+/**
+ * Model BlogCategory
+ * 
+ */
+export type BlogCategory = Prisma.BlogCategoryModel
+/**
  * Model BlogPost
  * 
  */

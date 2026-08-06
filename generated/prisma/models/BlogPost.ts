@@ -32,10 +32,12 @@ export type BlogPostMinAggregateOutputType = {
   content: string | null
   author: string | null
   authorRole: string | null
+  authorAvatar: string | null
   category: string | null
   readTime: string | null
   publishedAt: Date | null
   imageUrl: string | null
+  videoUrl: string | null
   featured: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -49,10 +51,12 @@ export type BlogPostMaxAggregateOutputType = {
   content: string | null
   author: string | null
   authorRole: string | null
+  authorAvatar: string | null
   category: string | null
   readTime: string | null
   publishedAt: Date | null
   imageUrl: string | null
+  videoUrl: string | null
   featured: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -66,10 +70,12 @@ export type BlogPostCountAggregateOutputType = {
   content: number
   author: number
   authorRole: number
+  authorAvatar: number
   category: number
   readTime: number
   publishedAt: number
   imageUrl: number
+  videoUrl: number
   tags: number
   featured: number
   createdAt: number
@@ -86,10 +92,12 @@ export type BlogPostMinAggregateInputType = {
   content?: true
   author?: true
   authorRole?: true
+  authorAvatar?: true
   category?: true
   readTime?: true
   publishedAt?: true
   imageUrl?: true
+  videoUrl?: true
   featured?: true
   createdAt?: true
   updatedAt?: true
@@ -103,10 +111,12 @@ export type BlogPostMaxAggregateInputType = {
   content?: true
   author?: true
   authorRole?: true
+  authorAvatar?: true
   category?: true
   readTime?: true
   publishedAt?: true
   imageUrl?: true
+  videoUrl?: true
   featured?: true
   createdAt?: true
   updatedAt?: true
@@ -120,10 +130,12 @@ export type BlogPostCountAggregateInputType = {
   content?: true
   author?: true
   authorRole?: true
+  authorAvatar?: true
   category?: true
   readTime?: true
   publishedAt?: true
   imageUrl?: true
+  videoUrl?: true
   tags?: true
   featured?: true
   createdAt?: true
@@ -211,10 +223,12 @@ export type BlogPostGroupByOutputType = {
   content: string
   author: string
   authorRole: string | null
+  authorAvatar: string | null
   category: string
   readTime: string
   publishedAt: Date
   imageUrl: string | null
+  videoUrl: string | null
   tags: runtime.JsonValue | null
   featured: boolean
   createdAt: Date
@@ -250,10 +264,12 @@ export type BlogPostWhereInput = {
   content?: Prisma.StringFilter<"BlogPost"> | string
   author?: Prisma.StringFilter<"BlogPost"> | string
   authorRole?: Prisma.StringNullableFilter<"BlogPost"> | string | null
+  authorAvatar?: Prisma.StringNullableFilter<"BlogPost"> | string | null
   category?: Prisma.StringFilter<"BlogPost"> | string
   readTime?: Prisma.StringFilter<"BlogPost"> | string
   publishedAt?: Prisma.DateTimeFilter<"BlogPost"> | Date | string
   imageUrl?: Prisma.StringNullableFilter<"BlogPost"> | string | null
+  videoUrl?: Prisma.StringNullableFilter<"BlogPost"> | string | null
   tags?: Prisma.JsonNullableFilter<"BlogPost">
   featured?: Prisma.BoolFilter<"BlogPost"> | boolean
   createdAt?: Prisma.DateTimeFilter<"BlogPost"> | Date | string
@@ -268,10 +284,12 @@ export type BlogPostOrderByWithRelationInput = {
   content?: Prisma.SortOrder
   author?: Prisma.SortOrder
   authorRole?: Prisma.SortOrderInput | Prisma.SortOrder
+  authorAvatar?: Prisma.SortOrderInput | Prisma.SortOrder
   category?: Prisma.SortOrder
   readTime?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  videoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   tags?: Prisma.SortOrderInput | Prisma.SortOrder
   featured?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -289,10 +307,12 @@ export type BlogPostWhereUniqueInput = Prisma.AtLeast<{
   content?: Prisma.StringFilter<"BlogPost"> | string
   author?: Prisma.StringFilter<"BlogPost"> | string
   authorRole?: Prisma.StringNullableFilter<"BlogPost"> | string | null
+  authorAvatar?: Prisma.StringNullableFilter<"BlogPost"> | string | null
   category?: Prisma.StringFilter<"BlogPost"> | string
   readTime?: Prisma.StringFilter<"BlogPost"> | string
   publishedAt?: Prisma.DateTimeFilter<"BlogPost"> | Date | string
   imageUrl?: Prisma.StringNullableFilter<"BlogPost"> | string | null
+  videoUrl?: Prisma.StringNullableFilter<"BlogPost"> | string | null
   tags?: Prisma.JsonNullableFilter<"BlogPost">
   featured?: Prisma.BoolFilter<"BlogPost"> | boolean
   createdAt?: Prisma.DateTimeFilter<"BlogPost"> | Date | string
@@ -307,10 +327,12 @@ export type BlogPostOrderByWithAggregationInput = {
   content?: Prisma.SortOrder
   author?: Prisma.SortOrder
   authorRole?: Prisma.SortOrderInput | Prisma.SortOrder
+  authorAvatar?: Prisma.SortOrderInput | Prisma.SortOrder
   category?: Prisma.SortOrder
   readTime?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  videoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   tags?: Prisma.SortOrderInput | Prisma.SortOrder
   featured?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -331,10 +353,12 @@ export type BlogPostScalarWhereWithAggregatesInput = {
   content?: Prisma.StringWithAggregatesFilter<"BlogPost"> | string
   author?: Prisma.StringWithAggregatesFilter<"BlogPost"> | string
   authorRole?: Prisma.StringNullableWithAggregatesFilter<"BlogPost"> | string | null
+  authorAvatar?: Prisma.StringNullableWithAggregatesFilter<"BlogPost"> | string | null
   category?: Prisma.StringWithAggregatesFilter<"BlogPost"> | string
   readTime?: Prisma.StringWithAggregatesFilter<"BlogPost"> | string
   publishedAt?: Prisma.DateTimeWithAggregatesFilter<"BlogPost"> | Date | string
   imageUrl?: Prisma.StringNullableWithAggregatesFilter<"BlogPost"> | string | null
+  videoUrl?: Prisma.StringNullableWithAggregatesFilter<"BlogPost"> | string | null
   tags?: Prisma.JsonNullableWithAggregatesFilter<"BlogPost">
   featured?: Prisma.BoolWithAggregatesFilter<"BlogPost"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"BlogPost"> | Date | string
@@ -349,10 +373,12 @@ export type BlogPostCreateInput = {
   content: string
   author: string
   authorRole?: string | null
+  authorAvatar?: string | null
   category: string
   readTime?: string
   publishedAt?: Date | string
   imageUrl?: string | null
+  videoUrl?: string | null
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   featured?: boolean
   createdAt?: Date | string
@@ -367,10 +393,12 @@ export type BlogPostUncheckedCreateInput = {
   content: string
   author: string
   authorRole?: string | null
+  authorAvatar?: string | null
   category: string
   readTime?: string
   publishedAt?: Date | string
   imageUrl?: string | null
+  videoUrl?: string | null
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   featured?: boolean
   createdAt?: Date | string
@@ -385,10 +413,12 @@ export type BlogPostUpdateInput = {
   content?: Prisma.StringFieldUpdateOperationsInput | string
   author?: Prisma.StringFieldUpdateOperationsInput | string
   authorRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  authorAvatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   category?: Prisma.StringFieldUpdateOperationsInput | string
   readTime?: Prisma.StringFieldUpdateOperationsInput | string
   publishedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  videoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -403,10 +433,12 @@ export type BlogPostUncheckedUpdateInput = {
   content?: Prisma.StringFieldUpdateOperationsInput | string
   author?: Prisma.StringFieldUpdateOperationsInput | string
   authorRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  authorAvatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   category?: Prisma.StringFieldUpdateOperationsInput | string
   readTime?: Prisma.StringFieldUpdateOperationsInput | string
   publishedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  videoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -421,10 +453,12 @@ export type BlogPostCreateManyInput = {
   content: string
   author: string
   authorRole?: string | null
+  authorAvatar?: string | null
   category: string
   readTime?: string
   publishedAt?: Date | string
   imageUrl?: string | null
+  videoUrl?: string | null
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   featured?: boolean
   createdAt?: Date | string
@@ -439,10 +473,12 @@ export type BlogPostUpdateManyMutationInput = {
   content?: Prisma.StringFieldUpdateOperationsInput | string
   author?: Prisma.StringFieldUpdateOperationsInput | string
   authorRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  authorAvatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   category?: Prisma.StringFieldUpdateOperationsInput | string
   readTime?: Prisma.StringFieldUpdateOperationsInput | string
   publishedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  videoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -457,10 +493,12 @@ export type BlogPostUncheckedUpdateManyInput = {
   content?: Prisma.StringFieldUpdateOperationsInput | string
   author?: Prisma.StringFieldUpdateOperationsInput | string
   authorRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  authorAvatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   category?: Prisma.StringFieldUpdateOperationsInput | string
   readTime?: Prisma.StringFieldUpdateOperationsInput | string
   publishedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  videoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -475,10 +513,12 @@ export type BlogPostCountOrderByAggregateInput = {
   content?: Prisma.SortOrder
   author?: Prisma.SortOrder
   authorRole?: Prisma.SortOrder
+  authorAvatar?: Prisma.SortOrder
   category?: Prisma.SortOrder
   readTime?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
+  videoUrl?: Prisma.SortOrder
   tags?: Prisma.SortOrder
   featured?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -493,10 +533,12 @@ export type BlogPostMaxOrderByAggregateInput = {
   content?: Prisma.SortOrder
   author?: Prisma.SortOrder
   authorRole?: Prisma.SortOrder
+  authorAvatar?: Prisma.SortOrder
   category?: Prisma.SortOrder
   readTime?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
+  videoUrl?: Prisma.SortOrder
   featured?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -510,10 +552,12 @@ export type BlogPostMinOrderByAggregateInput = {
   content?: Prisma.SortOrder
   author?: Prisma.SortOrder
   authorRole?: Prisma.SortOrder
+  authorAvatar?: Prisma.SortOrder
   category?: Prisma.SortOrder
   readTime?: Prisma.SortOrder
   publishedAt?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
+  videoUrl?: Prisma.SortOrder
   featured?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -529,10 +573,12 @@ export type BlogPostSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   content?: boolean
   author?: boolean
   authorRole?: boolean
+  authorAvatar?: boolean
   category?: boolean
   readTime?: boolean
   publishedAt?: boolean
   imageUrl?: boolean
+  videoUrl?: boolean
   tags?: boolean
   featured?: boolean
   createdAt?: boolean
@@ -547,10 +593,12 @@ export type BlogPostSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   content?: boolean
   author?: boolean
   authorRole?: boolean
+  authorAvatar?: boolean
   category?: boolean
   readTime?: boolean
   publishedAt?: boolean
   imageUrl?: boolean
+  videoUrl?: boolean
   tags?: boolean
   featured?: boolean
   createdAt?: boolean
@@ -565,10 +613,12 @@ export type BlogPostSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   content?: boolean
   author?: boolean
   authorRole?: boolean
+  authorAvatar?: boolean
   category?: boolean
   readTime?: boolean
   publishedAt?: boolean
   imageUrl?: boolean
+  videoUrl?: boolean
   tags?: boolean
   featured?: boolean
   createdAt?: boolean
@@ -583,17 +633,19 @@ export type BlogPostSelectScalar = {
   content?: boolean
   author?: boolean
   authorRole?: boolean
+  authorAvatar?: boolean
   category?: boolean
   readTime?: boolean
   publishedAt?: boolean
   imageUrl?: boolean
+  videoUrl?: boolean
   tags?: boolean
   featured?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type BlogPostOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "title" | "excerpt" | "content" | "author" | "authorRole" | "category" | "readTime" | "publishedAt" | "imageUrl" | "tags" | "featured" | "createdAt" | "updatedAt", ExtArgs["result"]["blogPost"]>
+export type BlogPostOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "title" | "excerpt" | "content" | "author" | "authorRole" | "authorAvatar" | "category" | "readTime" | "publishedAt" | "imageUrl" | "videoUrl" | "tags" | "featured" | "createdAt" | "updatedAt", ExtArgs["result"]["blogPost"]>
 
 export type $BlogPostPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "BlogPost"
@@ -606,10 +658,12 @@ export type $BlogPostPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     content: string
     author: string
     authorRole: string | null
+    authorAvatar: string | null
     category: string
     readTime: string
     publishedAt: Date
     imageUrl: string | null
+    videoUrl: string | null
     tags: runtime.JsonValue | null
     featured: boolean
     createdAt: Date
@@ -1044,10 +1098,12 @@ export interface BlogPostFieldRefs {
   readonly content: Prisma.FieldRef<"BlogPost", 'String'>
   readonly author: Prisma.FieldRef<"BlogPost", 'String'>
   readonly authorRole: Prisma.FieldRef<"BlogPost", 'String'>
+  readonly authorAvatar: Prisma.FieldRef<"BlogPost", 'String'>
   readonly category: Prisma.FieldRef<"BlogPost", 'String'>
   readonly readTime: Prisma.FieldRef<"BlogPost", 'String'>
   readonly publishedAt: Prisma.FieldRef<"BlogPost", 'DateTime'>
   readonly imageUrl: Prisma.FieldRef<"BlogPost", 'String'>
+  readonly videoUrl: Prisma.FieldRef<"BlogPost", 'String'>
   readonly tags: Prisma.FieldRef<"BlogPost", 'Json'>
   readonly featured: Prisma.FieldRef<"BlogPost", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"BlogPost", 'DateTime'>

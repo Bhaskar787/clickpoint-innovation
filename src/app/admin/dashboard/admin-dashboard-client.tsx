@@ -38,6 +38,7 @@ import {
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 
+import LandingPageEditor from "./landing-page-editor";
 import AboutPageEditor from "./about-page-editor";
 import ServicesPageEditor from "./services-page-editor";
 import IndustriesPageEditor from "./industries-page-editor";
@@ -49,6 +50,7 @@ import CareersPageEditor from "./careers-page-editor";
 import FaqEditor from "./faq-editor";
 import JobApplicationsView from "./job-applications-view";
 import CaseStudiesEditor from "./case-studies-editor";
+import BlogPageEditor from "./blog-page-editor";
 import SettingsEditor from "./settings-editor";
 
 import { subscribeRealtimeNotifications, playNotificationSound } from "@/lib/realtime-notifications";
@@ -532,7 +534,9 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
               </div>
 
               {/* Sub-Editors rendering */}
-              {activeTab === "about-page" ? (
+              {activeTab === "landing-management" ? (
+                <LandingPageEditor sectionId={selectedSectionId} onCloseSection={() => setSelectedSectionId(null)} />
+              ) : activeTab === "about-page" ? (
                 <AboutPageEditor sectionId={selectedSectionId} onCloseSection={() => setSelectedSectionId(null)} />
               ) : activeTab === "services-page" ? (
                 <ServicesPageEditor sectionId={selectedSectionId} onCloseSection={() => setSelectedSectionId(null)} />
@@ -542,6 +546,8 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                 <CaseStudiesEditor />
               ) : activeTab === "journey-page" ? (
                 <JourneyEditor />
+              ) : activeTab === "blog-page" ? (
+                <BlogPageEditor sectionId={selectedSectionId} onCloseSection={() => setSelectedSectionId(null)} />
               ) : activeTab === "careers-page" ? (
                 <CareersPageEditor sectionId={selectedSectionId} onCloseSection={() => setSelectedSectionId(null)} />
               ) : activeTab === "faqs-page" ? (

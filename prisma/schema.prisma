@@ -227,22 +227,44 @@ model CaseStudy {
   @@map("case_studies")
 }
 
+model BlogPage {
+  id        String   @id @default("default")
+  content   Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("blog_page")
+}
+
+model BlogCategory {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("blog_categories")
+}
+
 model BlogPost {
-  id          String    @id @default(cuid())
-  slug        String    @unique
-  title       String
-  excerpt     String
-  content     String
-  author      String
-  authorRole  String?
-  category    String
-  readTime    String    @default("5 min read")
-  publishedAt DateTime  @default(now())
-  imageUrl    String?
-  tags        Json?     // E.g. ["AI", "Next.js", "Cloud"]
-  featured    Boolean   @default(false)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id           String    @id @default(cuid())
+  slug         String    @unique
+  title        String
+  excerpt      String
+  content      String
+  author       String
+  authorRole   String?
+  authorAvatar String?
+  category     String
+  readTime     String    @default("5 min read")
+  publishedAt  DateTime  @default(now())
+  imageUrl     String?
+  videoUrl     String?
+  tags         Json?     // E.g. ["AI", "Next.js", "Cloud"]
+  featured     Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   @@map("blog_posts")
 }

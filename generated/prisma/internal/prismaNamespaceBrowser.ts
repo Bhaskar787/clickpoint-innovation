@@ -67,6 +67,8 @@ export const ModelName = {
   CaseStudiesPage: 'CaseStudiesPage',
   CaseStudyCategory: 'CaseStudyCategory',
   CaseStudy: 'CaseStudy',
+  BlogPage: 'BlogPage',
+  BlogCategory: 'BlogCategory',
   BlogPost: 'BlogPost',
   TestimonialsPage: 'TestimonialsPage',
   Testimonial: 'Testimonial',
@@ -303,6 +305,28 @@ export const CaseStudyScalarFieldEnum = {
 export type CaseStudyScalarFieldEnum = (typeof CaseStudyScalarFieldEnum)[keyof typeof CaseStudyScalarFieldEnum]
 
 
+export const BlogPageScalarFieldEnum = {
+  id: 'id',
+  content: 'content',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BlogPageScalarFieldEnum = (typeof BlogPageScalarFieldEnum)[keyof typeof BlogPageScalarFieldEnum]
+
+
+export const BlogCategoryScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BlogCategoryScalarFieldEnum = (typeof BlogCategoryScalarFieldEnum)[keyof typeof BlogCategoryScalarFieldEnum]
+
+
 export const BlogPostScalarFieldEnum = {
   id: 'id',
   slug: 'slug',
@@ -311,10 +335,12 @@ export const BlogPostScalarFieldEnum = {
   content: 'content',
   author: 'author',
   authorRole: 'authorRole',
+  authorAvatar: 'authorAvatar',
   category: 'category',
   readTime: 'readTime',
   publishedAt: 'publishedAt',
   imageUrl: 'imageUrl',
+  videoUrl: 'videoUrl',
   tags: 'tags',
   featured: 'featured',
   createdAt: 'createdAt',
