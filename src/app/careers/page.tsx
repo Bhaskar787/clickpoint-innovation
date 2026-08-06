@@ -22,8 +22,6 @@ import {
   UploadCloud,
   FileText,
   Loader2,
-  AlertCircle,
-  Linkedin,
   PenTool,
   Paperclip,
 } from "lucide-react";
@@ -292,7 +290,6 @@ export default function CareersPage() {
           duration: 5000,
           position: "top-right",
         });
-        // If rate limited, reset the tracker so next real attempt works
         if (json.rateLimited) lastSubmitTime = 0;
       }
     } catch {
@@ -312,51 +309,76 @@ export default function CareersPage() {
       <Navbar />
 
       {/* ─── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-violet-950 via-slate-900 to-indigo-950 pt-32 pb-24">
-        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-violet-500 via-transparent to-transparent" />
-        <div className="relative max-w-6xl mx-auto px-6 text-center space-y-6">
-          <motion.span
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-violet-500/20 text-violet-300 text-xs font-bold border border-violet-500/30"
-          >
-            <Sparkles className="h-3 w-3" />
-            {hero.badge}
-          </motion.span>
-          <motion.h1
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="font-display text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight"
-          >
-            {hero.title}{" "}
-            <span className="bg-gradient-to-r from-violet-400 to-indigo-300 bg-clip-text text-transparent">
-              {hero.titleHighlight}
-            </span>
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="max-w-2xl mx-auto text-slate-400 text-base leading-relaxed"
-          >
-            {hero.subtitle}
-          </motion.p>
+      <section className="relative overflow-hidden pt-32 pb-20 lg:pt-40 lg:pb-28 border-b border-violet-100/70 dark:border-slate-800">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          
+          {/* LEFT-ALIGNED BREADCRUMB ROUTE */}
+          <div className="mb-6 flex items-center justify-start gap-2 text-xs font-semibold text-ink/60 dark:text-slate-400">
+            <Link href="/" className="hover:text-violet-600 dark:hover:text-violet-300 transition-colors">
+              Home
+            </Link>
+            <ChevronRight className="h-3.5 w-3.5 text-ink/40 dark:text-slate-600" />
+            <span className="text-violet-600 dark:text-violet-300 font-bold">Careers</span>
+          </div>
 
-          {/* Stats bar */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-12 max-w-3xl mx-auto"
-          >
-            {stats.map((s) => (
-              <div key={s.id} className="text-center bg-white/5 rounded-2xl p-4 border border-white/10">
-                <div className="text-xl font-extrabold text-white">{s.value}</div>
-                <div className="text-[11px] text-slate-400 mt-0.5 font-medium">{s.label}</div>
-              </div>
-            ))}
-          </motion.div>
+          {/* CENTER-ALIGNED HERO CONTENT */}
+          <div className="mx-auto max-w-4xl text-center space-y-4">
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-violet-50 dark:bg-violet-950/60 border border-violet-200 dark:border-violet-800/60 text-violet-600 dark:text-violet-300 text-xs font-extrabold uppercase tracking-widest shadow-xs"
+            >
+              <Sparkles className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
+              <span>{hero.badge || "Careers & Openings"}</span>
+            </motion.div>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.12]"
+            >
+              {hero.title ? (
+                <>
+                  {hero.title}{" "}
+                  <span className="text-violet-600 dark:text-orange-500">
+                    {hero.titleHighlight}
+                  </span>
+                </>
+              ) : (
+                <>
+                  Build the Next Generation of{" "}
+                  <span className="text-violet-600 dark:text-orange-500">
+                    AI-First Software
+                  </span>
+                </>
+              )}
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="text-sm sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto font-medium pt-1"
+            >
+              {hero.subtitle}
+            </motion.p>
+
+            {/* Stats bar */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-10 max-w-3xl mx-auto"
+            >
+              {stats.map((s) => (
+                <div key={s.id} className="p-4 rounded-2xl bg-white/70 dark:bg-[#131c31]/80 backdrop-blur-md border border-violet-100 dark:border-slate-800 shadow-sm text-center">
+                  <div className="font-display text-2xl sm:text-3xl font-extrabold text-violet-600 dark:text-violet-300">{s.value}</div>
+                  <div className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mt-1">{s.label}</div>
+                </div>
+              ))}
+            </motion.div>
+          </div>
         </div>
       </section>
 
@@ -364,21 +386,21 @@ export default function CareersPage() {
       {perks.perks && perks.perks.length > 0 && (
         <section className="py-20 max-w-6xl mx-auto px-6">
           <div className="text-center mb-12 space-y-2">
-            <span className="text-xs font-bold uppercase tracking-widest text-violet-600 dark:text-violet-400">
+            <span className="text-[11px] font-extrabold uppercase tracking-widest text-violet-600 dark:text-violet-400">
               {perks.tag}
             </span>
-            <h2 className="font-display text-3xl font-bold text-ink dark:text-white">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
               {perks.title}{" "}
-              <span className="text-violet-600 dark:text-violet-400">{perks.titleHighlight}</span>
+              <span className="text-violet-600 dark:text-orange-500">{perks.titleHighlight}</span>
             </h2>
-            <p className="text-sm text-slate-500 dark:text-slate-400 max-w-xl mx-auto">{perks.subtitle}</p>
+            <p className="text-sm text-slate-600 dark:text-slate-300 max-w-xl mx-auto font-medium pt-1">{perks.subtitle}</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {perks.perks.map((perk, i) => {
               const Icon = PERK_ICONS[i % PERK_ICONS.length];
               return (
-                <div key={perk.id} className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="h-9 w-9 rounded-xl bg-violet-100 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 flex items-center justify-center mb-3">
+                <div key={perk.id} className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131c31] p-5 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="h-9 w-9 rounded-xl bg-violet-100 dark:bg-slate-800 text-violet-600 dark:text-violet-300 flex items-center justify-center mb-3">
                     <Icon className="h-4 w-4" />
                   </div>
                   <h3 className="text-sm font-bold text-ink dark:text-white mb-1">{perk.title}</h3>
@@ -393,31 +415,31 @@ export default function CareersPage() {
       {/* ─── Open Positions ───────────────────────────────────────────────── */}
       <section className="py-20 max-w-6xl mx-auto px-6">
         <div className="text-center mb-10 space-y-2">
-          <span className="text-xs font-bold uppercase tracking-widest text-violet-600 dark:text-violet-400">
+          <span className="text-[11px] font-extrabold uppercase tracking-widest text-violet-600 dark:text-violet-400">
             {openings.badge}
           </span>
-          <h2 className="font-display text-3xl font-bold text-ink dark:text-white">{openings.title}</h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400">{openings.subtitle}</p>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">{openings.title}</h2>
+          <p className="text-sm text-slate-600 dark:text-slate-300 font-medium">{openings.subtitle}</p>
         </div>
 
         {/* Search + Category Tabs */}
         <div className="flex flex-col sm:flex-row gap-3 mb-8">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={openings.searchPlaceholder}
-              className="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-ink dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-400"
+              className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm rounded-full border border-violet-200 dark:border-slate-700 bg-white dark:bg-[#131c31] text-ink dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-400"
             />
           </div>
           <div className="flex gap-2 flex-wrap">
             <button
               onClick={() => setSelectedCategoryId("ALL")}
-              className={`px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
+              className={`px-3.5 py-2 rounded-full text-xs font-bold transition-colors cursor-pointer ${
                 selectedCategoryId === "ALL"
-                  ? "bg-violet-600 text-white"
-                  : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-violet-400"
+                  ? "bg-violet-600 text-white shadow-xs"
+                  : "bg-white dark:bg-[#131c31] border border-violet-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-violet-400"
               }`}
             >
               All
@@ -426,10 +448,10 @@ export default function CareersPage() {
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategoryId(cat.id)}
-                className={`px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
+                className={`px-3.5 py-2 rounded-full text-xs font-bold transition-colors cursor-pointer ${
                   selectedCategoryId === cat.id
-                    ? "bg-violet-600 text-white"
-                    : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-violet-400"
+                    ? "bg-violet-600 text-white shadow-xs"
+                    : "bg-white dark:bg-[#131c31] border border-violet-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-violet-400"
                 }`}
               >
                 {cat.name}
@@ -441,7 +463,7 @@ export default function CareersPage() {
         {/* Job Cards */}
         {loadingJobs ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[1,2,3,4].map((i) => (
+            {[1, 2, 3, 4].map((i) => (
               <div key={i} className="h-40 rounded-2xl bg-slate-100 dark:bg-slate-800 animate-pulse" />
             ))}
           </div>
@@ -450,7 +472,7 @@ export default function CareersPage() {
             <Briefcase className="h-10 w-10 text-slate-300 dark:text-slate-600 mx-auto" />
             <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">No positions found</p>
             {searchQuery && (
-              <button onClick={() => setSearchQuery("")} className="text-xs text-violet-600 dark:text-violet-400 underline">
+              <button onClick={() => setSearchQuery("")} className="text-xs text-violet-600 dark:text-violet-400 underline cursor-pointer">
                 Clear search
               </button>
             )}
@@ -462,24 +484,24 @@ export default function CareersPage() {
                 key={job.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`relative rounded-2xl border bg-white dark:bg-slate-900 p-5 shadow-sm hover:shadow-md cursor-pointer transition-all group ${
+                className={`relative rounded-2xl border bg-white dark:bg-[#131c31] p-5 shadow-sm hover:shadow-md cursor-pointer transition-all group ${
                   job.featured
                     ? "border-violet-300 dark:border-violet-700 ring-1 ring-violet-200 dark:ring-violet-800"
-                    : "border-slate-200 dark:border-slate-800"
+                    : "border-violet-100 dark:border-slate-800"
                 }`}
                 onClick={() => setActiveJobModal(job)}
               >
                 {job.featured && (
-                  <span className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-violet-100 dark:bg-violet-950/60 text-violet-700 dark:text-violet-400 text-[10px] font-bold border border-violet-200 dark:border-violet-800">
+                  <span className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-violet-100 dark:bg-slate-800 text-violet-700 dark:text-violet-300 text-[10px] font-bold border border-violet-200 dark:border-slate-700">
                     ⭐ Featured
                   </span>
                 )}
                 <div className="flex items-start gap-3 mb-3">
-                  <div className="h-10 w-10 rounded-xl bg-violet-100 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0">
+                  <div className="h-10 w-10 rounded-xl bg-violet-100 dark:bg-slate-800 text-violet-600 dark:text-violet-300 flex items-center justify-center shrink-0">
                     <Briefcase className="h-4.5 w-4.5" />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-sm font-bold text-ink dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
+                    <h3 className="text-sm font-bold text-ink dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-300 transition-colors">
                       {job.title}
                     </h3>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{job.category?.name}</p>
@@ -501,9 +523,9 @@ export default function CareersPage() {
                     </span>
                   ))}
                 </div>
-                <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
+                <div className="flex items-center justify-between pt-3 border-t border-violet-100 dark:border-slate-800">
                   <span className="text-[11px] text-slate-400 dark:text-slate-500">Click to apply</span>
-                  <span className="flex items-center gap-1 text-xs font-semibold text-violet-600 dark:text-violet-400 group-hover:gap-2 transition-all">
+                  <span className="flex items-center gap-1 text-xs font-semibold text-violet-600 dark:text-violet-300 group-hover:gap-2 transition-all">
                     Apply Now <ArrowRight className="h-3 w-3" />
                   </span>
                 </div>
@@ -528,12 +550,12 @@ export default function CareersPage() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 shadow-2xl border border-slate-200 dark:border-slate-800"
+              className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white dark:bg-[#131c31] shadow-2xl border border-violet-100 dark:border-slate-800"
             >
               {/* Close */}
               <button
                 onClick={() => setActiveJobModal(null)}
-                className="absolute top-4 right-4 z-10 h-8 w-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center transition-colors"
+                className="absolute top-4 right-4 z-10 h-8 w-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center transition-colors cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -544,11 +566,11 @@ export default function CareersPage() {
                     {/* Job Header */}
                     <div className="mb-6 pr-10">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-violet-600 dark:text-violet-400">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-violet-600 dark:text-violet-300">
                           {activeJobModal.category?.name}
                         </span>
                         {activeJobModal.featured && (
-                          <span className="px-1.5 py-0.5 rounded bg-violet-100 dark:bg-violet-950/60 text-violet-700 dark:text-violet-400 text-[9px] font-bold">
+                          <span className="px-1.5 py-0.5 rounded bg-violet-100 dark:bg-slate-800 text-violet-700 dark:text-violet-300 text-[9px] font-bold">
                             FEATURED
                           </span>
                         )}
@@ -574,7 +596,7 @@ export default function CareersPage() {
 
                     {/* Responsibilities & Requirements */}
                     {(activeJobModal.responsibilities?.length > 0 || activeJobModal.requirements?.length > 0) && (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-violet-100 dark:border-slate-800">
                         {activeJobModal.responsibilities?.length > 0 && (
                           <div>
                             <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">What You'll Do</h4>
@@ -603,9 +625,9 @@ export default function CareersPage() {
                     )}
 
                     {/* Application Form */}
-                    <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <div className="pt-4 border-t border-violet-100 dark:border-slate-800">
                       <h3 className="text-sm font-bold text-ink dark:text-white mb-4 flex items-center gap-2">
-                        <Send className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400" />
+                        <Send className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
                         Submit Your Application
                       </h3>
 
@@ -613,7 +635,7 @@ export default function CareersPage() {
                         {/* Name + Email */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <div>
-                            <label className="block text-[11px] font-bold uppercase tracking-wider text-ink/60 mb-1">
+                            <label className="block text-[11px] font-bold uppercase tracking-wider text-ink/60 dark:text-slate-400 mb-1">
                               Full Name <span className="text-red-500">*</span>
                             </label>
                             <input
@@ -622,11 +644,11 @@ export default function CareersPage() {
                               onChange={(e) => setFormName(e.target.value)}
                               required
                               placeholder="Your full name"
-                              className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs text-ink dark:text-slate-100 placeholder-slate-400 focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500/30"
+                              className="w-full rounded-xl border border-violet-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs text-ink dark:text-slate-100 placeholder-slate-400 focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500/30"
                             />
                           </div>
                           <div>
-                            <label className="block text-[11px] font-bold uppercase tracking-wider text-ink/60 mb-1">
+                            <label className="block text-[11px] font-bold uppercase tracking-wider text-ink/60 dark:text-slate-400 mb-1">
                               Email Address <span className="text-red-500">*</span>
                             </label>
                             <input
@@ -635,7 +657,7 @@ export default function CareersPage() {
                               onChange={(e) => setFormEmail(e.target.value)}
                               required
                               placeholder="you@email.com"
-                              className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs text-ink dark:text-slate-100 placeholder-slate-400 focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500/30"
+                              className="w-full rounded-xl border border-violet-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs text-ink dark:text-slate-100 placeholder-slate-400 focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500/30"
                             />
                           </div>
                         </div>
@@ -643,7 +665,7 @@ export default function CareersPage() {
                         {/* Phone + LinkedIn */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <div>
-                            <label className="block text-[11px] font-bold uppercase tracking-wider text-ink/60 mb-1">
+                            <label className="block text-[11px] font-bold uppercase tracking-wider text-ink/60 dark:text-slate-400 mb-1">
                               Phone Number
                             </label>
                             <input
@@ -651,11 +673,11 @@ export default function CareersPage() {
                               value={formPhone}
                               onChange={(e) => setFormPhone(e.target.value)}
                               placeholder="+1 (555) 000-0000"
-                              className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs text-ink dark:text-slate-100 placeholder-slate-400 focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500/30"
+                              className="w-full rounded-xl border border-violet-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs text-ink dark:text-slate-100 placeholder-slate-400 focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500/30"
                             />
                           </div>
                           <div>
-                            <label className="block text-[11px] font-bold uppercase tracking-wider text-ink/60 mb-1">
+                            <label className="block text-[11px] font-bold uppercase tracking-wider text-ink/60 dark:text-slate-400 mb-1">
                               LinkedIn Profile
                             </label>
                             <input
@@ -663,14 +685,14 @@ export default function CareersPage() {
                               value={formLinkedIn}
                               onChange={(e) => setFormLinkedIn(e.target.value)}
                               placeholder="linkedin.com/in/yourprofile"
-                              className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs text-ink dark:text-slate-100 placeholder-slate-400 focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500/30"
+                              className="w-full rounded-xl border border-violet-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs text-ink dark:text-slate-100 placeholder-slate-400 focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500/30"
                             />
                           </div>
                         </div>
 
                         {/* Portfolio */}
                         <div>
-                          <label className="block text-[11px] font-bold uppercase tracking-wider text-ink/60 mb-1">
+                          <label className="block text-[11px] font-bold uppercase tracking-wider text-ink/60 dark:text-slate-400 mb-1">
                             Portfolio / GitHub URL
                           </label>
                           <input
@@ -678,13 +700,13 @@ export default function CareersPage() {
                             value={formPortfolio}
                             onChange={(e) => setFormPortfolio(e.target.value)}
                             placeholder="github.com/yourusername or portfolio.com"
-                            className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs text-ink dark:text-slate-100 placeholder-slate-400 focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500/30"
+                            className="w-full rounded-xl border border-violet-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs text-ink dark:text-slate-100 placeholder-slate-400 focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500/30"
                           />
                         </div>
 
                         {/* Resume Upload */}
                         <div>
-                          <label className="block text-[11px] font-bold uppercase tracking-wider text-ink/60 mb-1">
+                          <label className="block text-[11px] font-bold uppercase tracking-wider text-ink/60 dark:text-slate-400 mb-1">
                             Resume / CV <span className="text-red-500">*</span>
                           </label>
                           <div
@@ -692,7 +714,7 @@ export default function CareersPage() {
                             className={`relative flex flex-col items-center justify-center gap-2 w-full rounded-xl border-2 border-dashed p-5 cursor-pointer transition-all ${
                               resumeFile
                                 ? "border-emerald-400 bg-emerald-50 dark:bg-emerald-950/20 dark:border-emerald-700"
-                                : "border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50 hover:border-violet-400 hover:bg-violet-50 dark:hover:bg-violet-950/10"
+                                : "border-violet-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:border-violet-400 hover:bg-violet-50 dark:hover:bg-slate-800"
                             }`}
                           >
                             <input
@@ -740,7 +762,7 @@ export default function CareersPage() {
                               <button
                                 type="button"
                                 onClick={() => setCoverLetterMode("write")}
-                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold rounded-md transition-colors ${
+                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold rounded-md transition-colors cursor-pointer ${
                                   coverLetterMode === "write"
                                     ? "bg-white dark:bg-slate-700 text-violet-600 dark:text-violet-300 shadow-xs"
                                     : "text-slate-500 dark:text-slate-400 hover:text-slate-800"
@@ -751,7 +773,7 @@ export default function CareersPage() {
                               <button
                                 type="button"
                                 onClick={() => setCoverLetterMode("upload")}
-                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold rounded-md transition-colors ${
+                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold rounded-md transition-colors cursor-pointer ${
                                   coverLetterMode === "upload"
                                     ? "bg-white dark:bg-slate-700 text-violet-600 dark:text-violet-300 shadow-xs"
                                     : "text-slate-500 dark:text-slate-400 hover:text-slate-800"
@@ -768,12 +790,12 @@ export default function CareersPage() {
                               value={formCoverLetter}
                               onChange={(e) => setFormCoverLetter(e.target.value)}
                               placeholder="Write or paste your cover letter, technical background, and why you're excited about this role..."
-                              className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs text-ink dark:text-slate-100 placeholder-slate-400 focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500/30 resize-none"
+                              className="w-full rounded-xl border border-violet-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs text-ink dark:text-slate-100 placeholder-slate-400 focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500/30 resize-none"
                             />
                           ) : (
                             <div
                               onClick={() => coverLetterFileInputRef.current?.click()}
-                              className="border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl p-3.5 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-slate-100/60 dark:hover:bg-slate-800/70 transition-colors cursor-pointer text-center"
+                              className="border-2 border-dashed border-violet-200 dark:border-slate-700 rounded-xl p-3.5 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-slate-100/60 dark:hover:bg-slate-800/70 transition-colors cursor-pointer text-center"
                             >
                               <input
                                 ref={coverLetterFileInputRef}
@@ -809,7 +831,7 @@ export default function CareersPage() {
                         <Button
                           type="submit"
                           disabled={submitting}
-                          className="w-full bg-violet-600 hover:bg-violet-700 text-white font-semibold py-2.5 rounded-xl flex items-center justify-center gap-2 transition-colors"
+                          className="w-full bg-violet-600 hover:bg-violet-700 text-white font-semibold py-2.5 rounded-xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
                         >
                           {submitting ? (
                             <>
@@ -845,7 +867,7 @@ export default function CareersPage() {
                     </p>
                     <Button
                       onClick={() => setActiveJobModal(null)}
-                      className="mt-4 px-6 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-white dark:text-white text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                      className="mt-4 px-6 py-2 rounded-xl border border-violet-200 dark:border-slate-700 text-white dark:text-white text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                     >
                       Close Window
                     </Button>

@@ -2,17 +2,14 @@
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   HelpCircle,
   ChevronRight,
   ChevronDown,
   Search,
   MessageSquare,
-  Sparkles,
   ArrowRight,
   Phone,
-  CheckCircle2,
 } from "lucide-react";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
@@ -41,8 +38,6 @@ export default function FaqsClientView({ faqs, categories: categoryNames, phone,
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   // Category tabs follow the admin-defined order from the FAQ Category Manager.
-  // Any category referenced by a FAQ but missing from the list (edge case, e.g.
-  // stale cache) is appended so no question silently disappears.
   const categories = useMemo(() => {
     const extra = Array.from(new Set(faqs.map((f) => f.category))).filter(
       (c) => !categoryNames.includes(c)
@@ -109,44 +104,52 @@ export default function FaqsClientView({ faqs, categories: categoryNames, phone,
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden pt-36 pb-20 lg:pt-44 lg:pb-24 bg-cloud-100/70 border-b border-violet-100">
+      <section className="relative overflow-hidden pt-36 pb-20 lg:pt-44 lg:pb-24 bg-cloud-100/70 border-b border-violet-100 dark:border-slate-800">
         <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:32px_32px]" />
           <div className="absolute -top-32 right-[-10%] h-[600px] w-[600px] rounded-full bg-gradient-to-br from-violet-400/30 via-indigo-300/20 to-transparent blur-[120px]" />
         </div>
 
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          {/* LEFT-ALIGNED BREADCRUMB ROUTE */}
           <div className="mb-6 flex items-center justify-start gap-2 text-xs font-semibold text-ink/60 dark:text-slate-400">
             <Link href="/" className="hover:text-violet-600 transition-colors">
               Home
             </Link>
             <ChevronRight className="h-3.5 w-3.5" />
-            <span className="text-ink dark:text-white">FAQs</span>
+            <span className="text-violet-600 dark:text-violet-300 font-bold">FAQs</span>
           </div>
 
-          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-violet-50 dark:bg-slate-800 px-3.5 py-1 text-xs font-semibold uppercase tracking-widest text-violet-600 dark:text-violet-300">
-            <HelpCircle className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
-            Interactive Knowledgebase
-          </div>
+          {/* CENTER-ALIGNED HERO CONTENT */}
+          <div className="mx-auto max-w-4xl text-center space-y-4">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-violet-50 dark:bg-violet-950/60 border border-violet-200 dark:border-violet-800/60 text-violet-600 dark:text-violet-300 text-xs font-extrabold uppercase tracking-widest shadow-xs">
+              <HelpCircle className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
+              <span>Interactive Knowledgebase</span>
+            </div>
 
-          <h1 className="max-w-3xl font-display text-4xl font-bold tracking-tight text-ink dark:text-white sm:text-5xl lg:text-6xl">
-            Frequently Asked <span className="text-violet-600 dark:text-[#f58220]">Questions</span>
-          </h1>
-          <p className="mt-4 max-w-2xl text-base text-ink/70 dark:text-slate-300 sm:text-lg">
-            Everything you need to know about our engineering pods, security, billing, and AI capabilities.
-          </p>
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.12]">
+              Frequently Asked{" "}
+              <span className="text-violet-600 dark:text-orange-500">
+                Questions
+              </span>
+            </h1>
 
-          {/* Search Bar */}
-          <div className="mt-8 max-w-xl">
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ink/40 dark:text-slate-500" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search questions, answers, or categories..."
-                className="w-full rounded-full border border-violet-200 dark:border-slate-700 bg-white dark:bg-[#131c31] py-3.5 pl-11 pr-4 text-sm font-medium text-ink dark:text-white placeholder:text-ink/40 dark:placeholder:text-slate-500 shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-400"
-              />
+            <p className="text-sm sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto font-medium pt-1">
+              Everything you need to know about our engineering pods, security, billing, and AI capabilities.
+            </p>
+
+            {/* Search Bar */}
+            <div className="mt-8 max-w-xl mx-auto">
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ink/40 dark:text-slate-500" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search questions, answers, or categories..."
+                  className="w-full rounded-full border border-violet-200 dark:border-slate-700 bg-white dark:bg-[#131c31] py-3.5 pl-11 pr-4 text-sm font-medium text-ink dark:text-white placeholder:text-ink/40 dark:placeholder:text-slate-500 shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:border-violet-400"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -167,7 +170,7 @@ export default function FaqsClientView({ faqs, categories: categoryNames, phone,
                     setActiveCategory(cat);
                     setOpenIndex(0);
                   }}
-                  className={`rounded-full px-5 py-2.5 text-xs sm:text-sm font-semibold transition-all duration-300 ${
+                  className={`rounded-full px-5 py-2.5 text-xs sm:text-sm font-semibold transition-all duration-300 cursor-pointer ${
                     isActive
                       ? "bg-violet-600 text-white shadow-md shadow-violet-600/30 scale-105"
                       : "bg-cloud-100 text-ink/75 hover:bg-violet-50 hover:text-violet-700 border border-violet-100 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-white dark:border-slate-700"
@@ -224,7 +227,7 @@ export default function FaqsClientView({ faqs, categories: categoryNames, phone,
 
                         <button
                           onClick={() => setOpenIndex(isOpen ? null : i)}
-                          className="w-full flex items-center justify-between p-5 text-left font-display text-base font-bold text-ink dark:text-white hover:text-violet-600 dark:hover:text-violet-300 transition-colors"
+                          className="w-full flex items-center justify-between p-5 text-left font-display text-base font-bold text-ink dark:text-white hover:text-violet-600 dark:hover:text-violet-300 transition-colors cursor-pointer"
                         >
                           <div className="flex items-center gap-3 pr-2">
                             <span className="rounded-full bg-violet-100 dark:bg-slate-800 px-2.5 py-0.5 text-[10px] font-bold text-violet-700 dark:text-violet-300 shrink-0 border border-violet-200 dark:border-slate-700">
@@ -262,7 +265,7 @@ export default function FaqsClientView({ faqs, categories: categoryNames, phone,
                       setSearchQuery("");
                       setActiveCategory("ALL");
                     }}
-                    className="mt-3 text-xs font-bold text-violet-700 dark:text-violet-300 underline"
+                    className="mt-3 text-xs font-bold text-violet-700 dark:text-violet-300 underline cursor-pointer"
                   >
                     Reset search & view all questions
                   </button>
@@ -299,7 +302,7 @@ export default function FaqsClientView({ faqs, categories: categoryNames, phone,
 
                 <button
                   onClick={() => setQuickEnquiryOpen(true)}
-                  className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-violet-600 px-4 py-3 text-xs font-bold text-white shadow-md shadow-violet-600/25 hover:bg-violet-700 transition-colors"
+                  className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-violet-600 px-4 py-3 text-xs font-bold text-white shadow-md shadow-violet-600/25 hover:bg-violet-700 transition-colors cursor-pointer"
                 >
                   <span>Submit Quick Enquiry</span>
                   <ArrowRight className="h-3.5 w-3.5" />

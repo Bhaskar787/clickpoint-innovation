@@ -5,20 +5,14 @@ import Link from "next/link";
 import {
   ArrowRight,
   ChevronRight,
-  ShieldCheck,
   CheckCircle2,
-  Zap,
   Building2,
   Users,
-  Award,
   Globe2,
-  Bot,
   Code2,
   Linkedin,
   Twitter,
-  HeartHandshake,
   Target,
-  Sparkles,
 } from "lucide-react";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
@@ -82,8 +76,8 @@ export default function AboutClientView({ initialContent, journeyContent }: Abou
         </div>
 
         <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Breadcrumb Navigation */}
-          <div className="mb-8 flex items-center justify-center sm:justify-start gap-2 text-xs font-semibold text-slate-200 drop-shadow-sm">
+          {/* LEFT-ALIGNED BREADCRUMB ROUTE */}
+          <div className="mb-8 flex items-center justify-start gap-2 text-xs font-semibold text-slate-200 drop-shadow-sm">
             <Link href="/" className="hover:text-violet-300 transition-colors">
               Home
             </Link>
@@ -91,21 +85,35 @@ export default function AboutClientView({ initialContent, journeyContent }: Abou
             <span className="text-violet-300 font-bold">About Us</span>
           </div>
 
-          {/* Hero Content */}
-          <div className="mx-auto max-w-4xl text-center">
+          {/* CENTER-ALIGNED HERO CONTENT */}
+          <div className="mx-auto max-w-4xl text-center space-y-4">
             {/* Badge */}
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-violet-400/40 bg-slate-900/80 px-4 py-1.5 text-xs font-semibold text-violet-200 backdrop-blur-md shadow-lg">
+            <div className="inline-flex items-center gap-2 rounded-full border border-violet-400/40 bg-slate-900/80 px-4 py-1.5 text-xs font-bold text-violet-200 backdrop-blur-md shadow-lg uppercase tracking-widest">
               <Building2 className="h-3.5 w-3.5 text-violet-400" />
-              <span>{content.hero.badge}</span>
+              <span>{content.hero.badge || "About Click Point Innovations"}</span>
             </div>
 
-            {/* Main Title */}
-            <h1 className="font-display text-4xl font-black tracking-tight text-white drop-shadow-lg sm:text-5xl lg:text-6xl sm:leading-[1.12]">
-              {content.hero.title}
+            {/* Main Title with Adaptive Highlighting */}
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white drop-shadow-lg leading-[1.12]">
+              {content.hero.title ? (
+                <>
+                  {content.hero.title.split(" ").slice(0, -2).join(" ")}{" "}
+                  <span className="text-violet-400 dark:text-orange-500">
+                    {content.hero.title.split(" ").slice(-2).join(" ")}
+                  </span>
+                </>
+              ) : (
+                <>
+                  Architecting Tomorrow’s{" "}
+                  <span className="text-violet-400 dark:text-orange-500">
+                    Digital Ecosystems
+                  </span>
+                </>
+              )}
             </h1>
 
             {/* Subtitle */}
-            <p className="mt-6 mx-auto max-w-2xl text-base leading-relaxed text-slate-100 sm:text-lg font-medium drop-shadow-md">
+            <p className="text-sm sm:text-lg text-slate-100 max-w-2xl mx-auto font-medium drop-shadow-md pt-1">
               {content.hero.subtitle}
             </p>
 
@@ -125,13 +133,13 @@ export default function AboutClientView({ initialContent, journeyContent }: Abou
             {/* Action Buttons */}
             <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
               <a href="#leadership">
-                <Button size="lg" className="group bg-violet-600 hover:bg-violet-500 text-white font-semibold shadow-xl border-none px-6">
+                <Button size="lg" className="group bg-violet-600 hover:bg-violet-500 text-white font-semibold shadow-xl border-none px-6 cursor-pointer">
                   {content.hero.primaryBtnText}
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Button>
               </a>
               <a href="#story">
-                <Button variant="outline" size="lg" className="border-white/40 bg-slate-900/60 text-white font-semibold backdrop-blur-md hover:bg-slate-800 hover:text-white px-6 shadow-lg">
+                <Button variant="outline" size="lg" className="border-white/40 bg-slate-900/60 text-white font-semibold backdrop-blur-md hover:bg-slate-800 hover:text-white px-6 shadow-lg cursor-pointer">
                   {content.hero.secondaryBtnText}
                 </Button>
               </a>
@@ -141,29 +149,44 @@ export default function AboutClientView({ initialContent, journeyContent }: Abou
       </section>
 
       {/* Story & Vision Section */}
-      <section id="story" className="py-20 lg:py-28 bg-cloud-100/70 border-y border-violet-100/80">
+      <section id="story" className="py-20 lg:py-28 bg-cloud-100/70 dark:bg-slate-900/40 border-y border-violet-100/80 dark:border-slate-800">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-            <div>
-              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-violet-50 dark:bg-slate-800 px-3.5 py-1 text-xs font-semibold uppercase tracking-widest text-violet-600 dark:text-violet-300">
-                <Target className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
+            <div className="space-y-3 text-left">
+              <span className="text-[11px] font-extrabold uppercase tracking-widest text-violet-600 dark:text-violet-400">
                 {content.mission.tag}
-              </div>
-              <h2 className="font-display text-3xl font-bold text-ink dark:text-white sm:text-4xl">
-                {content.mission.heading}
+              </span>
+
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.15]">
+                {content.mission.heading ? (
+                  <>
+                    {content.mission.heading.split(" ").slice(0, -2).join(" ")}{" "}
+                    <span className="text-violet-600 dark:text-orange-500">
+                      {content.mission.heading.split(" ").slice(-2).join(" ")}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    Engineered to Drive Measurable{" "}
+                    <span className="text-violet-600 dark:text-orange-500">
+                      Enterprise Impact
+                    </span>
+                  </>
+                )}
               </h2>
-              <p className="mt-4 text-base leading-relaxed text-ink/75 sm:text-lg">
+
+              <p className="text-base leading-relaxed text-ink/75 dark:text-slate-300 font-medium pt-2">
                 {content.mission.paragraph1}
               </p>
-              <p className="mt-4 text-base leading-relaxed text-ink/75">
+              <p className="text-base leading-relaxed text-ink/75 dark:text-slate-300">
                 {content.mission.paragraph2}
               </p>
 
               {/* Dynamic Feature Bullets */}
-              <div className="mt-8 space-y-3">
+              <div className="mt-8 space-y-3 pt-2">
                 {content.mission.bullets.map((bullet: string, idx: number) => (
                   <div key={idx} className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-violet-600 shrink-0" />
+                    <CheckCircle2 className="h-5 w-5 text-violet-600 dark:text-violet-400 shrink-0" />
                     <span className="text-sm font-semibold text-ink dark:text-white">{bullet}</span>
                   </div>
                 ))}
@@ -213,12 +236,27 @@ export default function AboutClientView({ initialContent, journeyContent }: Abou
       {/* Core Values Section */}
       <section className="py-20 lg:py-28">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-14 max-w-2xl">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-[#f58220]">
+          <div className="mb-14 max-w-2xl space-y-3 text-left">
+            <span className="text-[11px] font-extrabold uppercase tracking-widest text-violet-600 dark:text-violet-400">
               {content.values.tag}
-            </p>
-            <h2 className="font-display text-3xl font-bold text-ink dark:text-white sm:text-4xl">
-              {content.values.title}
+            </span>
+
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.15]">
+              {content.values.title ? (
+                <>
+                  {content.values.title.split(" ").slice(0, -2).join(" ")}{" "}
+                  <span className="text-violet-600 dark:text-orange-500">
+                    {content.values.title.split(" ").slice(-2).join(" ")}
+                  </span>
+                </>
+              ) : (
+                <>
+                  Core Operating Principles That{" "}
+                  <span className="text-violet-600 dark:text-orange-500">
+                    Drive Us
+                  </span>
+                </>
+              )}
             </h2>
           </div>
 
@@ -244,15 +282,30 @@ export default function AboutClientView({ initialContent, journeyContent }: Abou
       {/* Leadership & Team Section */}
       <section id="leadership" className="py-20 lg:py-28 bg-cloud-100/70 dark:bg-[#0f172a]/50 border-t border-violet-100 dark:border-slate-800">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-14 max-w-2xl">
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-violet-50 dark:bg-slate-800 px-3.5 py-1 text-xs font-semibold uppercase tracking-widest text-violet-700 dark:text-violet-300">
-              <Users className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
+          <div className="mb-14 max-w-2xl space-y-3 text-left">
+            <span className="text-[11px] font-extrabold uppercase tracking-widest text-violet-600 dark:text-violet-400">
               {content.leadership.tag}
-            </div>
-            <h2 className="font-display text-3xl font-bold text-ink dark:text-white sm:text-4xl">
-              {content.leadership.title}
+            </span>
+
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.15]">
+              {content.leadership.title ? (
+                <>
+                  {content.leadership.title.split(" ").slice(0, -2).join(" ")}{" "}
+                  <span className="text-violet-600 dark:text-orange-500">
+                    {content.leadership.title.split(" ").slice(-2).join(" ")}
+                  </span>
+                </>
+              ) : (
+                <>
+                  Engineers, Designers & AI{" "}
+                  <span className="text-violet-600 dark:text-orange-500">
+                    Architects
+                  </span>
+                </>
+              )}
             </h2>
-            <p className="mt-2 text-base text-ink/65 dark:text-slate-300">
+
+            <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 font-medium pt-1">
               {content.leadership.subtitle}
             </p>
           </div>

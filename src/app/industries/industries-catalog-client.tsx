@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, Building2, CheckCircle2, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, Building2, CheckCircle2, ChevronRight, Sparkles } from "lucide-react";
 import { IndustriesPageContent, IndustryItem } from "@/types";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
@@ -31,31 +31,55 @@ export default function IndustriesCatalogClient({ initialContent }: IndustriesCa
       {/* Main Hero Header */}
       <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-28 border-b border-violet-100/70 dark:border-slate-800">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-4xl text-center space-y-6">
+          {/* LEFT-ALIGNED BREADCRUMB ROUTE */}
+          <div className="mb-6 flex items-center justify-start gap-2 text-xs font-semibold text-ink/60 dark:text-slate-400">
+            <Link href="/" className="hover:text-violet-600 dark:hover:text-violet-300 transition-colors">
+              Home
+            </Link>
+            <ChevronRight className="h-3.5 w-3.5 text-ink/40 dark:text-slate-600" />
+            <span className="text-violet-600 dark:text-violet-300 font-bold">Industries</span>
+          </div>
+
+          {/* CENTER-ALIGNED HERO CONTENT */}
+          <div className="mx-auto max-w-4xl text-center space-y-4">
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-violet-50/80 dark:bg-slate-800/80 px-4 py-1.5 text-xs font-bold text-violet-700 dark:text-violet-300 shadow-xs backdrop-blur-md"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-violet-50 dark:bg-violet-950/60 border border-violet-200 dark:border-violet-800/60 text-violet-600 dark:text-violet-300 text-xs font-extrabold uppercase tracking-widest shadow-xs"
             >
               <Sparkles className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
-              <span>{hero.badge}</span>
+              <span>{hero.badge || "Industry Domain Solutions"}</span>
             </motion.div>
 
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="font-display text-4xl font-extrabold tracking-tight text-ink dark:text-white sm:text-5xl lg:text-6xl sm:leading-[1.12]"
+              className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.12]"
             >
-              {hero.title}
+              {hero.title ? (
+                <>
+                  {hero.title.split(" ").slice(0, -2).join(" ")}{" "}
+                  <span className="text-violet-600 dark:text-orange-500">
+                    {hero.title.split(" ").slice(-2).join(" ")}
+                  </span>
+                </>
+              ) : (
+                <>
+                  Tailored Engineering for{" "}
+                  <span className="text-violet-600 dark:text-orange-500">
+                    High-Growth Sectors
+                  </span>
+                </>
+              )}
             </motion.h1>
 
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="mx-auto max-w-2xl text-base leading-relaxed text-ink/70 dark:text-slate-300 sm:text-lg"
+              className="text-sm sm:text-lg text-slate-600 dark:text-slate-300 max-w-3xl mx-auto font-medium pt-1"
             >
               {hero.subtitle}
             </motion.p>

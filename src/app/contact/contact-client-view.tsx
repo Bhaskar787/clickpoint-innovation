@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { toast } from "sonner";
 import {
   Mail,
@@ -11,6 +12,7 @@ import {
   CheckCircle2,
   Sparkles,
   Loader2,
+  ChevronRight,
 } from "lucide-react";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
@@ -130,17 +132,44 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
       <Navbar />
 
       {/* Hero Header */}
-      <section className="overflow-hidden pt-28 pb-8 lg:pt-32">
+      <section className="overflow-hidden pt-32 pb-8 lg:pt-36">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl min-w-0 text-center">
-            <div className="mb-3 inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-[10px] sm:px-3.5 sm:text-xs font-semibold uppercase tracking-widest text-violet-700 dark:border-slate-700 dark:bg-slate-800 dark:text-violet-300">
-              <Sparkles className="h-3.5 w-3.5 shrink-0 text-violet-600 dark:text-violet-300" />
-              <span className="break-words">{hero.badge}</span>
+          
+          {/* LEFT-ALIGNED BREADCRUMB ROUTE */}
+          <div className="mb-6 flex items-center justify-start gap-2 text-xs font-semibold text-ink/60 dark:text-slate-400">
+            <Link href="/" className="hover:text-violet-600 dark:hover:text-violet-300 transition-colors">
+              Home
+            </Link>
+            <ChevronRight className="h-3.5 w-3.5 text-ink/40 dark:text-slate-600" />
+            <span className="text-violet-600 dark:text-violet-300 font-bold">Contact</span>
+          </div>
+
+          {/* CENTER-ALIGNED HERO CONTENT */}
+          <div className="mx-auto max-w-4xl text-center space-y-4">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-violet-50 dark:bg-violet-950/60 border border-violet-200 dark:border-violet-800/60 text-violet-600 dark:text-violet-300 text-xs font-extrabold uppercase tracking-widest shadow-xs">
+              <Sparkles className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
+              <span>{hero.badge || "Get In Touch"}</span>
             </div>
-            <h1 className="font-display text-[1.65rem] leading-tight min-[400px]:text-2xl font-bold text-ink dark:text-white sm:text-4xl lg:text-5xl break-words">
-              {hero.title}
+
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.12]">
+              {hero.title ? (
+                <>
+                  {hero.title.split(" ").slice(0, -2).join(" ")}{" "}
+                  <span className="text-violet-600 dark:text-orange-500">
+                    {hero.title.split(" ").slice(-2).join(" ")}
+                  </span>
+                </>
+              ) : (
+                <>
+                  Let’s Build Something Amazing{" "}
+                  <span className="text-violet-600 dark:text-orange-500">
+                    Together
+                  </span>
+                </>
+              )}
             </h1>
-            <p className="mt-3 text-sm sm:text-base text-ink/75 dark:text-slate-300 break-words">
+
+            <p className="text-sm sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto font-medium pt-1">
               {hero.subtitle}
             </p>
           </div>
@@ -181,7 +210,7 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
                             type="button"
                             key={obj}
                             onClick={() => setSelectedObjective(obj)}
-                            className={`rounded-xl p-3 text-xs font-bold text-left transition-all duration-200 border break-words ${
+                            className={`rounded-xl p-3 text-xs font-bold text-left transition-all duration-200 border break-words cursor-pointer ${
                               isSelected
                                 ? "bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-600/25"
                                 : "bg-cloud-100/60 text-ink/75 border-violet-100 hover:bg-violet-50 hover:text-violet-700 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-700 dark:hover:text-white"
@@ -207,7 +236,7 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
                             type="button"
                             key={b}
                             onClick={() => setSelectedBudget(b)}
-                            className={`rounded-xl p-3 text-xs font-bold text-center transition-all duration-200 border break-words ${
+                            className={`rounded-xl p-3 text-xs font-bold text-center transition-all duration-200 border break-words cursor-pointer ${
                               isSelected
                                 ? "bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-600/25"
                                 : "bg-cloud-100/60 text-ink/75 border-violet-100 hover:bg-violet-50 hover:text-violet-700 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-700 dark:hover:text-white"
@@ -282,7 +311,7 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
                     </div>
                   </div>
 
-                  <Button type="submit" disabled={isSubmitting} variant="primary" size="lg" className="w-full shadow-lg shadow-violet-600/30 font-bold">
+                  <Button type="submit" disabled={isSubmitting} variant="primary" size="lg" className="w-full shadow-lg shadow-violet-600/30 font-bold cursor-pointer">
                     {isSubmitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
                     {isSubmitting ? "Sending..." : hero.submitButtonText}
                   </Button>
@@ -309,7 +338,7 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
                       setMessage("");
                       setFormSubmitted(false);
                     }}
-                    className="mt-4 border-violet-200 dark:border-slate-700 text-ink dark:text-slate-200"
+                    className="mt-4 border-violet-200 dark:border-slate-700 text-ink dark:text-slate-200 cursor-pointer"
                   >
                     Submit Another Inquiry
                   </Button>
@@ -356,7 +385,6 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
                 </div>
               </div>
 
-            
               {/* Direct Channels Box */}
               <div className="rounded-3xl border border-violet-100 bg-gradient-to-br from-[#1b4397] via-[#153880] to-[#0e2764] p-5 sm:p-7 text-white shadow-xl">
                 <h4 className="font-display text-lg font-bold text-white mb-2 break-words">
@@ -395,23 +423,39 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
       </section>
 
       {/* Landscape Google Location Map Section */}
-      <section className="overflow-hidden py-16 lg:py-24 bg-cloud-100/70 border-t border-violet-100">
+      <section className="overflow-hidden py-16 lg:py-24 bg-cloud-100/70 dark:bg-slate-900/40 border-t border-violet-100 dark:border-slate-800">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl min-w-0 text-center mb-12">
-            <div className="mb-3 inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-[10px] sm:px-3.5 sm:text-xs font-semibold uppercase tracking-widest text-violet-700">
-              <MapPin className="h-3.5 w-3.5 shrink-0 text-violet-600" />
-              <span className="break-words">{contactInfo.mapBadge || "Visit Our Headquarters"}</span>
+          <div className="mx-auto max-w-3xl min-w-0 text-center mb-12 space-y-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-violet-50 dark:bg-violet-950/60 border border-violet-200 dark:border-violet-800/60 text-violet-600 dark:text-violet-300 text-xs font-extrabold uppercase tracking-widest shadow-xs">
+              <MapPin className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
+              <span>{contactInfo.mapBadge || "Visit Our Headquarters"}</span>
             </div>
-            <h2 className="font-display text-[1.65rem] leading-tight min-[400px]:text-2xl font-bold text-ink sm:text-4xl lg:text-5xl break-words">
-              {contactInfo.mapTitle || "Locate Click Point Innovations"}
+            
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.12]">
+              {contactInfo.mapTitle ? (
+                <>
+                  {contactInfo.mapTitle.split(" ").slice(0, -2).join(" ")}{" "}
+                  <span className="text-violet-600 dark:text-orange-500">
+                    {contactInfo.mapTitle.split(" ").slice(-2).join(" ")}
+                  </span>
+                </>
+              ) : (
+                <>
+                  Locate Click Point{" "}
+                  <span className="text-violet-600 dark:text-orange-500">
+                    Innovations
+                  </span>
+                </>
+              )}
             </h2>
-            <p className="mt-3 text-sm sm:text-base text-ink/75 break-words">
+
+            <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 font-medium">
               {contactInfo.mapSubtitle || `${contactInfo.address} — ${contactInfo.hours}`}
             </p>
           </div>
 
           {/* Landscape Embedded Google Map */}
-          <div className="overflow-hidden rounded-3xl border border-violet-200 bg-white p-2.5 shadow-2xl shadow-violet-950/[0.06]">
+          <div className="overflow-hidden rounded-3xl border border-violet-200 dark:border-slate-800 bg-white dark:bg-[#131c31] p-2.5 shadow-2xl shadow-violet-950/[0.06]">
             <iframe
               src={contactInfo.mapUrl || DEFAULT_CONTACT_PAGE_DATA.contactInfo.mapUrl}
               width="100%"
