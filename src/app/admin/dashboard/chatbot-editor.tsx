@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Sparkles,
@@ -59,6 +59,30 @@ export default function ChatbotEditor({ sectionId, onCloseSection }: ChatbotEdit
   const [saving, setSaving] = useState(false);
 
   const [activeTab, setActiveTab] = useState<"general" | "nodes" | "data" | "preview">("general");
+  const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+
+  const handleTabClick = (tabKey: "general" | "nodes" | "data" | "preview") => {
+    setActiveTab(tabKey);
+    const btn = tabRefs.current[tabKey];
+    if (btn) {
+      btn.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
+      });
+    }
+  };
+
+  useEffect(() => {
+    const btn = tabRefs.current[activeTab];
+    if (btn) {
+      btn.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
+      });
+    }
+  }, [activeTab]);
 
   // State data
   const [settings, setSettings] = useState({
@@ -418,14 +442,14 @@ export default function ChatbotEditor({ sectionId, onCloseSection }: ChatbotEdit
   return (
     <div className="space-y-6">
       {/* Top Controls Banner */}
-      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131927] p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="h-11 w-11 rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0 font-bold">
-            <Sparkles className="h-6 w-6" />
+          <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0 font-bold">
+            <Sparkles className="h-5 w-5 sm:h-6 sm:w-6" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-extrabold text-slate-900 dark:text-white">{settings.botTitle}</span>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white truncate">{settings.botTitle}</span>
               <span
                 className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
                   settings.enabled
@@ -436,40 +460,41 @@ export default function ChatbotEditor({ sectionId, onCloseSection }: ChatbotEdit
                 {settings.enabled ? "ACTIVE LIVE" : "DISABLED"}
               </span>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               {Object.keys(nodes).length} Nodes Configured &middot; React Icons Enabled
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <button
             onClick={() => setActiveTab(activeTab === "preview" ? "general" : "preview")}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 text-slate-700 dark:text-slate-200 transition-colors"
+            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 text-slate-700 dark:text-slate-200 transition-colors"
           >
             <Eye className="h-4 w-4 text-violet-500" />
-            <span>{activeTab === "preview" ? "Exit Emulator" : "Live Bot Emulator"}</span>
+            <span>{activeTab === "preview" ? "Exit Emulator" : "Live Emulator"}</span>
           </button>
 
           <button
             onClick={handleSave}
             disabled={saving}
-            className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-extrabold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 transition-all disabled:opacity-50"
+            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 text-xs font-extrabold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 transition-all disabled:opacity-50"
           >
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            <span>{saving ? "Saving Changes..." : "Save Chatbot Config"}</span>
+            <span>{saving ? "Saving..." : "Save Config"}</span>
           </button>
         </div>
       </div>
 
-      {/* Editor Sub-Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
+      {/* Editor Sub-Tabs - Horizontally Scrollable on Mobile with Auto-Center Scroll */}
+      <div className="flex items-center gap-1.5 sm:gap-2 border-b border-slate-200 dark:border-slate-800 pb-2 overflow-x-auto [scrollbar-width:none] -mx-4 px-4 sm:mx-0 sm:px-0 scroll-smooth">
         <button
-          onClick={() => setActiveTab("general")}
-          className={`flex items-center gap-2 px-4 py-2 text-xs font-extrabold rounded-xl transition-all ${
+          ref={(el) => { tabRefs.current["general"] = el; }}
+          onClick={() => handleTabClick("general")}
+          className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 text-xs font-extrabold rounded-xl shrink-0 whitespace-nowrap transition-all ${
             activeTab === "general"
-              ? "bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800"
-              : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
+              ? "bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 shadow-xs"
+              : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/60"
           }`}
         >
           <Settings className="h-4 w-4" />
@@ -477,39 +502,42 @@ export default function ChatbotEditor({ sectionId, onCloseSection }: ChatbotEdit
         </button>
 
         <button
-          onClick={() => setActiveTab("nodes")}
-          className={`flex items-center gap-2 px-4 py-2 text-xs font-extrabold rounded-xl transition-all ${
+          ref={(el) => { tabRefs.current["nodes"] = el; }}
+          onClick={() => handleTabClick("nodes")}
+          className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 text-xs font-extrabold rounded-xl shrink-0 whitespace-nowrap transition-all ${
             activeTab === "nodes"
-              ? "bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800"
-              : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
+              ? "bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 shadow-xs"
+              : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/60"
           }`}
         >
           <MessageSquare className="h-4 w-4" />
-          <span>Q&A Nodes & Flows ({Object.keys(nodes).length})</span>
+          <span>Q&A Nodes ({Object.keys(nodes).length})</span>
         </button>
 
         <button
-          onClick={() => setActiveTab("data")}
-          className={`flex items-center gap-2 px-4 py-2 text-xs font-extrabold rounded-xl transition-all ${
+          ref={(el) => { tabRefs.current["data"] = el; }}
+          onClick={() => handleTabClick("data")}
+          className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 text-xs font-extrabold rounded-xl shrink-0 whitespace-nowrap transition-all ${
             activeTab === "data"
-              ? "bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800"
-              : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
+              ? "bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 shadow-xs"
+              : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/60"
           }`}
         >
           <Layers className="h-4 w-4" />
-          <span>Real Site Content Selector</span>
+          <span>Real Content Selector</span>
         </button>
 
         <button
-          onClick={() => setActiveTab("preview")}
-          className={`flex items-center gap-2 px-4 py-2 text-xs font-extrabold rounded-xl transition-all ${
+          ref={(el) => { tabRefs.current["preview"] = el; }}
+          onClick={() => handleTabClick("preview")}
+          className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 text-xs font-extrabold rounded-xl shrink-0 whitespace-nowrap transition-all ${
             activeTab === "preview"
-              ? "bg-violet-50 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 border border-violet-200 dark:border-violet-800"
-              : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
+              ? "bg-violet-50 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 border border-violet-200 dark:border-violet-800 shadow-xs"
+              : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/60"
           }`}
         >
-          <Eye className="h-4 w-4" />
-          <span>Live Interactive Emulator</span>
+          <Eye className="h-4 w-4 text-violet-500" />
+          <span>Live Bot Emulator</span>
         </button>
       </div>
 
@@ -601,7 +629,7 @@ export default function ChatbotEditor({ sectionId, onCloseSection }: ChatbotEdit
                   )}
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                   <input
                     type="text"
                     placeholder="URL or Upload PNG..."
@@ -609,7 +637,7 @@ export default function ChatbotEditor({ sectionId, onCloseSection }: ChatbotEdit
                     onChange={(e) => setSettings({ ...settings, botAvatarUrl: e.target.value })}
                     className="flex-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none"
                   />
-                  <label className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-xl bg-violet-600 hover:bg-violet-700 text-white cursor-pointer transition-colors shrink-0">
+                  <label className="inline-flex items-center justify-center gap-1 px-3 py-1.5 text-xs font-bold rounded-xl bg-violet-600 hover:bg-violet-700 text-white cursor-pointer transition-colors shrink-0">
                     {uploadingAvatar ? (
                       <Loader2 className="h-3.5 w-3.5 animate-spin" />
                     ) : (
@@ -651,7 +679,7 @@ export default function ChatbotEditor({ sectionId, onCloseSection }: ChatbotEdit
                   )}
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                   <input
                     type="text"
                     placeholder="URL or Upload PNG..."
@@ -659,7 +687,7 @@ export default function ChatbotEditor({ sectionId, onCloseSection }: ChatbotEdit
                     onChange={(e) => setSettings({ ...settings, launcherIconUrl: e.target.value })}
                     className="flex-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none"
                   />
-                  <label className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-xl bg-violet-600 hover:bg-violet-700 text-white cursor-pointer transition-colors shrink-0">
+                  <label className="inline-flex items-center justify-center gap-1 px-3 py-1.5 text-xs font-bold rounded-xl bg-violet-600 hover:bg-violet-700 text-white cursor-pointer transition-colors shrink-0">
                     {uploadingLauncher ? (
                       <Loader2 className="h-3.5 w-3.5 animate-spin" />
                     ) : (
@@ -1008,8 +1036,8 @@ export default function ChatbotEditor({ sectionId, onCloseSection }: ChatbotEdit
       {activeTab === "data" && (
         <div className="space-y-6">
           {/* Services Selector */}
-          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 shadow-xs space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
               <div>
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <Wrench className="h-4 w-4 text-blue-500" />
@@ -1019,7 +1047,7 @@ export default function ChatbotEditor({ sectionId, onCloseSection }: ChatbotEdit
                   Pick from real active services published on the Services Page. Selected items will render as interactive cards when users tap "Our Services".
                 </p>
               </div>
-              <span className="px-2.5 py-1 rounded-full text-xs font-black bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+              <span className="self-start sm:self-auto px-2.5 py-1 rounded-full text-xs font-black bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 shrink-0">
                 {selectedServiceIds.length} Selected
               </span>
             </div>
@@ -1065,8 +1093,8 @@ export default function ChatbotEditor({ sectionId, onCloseSection }: ChatbotEdit
           </div>
 
           {/* Testimonials Selector */}
-          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 shadow-xs space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
               <div>
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <Quote className="h-4 w-4 text-amber-500" />
@@ -1076,7 +1104,7 @@ export default function ChatbotEditor({ sectionId, onCloseSection }: ChatbotEdit
                   Pick approved client reviews from the database to feature in the Chatbot review carousel.
                 </p>
               </div>
-              <span className="px-2.5 py-1 rounded-full text-xs font-black bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+              <span className="self-start sm:self-auto px-2.5 py-1 rounded-full text-xs font-black bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800 shrink-0">
                 {selectedTestimonialIds.length} Selected
               </span>
             </div>
@@ -1125,8 +1153,8 @@ export default function ChatbotEditor({ sectionId, onCloseSection }: ChatbotEdit
           </div>
 
           {/* FAQs Selector */}
-          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 shadow-xs space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
               <div>
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <HelpCircle className="h-4 w-4 text-violet-500" />
@@ -1136,7 +1164,7 @@ export default function ChatbotEditor({ sectionId, onCloseSection }: ChatbotEdit
                   Pick FAQs from the database to feature in the Chatbot accordion list when users ask about FAQs.
                 </p>
               </div>
-              <span className="px-2.5 py-1 rounded-full text-xs font-black bg-violet-50 dark:bg-violet-950 text-violet-600 dark:text-violet-400 border border-violet-200 dark:border-violet-800">
+              <span className="self-start sm:self-auto px-2.5 py-1 rounded-full text-xs font-black bg-violet-50 dark:bg-violet-950 text-violet-600 dark:text-violet-400 border border-violet-200 dark:border-violet-800 shrink-0">
                 {selectedFaqIds.length} Selected
               </span>
             </div>
@@ -1184,8 +1212,8 @@ export default function ChatbotEditor({ sectionId, onCloseSection }: ChatbotEdit
           </div>
 
           {/* Dynamic Website & Application Pricing Manager */}
-          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 shadow-xs space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
               <div>
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <Tag className="h-4 w-4 text-emerald-500" />
@@ -1198,10 +1226,10 @@ export default function ChatbotEditor({ sectionId, onCloseSection }: ChatbotEdit
               <button
                 type="button"
                 onClick={handleAddPricingPackage}
-                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-colors"
+                className="self-start sm:self-auto inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-colors shrink-0"
               >
                 <Plus className="h-3.5 w-3.5" />
-                <span>Add Website Pricing Package</span>
+                <span>Add Website Package</span>
               </button>
             </div>
 
