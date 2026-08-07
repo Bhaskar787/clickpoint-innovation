@@ -155,6 +155,8 @@ export function ChatbotWidget() {
   const [botConfig, setBotConfig] = useState({
     title: BOT_TITLE || "Clickpoint Assistant",
     subtitle: BOT_SUBTITLE || "Usually replies instantly",
+    avatarUrl: "",
+    launcherIconUrl: "",
     welcomeDelay: WELCOME_DELAY_MS || 500,
     startNode: START_NODE || "root",
     enabled: true,
@@ -197,6 +199,8 @@ export function ChatbotWidget() {
             setBotConfig({
               title: d.settings.botTitle || BOT_TITLE,
               subtitle: d.settings.botSubtitle || BOT_SUBTITLE,
+              avatarUrl: d.settings.botAvatarUrl || "",
+              launcherIconUrl: d.settings.launcherIconUrl || "",
               welcomeDelay: d.settings.welcomeDelayMs || WELCOME_DELAY_MS,
               startNode: d.settings.startNode || START_NODE,
               enabled: d.settings.enabled !== false,
@@ -363,6 +367,17 @@ export function ChatbotWidget() {
             >
               <X className="h-6 w-6" />
             </motion.span>
+          ) : botConfig.launcherIconUrl ? (
+            <motion.img
+              key="launcher-img"
+              src={botConfig.launcherIconUrl}
+              alt="Chat Launcher"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ duration: 0.18 }}
+              className="h-9 w-9 object-contain rounded-full drop-shadow-xs"
+            />
           ) : (
             <motion.span
               key="open"
@@ -402,8 +417,12 @@ export function ChatbotWidget() {
             {/* Header */}
             <div className="flex items-center justify-between gap-3 bg-gradient-to-r from-violet-600 via-indigo-600 to-violet-700 px-4 py-3.5 text-white">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/15 ring-1 ring-white/30 shadow-xs">
-                  <Sparkles className="h-5 w-5 text-yellow-300" />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/15 ring-1 ring-white/30 shadow-xs">
+                  {botConfig.avatarUrl ? (
+                    <img src={botConfig.avatarUrl} alt={botConfig.title} className="h-full w-full object-cover" />
+                  ) : (
+                    <Sparkles className="h-5 w-5 text-yellow-300" />
+                  )}
                 </div>
                 <div className="min-w-0">
                   <p className="truncate text-sm font-black leading-tight">{botConfig.title}</p>

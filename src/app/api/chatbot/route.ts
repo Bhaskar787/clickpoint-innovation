@@ -13,6 +13,8 @@ const DEFAULT_CHATBOT_CONFIG = {
     botName: "Clix",
     botTitle: BOT_TITLE || "Clickpoint Assistant",
     botSubtitle: BOT_SUBTITLE || "Usually replies instantly",
+    botAvatarUrl: "",
+    launcherIconUrl: "",
     welcomeDelayMs: WELCOME_DELAY_MS || 500,
     startNode: START_NODE || "root",
     enabled: true,

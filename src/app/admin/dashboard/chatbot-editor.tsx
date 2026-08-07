@@ -26,6 +26,8 @@ import {
   CheckSquare,
   Square,
   Settings,
+  Upload,
+  ImageIcon,
   ChevronRight,
   ChevronDown,
 } from "lucide-react";
@@ -63,10 +65,45 @@ export default function ChatbotEditor({ sectionId, onCloseSection }: ChatbotEdit
     botName: "Clix",
     botTitle: "Clickpoint Assistant",
     botSubtitle: "Usually replies instantly",
+    botAvatarUrl: "",
+    launcherIconUrl: "",
     welcomeDelayMs: 500,
     startNode: "root",
     enabled: true,
   });
+
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadingLauncher, setUploadingLauncher] = useState(false);
+
+  const handleImageUpload = async (file: File, field: "botAvatarUrl" | "launcherIconUrl") => {
+    if (field === "botAvatarUrl") setUploadingAvatar(true);
+    else setUploadingLauncher(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      if (settings[field]) {
+        formData.append("previousUrl", settings[field]);
+      }
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      }).then((r) => r.json());
+
+      if (res.success && res.url) {
+        setSettings((prev) => ({ ...prev, [field]: res.url }));
+        toast.success(`Uploaded ${field === "botAvatarUrl" ? "Bot Header Avatar" : "Launcher Icon"}!`);
+      } else {
+        toast.error(res.error || "Image upload failed");
+      }
+    } catch (err) {
+      toast.error("Upload error");
+    } finally {
+      if (field === "botAvatarUrl") setUploadingAvatar(false);
+      else setUploadingLauncher(false);
+    }
+  };
 
   const [nodes, setNodes] = useState<Record<string, ChatNode>>({});
   const [selectedNodeId, setSelectedNodeId] = useState<string>("root");
@@ -531,6 +568,116 @@ export default function ChatbotEditor({ sectionId, onCloseSection }: ChatbotEdit
                 onChange={(e) => setSettings({ ...settings, welcomeDelayMs: parseInt(e.target.value) || 500 })}
                 className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none"
               />
+            </div>
+          </div>
+
+          {/* Dynamic Images & Avatars Section */}
+          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-4">
+            <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+              <ImageIcon className="h-4 w-4 text-violet-500" />
+              Dynamic Bot Avatars & Launcher Icons (Stored Locally)
+            </h4>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {/* Bot Header Avatar PNG */}
+              <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#0b0f19] space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-900 dark:text-white">
+                      Chatbot Header Avatar PNG
+                    </label>
+                    <p className="text-[10px] text-slate-500">Image shown inside the top header bar of the chatbot window.</p>
+                  </div>
+                  {settings.botAvatarUrl ? (
+                    <img
+                      src={settings.botAvatarUrl}
+                      alt="Header Avatar"
+                      className="h-10 w-10 rounded-full object-cover border border-violet-500 shadow-xs"
+                    />
+                  ) : (
+                    <div className="h-10 w-10 rounded-full bg-violet-600/20 text-violet-600 flex items-center justify-center font-bold">
+                      <Sparkles className="h-5 w-5" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    placeholder="URL or Upload PNG..."
+                    value={settings.botAvatarUrl || ""}
+                    onChange={(e) => setSettings({ ...settings, botAvatarUrl: e.target.value })}
+                    className="flex-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none"
+                  />
+                  <label className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-xl bg-violet-600 hover:bg-violet-700 text-white cursor-pointer transition-colors shrink-0">
+                    {uploadingAvatar ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Upload className="h-3.5 w-3.5" />
+                    )}
+                    <span>Upload PNG</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) handleImageUpload(f, "botAvatarUrl");
+                      }}
+                    />
+                  </label>
+                </div>
+              </div>
+
+              {/* Dynamic Launcher Icon PNG (Before Click) */}
+              <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#0b0f19] space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-900 dark:text-white">
+                      Floating Launcher Icon PNG (Before Click)
+                    </label>
+                    <p className="text-[10px] text-slate-500">Image shown on the floating bottom-right button before opening.</p>
+                  </div>
+                  {settings.launcherIconUrl ? (
+                    <img
+                      src={settings.launcherIconUrl}
+                      alt="Launcher Icon"
+                      className="h-10 w-10 rounded-full object-contain p-1 bg-violet-600 shadow-xs"
+                    />
+                  ) : (
+                    <div className="h-10 w-10 rounded-full bg-violet-600 text-white flex items-center justify-center font-bold">
+                      <MessageSquare className="h-5 w-5" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    placeholder="URL or Upload PNG..."
+                    value={settings.launcherIconUrl || ""}
+                    onChange={(e) => setSettings({ ...settings, launcherIconUrl: e.target.value })}
+                    className="flex-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none"
+                  />
+                  <label className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-xl bg-violet-600 hover:bg-violet-700 text-white cursor-pointer transition-colors shrink-0">
+                    {uploadingLauncher ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Upload className="h-3.5 w-3.5" />
+                    )}
+                    <span>Upload PNG</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) handleImageUpload(f, "launcherIconUrl");
+                      }}
+                    />
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
 
