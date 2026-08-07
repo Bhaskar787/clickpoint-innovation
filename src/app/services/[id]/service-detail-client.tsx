@@ -11,7 +11,6 @@ import {
   Layers,
   Code2,
   Workflow,
-  Sparkles,
   ShieldCheck,
   TrendingUp,
 } from "lucide-react";

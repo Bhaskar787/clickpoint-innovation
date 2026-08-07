@@ -11,7 +11,7 @@ import {
   LineChart,
   Boxes,
   Cpu,
-  Sparkles,
+  Layers,
 } from "lucide-react";
 import { DEFAULT_LANDING_DATA } from "@/data/default-landing-data";
 import { SERVICES_DATA } from "@/data/landing-data";
@@ -29,7 +29,7 @@ const SERVICE_ICON_MAP: Record<string, any> = {
   "platform-mod": Boxes,
   mlops: Cpu,
 };
-const FALLBACK_ICONS = [Sparkles, Boxes, Code2, Cpu, LineChart, Palette];
+const FALLBACK_ICONS = [Layers, Boxes, Code2, Cpu, LineChart, Palette];
 
 function resolveServiceIcon(id: string, idx: number) {
   return SERVICE_ICON_MAP[id] || FALLBACK_ICONS[idx % FALLBACK_ICONS.length];

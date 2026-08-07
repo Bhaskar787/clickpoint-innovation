@@ -7,7 +7,7 @@ import {
   Zap,
   ArrowRight,
   CheckCircle2,
-  Sparkles,
+  Boxes,
 } from "lucide-react";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
@@ -118,7 +118,7 @@ export default function ServicesCatalogClient({ initialContent }: ServicesCatalo
                 <div>
                   <div className="flex items-center justify-between gap-4 mb-4">
                     <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-200 dark:border-slate-700 bg-violet-50 dark:bg-slate-800 px-3 py-1 text-[11px] font-bold text-violet-700 dark:text-violet-300">
-                      <Sparkles className="h-3 w-3 text-violet-600 dark:text-violet-400" />
+                      <Boxes className="h-3 w-3 text-violet-600 dark:text-violet-400" />
                       <span>{service.heroBadge || service.subtitle}</span>
                     </span>
 

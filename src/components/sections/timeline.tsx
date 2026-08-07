@@ -12,10 +12,10 @@ import {
   Code2,
   Users,
   Bot,
-  Sparkles,
   Trophy,
   Rocket,
   Globe,
+  Award,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -26,7 +26,7 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-const ICON_LIST = [Zap, Code2, Users, Bot, Trophy, Rocket, Globe, Sparkles];
+const ICON_LIST = [Zap, Code2, Users, Bot, Trophy, Rocket, Globe, Award];
 
 interface TimelineProps {
   initialContent?: JourneyPageContent;

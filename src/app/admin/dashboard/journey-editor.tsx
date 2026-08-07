@@ -16,7 +16,6 @@ import {
   Calendar,
   Camera,
   Quote,
-  Sparkles,
   Tag,
   CheckCircle2,
   Award,
@@ -704,7 +703,7 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
                 {/* Dynamic Era Metric Badges (3 Badges) */}
                 <div className="p-3 sm:p-3.5 rounded-xl border border-violet-100 dark:border-slate-800 bg-violet-50/40 dark:bg-slate-900/50 space-y-2">
                   <label className="text-[11px] font-bold text-violet-700 dark:text-violet-300 flex items-center gap-1.5 uppercase tracking-wider">
-                    <Sparkles className="h-3.5 w-3.5 text-violet-600 shrink-0" />
+                    <Award className="h-3.5 w-3.5 text-violet-600 shrink-0" />
                     Era Key Stats / Badges (e.g. "4 Engineers", "12 Shipped", "100% TDD")
                   </label>
                   <div className="grid gap-2.5 sm:gap-3 grid-cols-1 sm:grid-cols-3">

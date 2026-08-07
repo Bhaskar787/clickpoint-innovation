@@ -91,7 +91,7 @@ export default function TestimonialsClientView({
               animate={{ opacity: 1, y: 0 }}
               className="inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-violet-50/80 dark:bg-slate-800/80 px-4 py-1.5 text-xs font-bold text-violet-700 dark:text-violet-300 shadow-xs backdrop-blur-md"
             >
-              <Sparkles className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
+              <Quote className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
               <span>{hero.badge || "Client Proof & Verified Reviews"}</span>
             </motion.div>
 

@@ -352,7 +352,7 @@ export default function JourneyClientView({ initialContent }: JourneyClientViewP
 
                     <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-10">
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-900/80 backdrop-blur-md px-3.5 py-1 text-[11px] font-extrabold uppercase tracking-widest text-violet-300 dark:text-violet-300 border border-violet-500/30">
-                        <Sparkles className="h-3 w-3 text-amber-400" />
+                        <Milestone className="h-3 w-3 text-amber-400" />
                         {event.category}
                       </span>
                       {event.keyMetric && (

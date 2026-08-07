@@ -8,9 +8,7 @@ import {
   Linkedin,
   Twitter,
   Copy,
-  BookOpen,
   ArrowRight,
-  Sparkles,
   Newspaper,
   Calendar,
 } from "lucide-react";

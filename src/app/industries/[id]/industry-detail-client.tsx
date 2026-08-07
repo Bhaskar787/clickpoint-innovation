@@ -10,7 +10,6 @@ import {
   CheckCircle2,
   ExternalLink,
   ShieldCheck,
-  Sparkles,
   Layers,
   FolderGit2,
   TrendingUp,

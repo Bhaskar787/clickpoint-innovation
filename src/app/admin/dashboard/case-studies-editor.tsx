@@ -18,7 +18,6 @@ import {
   Layers,
   FolderGit2,
   ExternalLink,
-  Sparkles,
   TrendingUp,
   FolderPlus,
   Image as ImageIcon,
@@ -258,7 +257,7 @@ export default function CaseStudiesEditor() {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 mb-1">
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20">
-              <Sparkles className="h-3 w-3" />
+              <FolderGit2 className="h-3 w-3" />
               Dynamic Content Engine
             </span>
             <span className="text-xs font-semibold text-slate-400">

@@ -20,7 +20,6 @@ import {
   AlertTriangle,
   ToggleLeft,
   ToggleRight,
-  Sparkles,
   ChevronDown,
   ChevronUp,
   ListPlus,
@@ -776,7 +775,7 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
 
             <div>
               <label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                <Sparkles className="h-3.5 w-3.5 text-violet-500 shrink-0" /> Highlight Text (coloured portion)
+                <Type className="h-3.5 w-3.5 text-violet-500 shrink-0" /> Highlight Text (coloured portion)
               </label>
               <input
                 type="text"

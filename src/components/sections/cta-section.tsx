@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DEFAULT_LANDING_DATA } from "@/data/default-landing-data";
 
@@ -52,7 +52,7 @@ export default function CtaSection({ initialData }: CtaSectionProps = {}) {
             {/* Dynamic Pill Badge */}
             {ctaData.badge && (
               <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-violet-500/30 bg-violet-500/10 text-violet-300 text-xs font-bold mb-6">
-                <Sparkles className="h-3.5 w-3.5 text-violet-400 animate-pulse" />
+                <Zap className="h-3.5 w-3.5 text-violet-400 animate-pulse" />
                 <span>{ctaData.badge}</span>
               </div>
             )}

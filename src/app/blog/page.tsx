@@ -9,7 +9,6 @@ import {
   ChevronRight,
   Clock,
   ArrowRight,
-  Sparkles,
   ChevronLeft,
   Loader2,
   Newspaper,

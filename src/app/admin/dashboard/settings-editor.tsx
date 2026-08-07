@@ -7,7 +7,8 @@ import {
   ConciergeBell,
   Music,
   Zap,
-  Sparkles,
+  Bot,
+  Loader2,
   Trophy,
   Volume2,
   VolumeX,
@@ -120,7 +121,7 @@ export default function SettingsEditor() {
       case "zap":
         return <Zap className="h-4 w-4 text-yellow-500" />;
       case "sparkles":
-        return <Sparkles className="h-4 w-4 text-sky-500" />;
+        return <Bot className="h-4 w-4 text-sky-500" />;
       case "trophy":
         return <Trophy className="h-4 w-4 text-emerald-500" />;
       case "volume":
@@ -159,7 +160,7 @@ export default function SettingsEditor() {
           className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md transition-all shrink-0 cursor-pointer disabled:opacity-50"
         >
           {isSaving ? (
-            <Sparkles className="h-4 w-4 animate-spin" />
+            <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
             <Save className="h-4 w-4" />
           )}

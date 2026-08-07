@@ -14,7 +14,6 @@ import {
   Type,
   Search,
   Loader2,
-  Sparkles,
   UploadCloud,
   X,
   ImageIcon,
@@ -1024,7 +1023,7 @@ export default function BlogPageEditor({ sectionId, onCloseSection }: BlogPageEd
 
             <div>
               <label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                <Sparkles className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                <Type className="h-3.5 w-3.5 text-amber-500 shrink-0" />
                 Title Highlighted Text (Orange Accent, e.g. Popular Blogs)
               </label>
               <input

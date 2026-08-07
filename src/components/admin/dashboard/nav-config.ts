@@ -5,7 +5,7 @@ import {
   Briefcase,
   Users,
   TrendingUp,
-  Sparkles,
+  Zap,
   Calendar,
   Layers,
   ShieldCheck,
@@ -116,7 +116,7 @@ export const ALL_PAGE_CONFIGS: Record<string, PageConfig> = {
     subtitle: "Configure and manage all 12 sections on the main landing page in real time",
     sections: [
       { id: "navbar", order: "#01", name: "Navbar & Navigation Header", description: "Manage top bar brand logo, navigation links, quick enquiry CTA button, and announcement banner.", icon: Globe, fieldsCount: 8, status: "Active", category: "Header" },
-      { id: "hero", order: "#02", name: "Hero Section", description: "Configure main hero title, animated subheadings, CTA buttons, background blueprint grid, and visual badges.", icon: Sparkles, fieldsCount: 12, status: "Active", category: "Main Banner" },
+      { id: "hero", order: "#02", name: "Hero Section", description: "Configure main hero title, animated subheadings, CTA buttons, background blueprint grid, and visual badges.", icon: Zap, fieldsCount: 12, status: "Active", category: "Main Banner" },
       { id: "services", order: "#03", name: "Services Catalog Section", description: "Edit service cards (AI Engineering, Web Apps, Mobile Apps, Growth), features, icons, and service details.", icon: Layers, fieldsCount: 16, status: "Active", category: "Services" },
       { id: "tech-stack", order: "#04", name: "Tech Stack & Tools Section", description: "Customize technology categories (Frontend, Backend, AI/ML, Cloud), framework icons, and tool badges.", icon: Cpu, fieldsCount: 14, status: "Active", category: "Technologies" },
       { id: "growth", order: "#05", name: "Growth & Impact Metrics Section", description: "Manage key counter statistics (Project Count, Satisfaction %, Speed Multiplier) and achievement statements.", icon: TrendingUp, fieldsCount: 9, status: "Active", category: "Metrics" },

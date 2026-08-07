@@ -10,7 +10,7 @@ import {
   MapPin,
   DollarSign,
   CheckCircle2,
-  Sparkles,
+  Coffee,
   Zap,
   Globe,
   Heart,
@@ -111,7 +111,7 @@ const DEFAULT_CONTENT: CareersPageContent = {
   },
 };
 
-const PERK_ICONS = [Globe, DollarSign, Zap, Heart, Users, Award, Briefcase, Sparkles];
+const PERK_ICONS = [Globe, DollarSign, Zap, Heart, Users, Award, Briefcase, Coffee];
 const ALLOWED_RESUME_TYPES = [
   "application/pdf",
   "application/msword",
@@ -328,7 +328,7 @@ export default function CareersPage() {
               animate={{ opacity: 1, y: 0 }}
               className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-violet-50 dark:bg-violet-950/60 border border-violet-200 dark:border-violet-800/60 text-violet-600 dark:text-violet-300 text-xs font-extrabold uppercase tracking-widest shadow-xs"
             >
-              <Sparkles className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
+              <Briefcase className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
               <span>{hero.badge || "Careers & Openings"}</span>
             </motion.div>
 
@@ -542,7 +542,7 @@ export default function CareersPage() {
       <AnimatePresence>
         {activeJobModal && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm"
+            className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6 md:p-8 bg-slate-950/80 backdrop-blur-md overflow-y-auto"
             onClick={(e) => { if (e.target === e.currentTarget) setActiveJobModal(null); }}
           >
             <motion.div
@@ -550,58 +550,65 @@ export default function CareersPage() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white dark:bg-[#131c31] shadow-2xl border border-violet-100 dark:border-slate-800"
+              className="relative w-full max-w-2xl my-auto max-h-[85vh] flex flex-col rounded-3xl bg-white dark:bg-[#131c31] shadow-2xl border border-violet-100 dark:border-slate-800 overflow-hidden"
             >
-              {/* Close */}
-              <button
-                onClick={() => setActiveJobModal(null)}
-                className="absolute top-4 right-4 z-10 h-8 w-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center transition-colors cursor-pointer"
-              >
-                <X className="h-4 w-4" />
-              </button>
+              {/* Sticky Top Header Bar */}
+              <div className="sticky top-0 z-30 flex items-center justify-between px-6 py-4 sm:px-8 bg-white/95 dark:bg-[#131c31]/95 backdrop-blur-md border-b border-slate-100 dark:border-slate-800/80 shrink-0">
+                <div className="min-w-0 flex-1 pr-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-violet-600 dark:text-violet-300">
+                      {activeJobModal.category?.name || "Career Opportunity"}
+                    </span>
+                    {activeJobModal.featured && (
+                      <span className="px-1.5 py-0.5 rounded bg-violet-100 dark:bg-slate-800 text-violet-700 dark:text-violet-300 text-[9px] font-bold">
+                        FEATURED
+                      </span>
+                    )}
+                  </div>
+                  <h2 className="font-display text-lg sm:text-xl font-bold text-ink dark:text-white truncate">
+                    {activeJobModal.title}
+                  </h2>
+                  <div className="flex flex-wrap gap-2.5 mt-1">
+                    {[
+                      { icon: MapPin, label: activeJobModal.location },
+                      { icon: Briefcase, label: activeJobModal.type },
+                      { icon: Award, label: activeJobModal.experience },
+                    ].filter((item) => Boolean(item.label)).map(({ icon: Icon, label }) => (
+                      <span key={label} className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                        <Icon className="h-3 w-3 text-violet-500" /> {label}
+                      </span>
+                    ))}
+                  </div>
+                </div>
 
-              <div className="p-6 md:p-8">
+                <button
+                  onClick={() => setActiveJobModal(null)}
+                  className="h-9 w-9 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                  aria-label="Close modal"
+                >
+                  <X className="h-4.5 w-4.5" />
+                </button>
+              </div>
+
+              {/* Scrollable Modal Content Body */}
+              <div className="overflow-y-auto p-6 sm:p-8 space-y-6">
                 {!applicationSubmitted ? (
                   <>
-                    {/* Job Header */}
-                    <div className="mb-6 pr-10">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-violet-600 dark:text-violet-300">
-                          {activeJobModal.category?.name}
-                        </span>
-                        {activeJobModal.featured && (
-                          <span className="px-1.5 py-0.5 rounded bg-violet-100 dark:bg-slate-800 text-violet-700 dark:text-violet-300 text-[9px] font-bold">
-                            FEATURED
-                          </span>
-                        )}
-                      </div>
-                      <h2 className="font-display text-xl font-bold text-ink dark:text-white mb-1">
-                        {activeJobModal.title}
-                      </h2>
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        {[
-                          { icon: MapPin, label: activeJobModal.location },
-                          { icon: Briefcase, label: activeJobModal.type },
-                          { icon: Award, label: activeJobModal.experience },
-                        ].map(({ icon: Icon, label }) => (
-                          <span key={label} className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
-                            <Icon className="h-2.5 w-2.5" /> {label}
-                          </span>
-                        ))}
-                      </div>
-                      {activeJobModal.summary && (
-                        <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">{activeJobModal.summary}</p>
-                      )}
-                    </div>
+                    {/* Job Summary */}
+                    {activeJobModal.summary && (
+                      <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-900/40 p-3.5 rounded-xl border border-slate-100 dark:border-slate-800">
+                        {activeJobModal.summary}
+                      </p>
+                    )}
 
                     {/* Responsibilities & Requirements */}
                     {(activeJobModal.responsibilities?.length > 0 || activeJobModal.requirements?.length > 0) && (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-violet-100 dark:border-slate-800">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-violet-100 dark:border-slate-800">
                         {activeJobModal.responsibilities?.length > 0 && (
                           <div>
                             <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">What You'll Do</h4>
                             <ul className="space-y-1">
-                              {activeJobModal.responsibilities.slice(0, 4).map((r, i) => (
+                              {activeJobModal.responsibilities.slice(0, 4).map((r: string, i: number) => (
                                 <li key={i} className="flex items-start gap-1.5 text-xs text-slate-600 dark:text-slate-400">
                                   <CheckCircle2 className="h-3 w-3 text-emerald-500 mt-0.5 shrink-0" /> {r}
                                 </li>
@@ -613,7 +620,7 @@ export default function CareersPage() {
                           <div>
                             <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Requirements</h4>
                             <ul className="space-y-1">
-                              {activeJobModal.requirements.slice(0, 4).map((r, i) => (
+                              {activeJobModal.requirements.slice(0, 4).map((r: string, i: number) => (
                                 <li key={i} className="flex items-start gap-1.5 text-xs text-slate-600 dark:text-slate-400">
                                   <CheckCircle2 className="h-3 w-3 text-violet-500 mt-0.5 shrink-0" /> {r}
                                 </li>
@@ -625,7 +632,7 @@ export default function CareersPage() {
                     )}
 
                     {/* Application Form */}
-                    <div className="pt-4 border-t border-violet-100 dark:border-slate-800">
+                    <div className="pt-2 border-t border-violet-100 dark:border-slate-800">
                       <h3 className="text-sm font-bold text-ink dark:text-white mb-4 flex items-center gap-2">
                         <Send className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
                         Submit Your Application

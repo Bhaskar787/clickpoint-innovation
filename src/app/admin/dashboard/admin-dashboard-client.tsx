@@ -7,7 +7,6 @@ import {
   Briefcase,
   ChevronRight,
   TrendingUp,
-  Sparkles,
   Layers,
   ShieldCheck,
   CheckCircle2,

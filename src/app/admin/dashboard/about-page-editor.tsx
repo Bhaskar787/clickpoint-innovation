@@ -13,7 +13,6 @@ import {
   ShieldCheck,
   Users,
   Award,
-  Sparkles,
   Target,
   Code2,
   Bot,

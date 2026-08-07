@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, X, SendHorizontal, RefreshCw, Eye, Edit3, CheckCircle2, Sparkles, Star, Calendar, Search, XCircle, MessageSquare } from "lucide-react";
+import { Mail, X, SendHorizontal, RefreshCw, Eye, Edit3, CheckCircle2, Star, Calendar, Search, XCircle, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 
 export interface EmailModalApplication {

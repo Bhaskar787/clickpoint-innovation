@@ -147,7 +147,7 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
           {/* CENTER-ALIGNED HERO CONTENT */}
           <div className="mx-auto max-w-4xl text-center space-y-4">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-violet-50 dark:bg-violet-950/60 border border-violet-200 dark:border-violet-800/60 text-violet-600 dark:text-violet-300 text-xs font-extrabold uppercase tracking-widest shadow-xs">
-              <Sparkles className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
+              <Mail className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
               <span>{hero.badge || "Get In Touch"}</span>
             </div>
 

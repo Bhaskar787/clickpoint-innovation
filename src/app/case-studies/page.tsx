@@ -15,7 +15,6 @@ import {
   Building2,
   ShieldCheck,
   Award,
-  Sparkles,
   Layers,
   Loader2,
 } from "lucide-react";

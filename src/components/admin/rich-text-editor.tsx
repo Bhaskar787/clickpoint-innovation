@@ -28,7 +28,6 @@ import {
   UploadCloud,
   Loader2,
   X,
-  Sparkles,
   FileCode,
   AlignLeft,
   AlignCenter,

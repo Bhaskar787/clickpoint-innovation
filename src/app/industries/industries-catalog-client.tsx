@@ -48,7 +48,7 @@ export default function IndustriesCatalogClient({ initialContent }: IndustriesCa
               transition={{ duration: 0.5 }}
               className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-violet-50 dark:bg-violet-950/60 border border-violet-200 dark:border-violet-800/60 text-violet-600 dark:text-violet-300 text-xs font-extrabold uppercase tracking-widest shadow-xs"
             >
-              <Sparkles className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
+              <Building2 className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
               <span>{hero.badge || "Industry Domain Solutions"}</span>
             </motion.div>
 
