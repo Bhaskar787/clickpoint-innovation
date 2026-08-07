@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import { ThemeProvider } from "@/components/common/theme-provider";
+import { ChatbotWidget } from "@/components/common/chatbot-widget";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -50,6 +51,7 @@ export default function RootLayout({
       <body className="font-poppins font-sans antialiased">
         <ThemeProvider>
           {children}
+          <ChatbotWidget />
           <Toaster position="top-right" richColors closeButton duration={4000} />
         </ThemeProvider>
       </body>

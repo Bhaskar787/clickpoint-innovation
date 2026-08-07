@@ -183,6 +183,16 @@ model CaseStudiesPage {
   @@map("case_studies_page")
 }
 
+model ChatbotPage {
+  id        String   @id @default("default")
+  content   Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("chatbot_page")
+}
+
+
 // -----------------------------------------------------------------------------
 // 3. FEATURE & CONTENT ENTITY MODELS
 // -----------------------------------------------------------------------------

@@ -88,6 +88,11 @@ export type NotFoundPage = Prisma.NotFoundPageModel
  */
 export type CaseStudiesPage = Prisma.CaseStudiesPageModel
 /**
+ * Model ChatbotPage
+ * 
+ */
+export type ChatbotPage = Prisma.ChatbotPageModel
+/**
  * Model CaseStudyCategory
  * 
  */

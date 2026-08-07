@@ -411,6 +411,7 @@ export const ModelName = {
   CareersPage: 'CareersPage',
   NotFoundPage: 'NotFoundPage',
   CaseStudiesPage: 'CaseStudiesPage',
+  ChatbotPage: 'ChatbotPage',
   CaseStudyCategory: 'CaseStudyCategory',
   CaseStudy: 'CaseStudy',
   BlogPage: 'BlogPage',
@@ -440,7 +441,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "admin" | "user" | "session" | "account" | "verification" | "landingPage" | "aboutPage" | "servicesPage" | "industriesPage" | "contactPage" | "journeyPage" | "careersPage" | "notFoundPage" | "caseStudiesPage" | "caseStudyCategory" | "caseStudy" | "blogPage" | "blogCategory" | "blogPost" | "testimonialsPage" | "testimonial" | "faq" | "faqCategory" | "inquiry" | "contactInquiry" | "jobCategory" | "jobVacancy" | "jobApplication"
+    modelProps: "admin" | "user" | "session" | "account" | "verification" | "landingPage" | "aboutPage" | "servicesPage" | "industriesPage" | "contactPage" | "journeyPage" | "careersPage" | "notFoundPage" | "caseStudiesPage" | "chatbotPage" | "caseStudyCategory" | "caseStudy" | "blogPage" | "blogCategory" | "blogPost" | "testimonialsPage" | "testimonial" | "faq" | "faqCategory" | "inquiry" | "contactInquiry" | "jobCategory" | "jobVacancy" | "jobApplication"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1477,6 +1478,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.CaseStudiesPageCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.CaseStudiesPageCountAggregateOutputType> | number
+        }
+      }
+    }
+    ChatbotPage: {
+      payload: Prisma.$ChatbotPagePayload<ExtArgs>
+      fields: Prisma.ChatbotPageFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ChatbotPageFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatbotPagePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ChatbotPageFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatbotPagePayload>
+        }
+        findFirst: {
+          args: Prisma.ChatbotPageFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatbotPagePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ChatbotPageFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatbotPagePayload>
+        }
+        findMany: {
+          args: Prisma.ChatbotPageFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatbotPagePayload>[]
+        }
+        create: {
+          args: Prisma.ChatbotPageCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatbotPagePayload>
+        }
+        createMany: {
+          args: Prisma.ChatbotPageCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ChatbotPageCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatbotPagePayload>[]
+        }
+        delete: {
+          args: Prisma.ChatbotPageDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatbotPagePayload>
+        }
+        update: {
+          args: Prisma.ChatbotPageUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatbotPagePayload>
+        }
+        deleteMany: {
+          args: Prisma.ChatbotPageDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ChatbotPageUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ChatbotPageUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatbotPagePayload>[]
+        }
+        upsert: {
+          args: Prisma.ChatbotPageUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChatbotPagePayload>
+        }
+        aggregate: {
+          args: Prisma.ChatbotPageAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateChatbotPage>
+        }
+        groupBy: {
+          args: Prisma.ChatbotPageGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChatbotPageGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ChatbotPageCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChatbotPageCountAggregateOutputType> | number
         }
       }
     }
@@ -2723,6 +2798,16 @@ export const CaseStudiesPageScalarFieldEnum = {
 export type CaseStudiesPageScalarFieldEnum = (typeof CaseStudiesPageScalarFieldEnum)[keyof typeof CaseStudiesPageScalarFieldEnum]
 
 
+export const ChatbotPageScalarFieldEnum = {
+  id: 'id',
+  content: 'content',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ChatbotPageScalarFieldEnum = (typeof ChatbotPageScalarFieldEnum)[keyof typeof ChatbotPageScalarFieldEnum]
+
+
 export const CaseStudyCategoryScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -3293,6 +3378,7 @@ export type GlobalOmitConfig = {
   careersPage?: Prisma.CareersPageOmit
   notFoundPage?: Prisma.NotFoundPageOmit
   caseStudiesPage?: Prisma.CaseStudiesPageOmit
+  chatbotPage?: Prisma.ChatbotPageOmit
   caseStudyCategory?: Prisma.CaseStudyCategoryOmit
   caseStudy?: Prisma.CaseStudyOmit
   blogPage?: Prisma.BlogPageOmit

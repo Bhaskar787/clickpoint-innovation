@@ -76,15 +76,15 @@ export default function FeedbackModal({ isOpen, onClose, onSuccess }: FeedbackMo
       return;
     }
 
-    // 1. Check LocalStorage Rate Limit (1 submission per 10 seconds = 10,000 ms) for testing
-    const TEN_SECONDS_MS = 10 * 1000;
+    // 1-hour rate limit check (3,600,000 ms = 60 * 60 * 1000)
+    const ONE_HOUR_MS = 60 * 60 * 1000;
     const lastSubmission = localStorage.getItem("clickpoint_last_review_time");
 
     if (lastSubmission) {
       const elapsed = Date.now() - parseInt(lastSubmission, 10);
-      if (elapsed < TEN_SECONDS_MS) {
-        const secondsRemaining = Math.ceil((TEN_SECONDS_MS - elapsed) / 1000);
-        toast.error(`Rate limit reached: You can submit another review in ${secondsRemaining} second(s).`);
+      if (elapsed < ONE_HOUR_MS) {
+        const minutesRemaining = Math.ceil((ONE_HOUR_MS - elapsed) / (60 * 1000));
+        toast.error(`Rate limit active: You can submit another testimonial review in ${minutesRemaining} minute(s). Only 1 review per hour is allowed.`);
         return;
       }
     }

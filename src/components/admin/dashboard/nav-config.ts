@@ -29,6 +29,7 @@ import {
   Star,
   FileText,
   Settings,
+  Sparkles,
 } from "lucide-react";
 import React from "react";
 
@@ -268,6 +269,16 @@ export const ALL_PAGE_CONFIGS: Record<string, PageConfig> = {
       { id: "404-links", order: "#02", name: "Quick Action Navigation Links", description: "Edit recommended recovery links (Home, Services, Contact, FAQs) displayed on 404 error page.", icon: Globe, fieldsCount: 8, status: "Active", category: "Navigation" },
     ],
   },
+  "chatbot-page": {
+    id: "chatbot-page",
+    title: "Dynamic Chatbot App Manager",
+    subtitle: "Manage AI assistant content, quick replies, dynamic Q&A list, real site data selection, and test live response flows",
+    sections: [
+      { id: "chatbot-general", order: "#01", name: "Bot General Settings", description: "Configure bot name, title, subtitle, welcome delay, avatar, and active status.", icon: Sparkles, fieldsCount: 6, status: "Active", category: "Settings" },
+      { id: "chatbot-nodes", order: "#02", name: "Conversation Nodes & Q&A Flow", description: "Build decision tree nodes, bot response bubbles, and quick reply action chips.", icon: MessageSquare, fieldsCount: 14, status: "Active", category: "Conversation" },
+      { id: "chatbot-data-picker", order: "#03", name: "Real Data Manual Selector", description: "Select real services, testimonials, pricing, and FAQs to showcase in bot responses.", icon: Layers, fieldsCount: 10, status: "Active", category: "Real Content" },
+    ],
+  },
   "system-settings": {
     id: "system-settings",
     title: "System Settings & Preferences",
@@ -287,6 +298,12 @@ export function getNavItems(
       items: [
         { id: "dashboard", label: "Dashboard Overview", icon: LayoutDashboard },
         { id: "realtime-analytics", label: "Real-time Analytics", icon: TrendingUp },
+      ],
+    },
+    {
+      group: "DYNAMIC CHATBOT APP",
+      items: [
+        { id: "chatbot-page", label: "Dynamic Chatbot App", icon: MessageSquare, badge: "Live" },
       ],
     },
     {

@@ -235,8 +235,8 @@ export default function CareersPage() {
       return;
     }
 
-    if (!formName.trim() || !formEmail.trim()) {
-      toast.error("Please enter your name and email address.");
+    if (!formName.trim() || !formEmail.trim() || !formPhone.trim()) {
+      toast.error("Please enter your name, email, and contact phone number.");
       return;
     }
     if (!resumeFile) {
@@ -673,12 +673,13 @@ export default function CareersPage() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <div>
                             <label className="block text-[11px] font-bold uppercase tracking-wider text-ink/60 dark:text-slate-400 mb-1">
-                              Phone Number
+                              Phone / Contact Number <span className="text-red-500">*</span>
                             </label>
                             <input
                               type="tel"
                               value={formPhone}
                               onChange={(e) => setFormPhone(e.target.value)}
+                              required
                               placeholder="+1 (555) 000-0000"
                               className="w-full rounded-xl border border-violet-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs text-ink dark:text-slate-100 placeholder-slate-400 focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500/30"
                             />

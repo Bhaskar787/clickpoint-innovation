@@ -51,6 +51,7 @@ import JobApplicationsView from "./job-applications-view";
 import CaseStudiesEditor from "./case-studies-editor";
 import BlogPageEditor from "./blog-page-editor";
 import SettingsEditor from "./settings-editor";
+import ChatbotEditor from "./chatbot-editor";
 
 import { subscribeRealtimeNotifications, playNotificationSound } from "@/lib/realtime-notifications";
 import { ALL_PAGE_CONFIGS } from "@/components/admin/dashboard/nav-config";
@@ -569,6 +570,8 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                 />
               ) : activeTab === "not-found-page" ? (
                 <NotFoundPageEditor />
+              ) : activeTab === "chatbot-page" ? (
+                <ChatbotEditor sectionId={selectedSectionId} onCloseSection={() => setSelectedSectionId(null)} />
               ) : (
                 /* Landing Page or Default Section Cards Grid */
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

@@ -65,6 +65,7 @@ export const ModelName = {
   CareersPage: 'CareersPage',
   NotFoundPage: 'NotFoundPage',
   CaseStudiesPage: 'CaseStudiesPage',
+  ChatbotPage: 'ChatbotPage',
   CaseStudyCategory: 'CaseStudyCategory',
   CaseStudy: 'CaseStudy',
   BlogPage: 'BlogPage',
@@ -263,6 +264,16 @@ export const CaseStudiesPageScalarFieldEnum = {
 } as const
 
 export type CaseStudiesPageScalarFieldEnum = (typeof CaseStudiesPageScalarFieldEnum)[keyof typeof CaseStudiesPageScalarFieldEnum]
+
+
+export const ChatbotPageScalarFieldEnum = {
+  id: 'id',
+  content: 'content',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ChatbotPageScalarFieldEnum = (typeof ChatbotPageScalarFieldEnum)[keyof typeof ChatbotPageScalarFieldEnum]
 
 
 export const CaseStudyCategoryScalarFieldEnum = {

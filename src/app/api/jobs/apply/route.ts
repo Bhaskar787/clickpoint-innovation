@@ -27,9 +27,9 @@ export async function POST(request: Request) {
     const resumeFile = formData.get("resume") as File | null;
 
     // Validate required fields
-    if (!name || !email || !jobVacancyId || !jobTitle) {
+    if (!name || !email || !phone || !jobVacancyId || !jobTitle) {
       return NextResponse.json(
-        { success: false, error: "Name, email, job position, and resume are required." },
+        { success: false, error: "Full name, email address, contact phone number, job position, and resume are required." },
         { status: 400 }
       );
     }
@@ -58,30 +58,38 @@ export async function POST(request: Request) {
       );
     }
 
-    // 10-second rate limit per IP and email
+    // Extract client IP address
     const forwardedFor = request.headers.get("x-forwarded-for");
     const clientIp = forwardedFor ? forwardedFor.split(",")[0].trim() : "127.0.0.1";
-    const tenSecondsAgo = new Date(Date.now() - 10 * 1000);
 
-    const recentByIp = await prisma.$queryRaw<{ count: bigint }[]>`
+    // 1. Strict Email Uniqueness Check — Only 1 application per email address
+    const emailExists = await prisma.$queryRaw<{ count: bigint }[]>`
       SELECT COUNT(*)::bigint as count FROM "job_applications"
-      WHERE "ipAddress" = ${clientIp} AND "createdAt" >= ${tenSecondsAgo}
+      WHERE LOWER("email") = ${email}
     `;
-    if (recentByIp[0]?.count > BigInt(0)) {
+    if (emailExists[0]?.count > BigInt(0)) {
       return NextResponse.json(
-        { success: false, error: "Please wait 10 seconds before submitting another application.", rateLimited: true },
-        { status: 429 }
+        {
+          success: false,
+          error: `An application has already been submitted using this email address (${email}). Only one job application per email address is allowed.`,
+        },
+        { status: 409 }
       );
     }
 
-    // Check if same email already applied for this job
-    const alreadyApplied = await prisma.$queryRaw<{ count: bigint }[]>`
+    // 2. Strict Contact Number Uniqueness Check — Only 1 application per unique phone number
+    const digitsOnlyPhone = phone.replace(/\D/g, "");
+    const phoneExists = await prisma.$queryRaw<{ count: bigint }[]>`
       SELECT COUNT(*)::bigint as count FROM "job_applications"
-      WHERE "email" = ${email} AND "jobVacancyId" = ${jobVacancyId}
+      WHERE "phone" = ${phone}
+         OR (regexp_replace("phone", '\D', '', 'g') = ${digitsOnlyPhone} AND LENGTH(${digitsOnlyPhone}) >= 6)
     `;
-    if (alreadyApplied[0]?.count > BigInt(0)) {
+    if (phoneExists[0]?.count > BigInt(0)) {
       return NextResponse.json(
-        { success: false, error: "You have already applied for this position. Our team will review your application." },
+        {
+          success: false,
+          error: `An application has already been submitted using this contact phone number (${phone}). Only one job application per unique contact number is allowed.`,
+        },
         { status: 409 }
       );
     }

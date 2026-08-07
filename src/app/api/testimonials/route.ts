@@ -94,28 +94,36 @@ export async function POST(request: Request) {
 
     const numericRating = Math.max(1, Math.min(5, parseInt(rating || "5", 10)));
 
-    // Extract client IP address for 7-day rate limiting
+    const normalizedEmail = userEmail ? userEmail.trim().toLowerCase() : null;
+
+    // Extract client IP address for rate limiting
     const forwardedFor = request.headers.get("x-forwarded-for");
     const clientIp = forwardedFor ? forwardedFor.split(",")[0].trim() : "127.0.0.1";
 
-    // 10-second rate limit check (10,000 ms) for testing
-    const tenSecondsAgo = new Date(Date.now() - 10 * 1000);
+    // 1-hour rate limit check (3,600,000 ms = 60 * 60 * 1000)
+    const ONE_HOUR_MS = 60 * 60 * 1000;
+    const oneHourAgo = new Date(Date.now() - ONE_HOUR_MS);
+
     const existingRecentSubmission = await prisma.testimonial.findFirst({
       where: {
-        ipAddress: clientIp,
-        createdAt: { gte: tenSecondsAgo },
+        createdAt: { gte: oneHourAgo },
+        OR: [
+          { ipAddress: clientIp },
+          ...(normalizedEmail ? [{ userEmail: normalizedEmail }] : []),
+        ],
       },
+      orderBy: { createdAt: "desc" },
     });
 
     if (existingRecentSubmission) {
-      const secondsLeft = Math.ceil(
-        (existingRecentSubmission.createdAt.getTime() + 10 * 1000 - Date.now()) / 1000
+      const minutesLeft = Math.ceil(
+        (existingRecentSubmission.createdAt.getTime() + ONE_HOUR_MS - Date.now()) / (60 * 1000)
       );
 
       return NextResponse.json(
         {
           success: false,
-          error: `Rate limit reached. You can submit another review in ${secondsLeft} second(s).`,
+          error: `Rate limit active: You can submit another testimonial review in ${minutesLeft} minute(s). Only 1 review per hour is allowed.`,
           rateLimited: true,
         },
         { status: 429 }
