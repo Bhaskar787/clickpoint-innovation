@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendApplicantStatusEmail } from "@/lib/email";
+import { getAppBaseUrl } from "@/lib/url";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +35,7 @@ export async function POST(request: Request) {
       emailType,
       customSubject: customSubject?.trim(),
       customMessage: customMessage?.trim(),
+      appUrl: getAppBaseUrl(request),
     });
 
     if (!emailResult.success) {

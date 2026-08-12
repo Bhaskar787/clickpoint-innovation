@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 import path from "path";
 import fs from "fs";
+import { getAppBaseUrl } from "./url";
 import {
   getHRNotificationEmailHTML,
   HRNotificationTemplateData,
@@ -10,7 +11,7 @@ import {
   ApplicantStatusTemplateData,
 } from "./email-templates/applicant-status.template";
 
-export type ApplicationEmailData = Omit<HRNotificationTemplateData, "appUrl">;
+export type ApplicationEmailData = Omit<HRNotificationTemplateData, "appUrl"> & { appUrl?: string };
 export type StatusEmailData = ApplicantStatusTemplateData;
 
 function getTransporter() {
@@ -61,7 +62,7 @@ function sanitizeHeader(input: string): string {
  */
 export async function sendApplicationReceivedNotification(data: ApplicationEmailData) {
   const companyHrEmail = process.env.COMPANY_HR_EMAIL || "budhabhaskar2@gmail.com";
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const appUrl = data.appUrl || getAppBaseUrl();
   const smtpFrom = process.env.SMTP_FROM || `"Clickpoint Innovations Careers" <${process.env.SMTP_USER || companyHrEmail}>`;
 
   const hrEmail = sanitizeHeader(companyHrEmail);
@@ -103,6 +104,7 @@ export async function sendApplicantStatusEmail(data: StatusEmailData) {
   const recipientEmail = sanitizeHeader(data.applicantEmail);
   const { subject, html } = getApplicantStatusEmailHTML({
     ...data,
+    appUrl: data.appUrl || getAppBaseUrl(),
     useCidLogo: true,
   });
 

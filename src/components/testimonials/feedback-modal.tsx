@@ -27,6 +27,7 @@ export default function FeedbackModal({ isOpen, onClose, onSuccess }: FeedbackMo
   const [clientRole, setClientRole] = useState("");
   const [company, setCompany] = useState("");
   const [userEmail, setUserEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [content, setContent] = useState("");
   const [rating, setRating] = useState<number>(5);
   const [hoverRating, setHoverRating] = useState<number>(0);
@@ -71,8 +72,8 @@ export default function FeedbackModal({ isOpen, onClose, onSuccess }: FeedbackMo
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!clientName.trim() || !clientRole.trim() || !company.trim() || !content.trim()) {
-      toast.error("Please fill out all required fields before submitting.");
+    if (!clientName.trim() || !clientRole.trim() || !company.trim() || !userEmail.trim() || !phone.trim() || !content.trim()) {
+      toast.error("Please fill out all required fields (Name, Role, Company, Email, Phone, and Review).");
       return;
     }
 
@@ -101,6 +102,7 @@ export default function FeedbackModal({ isOpen, onClose, onSuccess }: FeedbackMo
           clientRole,
           company,
           userEmail,
+          phone,
           content,
           rating,
           avatarUrl,
@@ -135,6 +137,7 @@ export default function FeedbackModal({ isOpen, onClose, onSuccess }: FeedbackMo
         setClientRole("");
         setCompany("");
         setUserEmail("");
+        setPhone("");
         setContent("");
         setRating(5);
         setAvatarUrl("");
@@ -318,14 +321,29 @@ export default function FeedbackModal({ isOpen, onClose, onSuccess }: FeedbackMo
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  Work Email (Optional)
+                  Work Email <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="email"
+                  required
                   value={userEmail}
                   onChange={(e) => setUserEmail(e.target.value)}
-                  placeholder="ashok@company.com"
-                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3 py-2 text-xs text-slate-900 dark:text-white"
+                  placeholder="ashok@company.com *"
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Contact Phone <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="tel"
+                  required
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+1 (555) 000-0000 *"
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-white"
                 />
               </div>
 

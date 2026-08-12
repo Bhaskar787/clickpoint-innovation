@@ -301,6 +301,7 @@ model Testimonial {
   isRead      Boolean  @default(false)
   ipAddress   String?
   userEmail   String?
+  phone       String?
   order       Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

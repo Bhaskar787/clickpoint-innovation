@@ -1,3 +1,5 @@
+import { getAppBaseUrl } from "@/lib/url";
+
 export interface ApplicantStatusTemplateData {
   applicantName: string;
   applicantEmail: string;
@@ -18,7 +20,7 @@ export function getApplicantStatusEmailHTML(data: ApplicantStatusTemplateData): 
   html: string;
 } {
   const { applicantName, jobTitle, emailType, customSubject, customMessage, useCidLogo = true } = data;
-  const baseUrl = data.appUrl || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const baseUrl = data.appUrl || getAppBaseUrl();
   
   // Use CID inline attachment for real emails so Gmail renders logo reliably on localhost & production
   const logoSrc = useCidLogo ? "cid:clickpoint-logo" : `${baseUrl}/images/clickpointfinal.png`;

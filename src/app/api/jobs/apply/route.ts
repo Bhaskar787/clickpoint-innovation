@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { cloudinary } from "@/lib/cloudinary";
 import { NotificationService } from "@/services/notification.service";
 import { sendApplicationReceivedNotification } from "@/lib/email";
+import { getAppBaseUrl } from "@/lib/url";
 import { randomUUID } from "crypto";
 import fs from "fs/promises";
 import path from "path";
@@ -27,9 +28,18 @@ export async function POST(request: Request) {
     const resumeFile = formData.get("resume") as File | null;
 
     // Validate required fields
+    const hasCoverLetterText = Boolean(coverLetter && coverLetter.trim().length > 0);
+    const hasCoverLetterFile = Boolean(coverLetterFile && coverLetterFile.size > 0);
+
     if (!name || !email || !phone || !jobVacancyId || !jobTitle) {
       return NextResponse.json(
         { success: false, error: "Full name, email address, contact phone number, job position, and resume are required." },
+        { status: 400 }
+      );
+    }
+    if (!hasCoverLetterText && !hasCoverLetterFile) {
+      return NextResponse.json(
+        { success: false, error: "Cover letter is compulsory. Please write your cover letter or upload a cover letter file before submitting." },
         { status: 400 }
       );
     }
@@ -239,6 +249,7 @@ export async function POST(request: Request) {
       resumeUrl,
       resumeOriginalName: resumeFile.name,
       createdAt: now.toISOString(),
+      appUrl: getAppBaseUrl(request),
     }).catch((emailErr) => {
       console.error("Failed to send HR notification email:", emailErr);
     });

@@ -239,6 +239,12 @@ export default function CareersPage() {
       toast.error("Please enter your name, email, and contact phone number.");
       return;
     }
+    const hasCoverLetterText = Boolean(formCoverLetter.trim());
+    const hasCoverLetterFile = Boolean(coverLetterFile && coverLetterFile.size > 0);
+    if (!hasCoverLetterText && !hasCoverLetterFile) {
+      toast.error("Cover letter is compulsory. Please write a cover letter or attach a cover letter file.");
+      return;
+    }
     if (!resumeFile) {
       toast.error("Please attach your resume or CV.");
       return;
@@ -762,7 +768,7 @@ export default function CareersPage() {
                         <div className="space-y-2 pt-1">
                           <div className="flex items-center justify-between">
                             <label className="block text-[11px] font-bold uppercase tracking-wider text-ink/70 dark:text-slate-300">
-                              Cover Letter <span className="text-slate-400 font-normal text-[10px] lowercase">(optional)</span>
+                              Cover Letter <span className="text-red-500">*</span>
                             </label>
 
                             {/* Mode Switcher Tabs */}

@@ -291,6 +291,7 @@ export interface TestimonialItem {
   isRead?: boolean;
   ipAddress?: string;
   userEmail?: string;
+  phone?: string;
   order?: number;
   createdAt?: string;
 }

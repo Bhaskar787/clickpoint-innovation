@@ -1,3 +1,5 @@
+import { getAppBaseUrl } from "@/lib/url";
+
 export interface HRNotificationTemplateData {
   id: string;
   jobTitle: string;
@@ -20,7 +22,7 @@ export interface HRNotificationTemplateData {
  * White Clickpoint Executive Theme featuring official company logo via CID attachment or URL.
  */
 export function getHRNotificationEmailHTML(data: HRNotificationTemplateData): string {
-  const baseUrl = data.appUrl || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const baseUrl = data.appUrl || getAppBaseUrl();
   const logoSrc = data.useCidLogo !== false ? "cid:clickpoint-logo" : `${baseUrl}/images/clickpointfinal.png`;
   
   const inlineViewUrl = `${baseUrl}/api/jobs/resume?id=${data.id}&action=inline`;

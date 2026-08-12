@@ -59,8 +59,8 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!name.trim() || !email.trim() || !message.trim()) {
-      toast.error("Please fill out your Name, Email, and Message before submitting.");
+    if (!name.trim() || !email.trim() || !phone.trim() || !message.trim()) {
+      toast.error("Please fill out your Name, Work Email, Contact Phone Number, and Message before submitting.");
       return;
     }
 
@@ -282,9 +282,10 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
                       <div>
                         <input
                           type="tel"
+                          required
                           value={phone}
                           onChange={(e) => setPhone(e.target.value)}
-                          placeholder="Phone / WhatsApp (+977 / +44 / +1)"
+                          placeholder="Phone / WhatsApp (+977 / +44 / +1) *"
                           className="w-full rounded-xl border border-violet-200 dark:border-slate-700 bg-cloud-100/50 dark:bg-slate-800/80 p-3.5 text-xs font-medium text-ink dark:text-white placeholder:text-ink/40 dark:placeholder:text-slate-400 focus:border-violet-600 focus:outline-hidden focus:ring-2 focus:ring-violet-600/20"
                         />
                       </div>

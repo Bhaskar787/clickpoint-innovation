@@ -71,22 +71,22 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { name, email, phone, company, service, budget, message } = body;
 
-    // Validate required fields
-    if (!name || !email || !message) {
+    // Validate required fields (Name, Email, Phone, Message)
+    if (!name || !email || !phone || !message) {
       return NextResponse.json(
-        { success: false, error: "Please fill out your Name, Email, and Message before submitting." },
+        { success: false, error: "Please fill out your Name, Email Address, Contact Phone Number, and Message before submitting." },
         { status: 400 }
       );
     }
 
     const normalizedEmail = email.trim().toLowerCase();
-    const normalizedPhone = phone ? phone.trim() : null;
+    const normalizedPhone = phone.trim();
 
     // Extract client IP address for rate limiting
     const forwardedFor = request.headers.get("x-forwarded-for");
     const clientIp = forwardedFor ? forwardedFor.split(",")[0].trim() : "127.0.0.1";
 
-    // 1-hour rate limit check (3,600,000 ms = 60 * 60 * 1000)
+    // 1-hour rate limit check per unique email / unique phone / IP
     const ONE_HOUR_MS = 60 * 60 * 1000;
     const oneHourAgo = new Date(Date.now() - ONE_HOUR_MS);
 
@@ -96,7 +96,7 @@ export async function POST(request: Request) {
         OR: [
           { ipAddress: clientIp },
           { email: normalizedEmail },
-          ...(normalizedPhone ? [{ phone: normalizedPhone }] : []),
+          { phone: normalizedPhone },
         ],
       },
       orderBy: { createdAt: "desc" },
@@ -110,7 +110,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           success: false,
-          error: `Rate limit active: You can send your next contact message or inquiry in ${minutesLeft} minute(s). Only 1 message per hour is allowed.`,
+          error: `Rate limit active: A contact inquiry has already been submitted using this email (${normalizedEmail}) or phone number (${normalizedPhone}). Please wait ${minutesLeft} minute(s) before sending another message.`,
           rateLimited: true,
         },
         { status: 429 }
