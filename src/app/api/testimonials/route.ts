@@ -82,37 +82,31 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { clientName, clientRole, company, content, rating, avatarUrl, userEmail, phone } = body;
+    const { clientName, clientRole, company, content, rating, avatarUrl, userEmail } = body;
 
-    // Validate required fields (Name, Role, Company, Work Email, Contact Phone, Review)
-    if (!clientName || !clientRole || !company || !content || !userEmail || !phone) {
+    // Validate required fields (Name, Role, Company, Work Email, Review)
+    if (!clientName || !clientRole || !company || !content || !userEmail) {
       return NextResponse.json(
-        { success: false, error: "Please fill out your Full Name, Role, Company, Work Email, Contact Phone Number, and Feedback statement." },
+        { success: false, error: "Please fill out your Full Name, Role, Company, Work Email, and Feedback statement." },
         { status: 400 }
       );
     }
 
     const numericRating = Math.max(1, Math.min(5, parseInt(rating || "5", 10)));
-
     const normalizedEmail = userEmail.trim().toLowerCase();
-    const normalizedPhone = phone.trim();
 
-    // Extract client IP address for rate limiting
+    // Extract client IP address
     const forwardedFor = request.headers.get("x-forwarded-for");
     const clientIp = forwardedFor ? forwardedFor.split(",")[0].trim() : "127.0.0.1";
 
-    // 1-hour rate limit check per unique email / unique phone / IP
+    // 1-hour rate limit check strictly by unique Work Email address
     const ONE_HOUR_MS = 60 * 60 * 1000;
     const oneHourAgo = new Date(Date.now() - ONE_HOUR_MS);
 
     const existingRecentSubmission = await prisma.testimonial.findFirst({
       where: {
         createdAt: { gte: oneHourAgo },
-        OR: [
-          { ipAddress: clientIp },
-          { userEmail: normalizedEmail },
-          { phone: normalizedPhone },
-        ],
+        userEmail: normalizedEmail,
       },
       orderBy: { createdAt: "desc" },
     });
@@ -125,7 +119,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           success: false,
-          error: `Rate limit active: A review has already been submitted using this email (${normalizedEmail}) or phone number (${normalizedPhone}). Please wait ${minutesLeft} minute(s) before submitting another review.`,
+          error: `Rate limit active: A review has already been submitted using this email address (${normalizedEmail}) recently. Please wait ${minutesLeft} minute(s) before submitting another review.`,
           rateLimited: true,
         },
         { status: 429 }
@@ -133,42 +127,21 @@ export async function POST(request: Request) {
     }
 
     // Save new review submission to PostgreSQL database
-    let newTestimonial;
-    try {
-      newTestimonial = await prisma.testimonial.create({
-        data: {
-          clientName: clientName.trim(),
-          clientRole: clientRole.trim(),
-          company: company.trim(),
-          content: content.trim(),
-          rating: numericRating,
-          avatarUrl: avatarUrl ? avatarUrl.trim() : null,
-          userEmail: normalizedEmail,
-          phone: normalizedPhone,
-          ipAddress: clientIp,
-          isApproved: false,
-          isRead: false,
-          featured: true,
-        },
-      });
-    } catch (createErr) {
-      // Fallback for DB tables where phone column isn't migrated yet
-      newTestimonial = await prisma.testimonial.create({
-        data: {
-          clientName: clientName.trim(),
-          clientRole: clientRole.trim(),
-          company: company.trim(),
-          content: content.trim(),
-          rating: numericRating,
-          avatarUrl: avatarUrl ? avatarUrl.trim() : null,
-          userEmail: `${normalizedEmail} | Phone: ${normalizedPhone}`,
-          ipAddress: clientIp,
-          isApproved: false,
-          isRead: false,
-          featured: true,
-        },
-      });
-    }
+    const newTestimonial = await prisma.testimonial.create({
+      data: {
+        clientName: clientName.trim(),
+        clientRole: clientRole.trim(),
+        company: company.trim(),
+        content: content.trim(),
+        rating: numericRating,
+        avatarUrl: avatarUrl ? avatarUrl.trim() : null,
+        userEmail: normalizedEmail,
+        ipAddress: clientIp,
+        isApproved: false,
+        isRead: false,
+        featured: true,
+      },
+    });
 
     revalidateTag("testimonials-page");
     revalidatePath("/");

@@ -86,7 +86,7 @@ export async function POST(request: Request) {
     const forwardedFor = request.headers.get("x-forwarded-for");
     const clientIp = forwardedFor ? forwardedFor.split(",")[0].trim() : "127.0.0.1";
 
-    // 1-hour rate limit check per unique email / unique phone / IP
+    // 1-hour rate limit check strictly by unique email OR unique phone number
     const ONE_HOUR_MS = 60 * 60 * 1000;
     const oneHourAgo = new Date(Date.now() - ONE_HOUR_MS);
 
@@ -94,7 +94,6 @@ export async function POST(request: Request) {
       where: {
         createdAt: { gte: oneHourAgo },
         OR: [
-          { ipAddress: clientIp },
           { email: normalizedEmail },
           { phone: normalizedPhone },
         ],

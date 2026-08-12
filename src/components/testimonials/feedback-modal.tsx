@@ -27,7 +27,6 @@ export default function FeedbackModal({ isOpen, onClose, onSuccess }: FeedbackMo
   const [clientRole, setClientRole] = useState("");
   const [company, setCompany] = useState("");
   const [userEmail, setUserEmail] = useState("");
-  const [phone, setPhone] = useState("");
   const [content, setContent] = useState("");
   const [rating, setRating] = useState<number>(5);
   const [hoverRating, setHoverRating] = useState<number>(0);
@@ -72,22 +71,9 @@ export default function FeedbackModal({ isOpen, onClose, onSuccess }: FeedbackMo
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!clientName.trim() || !clientRole.trim() || !company.trim() || !userEmail.trim() || !phone.trim() || !content.trim()) {
-      toast.error("Please fill out all required fields (Name, Role, Company, Email, Phone, and Review).");
+    if (!clientName.trim() || !clientRole.trim() || !company.trim() || !userEmail.trim() || !content.trim()) {
+      toast.error("Please fill out all required fields (Name, Role, Company, Work Email, and Review).");
       return;
-    }
-
-    // 1-hour rate limit check (3,600,000 ms = 60 * 60 * 1000)
-    const ONE_HOUR_MS = 60 * 60 * 1000;
-    const lastSubmission = localStorage.getItem("clickpoint_last_review_time");
-
-    if (lastSubmission) {
-      const elapsed = Date.now() - parseInt(lastSubmission, 10);
-      if (elapsed < ONE_HOUR_MS) {
-        const minutesRemaining = Math.ceil((ONE_HOUR_MS - elapsed) / (60 * 1000));
-        toast.error(`Rate limit active: You can submit another testimonial review in ${minutesRemaining} minute(s). Only 1 review per hour is allowed.`);
-        return;
-      }
     }
 
     setIsSubmitting(true);
@@ -102,7 +88,6 @@ export default function FeedbackModal({ isOpen, onClose, onSuccess }: FeedbackMo
           clientRole,
           company,
           userEmail,
-          phone,
           content,
           rating,
           avatarUrl,
@@ -112,9 +97,6 @@ export default function FeedbackModal({ isOpen, onClose, onSuccess }: FeedbackMo
       const data = await res.json();
 
       if (data.success) {
-        // Save rate limit timestamp to local storage
-        localStorage.setItem("clickpoint_last_review_time", Date.now().toString());
-
         toast.success("Review submitted successfully! Pending admin approval.", { id: toastId });
 
         // Broadcast real-time event to Admin Dashboard
@@ -137,7 +119,6 @@ export default function FeedbackModal({ isOpen, onClose, onSuccess }: FeedbackMo
         setClientRole("");
         setCompany("");
         setUserEmail("");
-        setPhone("");
         setContent("");
         setRating(5);
         setAvatarUrl("");
@@ -333,19 +314,7 @@ export default function FeedbackModal({ isOpen, onClose, onSuccess }: FeedbackMo
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  Contact Phone <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="tel"
-                  required
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+1 (555) 000-0000 *"
-                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3 py-2 text-xs font-semibold text-slate-900 dark:text-white"
-                />
-              </div>
+
 
               <div className="sm:col-span-2">
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">

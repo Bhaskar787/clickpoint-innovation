@@ -64,18 +64,7 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
       return;
     }
 
-    // 1-hour rate limit check (3,600,000 ms)
-    const ONE_HOUR_MS = 60 * 60 * 1000;
-    const lastSubmission = localStorage.getItem("clickpoint_last_contact_time");
 
-    if (lastSubmission) {
-      const elapsed = Date.now() - parseInt(lastSubmission, 10);
-      if (elapsed < ONE_HOUR_MS) {
-        const minutesRemaining = Math.ceil((ONE_HOUR_MS - elapsed) / (60 * 1000));
-        toast.error(`Rate limit active: You can send your next contact inquiry in ${minutesRemaining} minute(s). Only 1 message per hour is allowed.`);
-        return;
-      }
-    }
 
     setIsSubmitting(true);
     const toastId = toast.loading("Sending your message to engineering team...");
