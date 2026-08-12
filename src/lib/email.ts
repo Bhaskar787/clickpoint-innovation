@@ -109,28 +109,28 @@ export async function sendApplicantStatusEmail(data: StatusEmailData) {
   });
 
   const companyHrEmail = process.env.COMPANY_HR_EMAIL || "budhabhaskar2@gmail.com";
-  const smtpFrom = process.env.SMTP_FROM || `"Clickpoint Innovations Careers" <${process.env.SMTP_USER || companyHrEmail}>`;
+  const noReplyEmail = process.env.NO_REPLY_EMAIL || "no-reply@clickpoint.com.np";
+  const smtpFrom = process.env.SMTP_FROM_NO_REPLY || `"Clickpoint Innovations Careers (No Reply)" <${process.env.SMTP_USER || companyHrEmail}>`;
 
   const transporter = getTransporter();
   if (transporter) {
     try {
-      const adminReplyTo = process.env.ADMIN_EMAIL || companyHrEmail;
       const info = await transporter.sendMail({
         from: smtpFrom,
         to: recipientEmail,
-        replyTo: sanitizeHeader(adminReplyTo),
+        replyTo: `"Do Not Reply - Clickpoint Innovations" <${noReplyEmail}>`,
         subject: sanitizeHeader(subject),
         html,
         attachments: getLogoAttachment(),
       });
-      console.log(`✅ [Email Service] Sent email to candidate ${recipientEmail} (MessageId: ${info.messageId})`);
+      console.log(`✅ [Email Service] Sent no-reply status email to candidate ${recipientEmail} (MessageId: ${info.messageId})`);
       return { success: true, messageId: info.messageId };
     } catch (err: any) {
       console.error(`❌ [Email Service] Failed to send email to ${recipientEmail}:`, err);
       return { success: false, error: err.message };
     }
   } else {
-    console.log(`ℹ️ [Email Service Mock Log] Target Candidate: ${recipientEmail} | Subject: ${subject}`);
+    console.log(`ℹ️ [Email Service Mock Log] Target Candidate: ${recipientEmail} | Subject: ${subject} (No-Reply Enabled)`);
     return { success: true, mocked: true };
   }
 }

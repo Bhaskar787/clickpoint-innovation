@@ -200,6 +200,11 @@ export function getApplicantStatusEmailHTML(data: ApplicantStatusTemplateData): 
               Position Applied: <span style="color: #0f172a; font-weight: 600;">${jobTitle}</span><br/>
               Applicant Reference: <span style="color: #0f172a;">${data.applicantEmail}</span>
             </div>
+
+            <!-- Automated No-Reply Notice Banner -->
+            <div style="margin-top: 16px; background-color: #fffbe6; border: 1px solid #ffe58f; border-radius: 10px; padding: 12px 16px; font-size: 11px; color: #8c6b00; line-height: 1.5;">
+              <strong>⚠️ Automated No-Reply Email:</strong> This message was sent from an unmonitored notification system. Direct replies to this email address will not be received or monitored by our team.
+            </div>
           </div>
 
           <!-- Executive White Footer -->
