@@ -1,0 +1,108 @@
+services:
+  # 1. PostgreSQL Vector Database (pgvector/pgvector:pg16)
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: clickpoint-postgres
+    restart: always
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-clickpoin%40innovation}
+      POSTGRES_DB: ${POSTGRES_DB:-clickpoint_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 2. Redis Caching Service
+  redis:
+    image: redis:7-alpine
+    container_name: clickpoint-redis
+    restart: always
+    ports:
+      - "${REDIS_PORT:-6380}:6379"
+    command: redis-server --save 60 1 --loglevel notice
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 3. AI Knowledge Base Ingestion Microservice
+  ingestion-service:
+    build:
+      context: ./apps/ai/ingestion-service
+      dockerfile: Dockerfile
+    container_name: clickpoint-ingestion-service
+    restart: always
+    ports:
+      - "${INGESTION_PORT:-8001}:8001"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: "${DATABASE_URL:-postgresql://postgres:clickpoin%40innovation@postgres:5432/clickpoint_db}"
+      REDIS_URL: "redis://redis:6379/0"
+      INTERNAL_API_KEY: "${INTERNAL_API_KEY:-clickpoint-secret-internal-key-2026}"
+      EMBEDDING_MODEL_NAME: "all-MiniLM-L6-v2"
+    volumes:
+      - ./apps/ai/ingestion-service/app:/app/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # 4. AI Chat Service
+  chat-service:
+    build:
+      context: ./apps/ai/chat-service
+      dockerfile: Dockerfile
+    container_name: clickpoint-chat-service
+    restart: always
+    ports:
+      - "${CHAT_PORT:-8002}:8002"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: "${DATABASE_URL:-postgresql://postgres:clickpoin%40innovation@postgres:5432/clickpoint_db}"
+      REDIS_URL: "redis://redis:6379/0"
+      GEMINI_API_KEY: "${GEMINI_API_KEY:-AQ.Ab8RN6IU22K7MNg7Fg9DhSNyHcj4lIMDnYWuWge95AcVrzstow}"
+      INTERNAL_API_KEY: "${INTERNAL_API_KEY:-clickpoint-secret-internal-key-2026}"
+      EMBEDDING_MODEL_NAME: "all-MiniLM-L6-v2"
+    volumes:
+      - ./apps/ai/chat-service/app:/app/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # 5. Next.js Web Frontend Application
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: clickpoint-web
+    restart: always
+    ports:
+      - "${WEB_PORT:-3001}:3000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: "${DATABASE_URL:-postgresql://postgres:clickpoin%40innovation@postgres:5432/clickpoint_db}"
+      CHAT_SERVICE_URL: "http://chat-service:8002"
+      INGESTION_SERVICE_URL: "http://ingestion-service:8001"
+      INTERNAL_API_KEY: "${INTERNAL_API_KEY:-clickpoint-secret-internal-key-2026}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      chat-service:
+        condition: service_started
+
+volumes:
+  postgres_data:
+  redis_data:

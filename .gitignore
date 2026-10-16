@@ -60,3 +60,17 @@ logs
 # User Uploads (Cloudinary hosted — do not commit uploaded media or PDFs)
 /public/uploads/*
 !/public/uploads/.gitkeep
+
+# Python & Local AI Microservices
+.venv/
+venv/
+ENV/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+apps/ai 2/
+
+# Local Scratch & Test Scripts
+scratch/

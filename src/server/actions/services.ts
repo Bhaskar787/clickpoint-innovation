@@ -5,6 +5,7 @@ import { ALL_PERMISSIONS } from "@/lib/permissions/constants";
 import { prisma } from "@/lib/prisma";
 import { revalidateTag, unstable_cache } from "next/cache";
 import { ServicesPageContent, ServiceItem } from "@/types";
+import { triggerReindexBackground } from "@/lib/reindex-trigger";
 
 /**
  * Public Cached Services Catalog Getter
@@ -94,6 +95,7 @@ export async function saveServicesPage(payload: ServicesPageContent) {
   });
 
   revalidateTag("services-page");
+  triggerReindexBackground();
 
   return {
     success: true,

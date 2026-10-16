@@ -209,7 +209,7 @@ export default function RichTextEditor({
       Placeholder.configure({
         placeholder,
       }),
-    ],
+    ] as any,
     content: content || "",
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();

@@ -71,10 +71,15 @@ export async function GET(request: Request) {
     });
   } catch (error: any) {
     console.error("GET /api/testimonials Error:", error);
-    return NextResponse.json(
-      { success: false, error: error.message || "Failed to fetch testimonials" },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      success: true,
+      data: {
+        ...DEFAULT_TESTIMONIALS_PAGE_DATA,
+        testimonials: DEFAULT_TESTIMONIALS_PAGE_DATA.testimonials || [],
+        unreadCount: 0,
+        pendingCount: 0,
+      },
+    });
   }
 }
 

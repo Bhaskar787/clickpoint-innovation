@@ -11,6 +11,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import ReactMarkdown from "react-markdown";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -48,10 +49,11 @@ type Message = {
   id: string;
   from: "bot" | "user";
   text: string;
+  sources?: Array<{ title: string; url: string; sourceType?: string }>;
   widgetType?: "services" | "testimonials" | "pricing" | "faqs";
 };
 
-const STORAGE_KEY = "clickpoint_chatbot_state_v3";
+const STORAGE_KEY = "clickpoint_chatbot_state_v4";
 const uid = () => Math.random().toString(36).slice(2, 10);
 
 const DEFAULT_PRICING_PACKAGES = [
@@ -150,6 +152,46 @@ export function ChatbotWidget() {
   const [typing, setTyping] = useState(false);
   const [hasUnread, setHasUnread] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  const [inputQuery, setInputQuery] = useState("");
+
+  async function handleCustomSend(e?: React.FormEvent) {
+    if (e) e.preventDefault();
+    const q = inputQuery.trim();
+    if (!q || typing) return;
+
+    setInputQuery("");
+    setMessages((prev) => [...prev, { id: uid(), from: "user", text: q }]);
+    setTyping(true);
+
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: q }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+      const replyText = data.reply || "I'm having trouble retrieving details right now.";
+      const sources = data.sources || [];
+      setMessages((prev) => [...prev, { id: uid(), from: "bot", text: replyText, sources }]);
+    } catch (err) {
+      console.error("Chat request failed:", err);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: uid(),
+          from: "bot",
+          text: "I'm having trouble connecting to our AI server right now. Please try again or reach out to us on our contact page!",
+        },
+      ]);
+    } finally {
+      setTyping(false);
+    }
+  }
 
   // Dynamic state from API
   const [botConfig, setBotConfig] = useState({
@@ -297,10 +339,31 @@ export function ChatbotWidget() {
     setCurrentNode(nodeId);
   }
 
-  function handleReply(reply: ChatReply) {
+  async function handleReply(reply: ChatReply) {
     setMessages((prev) => [...prev, { id: uid(), from: "user", text: reply.label }]);
-    if (reply.goTo) {
+
+    if (reply.goTo && (nodes[reply.goTo] || CHAT_NODES[reply.goTo])) {
       setTimeout(() => pushBotNode(reply.goTo!), 250);
+      return;
+    }
+
+    setTyping(true);
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: reply.label }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.reply) {
+          setMessages((prev) => [...prev, { id: uid(), from: "bot", text: data.reply }]);
+        }
+      }
+    } catch (err) {
+      console.error("Quick reply AI chat failed:", err);
+    } finally {
+      setTyping(false);
     }
   }
 
@@ -448,7 +511,7 @@ export function ChatbotWidget() {
             >
               {messages.map((m) => (
                 <React.Fragment key={m.id}>
-                  <MessageBubble from={m.from} text={m.text} />
+                  <MessageBubble from={m.from} text={m.text} sources={m.sources} />
 
                   {/* Render Dynamic Cards Widgets */}
                   {m.widgetType === "services" && displayServices.length > 0 && (
@@ -587,47 +650,67 @@ export function ChatbotWidget() {
               )}
             </div>
 
-            {/* Quick replies & Footer */}
+            {/* Quick replies, Free-text input & Footer */}
             <div className="border-t border-slate-200 bg-white px-3.5 py-3 dark:border-slate-800 dark:bg-[#131927]">
               {!typing && node && (
-                <div className="flex flex-wrap gap-2 max-h-36 overflow-y-auto pr-1">
+                <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto mb-2 pr-1 [scrollbar-width:thin]">
                   {node.replies?.map((r) =>
                     r.href ? (
                       <Link
                         key={r.label}
                         href={r.href}
                         target={r.external ? "_blank" : undefined}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-3.5 py-2 text-xs font-bold text-violet-700 hover:bg-violet-100 transition-colors dark:border-violet-800/60 dark:bg-violet-950/40 dark:text-violet-300 dark:hover:bg-violet-900/50 shadow-2xs"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-3 py-1.5 text-[11px] font-bold text-violet-700 hover:bg-violet-100 transition-colors dark:border-violet-800/60 dark:bg-violet-950/40 dark:text-violet-300 dark:hover:bg-violet-900/50 shadow-2xs"
                         onClick={() =>
                           setMessages((prev) => [...prev, { id: uid(), from: "user", text: r.label }])
                         }
                       >
-                        <RenderIcon name={r.icon} className="h-3.5 w-3.5" />
+                        <RenderIcon name={r.icon} className="h-3 w-3" />
                         <span>{r.label}</span>
-                        <ExternalLink className="h-3 w-3 opacity-60 ml-0.5" />
+                        <ExternalLink className="h-2.5 w-2.5 opacity-60 ml-0.5" />
                       </Link>
                     ) : (
                       <button
                         key={r.label}
                         onClick={() => handleReply(r)}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700 transition-colors dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 shadow-2xs"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-bold text-slate-700 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700 transition-colors dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 shadow-2xs"
                       >
-                        <RenderIcon name={r.icon} className="h-3.5 w-3.5 text-violet-500" />
+                        <RenderIcon name={r.icon} className="h-3 w-3 text-violet-500" />
                         <span>{r.label}</span>
                       </button>
                     )
                   )}
                 </div>
               )}
-              <div className="mt-2.5 flex items-center justify-between border-t border-slate-100 dark:border-slate-800/80 pt-2">
-                <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500">
-                  Automated Assistant &middot; Powered by Clickpoint
+
+              {/* Free-Text Input Form */}
+              <form onSubmit={handleCustomSend} className="relative flex items-center gap-1.5">
+                <input
+                  type="text"
+                  value={inputQuery}
+                  onChange={(e) => setInputQuery(e.target.value)}
+                  placeholder="Ask any question about Clickpoint..."
+                  disabled={typing}
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-medium text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-violet-500 focus:bg-white focus:ring-2 focus:ring-violet-500/20 dark:border-slate-700/80 dark:bg-slate-800/80 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-violet-500"
+                />
+                <button
+                  type="submit"
+                  disabled={!inputQuery.trim() || typing}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-violet-600 text-white shadow-xs transition-all hover:bg-violet-700 active:scale-95 disabled:opacity-40 disabled:pointer-events-none"
+                >
+                  <Send className="h-3.5 w-3.5" />
+                </button>
+              </form>
+
+              <div className="mt-2 flex items-center justify-between border-t border-slate-100 dark:border-slate-800/80 pt-1.5">
+                <p className="text-[9.5px] font-semibold text-slate-400 dark:text-slate-500">
+                  AI Microservice &middot; Powered by Clickpoint
                 </p>
                 <button
                   onClick={resetConversation}
-                  className="text-[10.5px] font-extrabold text-violet-600 hover:underline dark:text-violet-400"
+                  className="text-[10px] font-extrabold text-violet-600 hover:underline dark:text-violet-400"
                 >
-                  Restart Chat
+                  Restart
                 </button>
               </div>
             </div>
@@ -638,7 +721,37 @@ export function ChatbotWidget() {
   );
 }
 
-function MessageBubble({ from, text }: { from: "bot" | "user"; text: string }) {
+function FormattedText({ text }: { text: string }) {
+  if (!text) return null;
+  return (
+    <ReactMarkdown
+      components={{
+        a: ({ href, children }) => (
+          <Link
+            href={href || "#"}
+            className="text-violet-600 dark:text-violet-400 font-extrabold underline hover:text-violet-700 dark:hover:text-violet-300 transition-colors"
+          >
+            {children}
+          </Link>
+        ),
+        p: ({ children }) => <p className="mb-1.5 last:mb-0 leading-relaxed">{children}</p>,
+        strong: ({ children }) => (
+          <strong className="font-extrabold text-slate-900 dark:text-white">{children}</strong>
+        ),
+        ul: ({ children }) => <ul className="my-1.5 space-y-1 list-disc list-inside text-violet-500 pl-1">{children}</ul>,
+        ol: ({ children }) => <ol className="my-1.5 space-y-1 list-decimal list-inside text-violet-600 pl-1">{children}</ol>,
+        li: ({ children }) => <li className="text-slate-800 dark:text-slate-100">{children}</li>,
+        h1: ({ children }) => <h1 className="text-sm font-bold text-slate-900 dark:text-white my-1">{children}</h1>,
+        h2: ({ children }) => <h2 className="text-xs font-bold text-slate-900 dark:text-white my-1">{children}</h2>,
+        h3: ({ children }) => <h3 className="text-xs font-bold text-slate-900 dark:text-white my-1">{children}</h3>,
+      }}
+    >
+      {text}
+    </ReactMarkdown>
+  );
+}
+
+function MessageBubble({ from, text, sources }: { from: "bot" | "user"; text: string; sources?: Array<{ title: string; url: string; sourceType?: string }> }) {
   const isBot = from === "bot";
   return (
     <motion.div
@@ -649,13 +762,28 @@ function MessageBubble({ from, text }: { from: "bot" | "user"; text: string }) {
     >
       <div
         className={cn(
-          "max-w-[85%] whitespace-pre-line rounded-2xl px-4 py-2.5 text-[12.5px] leading-relaxed shadow-2xs font-medium",
+          "max-w-[85%] rounded-2xl px-4 py-2.5 text-[12.5px] leading-relaxed shadow-2xs font-medium",
           isBot
             ? "rounded-bl-xs border border-slate-200/80 bg-white text-slate-800 dark:border-slate-700/80 dark:bg-slate-800 dark:text-slate-100"
             : "rounded-br-xs bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold"
         )}
       >
-        {text}
+        <FormattedText text={text} />
+        {isBot && sources && sources.length > 0 && (
+          <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-700/80 flex flex-wrap gap-1.5">
+            <span className="text-[10px] font-bold text-slate-400 block w-full">Sources:</span>
+            {sources.map((s, idx) => (
+              <Link
+                key={idx}
+                href={s.url}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-violet-950/70 dark:text-violet-300 transition-colors"
+              >
+                <span>{s.title}</span>
+                <ExternalLink className="h-2.5 w-2.5 opacity-70" />
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
     </motion.div>
   );

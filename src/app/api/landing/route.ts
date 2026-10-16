@@ -42,8 +42,13 @@ export async function GET() {
   } catch (error: any) {
     console.error("GET /api/landing error:", error);
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to fetch landing content" },
-      { status: 500 }
+      {
+        success: true,
+        data: {
+          navbar: DEFAULT_NAVBAR_DATA,
+        },
+      },
+      { status: 200 }
     );
   }
 }

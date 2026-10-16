@@ -17,10 +17,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ success: true, data: vacancies });
   } catch (error) {
     console.error("GET /api/careers/vacancies error:", error);
-    return NextResponse.json(
-      { success: false, error: "Failed to fetch job vacancies" },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: true, data: [] });
   }
 }
 

@@ -448,3 +448,57 @@ enum ApplicationStatus {
   REJECTED
   HIRED
 }
+
+// -----------------------------------------------------------------------------
+// 6. RAG & AI CHATBOT MODELS (pgvector)
+// -----------------------------------------------------------------------------
+
+model KnowledgeChunk {
+  id             String   @id @default(cuid())
+  title          String?
+  content        String
+  sourceType     String   // "faq" | "service" | "blogPost" | "caseStudy" | "testimonial" | "about" | "journey" | "contact" | "landing" | "industry" | "career"
+  sourceId       String
+  url            String?
+  embedding      Unsupported("vector(384)")
+  contentVersion Int      @default(1)
+  createdAt      DateTime @default(now())
+
+  @@map("knowledge_chunks")
+}
+
+model ChatSession {
+  id        String        @id @default(cuid())
+  visitorId String?
+  createdAt DateTime      @default(now())
+  messages  ChatMessage[]
+
+  @@map("chat_sessions")
+}
+
+model ChatMessage {
+  id            String      @id @default(cuid())
+  sessionId     String
+  session       ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role          String      // "user" | "assistant"
+  content       String
+  matchedChunks Json?
+  createdAt     DateTime    @default(now())
+
+  @@index([sessionId])
+  @@map("chat_messages")
+}
+
+model QuestionCache {
+  id                 String   @id @default(cuid())
+  question           String
+  normalizedQuestion String   @unique
+  answer             String
+  sources            Json?
+  embedding          Unsupported("vector(384)")
+  contentVersion     Int      @default(1)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@map("question_cache")
+}

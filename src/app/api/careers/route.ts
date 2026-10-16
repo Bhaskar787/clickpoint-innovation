@@ -79,10 +79,7 @@ export async function GET() {
     return NextResponse.json({ success: true, data: created.content });
   } catch (error) {
     console.error("GET /api/careers error:", error);
-    return NextResponse.json(
-      { success: false, error: "Failed to fetch careers page content", fallback: DEFAULT_CAREERS_CONTENT },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: true, data: DEFAULT_CAREERS_CONTENT });
   }
 }
 

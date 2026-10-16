@@ -57,6 +57,26 @@ const AVAILABLE_ICONS = [
 export default function ChatbotEditor({ sectionId, onCloseSection }: ChatbotEditorProps) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [reindexing, setReindexing] = useState(false);
+
+  const handleReindex = async () => {
+    setReindexing(true);
+    try {
+      const res = await fetch("/api/chatbot/reindex", {
+        method: "POST",
+      }).then((r) => r.json());
+
+      if (res.indexed_chunks !== undefined || res.status === "success") {
+        toast.success(`Knowledge Base reindexed! Created ${res.indexed_chunks ?? 0} vector chunks.`);
+      } else {
+        toast.error(res.error || res.details || "Reindexing failed");
+      }
+    } catch (err: any) {
+      toast.error("Reindex request failed");
+    } finally {
+      setReindexing(false);
+    }
+  };
 
   const [activeTab, setActiveTab] = useState<"general" | "nodes" | "data" | "preview">("general");
   const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
@@ -467,6 +487,15 @@ export default function ChatbotEditor({ sectionId, onCloseSection }: ChatbotEdit
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
+          <button
+            onClick={handleReindex}
+            disabled={reindexing}
+            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl border border-violet-200 dark:border-violet-800 bg-violet-50 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300 hover:bg-violet-100 transition-colors disabled:opacity-50"
+          >
+            {reindexing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4 text-violet-500" />}
+            <span>{reindexing ? "Indexing..." : "Re-index Knowledge Base"}</span>
+          </button>
+
           <button
             onClick={() => setActiveTab(activeTab === "preview" ? "general" : "preview")}
             className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 text-slate-700 dark:text-slate-200 transition-colors"

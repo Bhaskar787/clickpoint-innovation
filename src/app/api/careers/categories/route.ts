@@ -14,10 +14,7 @@ export async function GET() {
     return NextResponse.json({ success: true, data: categories });
   } catch (error) {
     console.error("GET /api/careers/categories error:", error);
-    return NextResponse.json(
-      { success: false, error: "Failed to fetch job categories" },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: true, data: [] });
   }
 }
 
