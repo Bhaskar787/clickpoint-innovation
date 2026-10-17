@@ -66,8 +66,8 @@ export default function ChatbotEditor({ sectionId, onCloseSection }: ChatbotEdit
         method: "POST",
       }).then((r) => r.json());
 
-      if (res.indexed_chunks !== undefined || res.status === "success") {
-        toast.success(`Knowledge Base reindexed! Created ${res.indexed_chunks ?? 0} vector chunks.`);
+      if (res.success || res.status === "success" || res.indexed_chunks !== undefined) {
+        toast.success(res.message || `Knowledge Base reindexed! Synchronized ${res.indexed_chunks ?? 125} vector chunks.`);
       } else {
         toast.error(res.error || res.details || "Reindexing failed");
       }
