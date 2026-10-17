@@ -1,3 +1,4 @@
+import os
 import logging
 from fastapi import FastAPI, Header, HTTPException, Security, BackgroundTasks
 from app.core.config import settings
@@ -14,7 +15,7 @@ app = FastAPI(title="Clickpoint Ingestion Service", version="1.0.0")
 def clear_chat_cache():
     try:
         import redis
-        redis_url = os.getenv("REDIS_URL") or "redis://redis:6379/0"
+        redis_url = os.getenv("REDIS_URL") or settings.REDIS_URL or "redis://redis:6379/0"
         r = redis.Redis.from_url(redis_url, decode_responses=True, socket_timeout=2)
         r.flushall()
         logger.info(f"Successfully flushed Redis chat cache via FLUSHALL on {redis_url}.")

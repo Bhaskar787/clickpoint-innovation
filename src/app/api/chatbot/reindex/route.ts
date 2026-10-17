@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+export const maxDuration = 120; // Allow up to 120s for full vector reindexing
+
 export async function POST(req: Request) {
   try {
     if (process.env.VERCEL && (!process.env.INGESTION_SERVICE_URL || process.env.INGESTION_SERVICE_URL.includes("localhost"))) {
@@ -12,13 +15,14 @@ export async function POST(req: Request) {
     const ingestionUrl = process.env.INGESTION_SERVICE_URL || "http://localhost:8001";
     const apiKey = process.env.INTERNAL_API_KEY || "clickpoint-secret-internal-key-2026";
 
+    // Reindexing across all 13 tables & vector embedding generation typically takes 15-35 seconds
     const res = await fetch(`${ingestionUrl}/reindex`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "X-Internal-Key": apiKey,
       },
-      signal: AbortSignal.timeout(5000),
+      signal: AbortSignal.timeout(120000), // 120 seconds
     });
 
     if (!res.ok) {
