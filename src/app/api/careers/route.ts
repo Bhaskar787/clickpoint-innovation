@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { triggerReindexBackground } from "@/lib/reindex-trigger";
 
 const DEFAULT_CAREERS_CONTENT = {
   hero: {
@@ -93,6 +94,8 @@ export async function PUT(req: Request) {
       update: { content },
       create: { id: "default", content },
     });
+
+    triggerReindexBackground();
 
     return NextResponse.json({
       success: true,

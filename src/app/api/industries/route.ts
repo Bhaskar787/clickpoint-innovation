@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_INDUSTRIES_PAGE_DATA } from "@/data/default-industries-data";
+import { triggerReindexBackground } from "@/lib/reindex-trigger";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -100,11 +101,12 @@ export async function PUT(req: Request) {
     revalidateTag("industries-page");
     revalidatePath("/industries");
     revalidatePath("/admin/dashboard");
+    triggerReindexBackground();
 
     return NextResponse.json({
       success: true,
-      data: sanitizeIndustriesData(updatedRecord.content),
       message: "Industries content saved successfully to database",
+      data: sanitizeIndustriesData(updatedRecord.content),
     });
   } catch (error: any) {
     console.error("PUT /api/industries error:", error);

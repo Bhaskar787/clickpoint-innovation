@@ -1,3 +1,4 @@
+import re
 import logging
 from fastapi import APIRouter, Depends, HTTPException, Header
 from app.core.security import verify_internal_key
@@ -10,6 +11,13 @@ from app.storage.response_cache import get_cached_response, set_cached_response
 
 logger = logging.getLogger("chat-service.api")
 router = APIRouter()
+
+def clean_output_markdown(text: str) -> str:
+    # 1. Fix double-slash markdown links like ](//careers) -> ](/careers)
+    text = re.sub(r'\]\(\/{2,}', '](/', text)
+    # 2. Strip rogue emojis while preserving English and standard punctuation
+    text = re.sub(r'[\U00010000-\U0010ffff]', '', text)
+    return text.strip()
 
 @router.post("/chat", response_model=ChatResponse)
 @router.post("/api/chat", response_model=ChatResponse)
@@ -84,7 +92,8 @@ def handle_chat_request(
 
         # 5. Synthesize LLM Response
         res_dict = generate_rag_response(query, chunks, history)
-        reply = res_dict.get("text", "") if isinstance(res_dict, dict) else str(res_dict)
+        raw_reply = res_dict.get("text", "") if isinstance(res_dict, dict) else str(res_dict)
+        reply = clean_output_markdown(raw_reply)
         provider_used = res_dict.get("provider_used", "gemini") if isinstance(res_dict, dict) else "gemini"
 
         # 6. Save to Session Store & Cache

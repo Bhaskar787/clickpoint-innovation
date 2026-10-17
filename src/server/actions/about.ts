@@ -5,6 +5,7 @@ import { ALL_PERMISSIONS } from "@/lib/permissions/constants";
 import { prisma } from "@/lib/prisma";
 import { revalidateTag, unstable_cache } from "next/cache";
 import { AboutPageContent } from "@/types";
+import { triggerReindexBackground } from "@/lib/reindex-trigger";
 
 export interface AboutUsHighlight {
   label: string;
@@ -145,6 +146,7 @@ export async function saveAboutUs(payload: AboutUsPayload | AboutPageContent) {
 
   // Revalidate public static tags cache
   revalidateTag("about-us");
+  triggerReindexBackground();
 
   return {
     success: true,
@@ -170,6 +172,7 @@ export async function deleteAboutUs() {
   });
 
   revalidateTag("about-us");
+  triggerReindexBackground();
 
   return {
     success: true,

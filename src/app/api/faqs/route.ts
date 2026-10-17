@@ -4,12 +4,14 @@ import { requirePermission } from "@/lib/permissions";
 import { ALL_PERMISSIONS } from "@/lib/permissions/constants";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_FAQS } from "@/data/default-faq-data";
+import { triggerReindexBackground } from "@/lib/reindex-trigger";
 
 function invalidateFaqCaches() {
   revalidateTag("faqs");
   revalidateTag("faq-categories");
   revalidatePath("/faqs");
   revalidatePath("/admin/dashboard");
+  triggerReindexBackground();
 }
 
 function serializeFaq(row: { id: string; question: string; answer: string; categoryId: string; order: number; category: { name: string } }) {

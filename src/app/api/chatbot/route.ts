@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { CHAT_NODES, BOT_TITLE, BOT_SUBTITLE, WELCOME_DELAY_MS, START_NODE } from "@/data/chatbot-data";
 import { DEFAULT_TESTIMONIALS_PAGE_DATA } from "@/data/default-testimonials-data";
 import { DEFAULT_FAQS } from "@/data/default-faq-data";
+import { triggerReindexBackground } from "@/lib/reindex-trigger";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -303,11 +304,12 @@ export async function PUT(req: Request) {
 
     revalidateTag("chatbot-page");
     revalidatePath("/");
+    triggerReindexBackground();
 
     return NextResponse.json({
       success: true,
-      data: updatedRecord.content,
       message: "Dynamic Chatbot configuration saved successfully!",
+      data: updatedRecord.content,
     });
   } catch (error: any) {
     console.error("PUT /api/chatbot error:", error);

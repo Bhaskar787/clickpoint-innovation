@@ -4,12 +4,14 @@ import { requirePermission } from "@/lib/permissions";
 import { ALL_PERMISSIONS } from "@/lib/permissions/constants";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_FAQS } from "@/data/default-faq-data";
+import { triggerReindexBackground } from "@/lib/reindex-trigger";
 
 function invalidateFaqCaches() {
   revalidateTag("faqs");
   revalidateTag("faq-categories");
   revalidatePath("/faqs");
   revalidatePath("/admin/dashboard");
+  triggerReindexBackground();
 }
 
 // GET /api/faq-categories — list all categories (with FAQ count), auto-seeds

@@ -5,6 +5,7 @@ import { ALL_PERMISSIONS } from "@/lib/permissions/constants";
 import { prisma } from "@/lib/prisma";
 import { revalidateTag, unstable_cache } from "next/cache";
 import { CaseStudyItem } from "@/types";
+import { triggerReindexBackground } from "@/lib/reindex-trigger";
 
 /**
  * Public Cached Case Studies Getter
@@ -88,6 +89,7 @@ export async function saveCaseStudy(payload: Partial<CaseStudyItem> & { title: s
   }
 
   revalidateTag("case-studies");
+  triggerReindexBackground();
 
   return {
     success: true,
@@ -108,6 +110,7 @@ export async function deleteCaseStudy(id: string) {
   });
 
   revalidateTag("case-studies");
+  triggerReindexBackground();
 
   return {
     success: true,

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_NAVBAR_DATA } from "@/data/default-navbar-data";
+import { triggerReindexBackground } from "@/lib/reindex-trigger";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -81,11 +82,12 @@ export async function PUT(req: Request) {
 
     revalidateTag("landing-page");
     revalidatePath("/");
+    triggerReindexBackground();
 
     return NextResponse.json({
       success: true,
-      data: updatedRecord.content,
       message: "Landing page & navbar configuration saved to database successfully!",
+      data: updatedRecord.content,
     });
   } catch (error: any) {
     console.error("PUT /api/landing error:", error);

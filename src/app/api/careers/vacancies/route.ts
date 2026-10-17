@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { triggerReindexBackground } from "@/lib/reindex-trigger";
 
 // GET all active vacancies (with category info) — public
 // GET all vacancies including inactive — pass ?admin=true
@@ -71,6 +72,7 @@ export async function POST(req: Request) {
       include: { category: { select: { id: true, name: true } } },
     });
 
+    triggerReindexBackground();
     return NextResponse.json({ success: true, data: vacancy }, { status: 201 });
   } catch (error) {
     console.error("POST /api/careers/vacancies error:", error);
@@ -111,6 +113,7 @@ export async function PUT(req: Request) {
       include: { category: { select: { id: true, name: true } } },
     });
 
+    triggerReindexBackground();
     return NextResponse.json({ success: true, data: updated });
   } catch (error) {
     console.error("PUT /api/careers/vacancies error:", error);
@@ -133,6 +136,7 @@ export async function DELETE(req: Request) {
 
     await prisma.jobVacancy.delete({ where: { id } });
 
+    triggerReindexBackground();
     return NextResponse.json({ success: true, message: "Vacancy deleted successfully" });
   } catch (error) {
     console.error("DELETE /api/careers/vacancies error:", error);

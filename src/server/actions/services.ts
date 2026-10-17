@@ -133,6 +133,7 @@ export async function deleteService(serviceId: string) {
   });
 
   revalidateTag("services-page");
+  triggerReindexBackground();
 
   return {
     success: true,

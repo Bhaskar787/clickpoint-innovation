@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { DEFAULT_CONTACT_PAGE_DATA } from "@/data/default-contact-data";
 import { ContactInquiryItem, ContactPageContent } from "@/types";
 import { NotificationService } from "@/services/notification.service";
+import { triggerReindexBackground } from "@/lib/reindex-trigger";
 
 // GET /api/contact — Fetch contact page headers & list of inquiries for admin
 export async function GET(request: Request) {
@@ -200,6 +201,7 @@ export async function PUT(request: Request) {
     revalidateTag("contact-page");
     revalidatePath("/contact");
     revalidatePath("/admin/dashboard");
+    triggerReindexBackground();
 
     return NextResponse.json({
       success: true,

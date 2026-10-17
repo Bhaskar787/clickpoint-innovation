@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { DEFAULT_JOURNEY_PAGE_DATA } from "@/data/default-journey-data";
 import { JourneyPageContent } from "@/types";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { triggerReindexBackground } from "@/lib/reindex-trigger";
 
 export async function GET() {
   try {
@@ -38,6 +39,7 @@ export async function PUT(request: Request) {
     revalidatePath("/journey");
     revalidatePath("/");
     revalidatePath("/admin/dashboard");
+    triggerReindexBackground();
 
     return NextResponse.json({ success: true, data: updated });
   } catch (err: any) {

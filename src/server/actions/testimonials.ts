@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 import { DEFAULT_TESTIMONIALS_PAGE_DATA } from "@/data/default-testimonials-data";
 import { TestimonialItem, TestimonialsPageContent } from "@/types";
+import { triggerReindexBackground } from "@/lib/reindex-trigger";
 
 export const getTestimonialsPage = unstable_cache(
   async (): Promise<TestimonialsPageContent> => {
@@ -59,6 +60,7 @@ export async function approveTestimonial(id: string, isApproved: boolean) {
     revalidateTag("testimonials-page");
     revalidatePath("/");
     revalidatePath("/testimonials");
+    triggerReindexBackground();
     return { success: true, data: updated };
   } catch (err: any) {
     return { success: false, error: err.message || "Failed to update approval status" };
@@ -86,6 +88,7 @@ export async function deleteTestimonial(id: string) {
     revalidateTag("testimonials-page");
     revalidatePath("/");
     revalidatePath("/testimonials");
+    triggerReindexBackground();
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message || "Failed to delete review" };

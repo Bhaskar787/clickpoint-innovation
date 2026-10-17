@@ -5,6 +5,7 @@ import { ALL_PERMISSIONS } from "@/lib/permissions/constants";
 import { prisma } from "@/lib/prisma";
 import { revalidateTag, unstable_cache } from "next/cache";
 import { BlogPostItem } from "@/types";
+import { triggerReindexBackground } from "@/lib/reindex-trigger";
 
 /**
  * Public Cached Blog Posts Getter
@@ -96,6 +97,7 @@ export async function saveBlogPost(payload: Partial<BlogPostItem> & { title: str
   }
 
   revalidateTag("blog-posts");
+  triggerReindexBackground();
 
   return {
     success: true,
@@ -116,6 +118,7 @@ export async function deleteBlogPost(id: string) {
   });
 
   revalidateTag("blog-posts");
+  triggerReindexBackground();
 
   return {
     success: true,
