@@ -5,8 +5,6 @@ import Image from "next/image";
 import {
   Menu,
   Search,
-  Sun,
-  Moon,
   Bell,
   X,
   Archive,
@@ -16,7 +14,7 @@ import {
   Briefcase,
   MessageSquare,
 } from "lucide-react";
-import { useTheme } from "@/components/common/theme-provider";
+import { ThemeToggle } from "@/components/common/theme-toggle";
 import { getTimeAgo } from "../dashboard/nav-config";
 
 interface AdminHeaderProps {
@@ -52,7 +50,6 @@ export function AdminHeader({
   handleMarkSingleRead,
   handleLogout,
 }: AdminHeaderProps) {
-  const { theme, toggleTheme } = useTheme();
   const totalUnreadCount = unreadTestimonialsCount + unreadContactCount + unreadJobAppsCount;
 
   return (
@@ -82,13 +79,7 @@ export function AdminHeader({
       {/* Right Controls: Theme Toggle, Notifications, User Profile & Sign Out */}
       <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
         {/* Theme Toggle Button */}
-        <button
-          onClick={(e) => toggleTheme(e)}
-          className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-          aria-label="Toggle theme"
-        >
-          {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4 text-slate-700" />}
-        </button>
+        <ThemeToggle size="sm" className="sm:h-9 sm:w-9" />
 
         {/* Notifications Button & Dropdown Menu */}
         <div className="relative">

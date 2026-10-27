@@ -8,8 +8,6 @@ import {
   X,
   ArrowRight,
   Zap,
-  Sun,
-  Moon,
   Building2,
   Milestone,
   Briefcase,
@@ -38,7 +36,7 @@ import { useScrollHeader } from "@/hooks/use-scroll-header";
 import { useMobileMenu } from "@/hooks/use-mobile-menu";
 import Link from "next/link";
 import QuickEnquiryModal from "@/components/common/quick-enquiry-modal";
-import { useTheme } from "@/components/common/theme-provider";
+import { ThemeToggle } from "@/components/common/theme-toggle";
 
 // Helper map to assign icons to company dropdown items based on id
 const COMPANY_ICON_MAP: Record<string, any> = {
@@ -58,7 +56,6 @@ export default function Navbar() {
   const scrolled = useScrollHeader(16);
   const { isOpen: mobileOpen, toggle: toggleMobile, close: closeMobile } = useMobileMenu();
   const [quickEnquiryOpen, setQuickEnquiryOpen] = useState(false);
-  const { theme, toggleTheme } = useTheme();
 
   // Mobile Accordion Open States
   const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
@@ -289,18 +286,7 @@ export default function Navbar() {
 
           {/* Theme Toggle & Action Button */}
           <div className="hidden lg:flex items-center gap-3">
-            <button
-              onClick={(e) => toggleTheme(e)}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-50 dark:bg-slate-800 text-ink dark:text-amber-400 hover:bg-violet-100 dark:hover:bg-slate-700 transition-colors border border-violet-100 dark:border-slate-700 cursor-pointer"
-              aria-label="Toggle theme mode"
-              title={theme === "dark" ? "Switch to Light Mode" : "Switch to Night Mode"}
-            >
-              {theme === "dark" ? (
-                <Sun className="h-4 w-4 text-[#f58220]" />
-              ) : (
-                <Moon className="h-4 w-4 text-violet-700" />
-              )}
-            </button>
+            <ThemeToggle />
 
             <Button
               variant="primary"
@@ -372,17 +358,7 @@ export default function Navbar() {
                   </Link>
 
                   <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={(e) => toggleTheme(e)}
-                      className="p-2 rounded-lg bg-violet-50 dark:bg-slate-800 text-slate-700 dark:text-amber-400 border border-violet-100/60 dark:border-slate-700/60 hover:scale-105 transition-transform"
-                      aria-label="Toggle theme"
-                    >
-                      {theme === "dark" ? (
-                        <Sun className="h-4 w-4 text-[#f58220]" />
-                      ) : (
-                        <Moon className="h-4 w-4 text-violet-700" />
-                      )}
-                    </button>
+                    <ThemeToggle size="sm" className="rounded-lg h-8 w-8" />
                     <button
                       onClick={closeMobile}
                       className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800/80 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
