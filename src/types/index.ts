@@ -433,10 +433,11 @@ export interface EventItem {
   id: string;
   title: string;
   subtitle: string;
-  category: "Tech Summits" | "Hackathons" | "Global Expansion" | "Team Culture" | "Product Launches" | string;
+  category?: "Tech Summits" | "Hackathons" | "Global Expansion" | "Team Culture" | "Product Launches" | string;
   date: string;
   location: string;
   imageUrl: string;
+  images?: string[];
   colSpanDesktop?: string;
   heightClass?: string;
   highlights: string[];

@@ -9,7 +9,22 @@ export async function GET() {
   try {
     const record = await prisma.journeyPage.findFirst();
     if (record && record.content) {
-      return NextResponse.json({ success: true, data: record.content });
+      const content = record.content as unknown as JourneyPageContent;
+      if (content && Array.isArray(content.events)) {
+        content.events = content.events.map((e) => {
+          if (!e.images || e.images.length === 0) {
+            const defMatch = DEFAULT_JOURNEY_PAGE_DATA.events?.find(
+              (d) => d.id === e.id || d.title.toLowerCase() === e.title.toLowerCase()
+            );
+            return {
+              ...e,
+              images: defMatch?.images?.length ? defMatch.images : (e.imageUrl ? [e.imageUrl] : []),
+            };
+          }
+          return e;
+        });
+      }
+      return NextResponse.json({ success: true, data: content });
     }
   } catch (err) {
     console.error("Failed to query journey page from DB:", err);

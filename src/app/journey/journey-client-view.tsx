@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
@@ -44,9 +44,90 @@ export default function JourneyClientView({ initialContent }: JourneyClientViewP
   const events: EventItem[] = content.events && content.events.length > 0 ? content.events : DEFAULT_JOURNEY_PAGE_DATA.events;
 
   const [activeEraIndex, setActiveEraIndex] = useState<number>(Math.min(4, eras.length - 1));
-  const [selectedCategory, setSelectedCategory] = useState<string>("All Events");
   const [activeEventModal, setActiveEventModal] = useState<EventItem | null>(null);
+  const [activePhotoIndex, setActivePhotoIndex] = useState<number>(0);
+  const [originRect, setOriginRect] = useState<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  } | null>(null);
   const [isQuickEnquiryOpen, setIsQuickEnquiryOpen] = useState<boolean>(false);
+
+  const handleOpenEvent = (e: React.MouseEvent<HTMLDivElement>, event: EventItem) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setOriginRect({
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+      width: rect.width,
+      height: rect.height,
+    });
+    setActiveEventModal(event);
+    setActivePhotoIndex(0);
+  };
+
+  const handleCloseEvent = useCallback(() => {
+    if (activeEventModal) {
+      const el = document.getElementById(`event-card-${activeEventModal.id}`);
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        setOriginRect({
+          x: rect.left + rect.width / 2,
+          y: rect.top + rect.height / 2,
+          width: rect.width,
+          height: rect.height,
+        });
+      }
+    }
+    setActiveEventModal(null);
+  }, [activeEventModal]);
+
+  useEffect(() => {
+    if (activeEventModal) {
+      document.body.style.overflow = "hidden";
+      const photos = (activeEventModal.images && activeEventModal.images.length > 0)
+        ? activeEventModal.images
+        : [activeEventModal.imageUrl];
+
+      const onKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Escape") {
+          handleCloseEvent();
+        } else if (e.key === "ArrowLeft") {
+          setActivePhotoIndex((prev) => (prev - 1 + photos.length) % photos.length);
+        } else if (e.key === "ArrowRight") {
+          setActivePhotoIndex((prev) => (prev + 1) % photos.length);
+        }
+      };
+      window.addEventListener("keydown", onKeyDown);
+      return () => {
+        document.body.style.overflow = "";
+        window.removeEventListener("keydown", onKeyDown);
+      };
+    } else {
+      document.body.style.overflow = "";
+    }
+  }, [activeEventModal, handleCloseEvent]);
+
+  const originAnim = (() => {
+    if (!originRect || typeof window === "undefined") {
+      return {
+        initial: { opacity: 0, scale: 0.85 },
+        animate: { opacity: 1, x: 0, y: 0, scale: 1 },
+        exit: { opacity: 0, scale: 0.85 },
+      };
+    }
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight / 2;
+    const deltaX = originRect.x - centerX;
+    const deltaY = originRect.y - centerY;
+    const targetWidth = Math.min(window.innerWidth * 0.95, 1152);
+    const scale = Math.max(originRect.width / targetWidth, 0.22);
+    return {
+      initial: { opacity: 0, x: deltaX, y: deltaY, scale },
+      animate: { opacity: 1, x: 0, y: 0, scale: 1 },
+      exit: { opacity: 0, x: deltaX, y: deltaY, scale },
+    };
+  })();
 
   const timelineScrollRef = useRef<HTMLDivElement>(null);
   const nodeRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -65,22 +146,6 @@ export default function JourneyClientView({ initialContent }: JourneyClientViewP
   }, [activeEraIndex]);
 
   const activeEra = eras[activeEraIndex] || eras[0];
-
-  // Filter events by category
-  const filteredEvents =
-    selectedCategory === "All Events"
-      ? events
-      : events.filter((e) => e.category === selectedCategory);
-
-  const rawCategories =
-    content.eventCategories && content.eventCategories.length > 0
-      ? content.eventCategories
-      : DEFAULT_JOURNEY_PAGE_DATA.eventCategories || [];
-
-  const categories = [
-    "All Events",
-    ...rawCategories.filter((c) => c !== "All Events"),
-  ];
 
   return (
     <div className="min-h-screen bg-background text-ink dark:text-white transition-colors duration-200">
@@ -419,180 +484,304 @@ export default function JourneyClientView({ initialContent }: JourneyClientViewP
                   {content.eventsSection?.subtitle || DEFAULT_JOURNEY_PAGE_DATA.eventsSection?.subtitle || "Explore photos, hackathons, global tech expos, and team celebrations across our engineering hubs."}
                 </p>
               </div>
-
-              {/* Event Category Filters */}
-              <div className="flex flex-wrap items-center gap-2">
-                {categories.map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`rounded-full px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer ${
-                      selectedCategory === cat
-                        ? "bg-violet-600 dark:bg-violet-600 text-white shadow-md"
-                        : "bg-cloud-100 dark:bg-slate-800 text-ink/70 dark:text-slate-300 hover:bg-violet-50 dark:hover:bg-slate-700 border border-violet-100 dark:border-slate-700"
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
             </div>
 
-            {/* Dynamic Grid Layout */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {/* Dynamic 4-Column Grid Layout (Broadway Infosys Style) */}
+            <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               <AnimatePresence mode="popLayout">
-                {filteredEvents.map((event) => (
-                  <motion.div
-                    layout
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ duration: 0.3 }}
-                    key={event.id}
-                    onClick={() => setActiveEventModal(event)}
-                    className={`group relative overflow-hidden rounded-3xl border border-violet-100 dark:border-slate-800 bg-slate-900 shadow-xl cursor-pointer ${
-                      event.colSpanDesktop || "lg:col-span-1"
-                    } ${event.heightClass || "h-[360px]"}`}
-                  >
-                    <Image
-                      src={event.imageUrl}
-                      alt={event.title}
-                      fill
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-110 opacity-85 group-hover:opacity-100"
-                    />
+                {events.map((event) => {
+                  const photos = (event.images && event.images.length > 0)
+                    ? event.images
+                    : [event.imageUrl];
 
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
+                  return (
+                    <motion.div
+                      layout
+                      id={`event-card-${event.id}`}
+                      key={event.id}
+                      onClick={(e) => handleOpenEvent(e, event)}
+                      className="group relative cursor-pointer overflow-hidden rounded-[4px] bg-white dark:bg-[#131c31] border border-slate-200/80 dark:border-slate-800 shadow-xs hover:border-violet-300 dark:hover:border-slate-700 transition-all flex flex-col justify-between"
+                    >
+                      {/* Cover Photo Frame with subtle hover zoom only on image */}
+                      <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-950">
+                        <img
+                          src={event.imageUrl}
+                          alt={event.title}
+                          className="h-full w-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent pointer-events-none" />
 
-                    <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-10">
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-900/80 backdrop-blur-md px-3.5 py-1 text-[11px] font-extrabold uppercase tracking-widest text-violet-300 dark:text-violet-300 border border-violet-500/30">
-                        <Milestone className="h-3 w-3 text-amber-400" />
-                        {event.category}
-                      </span>
-                      {event.keyMetric && (
-                        <span className="rounded-full bg-amber-500/90 text-slate-950 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wide backdrop-blur-md">
-                          {event.keyMetric}
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="absolute bottom-0 inset-x-0 p-6 sm:p-8 z-10 flex items-end justify-between gap-4">
-                      <div>
-                        <div className="flex items-center gap-3 text-xs font-semibold text-slate-300 mb-1">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="h-3.5 w-3.5 text-violet-400" />
-                            {event.date}
-                          </span>
-                          <span>•</span>
-                          <span className="flex items-center gap-1 truncate max-w-[200px]">
-                            <MapPin className="h-3.5 w-3.5 text-violet-400" />
-                            {event.location}
+                        {/* Photo Count Badge (Bottom-Left, Broadway Infosys Reference Style) */}
+                        <div className="absolute bottom-2.5 left-2.5 z-10">
+                          <span className="inline-flex items-center gap-1 rounded-[3px] bg-black/75 backdrop-blur-md px-2 py-0.5 text-[11px] font-bold text-white border border-white/10 shadow-xs">
+                            <Camera className="h-3 w-3 text-amber-400" />
+                            <span>{photos.length} Photos</span>
                           </span>
                         </div>
 
-                        <h3 className="font-display text-2xl font-extrabold text-white group-hover:text-violet-300 transition-colors">
-                          {event.title}
-                        </h3>
-                        <p className="mt-1 text-xs text-slate-300 line-clamp-1">
-                          {event.subtitle}
-                        </p>
+                        {/* Key Metric Badge (Top-Right if present) */}
+                        {event.keyMetric && (
+                          <div className="absolute top-2.5 right-2.5 z-10">
+                            <span className="rounded-[3px] bg-amber-500/95 text-slate-950 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide backdrop-blur-md">
+                              {event.keyMetric}
+                            </span>
+                          </div>
+                        )}
                       </div>
 
-                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/10 dark:bg-slate-800/80 text-white backdrop-blur-md border border-white/20 group-hover:bg-violet-600 group-hover:border-violet-600 group-hover:scale-110 transition-all duration-300">
-                        <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5" />
+                      {/* Bottom Details Box */}
+                      <div className="p-3 sm:p-3.5 text-left flex flex-col justify-between flex-1">
+                        <div>
+                          <h3 className="font-display text-sm sm:text-base font-bold text-slate-900 dark:text-white line-clamp-1 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
+                            {event.title}
+                          </h3>
+                          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 line-clamp-1">
+                            {event.subtitle}
+                          </p>
+                        </div>
+
+                        <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[11px] font-medium text-slate-400 dark:text-slate-500">
+                          <span className="flex items-center gap-1 truncate max-w-[150px]">
+                            <Calendar className="h-3 w-3 text-violet-500 shrink-0" />
+                            {event.date}
+                          </span>
+                          <span className="text-violet-600 dark:text-violet-400 font-bold group-hover:translate-x-0.5 transition-transform flex items-center gap-0.5">
+                            View <ChevronRight className="h-3 w-3" />
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  </motion.div>
-                ))}
+                    </motion.div>
+                  );
+                })}
               </AnimatePresence>
             </div>
           </div>
         </section>
       )}
 
-      {/* ================= EVENT LIGHTBOX MODAL ================= */}
+      {/* ================= EVENT BROADWAY INFOSYS LIGHTBOX MODAL ================= */}
       <AnimatePresence>
         {activeEventModal && (
-          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-slate-950/80 backdrop-blur-xl">
+          <motion.div
+            key="event-modal-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.28, ease: "easeOut" }}
+            role="dialog"
+            aria-modal="true"
+            className="fixed inset-0 z-[120] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/90 backdrop-blur-md overflow-hidden"
+            onClick={handleCloseEvent}
+          >
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="relative w-full max-w-3xl overflow-hidden rounded-3xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-6 sm:p-8 shadow-2xl my-8"
+              key="event-modal-dialog"
+              initial={originAnim.initial}
+              animate={originAnim.animate}
+              exit={originAnim.exit}
+              transition={{
+                type: "spring",
+                damping: 28,
+                stiffness: 280,
+                mass: 0.85,
+              }}
+              className="relative w-[95vw] max-w-6xl h-[88vh] max-h-[820px] bg-slate-950 rounded-[4px] border border-slate-700/80 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col md:flex-row my-auto"
+              onClick={(e) => e.stopPropagation()}
             >
-              <button
-                onClick={() => setActiveEventModal(null)}
-                className="absolute top-4 right-4 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-ink dark:text-white hover:bg-violet-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
-              >
-                <X className="h-5 w-5" />
-              </button>
+              {(() => {
+                const photos = (activeEventModal.images && activeEventModal.images.length > 0)
+                  ? activeEventModal.images
+                  : [activeEventModal.imageUrl];
+                const currentPhoto = photos[activePhotoIndex] || activeEventModal.imageUrl;
 
-              <div className="relative h-64 sm:h-80 w-full overflow-hidden rounded-2xl">
-                <Image
-                  src={activeEventModal.imageUrl}
-                  alt={activeEventModal.title}
-                  fill
-                  className="object-cover object-center"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
-                <div className="absolute bottom-4 left-4 right-4 text-white">
-                  <span className="rounded-full bg-violet-600 px-3 py-1 text-xs font-bold">
-                    {activeEventModal.category}
-                  </span>
-                  <h3 className="mt-2 font-display text-2xl font-bold">{activeEventModal.title}</h3>
-                </div>
-              </div>
+                return (
+                  <>
+                    {/* Left Column: Full Theater Stage with Ambient Backdrop (~68% on Desktop) */}
+                    <div className="relative md:w-[65%] lg:w-[68%] h-[45%] md:h-full bg-slate-950 shrink-0 flex items-center justify-center overflow-hidden select-none">
+                      {/* Ambient Blurred Backdrop */}
+                      {currentPhoto && (
+                        <div
+                          className="absolute inset-0 bg-cover bg-center filter blur-3xl scale-125 opacity-35 pointer-events-none"
+                          style={{ backgroundImage: `url(${currentPhoto})` }}
+                        />
+                      )}
 
-              <div className="mt-6 space-y-4">
-                <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-ink/70 dark:text-slate-300 border-b border-violet-100 dark:border-slate-800 pb-4">
-                  <span className="flex items-center gap-1.5">
-                    <Calendar className="h-4 w-4 text-violet-600 dark:text-violet-300" />
-                    {activeEventModal.date}
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <MapPin className="h-4 w-4 text-violet-600 dark:text-violet-300" />
-                    {activeEventModal.location}
-                  </span>
-                  {activeEventModal.attendees && (
-                    <span className="flex items-center gap-1.5">
-                      <Users className="h-4 w-4 text-violet-600 dark:text-violet-300" />
-                      {activeEventModal.attendees}
-                    </span>
-                  )}
-                </div>
+                      {/* Main Sharp Photo */}
+                      <div className="relative z-10 w-full h-full flex items-center justify-center p-3 sm:p-6 md:p-8">
+                        <AnimatePresence mode="wait">
+                          <motion.img
+                            key={currentPhoto}
+                            src={currentPhoto}
+                            alt={activeEventModal.title}
+                            initial={{ opacity: 0.4, scale: 0.98 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0.4 }}
+                            transition={{ duration: 0.2 }}
+                            className="max-h-full max-w-full object-contain rounded-[4px] drop-shadow-2xl"
+                          />
+                        </AnimatePresence>
+                      </div>
 
-                <p className="text-sm leading-relaxed text-ink/80 dark:text-slate-300">
-                  {activeEventModal.fullStory}
-                </p>
-
-                {activeEventModal.highlights && activeEventModal.highlights.length > 0 && (
-                  <div className="pt-2">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-ink/50 dark:text-slate-400 mb-2">
-                      Event Highlights & Takeaways
-                    </h4>
-                    <div className="space-y-2">
-                      {activeEventModal.highlights.map((h, i) => (
-                        <div key={i} className="flex items-start gap-2 text-xs font-medium text-ink/80 dark:text-slate-300">
-                          <CheckCircle2 className="h-4 w-4 text-violet-600 dark:text-violet-300 shrink-0 mt-0.5" />
-                          <span>{h}</span>
+                      {/* Bottom Stage Overlay (Broadway Infosys Title Banner) */}
+                      <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-slate-950 via-slate-950/70 to-transparent p-4 sm:p-6 text-left pointer-events-none">
+                        <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                          {activeEventModal.keyMetric && (
+                            <span className="inline-block px-2 py-0.5 rounded-[3px] text-[9px] font-black uppercase tracking-wider bg-amber-500 text-slate-950 shadow-xs">
+                              {activeEventModal.keyMetric}
+                            </span>
+                          )}
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                        <h3 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-white tracking-tight drop-shadow-md">
+                          {activeEventModal.title}
+                        </h3>
+                        {activeEventModal.subtitle && (
+                          <p className="mt-0.5 text-xs sm:text-sm text-slate-300 drop-shadow-sm line-clamp-1">
+                            {activeEventModal.subtitle}
+                          </p>
+                        )}
+                      </div>
 
-                <div className="pt-4 flex justify-end">
-                  <Button
-                    variant="primary"
-                    onClick={() => setActiveEventModal(null)}
-                    className="font-bold cursor-pointer"
-                  >
-                    Close Preview
-                  </Button>
-                </div>
-              </div>
+                      {/* Prev/Next Navigation Controls */}
+                      {photos.length > 1 && (
+                        <>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActivePhotoIndex((prev) => (prev - 1 + photos.length) % photos.length);
+                            }}
+                            aria-label="Previous photo"
+                            className="absolute left-3 top-1/2 -translate-y-1/2 z-30 flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-slate-900/80 hover:bg-slate-900 text-white backdrop-blur-md border border-white/20 transition-all hover:scale-110 shadow-lg cursor-pointer"
+                          >
+                            <ChevronLeft className="h-5 w-5" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActivePhotoIndex((prev) => (prev + 1) % photos.length);
+                            }}
+                            aria-label="Next photo"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 z-30 flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-slate-900/80 hover:bg-slate-900 text-white backdrop-blur-md border border-white/20 transition-all hover:scale-110 shadow-lg cursor-pointer"
+                          >
+                            <ChevronRight className="h-5 w-5" />
+                          </button>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Right Column: Clean Detail Panel (~32% on Desktop, matching Broadway Infosys) */}
+                    <div className="relative md:w-[35%] lg:w-[32%] h-[55%] md:h-full bg-white dark:bg-[#131c31] border-t md:border-t-0 md:border-l border-slate-200 dark:border-slate-800 flex flex-col justify-between overflow-hidden">
+                      {/* Header with Title, Date and Close Button */}
+                      <div className="p-5 sm:p-6 border-b border-slate-100 dark:border-slate-800/80 shrink-0 relative pr-14 text-left">
+                        <button
+                          onClick={handleCloseEvent}
+                          aria-label="Close modal"
+                          className="absolute top-4 sm:top-5 right-4 sm:right-5 flex h-8 w-8 items-center justify-center rounded-[4px] bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+
+                        <h4 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                          {activeEventModal.title}
+                        </h4>
+
+                        <div className="mt-1.5 flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                          <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                          <span>{activeEventModal.date}</span>
+                        </div>
+
+                        <p className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                          {activePhotoIndex + 1} of {photos.length} {photos.length === 1 ? "image" : "images"}
+                        </p>
+
+                        <div className="mt-3 border-b border-slate-200 dark:border-slate-800" />
+                      </div>
+
+                      {/* Scrollable Details Body */}
+                      <div className="p-5 sm:p-6 overflow-y-auto space-y-5 text-left flex-1">
+                        {/* Multi-Photo Thumbnails 2-Column Grid (Broadway Infosys Gallery Style - Image 4) */}
+                        <div className="grid grid-cols-2 gap-2.5">
+                          {photos.map((photoUrl, pIdx) => {
+                            const isCurrent = pIdx === activePhotoIndex;
+                            return (
+                              <button
+                                key={pIdx}
+                                type="button"
+                                onClick={() => setActivePhotoIndex(pIdx)}
+                                title={`View image ${pIdx + 1}`}
+                                className={`group/thumb relative aspect-[4/3] overflow-hidden rounded-[4px] border transition-all text-left cursor-pointer ${
+                                  isCurrent
+                                    ? "border-2 border-blue-600 ring-2 ring-blue-500/30 scale-[1.01]"
+                                    : "border-slate-200 dark:border-slate-700/80 opacity-80 hover:opacity-100 hover:border-slate-400"
+                                }`}
+                              >
+                                <img
+                                  src={photoUrl}
+                                  alt={`Gallery photo ${pIdx + 1}`}
+                                  className="h-full w-full object-cover object-center group-hover/thumb:scale-105 transition-transform duration-300"
+                                />
+                                {/* Broadway-style hover title overlay */}
+                                <div
+                                  className={`absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-1 transition-opacity ${
+                                    isCurrent ? "opacity-100" : "opacity-0 group-hover/thumb:opacity-100"
+                                  }`}
+                                >
+                                  <p className="text-[10px] font-bold text-white text-center truncate px-1">
+                                    {activeEventModal.title}
+                                  </p>
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {/* Full Story Description */}
+                        {activeEventModal.fullStory && (
+                          <div className="pt-2">
+                            <h5 className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1.5">
+                              About This Event
+                            </h5>
+                            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-normal">
+                              {activeEventModal.fullStory}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Highlights & Key Takeaways */}
+                        {activeEventModal.highlights && activeEventModal.highlights.length > 0 && (
+                          <div className="pt-2">
+                            <h5 className="text-[10px] font-extrabold uppercase tracking-wider text-[#0a66c2] dark:text-blue-400 mb-2 flex items-center gap-1.5">
+                              <span>Highlights & Key Takeaways</span>
+                            </h5>
+                            <div className="space-y-1.5">
+                              {activeEventModal.highlights.map((h, i) => (
+                                <div key={i} className="flex items-start gap-1.5 text-xs text-slate-600 dark:text-slate-300">
+                                  <CheckCircle2 className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400 shrink-0 mt-0.5" />
+                                  <span>{h}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Footer CTA */}
+                      <div className="p-4 sm:p-5 border-t border-slate-100 dark:border-slate-800 shrink-0 flex items-center justify-between gap-3 bg-slate-50/50 dark:bg-slate-900/30">
+                        <span className="text-[11px] font-medium text-slate-400">
+                          Clickpoint Events & Culture
+                        </span>
+
+                        <button
+                          onClick={handleCloseEvent}
+                          className="px-5 py-2 text-xs font-bold rounded-[4px] border border-slate-200 dark:border-slate-700 bg-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors shadow-2xs cursor-pointer"
+                        >
+                          Close
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
             </motion.div>
-          </div>
+          </motion.div>
         )}
       </AnimatePresence>
 

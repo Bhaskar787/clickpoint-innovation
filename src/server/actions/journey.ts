@@ -10,7 +10,22 @@ export const getJourneyPage = unstable_cache(
     try {
       const record = await prisma.journeyPage.findFirst();
       if (record && record.content) {
-        return record.content as unknown as JourneyPageContent;
+        const content = record.content as unknown as JourneyPageContent;
+        if (content && Array.isArray(content.events)) {
+          content.events = content.events.map((e) => {
+            if (!e.images || e.images.length === 0) {
+              const defMatch = DEFAULT_JOURNEY_PAGE_DATA.events?.find(
+                (d) => d.id === e.id || d.title.toLowerCase() === e.title.toLowerCase()
+              );
+              return {
+                ...e,
+                images: defMatch?.images?.length ? defMatch.images : (e.imageUrl ? [e.imageUrl] : []),
+              };
+            }
+            return e;
+          });
+        }
+        return content;
       }
     } catch (err) {
       console.error("Failed to query journey page from DB:", err);
@@ -38,6 +53,7 @@ export async function updateJourneyPage(content: JourneyPageContent) {
 
     revalidateTag("journey-page");
     revalidatePath("/journey");
+    revalidatePath("/events");
     revalidatePath("/");
     revalidatePath("/admin/dashboard");
     return { success: true, data: updated };
