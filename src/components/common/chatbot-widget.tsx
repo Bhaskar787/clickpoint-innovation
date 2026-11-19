@@ -268,8 +268,17 @@ export function ChatbotWidget({ initialData }: ChatbotWidgetProps = {}) {
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const initFired = useRef(false);
+  const botTimeoutsRef = useRef<NodeJS.Timeout[]>([]);
 
-  // 1. Fetch dynamic chatbot config from database
+  // Cleanup all pending bot speech timeouts on unmount
+  useEffect(() => {
+    return () => {
+      botTimeoutsRef.current.forEach(clearTimeout);
+      botTimeoutsRef.current = [];
+    };
+  }, []);
+
+  // 1. Fetch dynamic chatbot config from database (once on mount)
   useEffect(() => {
     async function fetchConfig() {
       try {
@@ -298,8 +307,8 @@ export function ChatbotWidget({ initialData }: ChatbotWidgetProps = {}) {
             const startKey = d.settings?.startNode || START_NODE;
             const welcomeLines = d.nodes[startKey]?.bot;
             setMessages((prev) => {
-              const hasUser = prev.some((m) => m.from === "user");
-              if (!hasUser && welcomeLines && welcomeLines.length > 0) {
+              // Only seed messages if empty (e.g. initial visit before pushBotNode or sessionStorage)
+              if (prev.length === 0 && welcomeLines && welcomeLines.length > 0) {
                 return welcomeLines.map((line: string) => ({
                   id: uid(),
                   from: "bot",
@@ -321,7 +330,7 @@ export function ChatbotWidget({ initialData }: ChatbotWidgetProps = {}) {
     }
 
     fetchConfig();
-  }, [open]);
+  }, []);
 
   // Listen for admin dashboard live updates across tabs
   useEffect(() => {
@@ -387,21 +396,23 @@ export function ChatbotWidget({ initialData }: ChatbotWidgetProps = {}) {
       const raw = sessionStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed: PersistedState = JSON.parse(raw);
-        const hasUser = parsed.messages?.some((m) => m.from === "user");
-        const startKey = botConfig.startNode || START_NODE;
-        const currentWelcomeLines = nodes[startKey]?.bot || CHAT_NODES[startKey]?.bot || [];
-
-        if (!hasUser && currentWelcomeLines.length > 0) {
-          // Keep welcome greeting in sync with latest dynamic node config
-          setMessages(currentWelcomeLines.map((line) => ({ id: uid(), from: "bot", text: line })));
-        } else {
-          setMessages(parsed.messages ?? []);
+        if (Array.isArray(parsed.messages) && parsed.messages.length > 0) {
+          // Deduplicate consecutive identical bot messages defensively
+          const deduped: Message[] = [];
+          for (const m of parsed.messages) {
+            const last = deduped[deduped.length - 1];
+            if (last && last.from === "bot" && m.from === "bot" && last.text === m.text) {
+              continue;
+            }
+            deduped.push(m);
+          }
+          setMessages(deduped);
+          initFired.current = true;
         }
 
         setCurrentNode(parsed.currentNode ?? (botConfig.startNode || START_NODE));
         setOpen(parsed.open ?? false);
         setHydrated(true);
-        initFired.current = true;
         return;
       }
     } catch {
@@ -413,6 +424,8 @@ export function ChatbotWidget({ initialData }: ChatbotWidgetProps = {}) {
   // 3. Persist State
   useEffect(() => {
     if (!hydrated) return;
+    // Don't overwrite existing sessionStorage with empty messages during initial hydration pass
+    if (messages.length === 0 && !initFired.current) return;
     const state: PersistedState = {
       messages,
       currentNode,
@@ -428,6 +441,10 @@ export function ChatbotWidget({ initialData }: ChatbotWidgetProps = {}) {
   // 4. Initial welcome trigger
   useEffect(() => {
     if (!hydrated || initFired.current || !botConfig.enabled) return;
+    if (messages.length > 0) {
+      initFired.current = true;
+      return;
+    }
     initFired.current = true;
     const startKey = botConfig.startNode || START_NODE;
     const t = setTimeout(() => {
@@ -436,7 +453,7 @@ export function ChatbotWidget({ initialData }: ChatbotWidgetProps = {}) {
     }, botConfig.welcomeDelay);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated, botConfig.enabled]);
+  }, [hydrated, botConfig.enabled, messages.length]);
 
   // Autoscroll
   useEffect(() => {
@@ -446,11 +463,17 @@ export function ChatbotWidget({ initialData }: ChatbotWidgetProps = {}) {
   function pushBotNode(nodeId: string) {
     const node = nodes[nodeId] || CHAT_NODES[nodeId];
     if (!node) return;
+
+    // Clear any active bot speech timeouts
+    botTimeoutsRef.current.forEach(clearTimeout);
+    botTimeoutsRef.current = [];
+
     setTyping(true);
     const lines = node.bot || [];
+    const startKey = botConfig.startNode || START_NODE;
 
     lines.forEach((line, i) => {
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         const isLast = i === lines.length - 1;
         let widget: "services" | "testimonials" | "pricing" | "faqs" | undefined;
         if (isLast) {
@@ -460,9 +483,23 @@ export function ChatbotWidget({ initialData }: ChatbotWidgetProps = {}) {
           else if (node.showRealFaqs || nodeId === "faq_menu") widget = "faqs";
         }
 
-        setMessages((prev) => [...prev, { id: uid(), from: "bot", text: line, widgetType: widget }]);
+        setMessages((prev) => {
+          // Guard 1: Don't append consecutive duplicate bot message
+          const lastMsg = prev[prev.length - 1];
+          if (lastMsg && lastMsg.from === "bot" && lastMsg.text === line) {
+            return prev;
+          }
+          // Guard 2: If pushing start node greeting, prevent re-appending lines that already exist
+          if (nodeId === startKey && prev.some((m) => m.from === "bot" && m.text === line)) {
+            return prev;
+          }
+          return [...prev, { id: uid(), from: "bot", text: line, widgetType: widget }];
+        });
+
         if (isLast) setTyping(false);
       }, 300 + i * 400);
+
+      botTimeoutsRef.current.push(timeoutId);
     });
     setCurrentNode(nodeId);
   }
@@ -503,11 +540,13 @@ export function ChatbotWidget({ initialData }: ChatbotWidgetProps = {}) {
   }
 
   function resetConversation() {
+    botTimeoutsRef.current.forEach(clearTimeout);
+    botTimeoutsRef.current = [];
     try {
       sessionStorage.removeItem(STORAGE_KEY);
     } catch {}
     setMessages([]);
-    initFired.current = false;
+    initFired.current = true;
     pushBotNode(botConfig.startNode || START_NODE);
   }
 
@@ -642,9 +681,16 @@ export function ChatbotWidget({ initialData }: ChatbotWidgetProps = {}) {
               ref={scrollRef}
               className="flex-1 space-y-3.5 overflow-y-auto bg-slate-50/80 px-4 py-4 dark:bg-[#0b0f19]/60 [scrollbar-width:thin]"
             >
-              {messages.map((m) => (
-                <React.Fragment key={m.id}>
-                  <MessageBubble from={m.from} text={m.text} sources={m.sources} />
+              {messages
+                .filter((m, idx, arr) => {
+                  if (idx > 0 && m.from === "bot" && arr[idx - 1].from === "bot" && arr[idx - 1].text === m.text) {
+                    return false;
+                  }
+                  return true;
+                })
+                .map((m) => (
+                  <React.Fragment key={m.id}>
+                    <MessageBubble from={m.from} text={m.text} sources={m.sources} />
 
                   {/* Render Dynamic Cards Widgets */}
                   {m.widgetType === "services" && displayServices.length > 0 && (

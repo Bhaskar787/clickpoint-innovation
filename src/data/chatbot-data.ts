@@ -34,7 +34,7 @@ export const CHAT_NODES: Record<string, ChatNode> = {
   root: {
     id: "root",
     bot: [
-      "Hi there! I'm Clickbaaot, Clickpoint Innovation's assistant.",
+      "Hi there! I'm Clickpoint Assistant, Clickpoint Innovation's assistant.",
       "I can answer questions about our services, pricing, client reviews, industries, careers, or FAQs. What would you like to explore?",
     ],
     replies: [
