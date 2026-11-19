@@ -204,12 +204,13 @@ export default function TestimonialsClientView({
             {filteredTestimonials.map((item, idx) => (
               <motion.div
                 key={item.id}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ delay: idx * 0.05, duration: 0.5 }}
-                className="group flex flex-col justify-between overflow-hidden rounded-3xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-8 shadow-sm transition-all duration-300 hover:border-violet-300 dark:hover:border-slate-700 hover:shadow-2xl hover:shadow-violet-600/10 hover:-translate-y-1.5"
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.04, duration: 0.4, ease: "easeOut" }}
+                className="h-full"
               >
+                <div className="h-full group flex flex-col justify-between overflow-hidden rounded-3xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-8 shadow-sm transition-all duration-300 hover:border-violet-300 dark:hover:border-slate-700 hover:shadow-2xl hover:shadow-violet-600/10 hover:-translate-y-1.5">
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-1 text-amber-500">
@@ -248,7 +249,8 @@ export default function TestimonialsClientView({
                     </p>
                   </div>
                 </div>
-              </motion.div>
+              </div>
+            </motion.div>
             ))}
           </div>
 

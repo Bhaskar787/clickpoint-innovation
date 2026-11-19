@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
@@ -13,6 +13,7 @@ import {
   Zap,
   Sparkles,
   ChevronRight,
+  ChevronLeft,
   ArrowRight,
   X,
   Camera,
@@ -28,6 +29,7 @@ import QuickEnquiryModal from "@/components/common/quick-enquiry-modal";
 import CtaSection from "@/components/sections/cta-section";
 import { JourneyPageContent, TimelineEra, EventItem } from "@/types";
 import { DEFAULT_JOURNEY_PAGE_DATA } from "@/data/default-journey-data";
+import { cn } from "@/lib/utils";
 
 interface JourneyClientViewProps {
   initialContent: JourneyPageContent;
@@ -45,6 +47,22 @@ export default function JourneyClientView({ initialContent }: JourneyClientViewP
   const [selectedCategory, setSelectedCategory] = useState<string>("All Events");
   const [activeEventModal, setActiveEventModal] = useState<EventItem | null>(null);
   const [isQuickEnquiryOpen, setIsQuickEnquiryOpen] = useState<boolean>(false);
+
+  const timelineScrollRef = useRef<HTMLDivElement>(null);
+  const nodeRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  // Smoothly center active era node into view on mobile or scroll
+  useEffect(() => {
+    const activeNode = nodeRefs.current[activeEraIndex];
+    if (activeNode && timelineScrollRef.current) {
+      const container = timelineScrollRef.current;
+      const nodeLeft = activeNode.offsetLeft;
+      const nodeWidth = activeNode.offsetWidth;
+      const containerWidth = container.offsetWidth;
+      const scrollTarget = nodeLeft - containerWidth / 2 + nodeWidth / 2;
+      container.scrollTo({ left: Math.max(0, scrollTarget), behavior: "smooth" });
+    }
+  }, [activeEraIndex]);
 
   const activeEra = eras[activeEraIndex] || eras[0];
 
@@ -137,138 +155,227 @@ export default function JourneyClientView({ initialContent }: JourneyClientViewP
 
       {/* ================= SECTION 1: INTERACTIVE HORIZONTAL TIMELINE ================= */}
       {eras && eras.length > 0 && (
-        <section className="py-20 lg:py-28 bg-cloud-100/60 dark:bg-[#0f172a]/50 border-b border-violet-100 dark:border-slate-800">
+        <section className="py-16 lg:py-24 bg-violet-50/40 dark:bg-[#080d19] border-b border-violet-100 dark:border-slate-800">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
             
             {/* TOP DISPLAY AREA: 2-COLUMN STORY & IMAGE */}
-            <AnimatePresence mode="wait">
-              {activeEra && (
-                <motion.div
-                  key={activeEra.id || activeEraIndex}
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -15 }}
-                  transition={{ duration: 0.4 }}
-                  className="grid gap-12 lg:grid-cols-12 lg:gap-16 items-center mb-16 sm:mb-24"
-                >
-                  {/* LEFT COLUMN: STORY CONTENT */}
-                  <div className="lg:col-span-7 space-y-5 text-left">
-                    <span className="text-xs font-bold uppercase tracking-wider text-violet-600 dark:text-violet-400">
-                      {activeEra.yearRange}
-                    </span>
+            <div className="relative mb-14 sm:mb-20">
+              <AnimatePresence mode="wait">
+                {activeEra && (
+                  <motion.div
+                    key={activeEra.id || activeEraIndex}
+                    initial={{ opacity: 0, y: 14 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -14 }}
+                    transition={{ duration: 0.35, ease: "easeOut" }}
+                    className="grid gap-10 lg:grid-cols-12 lg:gap-14 items-center"
+                  >
+                    {/* LEFT COLUMN: STORY CONTENT */}
+                    <div className="lg:col-span-7 space-y-4 sm:space-y-5 text-left">
+                      <span className="font-poppins text-xs font-bold uppercase tracking-widest text-violet-600 dark:text-violet-400 block">
+                        {activeEra.displayYear || activeEra.yearRange}
+                      </span>
 
-                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.15]">
-                      {activeEra.title}
-                    </h2>
+                      <h2 className="font-poppins text-3xl sm:text-4xl lg:text-[44px] font-black tracking-tight text-slate-900 dark:text-white leading-[1.12]">
+                        {activeEra.title}
+                      </h2>
 
-                    <p className="text-xs font-bold uppercase tracking-wider text-violet-600 dark:text-orange-500">
-                      {activeEra.subtitle}
-                    </p>
+                      {activeEra.subtitle && (
+                        <p className="font-poppins text-xs sm:text-sm font-extrabold uppercase tracking-wider text-violet-600 dark:text-violet-400">
+                          {activeEra.subtitle}
+                        </p>
+                      )}
 
-                    <div className="space-y-4 text-base leading-relaxed text-ink/80 dark:text-slate-300 sm:text-lg">
-                      {activeEra.narrativeParagraphs?.map((para, idx) => (
-                        <p key={idx}>{para}</p>
-                      ))}
-                    </div>
-
-                    {/* Key Stats Bar */}
-                    {activeEra.stats && activeEra.stats.length > 0 && (
-                      <div className="pt-4 grid grid-cols-3 gap-3 border-t border-violet-200/80 dark:border-slate-800">
-                        {activeEra.stats.map((st, i) => (
-                          <div key={i}>
-                            <p className="font-display text-lg font-extrabold text-violet-600 dark:text-violet-300 sm:text-xl">
-                              {st.value}
-                            </p>
-                            <p className="text-[11px] font-semibold text-ink/60 dark:text-slate-400">
-                              {st.sublabel || st.label}
-                            </p>
-                          </div>
+                      <div className="space-y-3 sm:space-y-3.5 font-poppins text-sm sm:text-base leading-relaxed text-slate-600 dark:text-slate-300">
+                        {activeEra.narrativeParagraphs?.map((para, idx) => (
+                          <p key={idx}>{para}</p>
                         ))}
                       </div>
-                    )}
-                  </div>
 
-                  {/* RIGHT COLUMN: HIGH-RES ERA PHOTO CARD */}
-                  <div className="lg:col-span-5">
-                    <div className="relative overflow-hidden rounded-3xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-3 shadow-2xl">
-                      <div className="relative h-[340px] sm:h-[400px] w-full overflow-hidden rounded-2xl">
-                        <Image
-                          src={activeEra.imageUrl}
-                          alt={activeEra.title}
-                          fill
-                          sizes="(max-width: 1024px) 100vw, 40vw"
-                          priority
-                          className="object-cover object-center"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
-                        
-                        {/* Badge Overlay */}
-                        <div className="absolute top-4 left-4">
-                          <span className="rounded-full bg-violet-600/90 text-white px-3 py-1 text-xs font-bold backdrop-blur-md">
-                            {activeEra.displayYear} Era
-                          </span>
-                        </div>
-
-                        {/* Bottom Caption Overlay */}
-                        {activeEra.quoteText && (
-                          <div className="absolute bottom-4 left-4 right-4 rounded-xl bg-slate-950/80 p-4 text-xs text-white backdrop-blur-md border border-white/10">
-                            <Quote className="h-4 w-4 text-violet-400 mb-1" />
-                            <p className="italic text-slate-200">{activeEra.quoteText}</p>
-                            {activeEra.quoteAuthor && (
-                              <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-violet-400">
-                                — {activeEra.quoteAuthor}
+                      {/* Key Stats Bar with Top Divider */}
+                      {activeEra.stats && activeEra.stats.length > 0 && (
+                        <div className="pt-5 mt-6 border-t border-violet-100 dark:border-slate-800/80 grid grid-cols-3 gap-4 sm:gap-6">
+                          {activeEra.stats.map((st, i) => (
+                            <div key={i}>
+                              <p className="font-poppins text-lg sm:text-xl font-extrabold text-violet-600 dark:text-violet-400">
+                                {st.value}
                               </p>
-                            )}
+                              <p className="font-poppins text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">
+                                {st.label || st.sublabel}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* RIGHT COLUMN: HIGH-RES ERA PHOTO CARD */}
+                    <div className="lg:col-span-5">
+                      <div className="relative overflow-hidden rounded-[28px] sm:rounded-[36px] border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-3 sm:p-4 shadow-xl shadow-violet-950/5">
+                        <div className="relative h-[340px] sm:h-[400px] w-full overflow-hidden rounded-2xl sm:rounded-[24px]">
+                          <Image
+                            src={activeEra.imageUrl}
+                            alt={activeEra.title}
+                            fill
+                            sizes="(max-width: 1024px) 100vw, 42vw"
+                            priority
+                            className="object-cover object-center"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
+                          
+                          {/* Top-Left Floating Badge */}
+                          <div className="absolute top-4 left-4 z-10">
+                            <span className="font-poppins rounded-full bg-violet-600/90 text-white px-3.5 py-1 text-xs font-bold backdrop-blur-md shadow-xs">
+                              {activeEra.displayYear} Era
+                            </span>
                           </div>
-                        )}
+
+                          {/* Bottom Caption Overlay */}
+                          {activeEra.quoteText && (
+                            <div className="absolute bottom-4 left-4 right-4 z-10 rounded-2xl bg-[#0c1020]/90 text-white p-4 sm:p-5 backdrop-blur-md border border-white/10 shadow-lg">
+                              <Quote className="h-4 w-4 text-violet-400 mb-1.5" />
+                              <p className="font-poppins italic text-xs sm:text-sm text-slate-200 leading-relaxed">
+                                "{activeEra.quoteText}"
+                              </p>
+                              {activeEra.quoteAuthor && (
+                                <p className="font-poppins text-[10px] sm:text-xs font-bold uppercase tracking-wider text-violet-400 mt-2 block">
+                                  — {activeEra.quoteAuthor}
+                                </p>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* ================= BOTTOM HORIZONTAL TIMELINE BAR ================= */}
+            <div className="relative mt-12 sm:mt-16 pt-8 border-t border-violet-100 dark:border-slate-800/80">
+              {/* Header with Prev/Next Controls */}
+              <div className="flex items-center justify-between mb-6 px-2 sm:px-4">
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-violet-600 animate-pulse" />
+                  <span className="font-poppins text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                    Timeline Stage {activeEraIndex + 1} of {eras.length}
+                  </span>
+                </div>
+
+                {/* Quick Prev / Next Arrow Controls */}
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setActiveEraIndex((prev) => Math.max(0, prev - 1))}
+                    disabled={activeEraIndex === 0}
+                    aria-label="Previous Era"
+                    className="p-1.5 sm:px-2.5 sm:py-1 rounded-lg border border-violet-200 dark:border-slate-800 bg-white dark:bg-[#131c31] text-slate-600 dark:text-slate-300 hover:text-violet-600 hover:border-violet-400 dark:hover:text-violet-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center gap-1 font-poppins text-xs font-semibold"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    <span className="hidden sm:inline">Prev</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveEraIndex((prev) => Math.min(eras.length - 1, prev + 1))}
+                    disabled={activeEraIndex === eras.length - 1}
+                    aria-label="Next Era"
+                    className="p-1.5 sm:px-2.5 sm:py-1 rounded-lg border border-violet-200 dark:border-slate-800 bg-white dark:bg-[#131c31] text-slate-600 dark:text-slate-300 hover:text-violet-600 hover:border-violet-400 dark:hover:text-violet-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center gap-1 font-poppins text-xs font-semibold"
+                  >
+                    <span className="hidden sm:inline">Next</span>
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Horizontal Scrollable Track Container */}
+              <div
+                ref={timelineScrollRef}
+                className="w-full overflow-x-auto no-scrollbar py-3 scroll-smooth px-6 sm:px-10"
+                tabIndex={0}
+                role="tablist"
+                aria-label="Milestone Eras"
+                onKeyDown={(e) => {
+                  if (e.key === "ArrowLeft") {
+                    setActiveEraIndex((prev) => Math.max(0, prev - 1));
+                  } else if (e.key === "ArrowRight") {
+                    setActiveEraIndex((prev) => Math.min(eras.length - 1, prev + 1));
+                  }
+                }}
+              >
+                <div className="min-w-[620px] sm:min-w-0 relative w-full h-24">
+                  {/* Continuous Base Spine Line */}
+                  <div className="absolute left-0 right-0 top-6 -translate-y-1/2 pointer-events-none h-1 z-0">
+                    {/* Inactive Line */}
+                    <div className="h-full w-full bg-violet-200/80 dark:bg-slate-800 rounded-full" />
+
+                    {/* Active Filled Progress Line */}
+                    <motion.div
+                      className="absolute top-0 left-0 h-full bg-violet-600 dark:bg-violet-500 rounded-full"
+                      initial={false}
+                      animate={{
+                        width: `${(activeEraIndex / Math.max(1, eras.length - 1)) * 100}%`,
+                      }}
+                      transition={{ type: "spring", stiffness: 350, damping: 35 }}
+                    />
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
 
-            {/* BOTTOM TIMELINE BAR WITH CIRCLE BUTTONS & YEAR LABELS */}
-            <div className="relative mt-8 pt-8 border-t border-violet-100 dark:border-slate-800/80">
-              <div className="relative w-full h-1 bg-violet-200/80 dark:bg-slate-800 rounded-full">
-                <motion.div
-                  className="absolute top-0 left-0 h-full bg-violet-600 dark:bg-violet-600 rounded-full"
-                  animate={{
-                    width: `${(activeEraIndex / Math.max(1, eras.length - 1)) * 100}%`,
-                  }}
-                  transition={{ duration: 0.4, ease: "easeInOut" }}
-                />
-
-                <div className="absolute inset-0 flex items-center justify-between -top-[14px]">
+                  {/* Absolute Positioned Era Nodes with Mathematical Precision */}
                   {eras.map((era, index) => {
                     const isActive = activeEraIndex === index;
+                    const percentLeft = (index / Math.max(1, eras.length - 1)) * 100;
+
                     return (
-                      <div key={era.id || index} className="relative flex flex-col items-center">
+                      <div
+                        key={era.id || index}
+                        ref={(el) => {
+                          nodeRefs.current[index] = el;
+                        }}
+                        style={{ left: `${percentLeft}%` }}
+                        className="absolute top-0 -translate-x-1/2 flex flex-col items-center z-10"
+                      >
+                        {/* Circle Point Dot Button (w-12 h-12 = 48px x 48px, centering dot at y=24) */}
                         <button
+                          type="button"
+                          role="tab"
+                          aria-selected={isActive}
+                          aria-label={`Select ${era.displayYear} era`}
                           onClick={() => setActiveEraIndex(index)}
-                          aria-label={`Select ${era.displayYear}`}
-                          className={`group flex h-8 w-8 items-center justify-center rounded-full transition-all duration-300 ${
-                            isActive
-                              ? "bg-violet-600 dark:bg-violet-600 text-white ring-4 ring-violet-200 dark:ring-slate-700 shadow-lg scale-125 z-10"
-                              : "bg-white dark:bg-[#131c31] border-2 border-violet-300 dark:border-slate-700 text-ink/50 hover:border-violet-600 dark:hover:border-violet-400 hover:scale-110"
-                          }`}
+                          className="group relative flex h-12 w-12 items-center justify-center cursor-pointer focus:outline-none"
                         >
-                          <span
-                            className={`h-2.5 w-2.5 rounded-full transition-colors ${
-                              isActive
-                                ? "bg-white"
-                                : "bg-violet-300 dark:bg-slate-600 group-hover:bg-violet-600"
-                            }`}
-                          />
+                          {isActive ? (
+                            /* Active Circle Dot: Outer Translucent Halo + Solid Violet Circle + Center White Dot */
+                            <div className="relative flex items-center justify-center">
+                              {/* Outer Translucent Halo */}
+                              <motion.div
+                                layoutId="activeTimelineHalo"
+                                className="absolute size-11 sm:size-12 rounded-full bg-violet-600/20 dark:bg-violet-500/25"
+                                transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                              />
+                              {/* Middle Solid Violet Circle */}
+                              <div className="relative z-10 size-7 sm:size-8 rounded-full bg-violet-600 dark:bg-violet-600 text-white flex items-center justify-center shadow-lg shadow-violet-600/35">
+                                {/* Center White Point Dot */}
+                                <span className="size-2 sm:size-2.5 rounded-full bg-white block" />
+                              </div>
+                            </div>
+                          ) : (
+                            /* Inactive Circle Dot: Light Border Ring + Center Violet Dot */
+                            <div className="size-7 sm:size-8 rounded-full border-2 border-violet-300 dark:border-slate-700 bg-white dark:bg-[#131c31] flex items-center justify-center transition-all duration-200 group-hover:border-violet-600 dark:group-hover:border-violet-400 group-hover:scale-110 shadow-xs">
+                              <span className="size-2 sm:size-2.5 rounded-full bg-violet-400 dark:bg-slate-500 group-hover:bg-violet-600 dark:group-hover:bg-violet-400 transition-colors block" />
+                            </div>
+                          )}
                         </button>
 
+                        {/* Year Text Label Directly Below Dot */}
                         <button
+                          type="button"
                           onClick={() => setActiveEraIndex(index)}
-                          className={`mt-4 text-xs sm:text-sm transition-all duration-300 ${
+                          className={cn(
+                            "mt-2.5 sm:mt-3 text-center whitespace-nowrap transition-colors duration-200 font-poppins cursor-pointer select-none",
                             isActive
-                              ? "font-extrabold text-violet-600 dark:text-violet-300 scale-105"
-                              : "font-semibold text-ink/60 dark:text-slate-400 hover:text-violet-600 dark:hover:text-violet-300"
-                          }`}
+                              ? "font-extrabold text-sm sm:text-base text-violet-600 dark:text-violet-400"
+                              : "font-semibold text-xs sm:text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                          )}
                         >
                           {era.displayYear}
                         </button>

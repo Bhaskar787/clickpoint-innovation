@@ -232,14 +232,17 @@ export default function BlogListingPage() {
               {/* NEWSPAPER 3-COLUMN ARTICLE GRID */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {currentGridPosts.map((post, idx) => (
-                  <motion.article
+                  <motion.div
                     key={post.id || idx}
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ delay: idx * 0.05 }}
-                    className="group relative flex flex-col justify-between rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131c31] overflow-hidden shadow-xs transition-all duration-300 hover:-translate-y-1.5 hover:border-violet-300 hover:shadow-2xl hover:shadow-violet-500/10"
+                    transition={{ delay: idx * 0.04, duration: 0.4, ease: "easeOut" }}
+                    className="h-full"
                   >
+                    <article
+                      className="h-full group relative flex flex-col justify-between rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131c31] overflow-hidden shadow-xs transition-all duration-300 hover:-translate-y-1.5 hover:border-violet-300 hover:shadow-2xl hover:shadow-violet-500/10"
+                    >
                     <div>
                       {/* Image Thumbnail */}
                       <div className="relative h-52 w-full overflow-hidden bg-slate-900">
@@ -286,7 +289,8 @@ export default function BlogListingPage() {
                         <ArrowRight className="h-3.5 w-3.5 text-[#f58220]" />
                       </Link>
                     </div>
-                  </motion.article>
+                  </article>
+                </motion.div>
                 ))}
               </div>
 

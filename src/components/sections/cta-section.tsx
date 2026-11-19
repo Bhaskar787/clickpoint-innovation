@@ -38,10 +38,10 @@ export default function CtaSection({ initialData }: CtaSectionProps = {}) {
     <section className="relative py-20 lg:py-24 transition-colors duration-300">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
-          initial={{ opacity: 0, scale: 0.97 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true, amount: 0.4 }}
-          transition={{ duration: 0.6 }}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
           className="relative overflow-hidden rounded-[2.5rem] bg-slate-950 border border-slate-800 px-6 py-16 text-center sm:px-16 shadow-2xl"
         >
           {/* Ambient Glowing Spotlights */}
@@ -52,7 +52,7 @@ export default function CtaSection({ initialData }: CtaSectionProps = {}) {
             {/* Dynamic Pill Badge */}
             {ctaData.badge && (
               <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-violet-500/30 bg-violet-500/10 text-violet-300 text-xs font-bold mb-6">
-                <Zap className="h-3.5 w-3.5 text-violet-400 animate-pulse" />
+               
                 <span>{ctaData.badge}</span>
               </div>
             )}

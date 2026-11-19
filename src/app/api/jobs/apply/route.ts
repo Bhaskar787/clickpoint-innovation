@@ -21,6 +21,7 @@ export async function POST(request: Request) {
     const phone = (formData.get("phone") as string | null)?.trim() || null;
     const linkedIn = (formData.get("linkedIn") as string | null)?.trim() || null;
     const portfolio = (formData.get("portfolio") as string | null)?.trim() || null;
+    const address = (formData.get("address") as string | null)?.trim() || null;
     const coverLetter = (formData.get("coverLetter") as string | null)?.trim() || null;
     const coverLetterFile = formData.get("coverLetterFile") as File | null;
     const jobVacancyId = (formData.get("jobVacancyId") as string | null)?.trim();
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
     const resumeFile = formData.get("resume") as File | null;
 
     // Validate required fields
-    const hasCoverLetterText = Boolean(coverLetter && coverLetter.trim().length > 0);
+    const hasCoverLetterText = Boolean(coverLetter && coverLetter.trim().length > 0) || Boolean(address && address.length > 0);
     const hasCoverLetterFile = Boolean(coverLetterFile && coverLetterFile.size > 0);
 
     if (!name || !email || !phone || !jobVacancyId || !jobTitle) {
@@ -189,6 +190,11 @@ export async function POST(request: Request) {
       finalCoverLetterText = coverLetter
         ? `${coverLetter}\n\n${fileInfoText}`
         : fileInfoText;
+    }
+    if (address) {
+      finalCoverLetterText = finalCoverLetterText
+        ? `Current Address: ${address}\n\n${finalCoverLetterText}`
+        : `Current Address: ${address}`;
     }
 
     try {

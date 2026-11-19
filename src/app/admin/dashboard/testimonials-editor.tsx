@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { toast } from "sonner";
 import { createPortal } from "react-dom";
@@ -29,6 +29,29 @@ import {
 import { DEFAULT_TESTIMONIALS_PAGE_DATA } from "@/data/default-testimonials-data";
 import { TestimonialItem, TestimonialsPageContent } from "@/types";
 import { subscribeRealtimeNotifications } from "@/lib/realtime-notifications";
+import {
+  SectionNavSidebar,
+  SectionNavItem,
+} from "@/components/admin/dashboard/section-nav-sidebar";
+
+export const TESTIMONIALS_SECTIONS_CATALOG: SectionNavItem[] = [
+  {
+    id: "testi-hero",
+    number: "01",
+    title: "Hero & Trust Metrics",
+    subtitle: "Badge, title, subtitle, review modal CTA & rating stats bar",
+    icon: BarChart3,
+    badge: "Hero & Stats",
+  },
+  {
+    id: "testi-reviews",
+    number: "02",
+    title: "Client Reviews Moderation",
+    subtitle: "Approve, feature, inspect details & delete user testimonials",
+    icon: MessageSquare,
+    badge: "Reviews Ledger",
+  },
+];
 
 function getInitials(name: string): string {
   if (!name || !name.trim()) return "U";
@@ -286,19 +309,36 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
   const startIndex = (currentPage - 1) * pageSize;
   const pageItems = filteredItems.slice(startIndex, startIndex + pageSize);
 
-  const showHeroSection =
-    !sectionId ||
-    sectionId === "test-hero" ||
-    sectionId === "testi-hero" ||
-    sectionId === "01" ||
-    sectionId === "testimonials";
+  const resolveSectionId = (secId: string | null | undefined): string => {
+    if (!secId) return "testi-hero";
+    if (secId === "01" || secId === "test-hero" || secId === "testi-hero") return "testi-hero";
+    if (secId === "02" || secId === "test-list" || secId === "testi-reviews") return "testi-reviews";
+    return "testi-hero";
+  };
 
-  const showReviewsSection =
-    !sectionId ||
-    sectionId === "test-list" ||
-    sectionId === "testi-reviews" ||
-    sectionId === "02" ||
-    sectionId === "testimonials";
+  const [activeSectionId, setActiveSectionId] = useState<string>(() => resolveSectionId(sectionId));
+
+  useEffect(() => {
+    if (sectionId) {
+      setActiveSectionId(resolveSectionId(sectionId));
+    }
+  }, [sectionId]);
+
+  const sectionsWithCounts: SectionNavItem[] = useMemo(() => {
+    return TESTIMONIALS_SECTIONS_CATALOG.map((sec) => {
+      if (sec.id === "testi-reviews") {
+        return {
+          ...sec,
+          badge: unreadCount > 0 ? `${unreadCount} Pending` : `${testimonials.length} Reviews`,
+        };
+      }
+      return sec;
+    });
+  }, [unreadCount, testimonials.length]);
+
+  const currentSectionMeta =
+    sectionsWithCounts.find((s) => s.id === activeSectionId) || sectionsWithCounts[0];
+  const SectionIcon = currentSectionMeta.icon || BarChart3;
 
   if (isLoading) {
     return (
@@ -310,51 +350,73 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
   }
 
   return (
-    <div className="w-full min-w-0 max-w-full overflow-hidden space-y-4 sm:space-y-6 text-slate-900 dark:text-white">
-      {/* HEADER CONTROLS */}
-      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 overflow-hidden p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-white dark:bg-[#131927] border border-slate-200/80 dark:border-slate-800 shadow-xs">
-        <div className="space-y-1 min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 text-violet-600 dark:text-violet-400 shrink-0" />
-            <h2 className="text-sm sm:text-base font-extrabold tracking-tight">
-              Testimonials & Reviews Configurator (/testimonials)
-            </h2>
-            {unreadCount > 0 && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-extrabold bg-amber-500/10 text-amber-600 border border-amber-500/20">
-                <BellRing className="h-3 w-3" />
-                {unreadCount} Unread Review(s)
-              </span>
-            )}
+    <div className="w-full min-w-0 max-w-full space-y-4 text-slate-900 dark:text-white">
+      {/* 2-Column Master-Detail Selection Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column: Section Selector */}
+        <div className="lg:col-span-4 xl:col-span-3 lg:sticky lg:top-4">
+          <SectionNavSidebar
+            title="Testimonial Sections"
+            sections={sectionsWithCounts}
+            activeSectionId={activeSectionId}
+            onSelectSection={(id) => setActiveSectionId(id)}
+            accentColor="violet"
+          />
+        </div>
+
+        {/* Right Column: Active Section Editor Workspace */}
+        <div className="lg:col-span-8 xl:col-span-9 min-w-0 space-y-5">
+          {/* Active Section Header Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-5 rounded-2xl bg-white dark:bg-[#131927] border border-slate-200/80 dark:border-slate-800 shadow-xs">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-mono text-xs font-black text-violet-600 dark:text-violet-400 bg-violet-500/10 px-2 py-0.5 rounded-md border border-violet-500/20 shrink-0">
+                  #{currentSectionMeta.number}
+                </span>
+                <SectionIcon className="h-4 w-4 text-violet-600 dark:text-violet-400 shrink-0" />
+                <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white truncate">
+                  {currentSectionMeta.title}
+                </h3>
+                {activeSectionId === "testi-reviews" && unreadCount > 0 && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-extrabold bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                    <BellRing className="h-3 w-3" />
+                    {unreadCount} Unread Review(s)
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate">
+                {currentSectionMeta.subtitle}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              {activeSectionId === "testi-hero" && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setFormData(DEFAULT_TESTIMONIALS_PAGE_DATA)}
+                    className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" />
+                    <span>Reset Defaults</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={isSaving}
+                    onClick={handleSaveHeader}
+                    className="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-md shadow-violet-600/20 flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                    <span>{isSaving ? "Saving..." : "Save Content"}</span>
+                  </button>
+                </>
+              )}
+            </div>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Configure dynamic page titles, badges, rating statistics, and moderate client reviews in real-time.
-          </p>
-        </div>
 
-        <div className="flex flex-wrap items-center gap-2 shrink-0 w-full lg:w-auto">
-          <button
-            type="button"
-            onClick={() => setFormData(DEFAULT_TESTIMONIALS_PAGE_DATA)}
-            className="flex-1 sm:flex-none px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all flex items-center justify-center gap-1.5"
-          >
-            <RotateCcw className="h-3.5 w-3.5" />
-            <span>Reset Defaults</span>
-          </button>
-
-          <button
-            type="button"
-            disabled={isSaving}
-            onClick={handleSaveHeader}
-            className="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-md shadow-violet-600/20 flex items-center justify-center gap-1.5"
-          >
-            {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
-            <span>{isSaving ? "Saving..." : "Save Content"}</span>
-          </button>
-        </div>
-      </div>
-
-      {/* SECTION 1: HERO & METRICS CONFIGURATOR */}
-      {showHeroSection && (
+          {/* SECTION 1: HERO & METRICS CONFIGURATOR */}
+          {activeSectionId === "testi-hero" && (
         <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-6">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-2">
@@ -490,7 +552,7 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
       )}
 
       {/* SECTION 2: TABULAR TESTIMONIALS MODERATION PANEL */}
-      {showReviewsSection && (
+      {activeSectionId === "testi-reviews" && (
         <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-5 shadow-xs">
           {/* Section Header Controls */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
@@ -788,6 +850,8 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
           )}
         </div>
       )}
+        </div>
+      </div>
 
       {/* DETAIL MODAL FOR SELECTED TESTIMONIAL (portal) */}
       {selectedTestimonial &&

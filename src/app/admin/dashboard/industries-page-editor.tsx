@@ -23,6 +23,34 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { DEFAULT_INDUSTRIES_PAGE_DATA } from "@/data/default-industries-data";
+import { SectionNavSidebar, SectionNavItem } from "@/components/admin/dashboard/section-nav-sidebar";
+
+const INDUSTRIES_SECTIONS_CATALOG: SectionNavItem[] = [
+  {
+    id: "ind-hero",
+    number: "01",
+    title: "Industries Hero Banner & Headlines",
+    desc: "Header badge, main title, and descriptive subtitle for the industries directory.",
+    icon: Building2,
+    badge: "Hero Banner",
+  },
+  {
+    id: "ind-grid",
+    number: "02",
+    title: "Industry Sector Cards Manager",
+    desc: "Manage domain sectors, routes, subtitles, and card overview summaries.",
+    icon: Layers,
+    badge: "Sectors Grid",
+  },
+  {
+    id: "ind-details",
+    number: "03",
+    title: "Individual Industry Detail Pages",
+    desc: "Per-industry case studies, compliance badges, metrics, and custom solutions.",
+    icon: FolderGit2,
+    badge: "Detail Pages",
+  },
+];
 
 interface FileUploadControlProps {
   label: string;
@@ -136,10 +164,17 @@ interface IndustriesPageEditorProps {
 }
 
 export default function IndustriesPageEditor({ sectionId, onCloseSection }: IndustriesPageEditorProps) {
+  const [activeSectionId, setActiveSectionId] = useState<string>(sectionId || "ind-hero");
   const [formData, setFormData] = useState<any>(DEFAULT_INDUSTRIES_PAGE_DATA);
   const [selectedIndustryId, setSelectedIndustryId] = useState<string>("fintech");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (sectionId) {
+      setActiveSectionId(sectionId);
+    }
+  }, [sectionId]);
 
   useEffect(() => {
     async function loadIndustriesData() {
@@ -187,6 +222,28 @@ export default function IndustriesPageEditor({ sectionId, onCloseSection }: Indu
     }
   }
 
+  async function handleReset() {
+    if (!confirm("Are you sure you want to reset all Industries content to defaults?")) return;
+    setFormData(DEFAULT_INDUSTRIES_PAGE_DATA);
+    if (DEFAULT_INDUSTRIES_PAGE_DATA.industries && DEFAULT_INDUSTRIES_PAGE_DATA.industries.length > 0) {
+      setSelectedIndustryId(DEFAULT_INDUSTRIES_PAGE_DATA.industries[0].id);
+    }
+    const toastId = toast.loading("Resetting industries in database...");
+    try {
+      const res = await fetch("/api/industries", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(DEFAULT_INDUSTRIES_PAGE_DATA),
+      });
+      const json = await res.json();
+      if (json.success) {
+        toast.info("Reset to default Industries content!", { id: toastId });
+      }
+    } catch {
+      toast.error("Failed to reset content", { id: toastId });
+    }
+  }
+
   const currentIndustry = formData.industries?.find((ind: any) => ind.id === selectedIndustryId) || formData.industries?.[0];
 
   if (isLoading) {
@@ -198,46 +255,77 @@ export default function IndustriesPageEditor({ sectionId, onCloseSection }: Indu
     );
   }
 
+  const currentSectionMeta =
+    INDUSTRIES_SECTIONS_CATALOG.find((s) => s.id === activeSectionId) || INDUSTRIES_SECTIONS_CATALOG[0];
+  const SectionIcon = currentSectionMeta.icon || Building2;
+
   return (
-    <div className="w-full min-w-0 max-w-full overflow-hidden space-y-4 sm:space-y-6 text-slate-900 dark:text-white">
-      {/* HEADER CONTROLS */}
-      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 overflow-hidden p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-white dark:bg-[#131927] border border-slate-200/80 dark:border-slate-800 shadow-xs">
-        <div className="space-y-1 min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <Building2 className="h-4 w-4 sm:h-5 sm:w-5 text-violet-600 dark:text-violet-400 shrink-0" />
-            <h2 className="text-sm sm:text-base font-extrabold tracking-tight">
-              Industries Page Configurator (/industries & /industries/[id])
-            </h2>
+    <div className="w-full min-w-0 max-w-full space-y-4 text-slate-900 dark:text-white">
+      {/* 2-Column Master-Detail Selection Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column: Section Selector */}
+        <div className="lg:col-span-4 xl:col-span-3 lg:sticky lg:top-4">
+          <SectionNavSidebar
+            title="Industries Sections"
+            sections={INDUSTRIES_SECTIONS_CATALOG}
+            activeSectionId={activeSectionId}
+            onSelectSection={(id) => setActiveSectionId(id)}
+            accentColor="violet"
+          />
+        </div>
+
+        {/* Right Column: Active Section Editor Workspace */}
+        <div className="lg:col-span-8 xl:col-span-9 min-w-0 space-y-5">
+          {/* Active Section Header Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-5 rounded-2xl bg-white dark:bg-[#131927] border border-slate-200/80 dark:border-slate-800 shadow-xs">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-mono text-xs font-black text-violet-600 dark:text-violet-400 bg-violet-500/10 px-2 py-0.5 rounded-md border border-violet-500/20 shrink-0">
+                  #{currentSectionMeta.number}
+                </span>
+                <SectionIcon className="h-4 w-4 text-violet-600 dark:text-violet-400 shrink-0" />
+                <h2 className="text-xs sm:text-sm md:text-base font-extrabold text-slate-900 dark:text-white truncate">
+                  {currentSectionMeta.title}
+                </h2>
+              </div>
+              <p className="text-[10px] sm:text-[11px] text-slate-400 font-medium truncate mt-0.5">
+                {currentSectionMeta.desc}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+              <button
+                type="button"
+                onClick={handleReset}
+                className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Reset Defaults</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={isSaving}
+                className="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-semibold text-xs shadow-md shadow-violet-500/20 transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4" />
+                    <span>Save Changes</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Manage main industry sector cards, compliance badges, case study projects, and custom industry detail pages.
-          </p>
-        </div>
 
-        <div className="flex flex-wrap items-center gap-2 shrink-0 w-full lg:w-auto">
-          <button
-            type="button"
-            onClick={() => setFormData(DEFAULT_INDUSTRIES_PAGE_DATA)}
-            className="flex-1 sm:flex-none px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all flex items-center justify-center gap-1.5"
-          >
-            <RotateCcw className="h-3.5 w-3.5" />
-            <span>Reset Defaults</span>
-          </button>
-
-          <button
-            type="button"
-            disabled={isSaving}
-            onClick={handleSave}
-            className="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-md shadow-violet-600/20 flex items-center justify-center gap-1.5"
-          >
-            {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
-            <span>{isSaving ? "Saving..." : "Save Changes"}</span>
-          </button>
-        </div>
-      </div>
-
-      {/* SECTION 1: MAIN HERO BANNER */}
-      {(!sectionId || sectionId === "ind-hero") && (
+          {/* SECTION 1: MAIN HERO BANNER */}
+          {activeSectionId === "ind-hero" && (
         <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-5">
           <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
             <span className="font-mono text-[10px] sm:text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">
@@ -289,7 +377,7 @@ export default function IndustriesPageEditor({ sectionId, onCloseSection }: Indu
       )}
 
       {/* SECTION 2: INDUSTRY SECTOR CARDS MANAGER */}
-      {(!sectionId || sectionId === "ind-grid") && (
+      {activeSectionId === "ind-grid" && (
         <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-2">
@@ -343,6 +431,7 @@ export default function IndustriesPageEditor({ sectionId, onCloseSection }: Indu
                 };
                 setFormData({ ...formData, industries: [...(formData.industries || []), newInd] });
                 setSelectedIndustryId(uniqueId);
+                setActiveSectionId("ind-details");
                 toast.success(`Created new industry sector item (ID: ${uniqueId})!`);
               }}
               className="w-full sm:w-auto flex items-center justify-center gap-1 px-3 py-1.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold transition-all shadow-xs"
@@ -369,7 +458,10 @@ export default function IndustriesPageEditor({ sectionId, onCloseSection }: Indu
                     </span>
                     <button
                       type="button"
-                      onClick={() => setSelectedIndustryId(ind.id)}
+                      onClick={() => {
+                        setSelectedIndustryId(ind.id);
+                        setActiveSectionId("ind-details");
+                      }}
                       className={`text-[11px] font-semibold underline transition-colors truncate ${
                         selectedIndustryId === ind.id
                           ? "text-violet-600 font-bold"
@@ -478,7 +570,7 @@ export default function IndustriesPageEditor({ sectionId, onCloseSection }: Indu
       )}
 
       {/* SECTION 3: INDIVIDUAL INDUSTRY DETAIL PAGE CONFIGURATOR */}
-      {(!sectionId || sectionId === "ind-details") && (
+      {activeSectionId === "ind-details" && (
         <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-2">
@@ -1123,6 +1215,8 @@ export default function IndustriesPageEditor({ sectionId, onCloseSection }: Indu
         </div>
       )}
 
+        </div>
+      </div>
     </div>
   );
 }

@@ -106,13 +106,13 @@ export default function IndustriesSection({ initialHeader, initialIndustries }: 
             return (
               <motion.div
                 key={ind.id}
-                initial={{ opacity: 0, y: 24 }}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.2 }}
-                transition={{ duration: 0.5, delay: idx * 0.06 }}
-                whileHover={{ y: -6 }}
-                className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-7 shadow-sm transition-all hover:border-violet-300 dark:hover:border-slate-700 hover:shadow-xl hover:shadow-violet-500/10"
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: idx * 0.05, ease: "easeOut" }}
+                className="h-full"
               >
+                <div className="h-full group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-7 shadow-sm transition-all duration-300 hover:border-violet-300 dark:hover:border-slate-700 hover:shadow-xl hover:shadow-violet-500/10 hover:-translate-y-1.5">
                 <div>
                   {/* Top Header */}
                   <div className="flex items-center justify-between mb-4">
@@ -179,7 +179,8 @@ export default function IndustriesSection({ initialHeader, initialIndustries }: 
                     <ArrowUpRight className="h-4 w-4 text-violet-600 dark:text-violet-300 transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
                   </Link>
                 </div>
-              </motion.div>
+              </div>
+            </motion.div>
             );
           })}
         </div>

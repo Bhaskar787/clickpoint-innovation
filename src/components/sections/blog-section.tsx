@@ -110,9 +110,10 @@ export default function BlogSection({ initialHeader, initialBlogs }: BlogSection
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: idx * 0.1, duration: 0.5 }}
-                className="group flex flex-col justify-between overflow-hidden rounded-3xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-5 shadow-sm transition-all duration-300 hover:border-violet-300 dark:hover:border-slate-700 hover:shadow-xl hover:shadow-violet-500/10 hover:-translate-y-1.5"
+                transition={{ delay: idx * 0.06, duration: 0.4, ease: "easeOut" }}
+                className="h-full"
               >
+                <div className="h-full group flex flex-col justify-between overflow-hidden rounded-3xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-5 shadow-sm transition-all duration-300 hover:border-violet-300 dark:hover:border-slate-700 hover:shadow-xl hover:shadow-violet-500/10 hover:-translate-y-1.5">
                 <div>
                   {/* Image Container */}
                   <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl bg-slate-900">
@@ -163,7 +164,8 @@ export default function BlogSection({ initialHeader, initialBlogs }: BlogSection
                     <ChevronRight className="h-3.5 w-3.5 text-violet-600 dark:text-[#5340d6]" />
                   </Link>
                 </div>
-              </motion.div>
+              </div>
+            </motion.div>
             );
           })}
         </div>

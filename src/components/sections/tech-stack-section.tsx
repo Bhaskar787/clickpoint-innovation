@@ -192,8 +192,9 @@ export default function TechStackSection({
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ duration: 0.25 }}
-                  className="group relative flex flex-col items-center justify-between rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-[#0c0e22] p-4 text-center shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-violet-500/50 hover:shadow-xl hover:shadow-violet-600/10"
+                  className="h-full"
                 >
+                  <div className="h-full group relative flex flex-col items-center justify-between rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-[#0c0e22] p-4 text-center shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-violet-500/50 hover:shadow-xl hover:shadow-violet-600/10">
                   <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-900/90 group-hover:bg-violet-50 dark:group-hover:bg-violet-950/50 transition-colors p-2 shrink-0">
                     {item.iconUrl ? (
                       <img src={item.iconUrl} alt={item.name} className="h-8 w-8 object-contain" />
@@ -218,7 +219,8 @@ export default function TechStackSection({
                       {item.category}
                     </span>
                   </div>
-                </motion.div>
+                </div>
+              </motion.div>
               );
             })}
           </AnimatePresence>

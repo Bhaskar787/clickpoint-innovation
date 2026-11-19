@@ -24,7 +24,60 @@ import {
   ChevronUp,
   ListPlus,
   CheckCircle2,
+  ArrowLeft,
+  Sparkles,
+  MapPin,
+  Banknote,
+  Clock,
+  Building2,
+  GraduationCap,
+  Eye,
+  ExternalLink,
 } from "lucide-react";
+import { SectionNavSidebar, SectionNavItem } from "@/components/admin/dashboard/section-nav-sidebar";
+
+const CAREERS_SECTIONS_CATALOG: SectionNavItem[] = [
+  {
+    id: "careers-hero",
+    number: "01",
+    title: "Hero Banner & Key Metrics",
+    desc: "Header badge, title headlines, subtitle narrative, and stats metrics bar.",
+    icon: Briefcase,
+    badge: "Hero & Stats",
+  },
+  {
+    id: "careers-perks",
+    number: "02",
+    title: "Perks & Benefits Section",
+    desc: "Section tag, title highlight, subtitle, and employee perks cards.",
+    icon: CheckCircle2,
+    badge: "Perks",
+  },
+  {
+    id: "careers-openings",
+    number: "03",
+    title: "Open Vacancies Header",
+    desc: "Section badge, title, subtitle, and job search box placeholder.",
+    icon: Type,
+    badge: "Openings Header",
+  },
+  {
+    id: "careers-categories",
+    number: "04",
+    title: "Job Categories & Departments",
+    desc: "Create and manage departmental categories (Engineering, AI, Product, Design).",
+    icon: FolderPlus,
+    badge: "Departments",
+  },
+  {
+    id: "careers-vacancies",
+    number: "05",
+    title: "Job Vacancies Manager",
+    desc: "Create, edit, toggle active status, and manage open job listings.",
+    icon: ListPlus,
+    badge: "Vacancies",
+  },
+];
 
 // ---------------------------------------------------------------------------
 // Types
@@ -75,6 +128,7 @@ interface JobCategory {
 
 interface JobVacancy {
   id: string;
+  slug?: string;
   title: string;
   categoryId: string;
   category: { id: string; name: string };
@@ -82,6 +136,7 @@ interface JobVacancy {
   location: string;
   experience: string;
   salary: string;
+  deadline?: string;
   summary: string;
   responsibilities: string[];
   requirements: string[];
@@ -93,6 +148,23 @@ interface JobVacancy {
 interface CareersPageEditorProps {
   sectionId: string | null;
   onCloseSection: () => void;
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function slugifyText(text: string): string {
+  return (text || "")
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/&/g, "-and-")
+    .replace(/[^\w\-]+/g, "")
+    .replace(/\-\-+/g, "-")
+    .replace(/^-+/, "")
+    .replace(/-+$/, "");
 }
 
 // ---------------------------------------------------------------------------
@@ -137,78 +209,161 @@ const DEFAULT_CONTENT: CareersPageContent = {
 };
 
 // ---------------------------------------------------------------------------
-// Helper: ListEditor — for responsibilities / requirements
+// Constants & Defaults
 // ---------------------------------------------------------------------------
 
-function ListEditor({
+const DEFAULT_VACANCY_FORM: Omit<JobVacancy, "id" | "category"> = {
+  title: "",
+  slug: "",
+  categoryId: "",
+  type: "Full-Time",
+  location: "Remote (Global)",
+  experience: "Senior",
+  salary: "",
+  deadline: "",
+  summary: "",
+  responsibilities: [],
+  requirements: [],
+  featured: false,
+  isActive: true,
+  order: 0,
+};
+
+// ---------------------------------------------------------------------------
+// Helper: InteractiveListBuilder — for responsibilities / requirements
+// ---------------------------------------------------------------------------
+
+function InteractiveListBuilder({
+  title,
+  subtitle,
   items,
   onChange,
   placeholder,
 }: {
+  title: string;
+  subtitle?: string;
   items: string[];
   onChange: (updated: string[]) => void;
   placeholder?: string;
 }) {
-  const [newItem, setNewItem] = useState("");
+  const [draftItem, setDraftItem] = useState("");
 
-  function add() {
-    const trimmed = newItem.trim();
+  const addItem = () => {
+    const trimmed = draftItem.trim();
     if (!trimmed) return;
     onChange([...items, trimmed]);
-    setNewItem("");
-  }
+    setDraftItem("");
+  };
 
-  function remove(idx: number) {
-    onChange(items.filter((_, i) => i !== idx));
-  }
+  const removeItem = (index: number) => {
+    onChange(items.filter((_, i) => i !== index));
+  };
 
-  function update(idx: number, val: string) {
+  const updateItem = (index: number, val: string) => {
     const copy = [...items];
-    copy[idx] = val;
+    copy[index] = val;
     onChange(copy);
-  }
+  };
+
+  const moveItem = (index: number, direction: "up" | "down") => {
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= items.length) return;
+    const copy = [...items];
+    [copy[index], copy[targetIndex]] = [copy[targetIndex], copy[index]];
+    onChange(copy);
+  };
 
   return (
-    <div className="space-y-2">
-      {items.map((item, idx) => (
-        <div key={idx} className="flex items-start gap-2">
-          <CheckCircle2 className="h-3.5 w-3.5 text-violet-500 shrink-0 mt-2" />
-          <input
-            type="text"
-            value={item}
-            onChange={(e) => update(idx, e.target.value)}
-            className="flex-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3 py-1.5 text-xs text-slate-900 dark:text-white"
-          />
-          <button
-            type="button"
-            onClick={() => remove(idx)}
-            className="p-1.5 text-red-400 hover:text-red-600 shrink-0"
-          >
-            <X className="h-3.5 w-3.5" />
-          </button>
+    <div className="space-y-3 p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] shadow-xs">
+      <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-slate-100 dark:border-slate-800">
+        <div>
+          <div className="flex items-center gap-2">
+            <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">{title}</h4>
+            <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20">
+              {items.length} {items.length === 1 ? "Item" : "Items"}
+            </span>
+          </div>
+          {subtitle && (
+            <p className="text-[11px] text-slate-400 mt-0.5">{subtitle}</p>
+          )}
         </div>
-      ))}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-1">
+      </div>
+
+      {items.length === 0 ? (
+        <div className="py-6 px-4 text-center rounded-xl border border-dashed border-slate-200 dark:border-slate-800 text-xs text-slate-400">
+          No items added yet. Use the field below to add an entry.
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {items.map((item, idx) => (
+            <div
+              key={idx}
+              className="flex items-center gap-2 p-2 rounded-xl border border-slate-200/70 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/40 group hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
+            >
+              <span className="font-mono text-[10px] font-bold text-slate-400 w-5 text-center shrink-0">
+                {idx + 1}.
+              </span>
+              <input
+                type="text"
+                value={item}
+                onChange={(e) => updateItem(idx, e.target.value)}
+                className="flex-1 bg-transparent border-0 text-xs text-slate-800 dark:text-slate-150 focus:outline-none focus:ring-0 px-1 py-1"
+              />
+              <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity shrink-0">
+                <button
+                  type="button"
+                  onClick={() => moveItem(idx, "up")}
+                  disabled={idx === 0}
+                  title="Move Up"
+                  className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 disabled:opacity-20 cursor-pointer"
+                >
+                  <ChevronUp className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => moveItem(idx, "down")}
+                  disabled={idx === items.length - 1}
+                  title="Move Down"
+                  className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 disabled:opacity-20 cursor-pointer"
+                >
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => removeItem(idx)}
+                  title="Remove Item"
+                  className="p-1 text-red-400 hover:text-red-600 dark:hover:text-red-400 transition-colors cursor-pointer"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Add New Item */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1">
         <input
           type="text"
-          value={newItem}
-          onChange={(e) => setNewItem(e.target.value)}
-          placeholder={placeholder || "Add item and press Enter..."}
+          value={draftItem}
+          onChange={(e) => setDraftItem(e.target.value)}
+          placeholder={placeholder || "Type item text and press Enter..."}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
-              add();
+              addItem();
             }
           }}
-          className="flex-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3 py-1.5 text-xs text-slate-900 dark:text-white"
+          className="flex-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-violet-500"
         />
         <button
           type="button"
-          onClick={add}
-          className="flex items-center justify-center gap-1 px-3 py-1.5 rounded-xl bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 transition-colors shrink-0"
+          onClick={addItem}
+          className="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shrink-0 shadow-xs"
         >
-          <ListPlus className="h-3.5 w-3.5" />
-          Add
+          <Plus className="h-3.5 w-3.5" />
+          <span>Add</span>
         </button>
       </div>
     </div>
@@ -216,190 +371,596 @@ function ListEditor({
 }
 
 // ---------------------------------------------------------------------------
-// VacancyFormFields
+// Dedicated Separate Page Vacancy Editor Component
 // ---------------------------------------------------------------------------
 
-function VacancyFormFields({
-  data,
-  onChange,
-  categories,
-}: {
-  data: Omit<JobVacancy, "id" | "category">;
+interface DedicatedVacancyEditorProps {
+  editingVacancy: JobVacancy | null;
+  formData: Omit<JobVacancy, "id" | "category">;
   onChange: (updated: Omit<JobVacancy, "id" | "category">) => void;
   categories: JobCategory[];
-}) {
-  const set = (field: keyof typeof data, value: unknown) =>
-    onChange({ ...data, [field]: value });
+  isSaving: boolean;
+  onSave: () => void;
+  onCancel: () => void;
+  onDelete?: () => void;
+}
+
+function DedicatedVacancyEditor({
+  editingVacancy,
+  formData,
+  onChange,
+  categories,
+  isSaving,
+  onSave,
+  onCancel,
+  onDelete,
+}: DedicatedVacancyEditorProps) {
+  const isEditing = Boolean(editingVacancy);
+  const setField = <K extends keyof typeof formData>(field: K, value: (typeof formData)[K]) => {
+    onChange({ ...formData, [field]: value });
+  };
+
+  const selectedCategory = categories.find((c) => c.id === formData.categoryId);
 
   return (
-    <div className="space-y-4 p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60">
-      {/* Title */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-        <div className="sm:col-span-2">
-          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Job Title *</label>
-          <input
-            type="text"
-            value={data.title}
-            onChange={(e) => set("title", e.target.value)}
-            placeholder="e.g. Senior Full-Stack AI Engineer"
-            className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white"
-          />
+    <div className="w-full min-w-0 max-w-full space-y-6 text-slate-900 dark:text-white animate-in fade-in-50 duration-200">
+      {/* TOP HEADER BAR */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#131927] border border-slate-200/80 dark:border-slate-800 shadow-xs">
+        <div className="flex flex-wrap items-center gap-3 min-w-0 flex-1">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors flex items-center gap-2 text-xs font-bold shrink-0 cursor-pointer"
+          >
+            <ArrowLeft className="h-4 w-4 shrink-0" />
+            <span>Back to Vacancies Table</span>
+          </button>
+
+          <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block shrink-0" />
+
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <div className="h-9 w-9 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-500/20">
+              <Briefcase className="h-4.5 w-4.5" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-mono text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                  {isEditing ? "Editing Role" : "New Role Draft"}
+                </span>
+                <h1 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white truncate">
+                  {isEditing ? `Edit: ${formData.title || "Untitled Vacancy"}` : "Create & Publish New Job Vacancy"}
+                </h1>
+              </div>
+              <p className="text-[11px] text-slate-400 font-medium truncate mt-0.5">
+                {isEditing
+                  ? `Position ID: ${editingVacancy!.id} • Department: ${selectedCategory?.name || "Unassigned"}`
+                  : "Fill in position requirements, compensation, and candidate criteria to publish on /careers."}
+              </p>
+            </div>
+          </div>
         </div>
 
-        {/* Category */}
-        <div>
-          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Category / Department *</label>
-          {categories.length === 0 ? (
-            <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
-              ⚠ Create at least one category first
-            </p>
-          ) : (
-            <select
-              value={data.categoryId}
-              onChange={(e) => set("categoryId", e.target.value)}
-              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white"
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2 shrink-0 self-end lg:self-auto">
+          {isEditing && (
+            <a
+              href={`/careers/${formData.slug || editingVacancy?.slug || editingVacancy?.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all flex items-center gap-1.5 shrink-0"
+              title="Open public job vacancy page in new tab"
             >
-              <option value="">— Select category —</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
-              ))}
-            </select>
+              <ExternalLink className="h-3.5 w-3.5 text-slate-500" />
+              <span>Live Page</span>
+            </a>
           )}
-        </div>
 
-        {/* Type */}
-        <div>
-          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Employment Type</label>
-          <select
-            value={data.type}
-            onChange={(e) => set("type", e.target.value)}
-            className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white"
-          >
-            {["Full-Time", "Part-Time", "Contract", "Internship", "Freelance"].map((t) => (
-              <option key={t} value={t}>{t}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Location */}
-        <div>
-          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Location</label>
-          <input
-            type="text"
-            value={data.location}
-            onChange={(e) => set("location", e.target.value)}
-            placeholder="e.g. Remote (Global)"
-            className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white"
-          />
-        </div>
-
-        {/* Experience */}
-        <div>
-          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Experience Level</label>
-          <select
-            value={data.experience}
-            onChange={(e) => set("experience", e.target.value)}
-            className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white"
-          >
-            {["Junior", "Mid-Level", "Senior", "Lead", "Principal", "Director"].map((lvl) => (
-              <option key={lvl} value={lvl}>{lvl}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Salary */}
-        <div className="sm:col-span-2">
-          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Salary Range</label>
-          <input
-            type="text"
-            value={data.salary}
-            onChange={(e) => set("salary", e.target.value)}
-            placeholder="e.g. NPR 25,00,000 - 35,00,000 / year + Equity"
-            className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white"
-          />
-        </div>
-
-        {/* Summary */}
-        <div className="sm:col-span-2">
-          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Role Summary</label>
-          <textarea
-            rows={3}
-            value={data.summary}
-            onChange={(e) => set("summary", e.target.value)}
-            placeholder="Brief description of the role..."
-            className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white"
-          />
-        </div>
-      </div>
-
-      {/* Responsibilities */}
-      <div>
-        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">
-          Key Responsibilities ({(data.responsibilities || []).length})
-        </label>
-        <ListEditor
-          items={data.responsibilities || []}
-          onChange={(items) => set("responsibilities", items)}
-          placeholder="Add a responsibility..."
-        />
-      </div>
-
-      {/* Requirements */}
-      <div>
-        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">
-          Requirements ({(data.requirements || []).length})
-        </label>
-        <ListEditor
-          items={data.requirements || []}
-          onChange={(items) => set("requirements", items)}
-          placeholder="Add a requirement..."
-        />
-      </div>
-
-      {/* Toggles */}
-      <div className="flex flex-wrap gap-4 pt-2">
-        <label className="flex items-center gap-2 cursor-pointer group">
           <button
             type="button"
-            onClick={() => set("featured", !data.featured)}
-            className={`flex h-5 w-5 items-center justify-center rounded border-2 transition-colors ${
-              data.featured
-                ? "bg-violet-600 border-violet-600 text-white"
-                : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800"
-            }`}
+            onClick={onCancel}
+            disabled={isSaving}
+            className="px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all cursor-pointer shrink-0 disabled:opacity-50"
           >
-            {data.featured && <Check className="h-3 w-3" />}
+            Cancel
           </button>
-          <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Mark as Featured Priority</span>
-        </label>
 
-        <label className="flex items-center gap-2 cursor-pointer group">
           <button
             type="button"
-            onClick={() => set("isActive", !data.isActive)}
-            className={`flex h-5 w-5 items-center justify-center rounded border-2 transition-colors ${
-              data.isActive
-                ? "bg-emerald-600 border-emerald-600 text-white"
-                : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800"
-            }`}
+            onClick={onSave}
+            disabled={isSaving}
+            className="px-4 sm:px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-md shadow-blue-600/20 flex items-center gap-1.5 cursor-pointer shrink-0 disabled:opacity-50"
           >
-            {data.isActive && <Check className="h-3 w-3" />}
+            {isSaving ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin shrink-0" />
+                <span>Saving...</span>
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4 shrink-0" />
+                <span>{isEditing ? "Save Vacancy Changes" : "Publish Job Vacancy"}</span>
+              </>
+            )}
           </button>
-          <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Active (visible on site)</span>
-        </label>
+        </div>
+      </div>
+
+      {/* 2-COLUMN MAIN WORKSPACE (8 cols form / 4 cols sidebar + preview) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* LEFT COLUMN: PRIMARY FORM FIELDS (8 COLS) */}
+        <div className="lg:col-span-8 space-y-6">
+          {/* CARD 1: POSITION ESSENTIALS */}
+          <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-5 sm:p-6 space-y-4 shadow-xs">
+            <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
+              <span className="font-mono text-xs font-black text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
+                01
+              </span>
+              <div>
+                <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
+                  Position Essentials &amp; Role Details
+                </h3>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  Set the job title, assign to a departmental category, and write the primary narrative.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {/* Job Title */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                  Job Title <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => {
+                    const newTitle = e.target.value;
+                    const prevAutoSlug = slugifyText(formData.title);
+                    const isSlugUntouchedOrMatchesOld = !formData.slug || formData.slug === prevAutoSlug;
+                    setField("title", newTitle);
+                    if (isSlugUntouchedOrMatchesOld) {
+                      setField("slug", slugifyText(newTitle));
+                    }
+                  }}
+                  placeholder="e.g. Lead Autonomous AI Agent Engineer"
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition-colors"
+                />
+              </div>
+
+              {/* URL Slug */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                    URL Slug
+                  </label>
+                  {formData.title && (
+                    <button
+                      type="button"
+                      onClick={() => setField("slug", slugifyText(formData.title))}
+                      className="text-[10px] text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                    >
+                      Reset to title slug
+                    </button>
+                  )}
+                </div>
+                <div className="flex items-center rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs">
+                  <span className="text-slate-400 select-none shrink-0 font-mono">/careers/</span>
+                  <input
+                    type="text"
+                    value={formData.slug || ""}
+                    onChange={(e) => setField("slug", slugifyText(e.target.value))}
+                    placeholder={slugifyText(formData.title || "job-title")}
+                    className="w-full bg-transparent font-mono text-xs text-slate-900 dark:text-white focus:outline-none ml-1"
+                  />
+                </div>
+                <p className="text-[10px] text-slate-400 mt-1">
+                  Public SEO URL for applicants:{" "}
+                  <span className="font-mono text-slate-600 dark:text-slate-300">
+                    /careers/{formData.slug || slugifyText(formData.title) || "job-title"}
+                  </span>
+                </p>
+              </div>
+
+              {/* Category / Department */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                    Department / Category <span className="text-red-500">*</span>
+                  </label>
+                  <span className="text-[10px] text-slate-400">
+                    {categories.length} {categories.length === 1 ? "category" : "categories"} available
+                  </span>
+                </div>
+
+                {categories.length === 0 ? (
+                  <div className="p-3.5 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 text-xs text-amber-800 dark:text-amber-300 space-y-1">
+                    <p className="font-bold">No job categories defined yet!</p>
+                    <p className="text-[11px] text-amber-700 dark:text-amber-400">
+                      Please return to Section #04 (Job Categories &amp; Departments) to create at least one category before publishing vacancies.
+                    </p>
+                  </div>
+                ) : (
+                  <select
+                    value={formData.categoryId}
+                    onChange={(e) => setField("categoryId", e.target.value)}
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition-colors cursor-pointer"
+                  >
+                    <option value="">— Select Department Category —</option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              {/* Role Summary */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                  Role Summary &amp; Overview
+                </label>
+                <textarea
+                  rows={4}
+                  value={formData.summary}
+                  onChange={(e) => setField("summary", e.target.value)}
+                  placeholder="Provide a compelling overview of this role, what the candidate will build, and how they will drive impact at Clickpoint Innovation..."
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition-colors leading-relaxed"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* CARD 2: KEY RESPONSIBILITIES */}
+          <InteractiveListBuilder
+            title="Key Responsibilities"
+            subtitle="Outline the day-to-day duties, technical ownership, and architectural milestones."
+            items={formData.responsibilities || []}
+            onChange={(items) => setField("responsibilities", items)}
+            placeholder="e.g. Architect and maintain high-throughput vector ingestion pipelines with pgvector..."
+          />
+
+          {/* CARD 3: REQUIREMENTS & QUALIFICATIONS */}
+          <InteractiveListBuilder
+            title="Candidate Requirements & Qualifications"
+            subtitle="Specify mandatory qualifications, framework expertise, years of experience, and mindsets."
+            items={formData.requirements || []}
+            onChange={(items) => setField("requirements", items)}
+            placeholder="e.g. 4+ years of production experience with Next.js App Router, TypeScript, and Prisma..."
+          />
+        </div>
+
+        {/* RIGHT COLUMN: LOGISTICS, STATUS & PREVIEW (4 COLS) */}
+        <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-4">
+          {/* CARD 1: PUBLISHING & VISIBILITY */}
+          <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-5 space-y-4 shadow-xs">
+            <div className="flex items-center gap-2 pb-2.5 border-b border-slate-100 dark:border-slate-800">
+              <Eye className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+              <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
+                Publishing &amp; Visibility
+              </h3>
+            </div>
+
+            <div className="space-y-3">
+              {/* Active Toggle Switch Card */}
+              <div
+                onClick={() => setField("isActive", !formData.isActive)}
+                className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                  formData.isActive
+                    ? "border-emerald-300 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/30"
+                    : "border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40"
+                }`}
+              >
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className={`h-2 w-2 rounded-full ${
+                        formData.isActive ? "bg-emerald-500 animate-pulse" : "bg-slate-400"
+                      }`}
+                    />
+                    <p className="text-xs font-bold text-slate-900 dark:text-white">
+                      {formData.isActive ? "Active (Live on Site)" : "Inactive (Draft / Hidden)"}
+                    </p>
+                  </div>
+                  <p className="text-[10px] text-slate-400 mt-0.5">
+                    {formData.isActive
+                      ? "Visible to public applicants on /careers."
+                      : "Hidden from applicants. Only admins can see."}
+                  </p>
+                </div>
+                <div
+                  className={`h-6 w-11 rounded-full p-0.5 transition-colors duration-200 ease-in-out shrink-0 ${
+                    formData.isActive ? "bg-emerald-600" : "bg-slate-300 dark:bg-slate-700"
+                  }`}
+                >
+                  <div
+                    className={`h-5 w-5 rounded-full bg-white shadow-md transform transition-transform duration-200 ease-in-out ${
+                      formData.isActive ? "translate-x-5" : "translate-x-0"
+                    }`}
+                  />
+                </div>
+              </div>
+
+              {/* Featured Priority Toggle Card */}
+              <div
+                onClick={() => setField("featured", !formData.featured)}
+                className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                  formData.featured
+                    ? "border-violet-300 dark:border-violet-800 bg-violet-50/50 dark:bg-violet-950/30"
+                    : "border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40"
+                }`}
+              >
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <Sparkles
+                      className={`h-3.5 w-3.5 ${
+                        formData.featured ? "text-violet-600 dark:text-violet-400" : "text-slate-400"
+                      }`}
+                    />
+                    <p className="text-xs font-bold text-slate-900 dark:text-white">
+                      Featured Priority
+                    </p>
+                  </div>
+                  <p className="text-[10px] text-slate-400 mt-0.5">
+                    {formData.featured
+                      ? "Pinned at top with a special highlight badge."
+                      : "Standard priority placement on careers list."}
+                  </p>
+                </div>
+                <div
+                  className={`h-6 w-11 rounded-full p-0.5 transition-colors duration-200 ease-in-out shrink-0 ${
+                    formData.featured ? "bg-violet-600" : "bg-slate-300 dark:bg-slate-700"
+                  }`}
+                >
+                  <div
+                    className={`h-5 w-5 rounded-full bg-white shadow-md transform transition-transform duration-200 ease-in-out ${
+                      formData.featured ? "translate-x-5" : "translate-x-0"
+                    }`}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* CARD 2: WORKPLACE & COMPENSATION */}
+          <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-5 space-y-4 shadow-xs">
+            <div className="flex items-center gap-2 pb-2.5 border-b border-slate-100 dark:border-slate-800">
+              <Building2 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
+                Logistics &amp; Compensation
+              </h3>
+            </div>
+
+            <div className="space-y-3">
+              {/* Type */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Employment Type
+                </label>
+                <select
+                  value={formData.type}
+                  onChange={(e) => setField("type", e.target.value)}
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                >
+                  {["Full-Time", "Part-Time", "Contract", "Internship", "Freelance"].map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Experience */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Experience Level
+                </label>
+                <select
+                  value={formData.experience}
+                  onChange={(e) => setField("experience", e.target.value)}
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                >
+                  {["Junior", "Mid-Level", "Senior", "Lead", "Principal", "Director"].map((lvl) => (
+                    <option key={lvl} value={lvl}>
+                      {lvl}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Location */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Work Location
+                </label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
+                  <input
+                    type="text"
+                    value={formData.location}
+                    onChange={(e) => setField("location", e.target.value)}
+                    placeholder="e.g. Remote (Global) or Kathmandu"
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] pl-9 pr-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+              </div>
+
+              {/* Salary */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Salary Benchmark
+                </label>
+                <div className="relative">
+                  <Banknote className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
+                  <input
+                    type="text"
+                    value={formData.salary}
+                    onChange={(e) => setField("salary", e.target.value)}
+                    placeholder="e.g. NPR 25,00,000 - 35,00,000 / year"
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] pl-9 pr-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+              </div>
+
+              {/* Application Deadline */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Application Deadline
+                </label>
+                <div className="relative">
+                  <Clock className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
+                  <input
+                    type="text"
+                    value={formData.deadline || ""}
+                    onChange={(e) => setField("deadline", e.target.value)}
+                    placeholder="e.g. 2026-11-30 or Nov 30, 2026"
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] pl-9 pr-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+              </div>
+
+              {/* Order */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Display Order Priority
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  value={formData.order}
+                  onChange={(e) => setField("order", parseInt(e.target.value) || 0)}
+                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* CARD 3: LIVE PUBLIC CARD SIMULATION */}
+          <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-5 space-y-3 shadow-xs">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400" />
+                <h4 className="text-xs font-bold text-slate-900 dark:text-white">Live Candidate Card Preview</h4>
+              </div>
+              <span className="text-[10px] text-slate-400">Public View</span>
+            </div>
+
+            {/* Simulating public card */}
+            <div
+              className={`rounded-2xl border p-4 transition-all relative ${
+                formData.featured
+                  ? "border-violet-300 dark:border-violet-700 ring-1 ring-violet-200 dark:ring-violet-800 bg-violet-50/20 dark:bg-slate-900/40"
+                  : "border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30"
+              }`}
+            >
+              {formData.featured && (
+                <span className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-violet-100 dark:bg-slate-800 text-violet-700 dark:text-violet-300 text-[10px] font-bold border border-violet-200 dark:border-slate-700">
+                  Featured
+                </span>
+              )}
+
+              <div className="flex items-start gap-2.5 mb-2.5 pr-14">
+                <div className="h-8 w-8 rounded-lg bg-violet-100 dark:bg-slate-800 text-violet-600 dark:text-violet-300 flex items-center justify-center shrink-0">
+                  <Briefcase className="h-4 w-4" />
+                </div>
+                <div className="min-w-0">
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                    {formData.title || "Position Title Here"}
+                  </h4>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                    {selectedCategory?.name || "Department"}
+                  </p>
+                </div>
+              </div>
+
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed mb-3">
+                {formData.summary || "Summary of role and engineering mission..."}
+              </p>
+
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {[
+                  { icon: MapPin, label: formData.location || "Remote" },
+                  { icon: Briefcase, label: formData.type || "Full-Time" },
+                  { icon: GraduationCap, label: formData.experience || "Senior" },
+                  ...(formData.salary ? [{ icon: Banknote, label: formData.salary }] : []),
+                ].map(({ icon: Icon, label }, i) => (
+                  <span
+                    key={i}
+                    className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[10px] font-medium text-slate-600 dark:text-slate-300"
+                  >
+                    <Icon className="h-2.5 w-2.5 text-slate-400" />
+                    <span className="truncate max-w-[120px]">{label}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* CARD 4: ACTIONS & DANGER ZONE */}
+          <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-5 space-y-3 shadow-xs">
+            <button
+              type="button"
+              onClick={onSave}
+              disabled={isSaving}
+              className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-500/20 transition-all cursor-pointer disabled:opacity-50"
+            >
+              {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              <span>{isEditing ? "Save Vacancy Changes" : "Publish Job Vacancy"}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={onCancel}
+              disabled={isSaving}
+              className="w-full flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold text-xs transition-colors cursor-pointer disabled:opacity-50"
+            >
+              Cancel &amp; Return to Table
+            </button>
+
+            {isEditing && onDelete && (
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={onDelete}
+                  disabled={isSaving}
+                  className="w-full flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50/50 dark:bg-red-950/20 text-red-600 dark:text-red-400 hover:bg-red-100/60 dark:hover:bg-red-950/40 font-semibold text-xs transition-colors cursor-pointer"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  <span>Delete Vacancy Permanently</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
 // Main editor component
 // ---------------------------------------------------------------------------
 
 export default function CareersPageEditor({ sectionId, onCloseSection }: CareersPageEditorProps) {
+  const [activeSectionId, setActiveSectionId] = useState<string>(
+    sectionId === "careers-jobs" ? "careers-vacancies" : (sectionId || "careers-hero")
+  );
   const [formData, setFormData] = useState<CareersPageContent>(DEFAULT_CONTENT);
   const [isLoadingContent, setIsLoadingContent] = useState(true);
   const [isSavingContent, setIsSavingContent] = useState(false);
+
+  useEffect(() => {
+    if (sectionId) {
+      if (sectionId === "careers-jobs") {
+        setActiveSectionId("careers-vacancies");
+      } else {
+        setActiveSectionId(sectionId);
+      }
+    }
+  }, [sectionId]);
 
   const [categories, setCategories] = useState<JobCategory[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
@@ -410,24 +971,10 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
 
   const [vacancies, setVacancies] = useState<JobVacancy[]>([]);
   const [isLoadingVacancies, setIsLoadingVacancies] = useState(true);
+  const [vacancyViewMode, setVacancyViewMode] = useState<"catalog" | "editor">("catalog");
   const [editingVacancy, setEditingVacancy] = useState<JobVacancy | null>(null);
-  const [expandedVacancyId, setExpandedVacancyId] = useState<string | null>(null);
+  const [vacancyFormData, setVacancyFormData] = useState<Omit<JobVacancy, "id" | "category">>(DEFAULT_VACANCY_FORM);
   const [isSavingVacancy, setIsSavingVacancy] = useState(false);
-  const [showNewVacancyForm, setShowNewVacancyForm] = useState(false);
-  const [newVacancy, setNewVacancy] = useState<Omit<JobVacancy, "id" | "category">>({
-    title: "",
-    categoryId: "",
-    type: "Full-Time",
-    location: "Remote (Global)",
-    experience: "Senior",
-    salary: "",
-    summary: "",
-    responsibilities: [],
-    requirements: [],
-    featured: false,
-    isActive: true,
-    order: 0,
-  });
 
   useEffect(() => {
     async function load() {
@@ -589,73 +1136,81 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
     }
   }
 
-  async function handleCreateVacancy() {
-    if (!newVacancy.title.trim()) {
+  function openCreateVacancy() {
+    setEditingVacancy(null);
+    setVacancyFormData({
+      ...DEFAULT_VACANCY_FORM,
+      categoryId: categories[0]?.id || "",
+      order: vacancies.length,
+    });
+    setVacancyViewMode("editor");
+  }
+
+  function openEditVacancy(v: JobVacancy) {
+    setEditingVacancy(v);
+    setVacancyFormData({
+      title: v.title,
+      slug: v.slug || slugifyText(v.title),
+      categoryId: v.categoryId,
+      type: v.type,
+      location: v.location,
+      experience: v.experience,
+      salary: v.salary || "",
+      deadline: v.deadline || "",
+      summary: v.summary || "",
+      responsibilities: Array.isArray(v.responsibilities) ? [...v.responsibilities] : [],
+      requirements: Array.isArray(v.requirements) ? [...v.requirements] : [],
+      featured: Boolean(v.featured),
+      isActive: Boolean(v.isActive),
+      order: typeof v.order === "number" ? v.order : 0,
+    });
+    setVacancyViewMode("editor");
+  }
+
+  function closeVacancyEditor() {
+    setVacancyViewMode("catalog");
+    setEditingVacancy(null);
+  }
+
+  async function handleSaveVacancy() {
+    if (!vacancyFormData.title.trim()) {
       toast.error("Job title is required");
       return;
     }
-    if (!newVacancy.categoryId) {
-      toast.error("Please select a category");
+    if (!vacancyFormData.categoryId) {
+      toast.error("Please select a department category");
       return;
     }
     setIsSavingVacancy(true);
-    const toastId = toast.loading("Creating vacancy...");
-    try {
-      const res = await fetch("/api/careers/vacancies", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newVacancy),
-      });
-      const json = await res.json();
-      if (json.success) {
-        toast.success(`Vacancy "${newVacancy.title}" created!`, { id: toastId });
-        setShowNewVacancyForm(false);
-        setNewVacancy({
-          title: "",
-          categoryId: categories[0]?.id || "",
-          type: "Full-Time",
-          location: "Remote (Global)",
-          experience: "Senior",
-          salary: "",
-          summary: "",
-          responsibilities: [],
-          requirements: [],
-          featured: false,
-          isActive: true,
-          order: vacancies.length,
-        });
-        await loadVacancies();
-      } else {
-        toast.error(json.error || "Failed to create vacancy", { id: toastId });
-      }
-    } catch {
-      toast.error("Failed to create vacancy", { id: toastId });
-    } finally {
-      setIsSavingVacancy(false);
-    }
-  }
+    const isEditing = Boolean(editingVacancy);
+    const toastId = toast.loading(isEditing ? "Updating vacancy..." : "Creating vacancy...");
 
-  async function handleUpdateVacancy() {
-    if (!editingVacancy) return;
-    setIsSavingVacancy(true);
-    const toastId = toast.loading("Saving vacancy...");
     try {
       const res = await fetch("/api/careers/vacancies", {
-        method: "PUT",
+        method: isEditing ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editingVacancy),
+        body: JSON.stringify(
+          isEditing
+            ? { ...vacancyFormData, id: editingVacancy!.id }
+            : vacancyFormData
+        ),
       });
       const json = await res.json();
       if (json.success) {
-        toast.success("Vacancy updated!", { id: toastId });
+        toast.success(
+          isEditing
+            ? `Vacancy "${vacancyFormData.title}" updated!`
+            : `Vacancy "${vacancyFormData.title}" published!`,
+          { id: toastId }
+        );
+        setVacancyViewMode("catalog");
         setEditingVacancy(null);
-        setExpandedVacancyId(null);
         await loadVacancies();
       } else {
-        toast.error(json.error || "Failed to update vacancy", { id: toastId });
+        toast.error(json.error || `Failed to ${isEditing ? "update" : "create"} vacancy`, { id: toastId });
       }
     } catch {
-      toast.error("Failed to update vacancy", { id: toastId });
+      toast.error(`Failed to ${isEditing ? "update" : "create"} vacancy`, { id: toastId });
     } finally {
       setIsSavingVacancy(false);
     }
@@ -669,6 +1224,10 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
       const json = await res.json();
       if (json.success) {
         toast.success("Vacancy deleted!", { id: toastId });
+        if (editingVacancy?.id === v.id) {
+          setVacancyViewMode("catalog");
+          setEditingVacancy(null);
+        }
         await loadVacancies();
       } else {
         toast.error(json.error || "Failed to delete vacancy", { id: toastId });
@@ -707,41 +1266,92 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
     );
   }
 
+  if (vacancyViewMode === "editor") {
+    return (
+      <DedicatedVacancyEditor
+        editingVacancy={editingVacancy}
+        formData={vacancyFormData}
+        onChange={setVacancyFormData}
+        categories={categories}
+        isSaving={isSavingVacancy}
+        onSave={handleSaveVacancy}
+        onCancel={closeVacancyEditor}
+        onDelete={editingVacancy ? () => handleDeleteVacancy(editingVacancy) : undefined}
+      />
+    );
+  }
+
+  const currentSectionMeta =
+    CAREERS_SECTIONS_CATALOG.find((s) => s.id === activeSectionId) || CAREERS_SECTIONS_CATALOG[0];
+  const SectionIcon = currentSectionMeta.icon || Briefcase;
+
   return (
-    <div className="w-full min-w-0 max-w-full overflow-hidden space-y-4 sm:space-y-6 text-slate-900 dark:text-white">
-
-      {/* ACTION HEADER */}
-      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 overflow-hidden bg-white dark:bg-[#131927] p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
-        <div className="min-w-0 flex-1">
-          <h2 className="text-base sm:text-lg font-bold flex items-center gap-2">
-            <Briefcase className="h-5 w-5 text-violet-600 shrink-0" />
-            Careers Page Editor — Full Dynamic Control
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Edit hero text, stats, perks section headings, manage job categories, and create/edit vacancies.
-          </p>
+    <div className="w-full min-w-0 max-w-full space-y-4 text-slate-900 dark:text-white">
+      {/* 2-Column Master-Detail Selection Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column: Section Selector */}
+        <div className="lg:col-span-4 xl:col-span-3 lg:sticky lg:top-4">
+          <SectionNavSidebar
+            title="Careers Sections"
+            sections={CAREERS_SECTIONS_CATALOG}
+            activeSectionId={activeSectionId}
+            onSelectSection={(id) => setActiveSectionId(id)}
+            accentColor="violet"
+          />
         </div>
-        <div className="flex flex-wrap items-center gap-2 shrink-0 w-full lg:w-auto">
-          <button
-            onClick={handleResetContent}
-            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 transition-colors"
-          >
-            <RotateCcw className="h-3.5 w-3.5" />
-            Reset Defaults
-          </button>
-          <button
-            onClick={handleSaveContent}
-            disabled={isSavingContent}
-            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-semibold text-xs shadow-md shadow-violet-500/20 transition-all disabled:opacity-50"
-          >
-            {isSavingContent ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            Save Page Content
-          </button>
-        </div>
-      </div>
 
-      {/* SECTION 1: HERO */}
-      {(!sectionId || sectionId === "careers-hero") && (
+        {/* Right Column: Active Section Editor Workspace */}
+        <div className="lg:col-span-8 xl:col-span-9 min-w-0 space-y-5">
+          {/* Active Section Header Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-5 rounded-2xl bg-white dark:bg-[#131927] border border-slate-200/80 dark:border-slate-800 shadow-xs">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-mono text-xs font-black text-violet-600 dark:text-violet-400 bg-violet-500/10 px-2 py-0.5 rounded-md border border-violet-500/20 shrink-0">
+                  #{currentSectionMeta.number}
+                </span>
+                <SectionIcon className="h-4 w-4 text-violet-600 dark:text-violet-400 shrink-0" />
+                <h2 className="text-xs sm:text-sm md:text-base font-extrabold text-slate-900 dark:text-white truncate">
+                  {currentSectionMeta.title}
+                </h2>
+              </div>
+              <p className="text-[10px] sm:text-[11px] text-slate-400 font-medium truncate mt-0.5">
+                {currentSectionMeta.desc}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+              <button
+                type="button"
+                onClick={handleResetContent}
+                className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Reset Defaults</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSaveContent}
+                disabled={isSavingContent}
+                className="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-semibold text-xs shadow-md shadow-violet-500/20 transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
+              >
+                {isSavingContent ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4" />
+                    <span>Save Changes</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* SECTION 1: HERO */}
+          {activeSectionId === "careers-hero" && (
         <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-5">
           <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
             <span className="font-mono text-[10px] sm:text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">#01</span>
@@ -864,7 +1474,7 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
       )}
 
       {/* SECTION 2: PERKS SECTION HEADINGS + PERKS CARDS */}
-      {(!sectionId || sectionId === "careers-hero") && (
+      {(activeSectionId === "careers-perks" || activeSectionId === "careers-hero-perks") && (
         <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-5">
           <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
             <span className="font-mono text-[10px] sm:text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">#02</span>
@@ -975,7 +1585,7 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
       )}
 
       {/* SECTION 3: OPENINGS SECTION HEADINGS */}
-      {(!sectionId || sectionId === "careers-jobs") && (
+      {activeSectionId === "careers-openings" && (
         <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4">
           <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
             <span className="font-mono text-[10px] sm:text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">#03</span>
@@ -1024,7 +1634,7 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
       )}
 
       {/* SECTION 4: JOB CATEGORIES MANAGER */}
-      {(!sectionId || sectionId === "careers-jobs") && (
+      {activeSectionId === "careers-categories" && (
         <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-5">
           <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
             <span className="font-mono text-[10px] sm:text-xs font-extrabold text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded">#04</span>
@@ -1159,7 +1769,7 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
       )}
 
       {/* SECTION 5: JOB VACANCIES MANAGER */}
-      {(!sectionId || sectionId === "careers-jobs") && (
+      {(activeSectionId === "careers-vacancies" || activeSectionId === "careers-jobs") && (
         <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-5">
           {/* Section Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
@@ -1167,83 +1777,52 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
               <span className="font-mono text-[10px] sm:text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
                 #05
               </span>
-              <h3 className="text-xs sm:text-sm font-bold">
-                Job Vacancies Manager ({vacancies.length} total)
-              </h3>
+              <div>
+                <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
+                  Job Vacancies Manager ({vacancies.length} total)
+                </h3>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  Click &quot;New Vacancy&quot; or select &quot;Edit&quot; on any role to open the dedicated full-page job editor.
+                </p>
+              </div>
             </div>
             <button
-              onClick={() => {
-                setShowNewVacancyForm(!showNewVacancyForm);
-                setNewVacancy((prev) => ({
-                  ...prev,
-                  categoryId: categories[0]?.id || "",
-                }));
-              }}
-              className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-500/20 transition-all"
+              type="button"
+              onClick={openCreateVacancy}
+              className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-500/20 transition-all cursor-pointer"
             >
-              {showNewVacancyForm ? (
-                <X className="h-4 w-4" />
-              ) : (
-                <Plus className="h-4 w-4" />
-              )}
-              {showNewVacancyForm ? "Cancel" : "New Vacancy"}
+              <Plus className="h-4 w-4" />
+              <span>New Vacancy</span>
             </button>
           </div>
 
-          {/* New Vacancy Form */}
-          {showNewVacancyForm && (
-            <div className="space-y-3 p-3.5 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40">
-              <h4 className="text-xs font-bold text-blue-700 dark:text-blue-300 flex items-center gap-1.5">
-                <FolderPlus className="h-4 w-4 shrink-0" /> Creating New Job Vacancy
-              </h4>
-              <VacancyFormFields
-                data={newVacancy}
-                onChange={(updated) =>
-                  setNewVacancy(
-                    updated as Omit<JobVacancy, "id" | "category">
-                  )
-                }
-                categories={categories}
-              />
-              <div className="flex items-center gap-2 pt-1">
-                <button
-                  onClick={handleCreateVacancy}
-                  disabled={isSavingVacancy}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-500/20 transition-all disabled:opacity-50"
-                >
-                  {isSavingVacancy ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Save className="h-4 w-4" />
-                  )}
-                  Create Vacancy
-                </button>
-                <button
-                  onClick={() => setShowNewVacancyForm(false)}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-                >
-                  <X className="h-3.5 w-3.5" /> Cancel
-                </button>
-              </div>
-            </div>
-          )}
-
           {/* Vacancies Tabular Layout */}
           {isLoadingVacancies ? (
-            <div className="flex items-center justify-center py-8 gap-2">
-              <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
-              <span className="text-xs text-slate-400">Loading vacancies...</span>
+            <div className="flex items-center justify-center py-12 gap-2">
+              <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+              <span className="text-xs text-slate-400 font-medium">Loading vacancies catalog...</span>
             </div>
           ) : vacancies.length === 0 ? (
-            <div className="text-center py-10 p-4 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
-              <Briefcase className="h-8 w-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                No vacancies yet. Create categories first, then add vacancies above.
-              </p>
+            <div className="text-center py-12 p-4 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 space-y-3">
+              <Briefcase className="h-9 w-9 text-slate-300 dark:text-slate-600 mx-auto" />
+              <div className="space-y-1">
+                <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">No vacancies published yet</p>
+                <p className="text-[11px] text-slate-400 max-w-sm mx-auto">
+                  Create departmental categories in Section #04 first, then click &quot;New Vacancy&quot; above to publish your first role.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={openCreateVacancy}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs cursor-pointer"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>Publish First Vacancy</span>
+              </button>
             </div>
           ) : (
             <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
-              <table className="w-full text-left text-xs border-collapse min-w-[640px]">
+              <table className="w-full text-left text-xs border-collapse min-w-[700px]">
                 <thead>
                   <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/80 text-slate-500 dark:text-slate-400 uppercase font-semibold text-[10px]">
                     <th scope="col" className="px-3.5 sm:px-4 py-3">
@@ -1262,6 +1841,9 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
                       Salary
                     </th>
                     <th scope="col" className="px-3.5 sm:px-4 py-3">
+                      Deadline
+                    </th>
+                    <th scope="col" className="px-3.5 sm:px-4 py-3">
                       Status
                     </th>
                     <th scope="col" className="px-3.5 sm:px-4 py-3 text-right">
@@ -1271,164 +1853,114 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
                 </thead>
 
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 bg-white dark:bg-[#131927]">
-                  {vacancies.map((v) => {
-                    const isExpanded = expandedVacancyId === v.id;
-                    return (
-                      <React.Fragment key={v.id}>
-                        <tr
-                          className={`transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/40 ${
-                            isExpanded ? "bg-blue-50/40 dark:bg-slate-800/30" : ""
+                  {vacancies.map((v) => (
+                    <tr
+                      key={v.id}
+                      className="transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/40"
+                    >
+                      <td className="px-3.5 sm:px-4 py-3.5 font-medium text-slate-900 dark:text-white">
+                        <div className="flex items-center gap-2">
+                          <span className="truncate max-w-[160px] sm:max-w-xs font-bold text-slate-900 dark:text-white">
+                            {v.title}
+                          </span>
+                          {v.featured && (
+                            <span className="rounded-full bg-violet-100 dark:bg-violet-900/40 px-2 py-0.5 text-[10px] font-bold text-violet-700 dark:text-violet-300 shrink-0">
+                              Featured
+                            </span>
+                          )}
+                        </div>
+                      </td>
+
+                      <td className="px-3.5 sm:px-4 py-3.5">
+                        <span className="inline-block rounded-full bg-violet-100 dark:bg-slate-800 px-2.5 py-0.5 text-[11px] font-semibold text-violet-700 dark:text-violet-300 whitespace-nowrap">
+                          {v.category?.name || "Unassigned"}
+                        </span>
+                      </td>
+
+                      <td className="px-3.5 sm:px-4 py-3.5 text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                        {v.type}
+                      </td>
+
+                      <td className="px-3.5 sm:px-4 py-3.5 text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                        {v.location}
+                      </td>
+
+                      <td className="px-3.5 sm:px-4 py-3.5 text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                        {v.salary || "—"}
+                      </td>
+
+                      <td className="px-3.5 sm:px-4 py-3.5 text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                        {v.deadline || "Ongoing"}
+                      </td>
+
+                      <td className="px-3.5 sm:px-4 py-3.5 whitespace-nowrap">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleActive(v)}
+                          title={
+                            v.isActive
+                              ? "Deactivate (hide from site)"
+                              : "Activate (show on site)"
+                          }
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                            v.isActive
+                              ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
+                              : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-600"
                           }`}
                         >
-                          <td className="px-3.5 sm:px-4 py-3.5 font-medium text-slate-900 dark:text-white">
-                            <div className="flex items-center gap-2">
-                              <span className="truncate max-w-[140px] sm:max-w-xs font-semibold">
-                                {v.title}
-                              </span>
-                              {v.featured && (
-                                <span className="rounded-full bg-violet-100 dark:bg-violet-900/40 px-2 py-0.5 text-[10px] font-bold text-violet-700 dark:text-violet-300 shrink-0">
-                                  Featured
-                                </span>
-                              )}
-                            </div>
-                          </td>
+                          {v.isActive ? (
+                            <ToggleRight className="h-3.5 w-3.5 shrink-0" />
+                          ) : (
+                            <ToggleLeft className="h-3.5 w-3.5 shrink-0" />
+                          )}
+                          {v.isActive ? "Active" : "Inactive"}
+                        </button>
+                      </td>
 
-                          <td className="px-3.5 sm:px-4 py-3.5">
-                            <span className="inline-block rounded-full bg-violet-100 dark:bg-slate-800 px-2.5 py-0.5 text-[11px] font-semibold text-violet-700 dark:text-violet-300 whitespace-nowrap">
-                              {v.category.name}
-                            </span>
-                          </td>
+                      <td className="px-3.5 sm:px-4 py-3.5 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <a
+                            href={`/careers/${v.slug || slugifyText(v.title) || v.id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title={`View ${v.title} on public careers page`}
+                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                          >
+                            <ExternalLink className="h-3 w-3 text-slate-500" />
+                            <span>View</span>
+                          </a>
 
-                          <td className="px-3.5 sm:px-4 py-3.5 text-slate-600 dark:text-slate-300 whitespace-nowrap">
-                            {v.type}
-                          </td>
+                          <button
+                            type="button"
+                            onClick={() => openEditVacancy(v)}
+                            title={`Edit ${v.title} in dedicated page`}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                          >
+                            <Edit3 className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                            <span>Edit</span>
+                          </button>
 
-                          <td className="px-3.5 sm:px-4 py-3.5 text-slate-600 dark:text-slate-300 whitespace-nowrap">
-                            {v.location}
-                          </td>
-
-                          <td className="px-3.5 sm:px-4 py-3.5 text-slate-600 dark:text-slate-300 whitespace-nowrap">
-                            {v.salary || "—"}
-                          </td>
-
-                          <td className="px-3.5 sm:px-4 py-3.5 whitespace-nowrap">
-                            <button
-                              onClick={() => handleToggleActive(v)}
-                              title={
-                                v.isActive
-                                  ? "Deactivate (hide from site)"
-                                  : "Activate (show on site)"
-                              }
-                              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
-                                v.isActive
-                                  ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
-                                  : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-600"
-                              }`}
-                            >
-                              {v.isActive ? (
-                                <ToggleRight className="h-3.5 w-3.5 shrink-0" />
-                              ) : (
-                                <ToggleLeft className="h-3.5 w-3.5 shrink-0" />
-                              )}
-                              {v.isActive ? "Active" : "Inactive"}
-                            </button>
-                          </td>
-
-                          <td className="px-3.5 sm:px-4 py-3.5 text-right whitespace-nowrap">
-                            <div className="flex items-center justify-end gap-1.5">
-                              <button
-                                onClick={() => {
-                                  if (isExpanded) {
-                                    setExpandedVacancyId(null);
-                                    setEditingVacancy(null);
-                                  } else {
-                                    setExpandedVacancyId(v.id);
-                                    setEditingVacancy({ ...v });
-                                  }
-                                }}
-                                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                              >
-                                <Edit3 className="h-3.5 w-3.5" />
-                                {isExpanded ? (
-                                  <ChevronUp className="h-3.5 w-3.5" />
-                                ) : (
-                                  <ChevronDown className="h-3.5 w-3.5" />
-                                )}
-                              </button>
-
-                              <button
-                                onClick={() => handleDeleteVacancy(v)}
-                                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-red-200 dark:border-red-800 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-
-                        {isExpanded && editingVacancy && (
-                          <tr className="bg-slate-50/60 dark:bg-slate-900/60">
-                            <td colSpan={7} className="p-3 sm:p-4 border-b border-slate-200 dark:border-slate-800">
-                              <div className="space-y-4 max-w-5xl mx-auto">
-                                <VacancyFormFields
-                                  data={{
-                                    title: editingVacancy.title,
-                                    categoryId: editingVacancy.categoryId,
-                                    type: editingVacancy.type,
-                                    location: editingVacancy.location,
-                                    experience: editingVacancy.experience,
-                                    salary: editingVacancy.salary,
-                                    summary: editingVacancy.summary,
-                                    responsibilities: editingVacancy.responsibilities,
-                                    requirements: editingVacancy.requirements,
-                                    featured: editingVacancy.featured,
-                                    isActive: editingVacancy.isActive,
-                                    order: editingVacancy.order,
-                                  }}
-                                  onChange={(updated) =>
-                                    setEditingVacancy({
-                                      ...editingVacancy,
-                                      ...updated,
-                                    })
-                                  }
-                                  categories={categories}
-                                />
-                                <div className="flex items-center gap-2 pt-1">
-                                  <button
-                                    onClick={handleUpdateVacancy}
-                                    disabled={isSavingVacancy}
-                                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-500/20 transition-all disabled:opacity-50"
-                                  >
-                                    {isSavingVacancy ? (
-                                      <Loader2 className="h-4 w-4 animate-spin" />
-                                    ) : (
-                                      <Save className="h-4 w-4" />
-                                    )}
-                                    Save Changes
-                                  </button>
-                                  <button
-                                    onClick={() => {
-                                      setExpandedVacancyId(null);
-                                      setEditingVacancy(null);
-                                    }}
-                                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-                                  >
-                                    <X className="h-3.5 w-3.5" /> Cancel
-                                  </button>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                        )}
-                      </React.Fragment>
-                    );
-                  })}
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteVacancy(v)}
+                            title="Delete vacancy"
+                            className="p-1.5 rounded-lg border border-red-200 dark:border-red-800 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors cursor-pointer"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
           )}
         </div>
       )}
+
+        </div>
+      </div>
     </div>
   );
 }

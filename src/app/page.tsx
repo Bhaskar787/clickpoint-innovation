@@ -94,7 +94,7 @@ export default async function Home() {
       <Services initialHeader={landingData?.servicesHeader} initialServices={landingServices} />
       <TechStackSection initialHeader={landingData?.techStackHeader} initialCategories={landingData?.techCategories} initialItems={landingData?.techItems} />
       <IndustriesSection initialHeader={landingData?.industriesHeader} initialIndustries={landingIndustries} />
-      <Timeline initialContent={journeyContent} landingHeader={landingData?.timelineHeader || landingData?.journeyHeader} />
+      {/* <Timeline initialContent={journeyContent} landingHeader={landingData?.timelineHeader || landingData?.journeyHeader} /> */}
       <TestimonialsSection initialHeader={landingData?.testimonialsHeader} initialTestimonials={landingTestimonials} />
       <BlogSection initialHeader={landingData?.blogHeader} initialBlogs={landingBlogs} />
       <FaqSection

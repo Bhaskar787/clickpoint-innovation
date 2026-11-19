@@ -36,6 +36,42 @@ import {
 } from "lucide-react";
 import { DEFAULT_BLOG_PAGE_DATA, DEFAULT_BLOG_CATEGORIES } from "@/data/default-blog-data";
 import RichTextEditor from "@/components/admin/rich-text-editor";
+import { SectionNavSidebar, SectionNavItem } from "@/components/admin/dashboard/section-nav-sidebar";
+
+const BLOG_SECTIONS_CATALOG: SectionNavItem[] = [
+  {
+    id: "blog-hero",
+    number: "01",
+    title: "Blog Hero Banner & Search",
+    desc: "Header badge, title headlines, search placeholder, and subtitle narrative.",
+    icon: BookOpen,
+    badge: "Hero Banner",
+  },
+  {
+    id: "blog-categories",
+    number: "02",
+    title: "Dynamic Blog Categories",
+    desc: "Manage article categories that populate post filter tags and authoring selections.",
+    icon: Tag,
+    badge: "Categories",
+  },
+  {
+    id: "blog-posts",
+    number: "03",
+    title: "Articles Catalog & Publishing",
+    desc: "Browse, filter, edit, or publish articles with rich text and Cloudinary assets.",
+    icon: FileText,
+    badge: "Articles",
+  },
+  {
+    id: "blog-newsletter",
+    number: "04",
+    title: "Article Detail & Newsletter CTA",
+    desc: "Back button label, related articles title, and newsletter subscription banner.",
+    icon: Mail,
+    badge: "Newsletter & CTA",
+  },
+];
 
 interface BlogCategoryItem {
   id: string;
@@ -223,12 +259,25 @@ interface BlogPageEditorProps {
 }
 
 export default function BlogPageEditor({ sectionId, onCloseSection }: BlogPageEditorProps) {
+  const [activeSectionId, setActiveSectionId] = useState<string>(
+    sectionId === "01" ? "blog-hero" : sectionId === "02" ? "blog-categories" : sectionId === "03" ? "blog-posts" : (sectionId === "04" || sectionId === "post-detail") ? "blog-newsletter" : (sectionId || "blog-hero")
+  );
   const [formData, setFormData] = useState<any>(DEFAULT_BLOG_PAGE_DATA);
   const [categories, setCategories] = useState<BlogCategoryItem[]>([]);
   const [posts, setPosts] = useState<BlogPostItem[]>([]);
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (sectionId) {
+      if (sectionId === "01") setActiveSectionId("blog-hero");
+      else if (sectionId === "02") setActiveSectionId("blog-categories");
+      else if (sectionId === "03") setActiveSectionId("blog-posts");
+      else if (sectionId === "04" || sectionId === "post-detail") setActiveSectionId("blog-newsletter");
+      else setActiveSectionId(sectionId);
+    }
+  }, [sectionId]);
 
   // View Mode: "catalog" (Main Dashboard) or "editor" (Dedicated Full Article Editor Page)
   const [viewMode, setViewMode] = useState<"catalog" | "editor">("catalog");
@@ -312,6 +361,25 @@ export default function BlogPageEditor({ sectionId, onCloseSection }: BlogPageEd
       toast.error(err.message || "Failed to save configuration", { id: toastId });
     } finally {
       setIsSaving(false);
+    }
+  }
+
+  async function handleReset() {
+    if (!confirm("Are you sure you want to reset all Blog page configurations to defaults?")) return;
+    setFormData(DEFAULT_BLOG_PAGE_DATA);
+    const toastId = toast.loading("Resetting Blog configuration in database...");
+    try {
+      const res = await fetch("/api/blog", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(DEFAULT_BLOG_PAGE_DATA),
+      });
+      const json = await res.json();
+      if (json.success) {
+        toast.info("Reset to default Blog configuration!", { id: toastId });
+      }
+    } catch {
+      toast.error("Failed to reset content", { id: toastId });
     }
   }
 
@@ -946,46 +1014,77 @@ export default function BlogPageEditor({ sectionId, onCloseSection }: BlogPageEd
   // =========================================================================
   // MAIN CATALOG & PAGE OVERVIEW SECTION VIEW
   // =========================================================================
+  const currentSectionMeta =
+    BLOG_SECTIONS_CATALOG.find((s) => s.id === activeSectionId) || BLOG_SECTIONS_CATALOG[0];
+  const SectionIcon = currentSectionMeta.icon || BookOpen;
+
   return (
-    <div className="w-full min-w-0 max-w-full overflow-hidden space-y-6 text-slate-900 dark:text-white">
-      {/* HEADER CONTROLS */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-white dark:bg-[#131927] border border-slate-200/80 dark:border-slate-800 shadow-xs">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <BookOpen className="h-5 w-5 text-violet-600 dark:text-violet-400" />
-            <h2 className="text-base font-extrabold tracking-tight">
-              Blog & Articles Configurator (/blog & /blog/[slug])
-            </h2>
+    <div className="w-full min-w-0 max-w-full space-y-4 text-slate-900 dark:text-white">
+      {/* 2-Column Master-Detail Selection Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column: Section Selector */}
+        <div className="lg:col-span-4 xl:col-span-3 lg:sticky lg:top-4">
+          <SectionNavSidebar
+            title="Blog Sections"
+            sections={BLOG_SECTIONS_CATALOG}
+            activeSectionId={activeSectionId}
+            onSelectSection={(id) => setActiveSectionId(id)}
+            accentColor="violet"
+          />
+        </div>
+
+        {/* Right Column: Active Section Editor Workspace */}
+        <div className="lg:col-span-8 xl:col-span-9 min-w-0 space-y-5">
+          {/* Active Section Header Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-5 rounded-2xl bg-white dark:bg-[#131927] border border-slate-200/80 dark:border-slate-800 shadow-xs">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-mono text-xs font-black text-violet-600 dark:text-violet-400 bg-violet-500/10 px-2 py-0.5 rounded-md border border-violet-500/20 shrink-0">
+                  #{currentSectionMeta.number}
+                </span>
+                <SectionIcon className="h-4 w-4 text-violet-600 dark:text-violet-400 shrink-0" />
+                <h2 className="text-xs sm:text-sm md:text-base font-extrabold text-slate-900 dark:text-white truncate">
+                  {currentSectionMeta.title}
+                </h2>
+              </div>
+              <p className="text-[10px] sm:text-[11px] text-slate-400 font-medium truncate mt-0.5">
+                {currentSectionMeta.desc}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+              <button
+                type="button"
+                onClick={handleReset}
+                className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Reset Defaults</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSaveHeaderConfig}
+                disabled={isSaving}
+                className="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-semibold text-xs shadow-md shadow-violet-500/20 transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4" />
+                    <span>Save Changes</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Manage blog hero banners, search bar placeholders, dynamic categories, articles catalog, and Cloudinary image assets.
-          </p>
-        </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={() => setFormData(DEFAULT_BLOG_PAGE_DATA)}
-            className="px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
-          >
-            <RotateCcw className="h-3.5 w-3.5" />
-            <span>Reset Defaults</span>
-          </button>
-
-          <button
-            type="button"
-            disabled={isSaving}
-            onClick={handleSaveHeaderConfig}
-            className="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-md shadow-violet-600/20 flex items-center gap-1.5 cursor-pointer"
-          >
-            {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
-            <span>{isSaving ? "Saving..." : "Save Page Config"}</span>
-          </button>
-        </div>
-      </div>
-
-      {/* SECTION 1: HERO & SEARCH BAR CONFIGURATOR */}
-      {(!sectionId || sectionId === "blog-hero" || sectionId === "01") && (
+          {/* SECTION 1: HERO & SEARCH BAR CONFIGURATOR */}
+          {(activeSectionId === "blog-hero" || activeSectionId === "01") && (
         <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-5">
           <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
             <span className="font-mono text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">
@@ -1063,7 +1162,7 @@ export default function BlogPageEditor({ sectionId, onCloseSection }: BlogPageEd
       )}
 
       {/* SECTION 2: DYNAMIC BLOG CATEGORY TAGS MANAGER */}
-      {(!sectionId || sectionId === "blog-categories" || sectionId === "02") && (
+      {(activeSectionId === "blog-categories" || activeSectionId === "02") && (
         <div className="rounded-2xl border border-violet-200/80 dark:border-slate-800 bg-gradient-to-b from-white via-violet-50/20 to-white dark:from-[#131927] dark:to-[#131927] p-6 space-y-5 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-violet-100 dark:border-slate-800">
             <div>
@@ -1151,7 +1250,7 @@ export default function BlogPageEditor({ sectionId, onCloseSection }: BlogPageEd
       )}
 
       {/* SECTION 3: BLOG POSTS CATALOG & ARTICLE MANAGER */}
-      {(!sectionId || sectionId === "blog-posts" || sectionId === "03") && (
+      {(activeSectionId === "blog-posts" || activeSectionId === "03") && (
         <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-2">
@@ -1274,7 +1373,7 @@ export default function BlogPageEditor({ sectionId, onCloseSection }: BlogPageEd
       )}
 
       {/* SECTION 4: DETAIL PAGE & NEWSLETTER CTA CONFIGURATOR */}
-      {(!sectionId || sectionId === "blog-newsletter" || sectionId === "04") && (
+      {(activeSectionId === "blog-newsletter" || activeSectionId === "04" || activeSectionId === "post-detail") && (
         <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-5">
           <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
             <span className="font-mono text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">
@@ -1371,6 +1470,9 @@ export default function BlogPageEditor({ sectionId, onCloseSection }: BlogPageEd
           </div>
         </div>
       )}
+
+        </div>
+      </div>
     </div>
   );
 }

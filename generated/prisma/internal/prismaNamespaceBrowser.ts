@@ -79,7 +79,11 @@ export const ModelName = {
   ContactInquiry: 'ContactInquiry',
   JobCategory: 'JobCategory',
   JobVacancy: 'JobVacancy',
-  JobApplication: 'JobApplication'
+  JobApplication: 'JobApplication',
+  KnowledgeChunk: 'KnowledgeChunk',
+  ChatSession: 'ChatSession',
+  ChatMessage: 'ChatMessage',
+  QuestionCache: 'QuestionCache'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -384,6 +388,7 @@ export const TestimonialScalarFieldEnum = {
   isRead: 'isRead',
   ipAddress: 'ipAddress',
   userEmail: 'userEmail',
+  phone: 'phone',
   order: 'order',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -466,11 +471,13 @@ export type JobCategoryScalarFieldEnum = (typeof JobCategoryScalarFieldEnum)[key
 export const JobVacancyScalarFieldEnum = {
   id: 'id',
   title: 'title',
+  slug: 'slug',
   categoryId: 'categoryId',
   type: 'type',
   location: 'location',
   experience: 'experience',
   salary: 'salary',
+  deadline: 'deadline',
   summary: 'summary',
   responsibilities: 'responsibilities',
   requirements: 'requirements',
@@ -507,6 +514,55 @@ export const JobApplicationScalarFieldEnum = {
 } as const
 
 export type JobApplicationScalarFieldEnum = (typeof JobApplicationScalarFieldEnum)[keyof typeof JobApplicationScalarFieldEnum]
+
+
+export const KnowledgeChunkScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  content: 'content',
+  sourceType: 'sourceType',
+  sourceId: 'sourceId',
+  url: 'url',
+  contentVersion: 'contentVersion',
+  createdAt: 'createdAt'
+} as const
+
+export type KnowledgeChunkScalarFieldEnum = (typeof KnowledgeChunkScalarFieldEnum)[keyof typeof KnowledgeChunkScalarFieldEnum]
+
+
+export const ChatSessionScalarFieldEnum = {
+  id: 'id',
+  visitorId: 'visitorId',
+  createdAt: 'createdAt'
+} as const
+
+export type ChatSessionScalarFieldEnum = (typeof ChatSessionScalarFieldEnum)[keyof typeof ChatSessionScalarFieldEnum]
+
+
+export const ChatMessageScalarFieldEnum = {
+  id: 'id',
+  sessionId: 'sessionId',
+  role: 'role',
+  content: 'content',
+  matchedChunks: 'matchedChunks',
+  createdAt: 'createdAt'
+} as const
+
+export type ChatMessageScalarFieldEnum = (typeof ChatMessageScalarFieldEnum)[keyof typeof ChatMessageScalarFieldEnum]
+
+
+export const QuestionCacheScalarFieldEnum = {
+  id: 'id',
+  question: 'question',
+  normalizedQuestion: 'normalizedQuestion',
+  answer: 'answer',
+  sources: 'sources',
+  contentVersion: 'contentVersion',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type QuestionCacheScalarFieldEnum = (typeof QuestionCacheScalarFieldEnum)[keyof typeof QuestionCacheScalarFieldEnum]
 
 
 export const SortOrder = {

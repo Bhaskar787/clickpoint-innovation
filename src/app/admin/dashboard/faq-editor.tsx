@@ -19,6 +19,10 @@ import {
   Check,
 } from "lucide-react";
 import { FaqItem } from "@/types";
+import {
+  SectionNavSidebar,
+  SectionNavSidebarItem,
+} from "@/components/admin/dashboard/section-nav-sidebar";
 
 interface FaqEditorProps {
   sectionId: string | null;
@@ -32,6 +36,33 @@ interface FaqCategory {
   order: number;
   _count?: { faqs: number };
 }
+
+export const FAQ_SECTIONS_CATALOG: SectionNavSidebarItem[] = [
+  {
+    id: "faq-hero",
+    number: "01",
+    title: "FAQ Hero Copy",
+    subtitle: "Badge, title prefix, highlight, and description",
+    icon: HelpCircle,
+    badge: "Hero Banner",
+  },
+  {
+    id: "faq-categories",
+    number: "02",
+    title: "Categories Manager",
+    subtitle: "Topic taxonomy and category filter tabs",
+    icon: FolderPlus,
+    badge: "Categories",
+  },
+  {
+    id: "faq-items",
+    number: "03",
+    title: "Q&A Items Catalog",
+    subtitle: "Manage questions, answers, and display order",
+    icon: Tag,
+    badge: "Questions",
+  },
+];
 
 const EMPTY_FORM = { id: "", question: "", answer: "", categoryId: "" };
 
@@ -356,6 +387,38 @@ export default function FaqEditor({ sectionId, onCloseSection }: FaqEditorProps)
     }
   }
 
+  const resolveSectionId = (secId: string | null | undefined): string => {
+    if (!secId) return "faq-hero";
+    if (secId === "01" || secId === "faq-hero") return "faq-hero";
+    if (secId === "02" || secId === "faq-categories") return "faq-categories";
+    if (secId === "03" || secId === "faq-editor" || secId === "faq-items") return "faq-items";
+    return "faq-hero";
+  };
+
+  const [activeSectionId, setActiveSectionId] = useState<string>(() => resolveSectionId(sectionId));
+
+  useEffect(() => {
+    if (sectionId) {
+      setActiveSectionId(resolveSectionId(sectionId));
+    }
+  }, [sectionId]);
+
+  const sectionsWithCounts: SectionNavSidebarItem[] = useMemo(() => {
+    return FAQ_SECTIONS_CATALOG.map((sec) => {
+      if (sec.id === "faq-categories") {
+        return { ...sec, badge: `${categories.length} Topics` };
+      }
+      if (sec.id === "faq-items") {
+        return { ...sec, badge: `${faqs.length} FAQs` };
+      }
+      return sec;
+    });
+  }, [categories.length, faqs.length]);
+
+  const currentSectionMeta =
+    sectionsWithCounts.find((s) => s.id === activeSectionId) || sectionsWithCounts[0];
+  const SectionIcon = currentSectionMeta.icon || HelpCircle;
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[250px] py-12 sm:py-20">
@@ -364,33 +427,78 @@ export default function FaqEditor({ sectionId, onCloseSection }: FaqEditorProps)
     );
   }
 
-  const showCategories = !sectionId || sectionId === "faq-categories";
-  const showFaqs = !sectionId || sectionId === "faq-editor";
-
   return (
-    <div className="w-full min-w-0 max-w-full overflow-hidden space-y-6 sm:space-y-8 text-slate-900 dark:text-white">
-      {/* FAQ HERO & SECTION HEADER CONFIGURATION */}
-      <div className="p-4 sm:p-5 rounded-2xl border border-violet-200 dark:border-violet-800/60 bg-violet-50/50 dark:bg-violet-950/20 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <h2 className="text-base sm:text-lg font-bold flex items-center gap-2 text-violet-900 dark:text-violet-200">
-              <HelpCircle className="h-5 w-5 text-violet-600 shrink-0" />
-              Full FAQ Page (/faqs) Hero Header Copy
-            </h2>
-            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-              Configure the badge tag, title, and subtitle shown specifically on the main <span className="font-bold text-violet-600 dark:text-violet-300">/faqs</span> page hero banner. (The landing page FAQ section copy is configured separately in the Landing Page Editor).
-            </p>
+    <div className="w-full min-w-0 max-w-full space-y-4 text-slate-900 dark:text-white">
+      {/* 2-Column Master-Detail Selection Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column: Section Selector */}
+        <div className="lg:col-span-4 xl:col-span-3 lg:sticky lg:top-4">
+          <SectionNavSidebar
+            title="FAQ Sections"
+            sections={sectionsWithCounts}
+            activeSectionId={activeSectionId}
+            onSelectSection={(id) => setActiveSectionId(id)}
+            accentColor="violet"
+          />
+        </div>
+
+        {/* Right Column: Active Section Editor Workspace */}
+        <div className="lg:col-span-8 xl:col-span-9 min-w-0 space-y-5">
+          {/* Active Section Header Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-5 rounded-2xl bg-white dark:bg-[#131927] border border-slate-200/80 dark:border-slate-800 shadow-xs">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-mono text-xs font-black text-violet-600 dark:text-violet-400 bg-violet-500/10 px-2 py-0.5 rounded-md border border-violet-500/20 shrink-0">
+                  #{currentSectionMeta.number}
+                </span>
+                <SectionIcon className="h-4 w-4 text-violet-600 dark:text-violet-400 shrink-0" />
+                <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white truncate">
+                  {currentSectionMeta.title}
+                </h3>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate">
+                {currentSectionMeta.subtitle}
+              </p>
+            </div>
+
+            {activeSectionId === "faq-hero" && (
+              <button
+                type="button"
+                onClick={handleSaveHeader}
+                disabled={isSavingHeader}
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs shadow-md shadow-violet-600/25 transition-all disabled:opacity-50 shrink-0 cursor-pointer"
+              >
+                {isSavingHeader ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                <span>Save Header Copy</span>
+              </button>
+            )}
+
+            {activeSectionId === "faq-items" && (
+              <button
+                type="button"
+                onClick={openCreateForm}
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs shadow-md shadow-violet-600/25 transition-all shrink-0 cursor-pointer"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>Add FAQ</span>
+              </button>
+            )}
           </div>
 
-          <button
-            onClick={handleSaveHeader}
-            disabled={isSavingHeader}
-            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs shadow-md shadow-violet-600/25 transition-all disabled:opacity-50 shrink-0 cursor-pointer"
-          >
-            {isSavingHeader ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            <span>Save Header Copy</span>
-          </button>
-        </div>
+          {/* FAQ HERO & SECTION HEADER CONFIGURATION */}
+          {activeSectionId === "faq-hero" && (
+            <div className="p-4 sm:p-5 rounded-2xl border border-violet-200 dark:border-violet-800/60 bg-violet-50/50 dark:bg-violet-950/20 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-base sm:text-lg font-bold flex items-center gap-2 text-violet-900 dark:text-violet-200">
+                    <HelpCircle className="h-5 w-5 text-violet-600 shrink-0" />
+                    Full FAQ Page (/faqs) Hero Header Copy
+                  </h2>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                    Configure the badge tag, title, and subtitle shown specifically on the main <span className="font-bold text-violet-600 dark:text-violet-300">/faqs</span> page hero banner.
+                  </p>
+                </div>
+              </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
           <div>
@@ -446,9 +554,10 @@ export default function FaqEditor({ sectionId, onCloseSection }: FaqEditorProps)
           </div>
         </div>
       </div>
+    )}
 
       {/* FAQ CATEGORY MANAGER */}
-      {showCategories && (
+      {activeSectionId === "faq-categories" && (
         <div className="space-y-4">
           <div>
             <h2 className="text-base sm:text-lg font-bold flex items-center gap-2">
@@ -588,7 +697,7 @@ export default function FaqEditor({ sectionId, onCloseSection }: FaqEditorProps)
       )}
 
       {/* FAQ LIST */}
-      {showFaqs && (
+      {activeSectionId === "faq-items" && (
         <div className="space-y-4 sm:space-y-6">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
@@ -831,6 +940,8 @@ export default function FaqEditor({ sectionId, onCloseSection }: FaqEditorProps)
           )}
         </div>
       )}
+        </div>
+      </div>
     </div>
   );
 }

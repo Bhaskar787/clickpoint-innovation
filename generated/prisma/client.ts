@@ -186,3 +186,23 @@ export type JobVacancy = Prisma.JobVacancyModel
  * 
  */
 export type JobApplication = Prisma.JobApplicationModel
+/**
+ * Model KnowledgeChunk
+ * 
+ */
+export type KnowledgeChunk = Prisma.KnowledgeChunkModel
+/**
+ * Model ChatSession
+ * 
+ */
+export type ChatSession = Prisma.ChatSessionModel
+/**
+ * Model ChatMessage
+ * 
+ */
+export type ChatMessage = Prisma.ChatMessageModel
+/**
+ * Model QuestionCache
+ * 
+ */
+export type QuestionCache = Prisma.QuestionCacheModel

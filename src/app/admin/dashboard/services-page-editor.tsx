@@ -36,6 +36,7 @@ import {
   Loader2,
   Link as LinkIcon,
 } from "lucide-react";
+import { SectionNavSidebar, SectionNavItem } from "@/components/admin/dashboard/section-nav-sidebar";
 
 interface FileUploadControlProps {
   label: string;
@@ -413,6 +414,33 @@ export const DEFAULT_SERVICES_CONTENT = {
   ],
 };
 
+const SERVICES_SECTIONS_CATALOG: SectionNavItem[] = [
+  {
+    id: "services-hero",
+    number: "01",
+    title: "Services Catalog Hero Banner",
+    desc: "Header badge, headline titles, and descriptive subtitle for the services catalog.",
+    icon: Info,
+    badge: "Hero Banner",
+  },
+  {
+    id: "services-list",
+    number: "02",
+    title: "Core Services Cards Catalog",
+    desc: "Manage all service cards, unique route slugs, card subtitles, and action buttons.",
+    icon: Layers,
+    badge: "Services Cards",
+  },
+  {
+    id: "services-details",
+    number: "03",
+    title: "Individual Service Detail Pages",
+    desc: "Per-service metrics, capabilities, 4-phase agile blueprint, and tech stack tags.",
+    icon: Workflow,
+    badge: "Detail Pages",
+  },
+];
+
 interface ServicesPageEditorProps {
   sectionId: string | null;
   onCloseSection: () => void;
@@ -424,10 +452,25 @@ export default function ServicesPageEditor({
   onCloseSection,
   onNavigateToDetailSection,
 }: ServicesPageEditorProps) {
+  const [activeSectionId, setActiveSectionId] = useState<string>(
+    sectionId === "services-catalog" ? "services-list" : sectionId === "service-detail" ? "services-details" : (sectionId || "services-hero")
+  );
   const [formData, setFormData] = useState(DEFAULT_SERVICES_CONTENT);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [selectedDetailId, setSelectedDetailId] = useState<string>("ai-eng");
+
+  useEffect(() => {
+    if (sectionId) {
+      if (sectionId === "services-catalog") {
+        setActiveSectionId("services-list");
+      } else if (sectionId === "service-detail") {
+        setActiveSectionId("services-details");
+      } else {
+        setActiveSectionId(sectionId);
+      }
+    }
+  }, [sectionId]);
 
   useEffect(() => {
     async function loadServicesData() {
@@ -578,52 +621,77 @@ export default function ServicesPageEditor({
   const selectedServiceIndex = formData.services.findIndex((s) => s.id === selectedDetailId);
   const currentService = selectedServiceIndex !== -1 ? formData.services[selectedServiceIndex] : formData.services[0];
 
+  const currentSectionMeta =
+    SERVICES_SECTIONS_CATALOG.find((s) => s.id === activeSectionId) || SERVICES_SECTIONS_CATALOG[0];
+  const SectionIcon = currentSectionMeta.icon || Info;
+
   return (
-    <div className="w-full min-w-0 max-w-full overflow-hidden space-y-4 sm:space-y-6 text-slate-900 dark:text-white">
-      
-      {/* Action Header */}
-      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 overflow-hidden bg-white dark:bg-[#131927] p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
-        <div className="space-y-1 min-w-0 flex-1">
-          <h2 className="text-base sm:text-lg font-bold flex items-center gap-2">
-            <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0" />
-            Editing Services Page Content, Individual Service Detail Pages & Cloudinary Media
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Configure every catalog card, hero badge, metric, feature list, 4-phase agile workflow step, and unique URL slug ID (`/services/[id]`).
-          </p>
+    <div className="w-full min-w-0 max-w-full space-y-4 text-slate-900 dark:text-white">
+      {/* 2-Column Master-Detail Selection Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column: Section Selector */}
+        <div className="lg:col-span-4 xl:col-span-3 lg:sticky lg:top-4">
+          <SectionNavSidebar
+            title="Services Sections"
+            sections={SERVICES_SECTIONS_CATALOG}
+            activeSectionId={activeSectionId}
+            onSelectSection={(id) => setActiveSectionId(id)}
+            accentColor="blue"
+          />
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 shrink-0 w-full lg:w-auto">
-          <button
-            onClick={handleReset}
-            className="flex-1 sm:flex-none px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5"
-          >
-            <RotateCcw className="h-3.5 w-3.5" />
-            <span>Reset Defaults</span>
-          </button>
+        {/* Right Column: Active Section Editor Workspace */}
+        <div className="lg:col-span-8 xl:col-span-9 min-w-0 space-y-5">
+          {/* Active Section Header Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-5 rounded-2xl bg-white dark:bg-[#131927] border border-slate-200/80 dark:border-slate-800 shadow-xs">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-mono text-xs font-black text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-md border border-blue-500/20 shrink-0">
+                  #{currentSectionMeta.number}
+                </span>
+                <SectionIcon className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                <h2 className="text-xs sm:text-sm md:text-base font-extrabold text-slate-900 dark:text-white truncate">
+                  {currentSectionMeta.title}
+                </h2>
+              </div>
+              <p className="text-[10px] sm:text-[11px] text-slate-400 font-medium truncate mt-0.5">
+                {currentSectionMeta.desc}
+              </p>
+            </div>
 
-          <button
-            onClick={handleSave}
-            disabled={isSaving}
-            className="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-500/20 transition-all disabled:opacity-50 flex items-center justify-center gap-1.5"
-          >
-            {isSaving ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Saving...</span>
-              </>
-            ) : (
-              <>
-                <Save className="h-4 w-4" />
-                <span>Save Changes</span>
-              </>
-            )}
-          </button>
-        </div>
-      </div>
+            <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+              <button
+                type="button"
+                onClick={handleReset}
+                className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Reset Defaults</span>
+              </button>
 
-      {/* SECTION 1: MAIN SERVICES HERO BANNER & CATALOG HEADINGS */}
-      {(!sectionId || sectionId === "services-hero") && (
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={isSaving}
+                className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-500/20 transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4" />
+                    <span>Save Changes</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* SECTION 1: MAIN SERVICES HERO BANNER & CATALOG HEADINGS */}
+          {activeSectionId === "services-hero" && (
         <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-5">
           <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
             <span className="font-mono text-[10px] sm:text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
@@ -675,7 +743,7 @@ export default function ServicesPageEditor({
       )}
 
       {/* SECTION 2: CATALOG SERVICES LIST & UNIQUE ID MANAGER */}
-      {(!sectionId || sectionId === "services-catalog" || sectionId === "services-list") && (
+      {(activeSectionId === "services-list" || activeSectionId === "services-catalog") && (
         <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-2">
@@ -726,6 +794,7 @@ export default function ServicesPageEditor({
                 };
                 setFormData({ ...formData, services: [...formData.services, newSvc] });
                 setSelectedDetailId(uniqueId);
+                setActiveSectionId("services-details");
                 toast.success(`Created new service item (ID: ${uniqueId})!`);
               }}
               className="w-full sm:w-auto flex items-center justify-center gap-1 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-xs"
@@ -752,7 +821,10 @@ export default function ServicesPageEditor({
                     </span>
                     <button
                       type="button"
-                      onClick={() => setSelectedDetailId(svc.id)}
+                      onClick={() => {
+                        setSelectedDetailId(svc.id);
+                        setActiveSectionId("services-details");
+                      }}
                       className={`text-[11px] font-semibold underline transition-colors truncate ${
                         selectedDetailId === svc.id
                           ? "text-blue-600 font-bold"
@@ -860,7 +932,7 @@ export default function ServicesPageEditor({
       )}
 
       {/* SECTION 3: INDIVIDUAL SERVICE DETAIL PAGE CONFIGURATOR */}
-      {(!sectionId || sectionId === "service-detail" || sectionId === "services-details") && (
+      {(activeSectionId === "services-details" || activeSectionId === "service-detail") && (
 
         <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
@@ -1468,6 +1540,8 @@ export default function ServicesPageEditor({
         </div>
       )}
 
+        </div>
+      </div>
     </div>
   );
 }

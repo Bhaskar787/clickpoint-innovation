@@ -543,9 +543,9 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
               ) : activeTab === "industries-page" ? (
                 <IndustriesPageEditor sectionId={selectedSectionId} onCloseSection={() => setSelectedSectionId(null)} />
               ) : activeTab === "case-studies-page" ? (
-                <CaseStudiesEditor />
+                <CaseStudiesEditor sectionId={selectedSectionId} onCloseSection={() => setSelectedSectionId(null)} />
               ) : activeTab === "journey-page" ? (
-                <JourneyEditor />
+                <JourneyEditor sectionId={selectedSectionId} onCloseSection={() => setSelectedSectionId(null)} />
               ) : activeTab === "blog-page" ? (
                 <BlogPageEditor sectionId={selectedSectionId} onCloseSection={() => setSelectedSectionId(null)} />
               ) : activeTab === "careers-page" ? (
@@ -569,7 +569,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                   onMarkItemRead={handleItemMarkedRead}
                 />
               ) : activeTab === "not-found-page" ? (
-                <NotFoundPageEditor />
+                <NotFoundPageEditor sectionId={selectedSectionId} onCloseSection={() => setSelectedSectionId(null)} />
               ) : activeTab === "chatbot-page" ? (
                 <ChatbotEditor sectionId={selectedSectionId} onCloseSection={() => setSelectedSectionId(null)} />
               ) : (

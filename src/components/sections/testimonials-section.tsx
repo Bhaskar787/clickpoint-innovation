@@ -137,9 +137,10 @@ export default function TestimonialsSection({ initialHeader, initialTestimonials
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: idx * 0.1, duration: 0.5 }}
-              className="group flex flex-col justify-between rounded-3xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-7 shadow-md transition-all duration-300 hover:border-violet-300 dark:hover:border-slate-700 hover:shadow-xl hover:shadow-violet-500/10 hover:-translate-y-1.5"
+              transition={{ delay: idx * 0.06, duration: 0.4, ease: "easeOut" }}
+              className="h-full"
             >
+              <div className="h-full group flex flex-col justify-between rounded-3xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-7 shadow-md transition-all duration-300 hover:border-violet-300 dark:hover:border-slate-700 hover:shadow-xl hover:shadow-violet-500/10 hover:-translate-y-1.5">
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-1 text-amber-500">
@@ -178,7 +179,8 @@ export default function TestimonialsSection({ initialHeader, initialTestimonials
                   </p>
                 </div>
               </div>
-            </motion.div>
+            </div>
+          </motion.div>
           ))}
         </div>
 

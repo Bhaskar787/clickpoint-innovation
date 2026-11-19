@@ -103,15 +103,15 @@ export default function Services({ initialHeader, initialServices }: ServicesPro
             return (
               <motion.div
                 key={s.id}
-                initial={{ opacity: 0, y: 24 }}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.3 }}
-                transition={{ duration: 0.5, delay: idx * 0.05 }}
-                whileHover={{ y: -6 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: idx * 0.05, ease: "easeOut" }}
+                className="h-full"
               >
                 <Link
                   href={`/services/${s.id}`}
-                  className="group relative block h-full overflow-hidden rounded-2xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-7 shadow-sm shadow-violet-950/[0.03] transition-colors hover:border-violet-300 dark:hover:border-slate-700 hover:shadow-xl hover:shadow-violet-500/10"
+                  className="group relative block h-full overflow-hidden rounded-2xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-7 shadow-sm shadow-violet-950/[0.03] transition-all duration-300 hover:border-violet-300 dark:hover:border-slate-700 hover:shadow-xl hover:shadow-violet-500/10 hover:-translate-y-1.5"
                 >
                   <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-violet-50 dark:bg-slate-800/50 transition-transform duration-500 group-hover:scale-150" />
                   <div className="relative">

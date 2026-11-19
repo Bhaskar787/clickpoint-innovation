@@ -94,12 +94,13 @@ export default function IndustriesCatalogClient({ initialContent }: IndustriesCa
             {industriesList.map((ind: IndustryItem, idx: number) => (
               <motion.div
                 key={ind.id}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.5, delay: idx * 0.08 }}
-                className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-8 shadow-sm transition-all duration-300 hover:border-violet-300 dark:hover:border-slate-700 hover:shadow-2xl hover:shadow-violet-600/10 hover:-translate-y-1.5"
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: idx * 0.05, ease: "easeOut" }}
+                className="h-full"
               >
+                <div className="h-full group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-8 shadow-sm transition-all duration-300 hover:border-violet-300 dark:hover:border-slate-700 hover:shadow-2xl hover:shadow-violet-600/10 hover:-translate-y-1.5">
                 <div>
                   <div className="flex items-center justify-between">
                     <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-200 dark:border-slate-800 bg-violet-50 dark:bg-slate-800 px-3 py-1 text-xs font-bold text-violet-700 dark:text-violet-300">
@@ -158,7 +159,8 @@ export default function IndustriesCatalogClient({ initialContent }: IndustriesCa
                     /industries/{ind.id}
                   </span>
                 </div>
-              </motion.div>
+              </div>
+            </motion.div>
             ))}
           </div>
         </div>

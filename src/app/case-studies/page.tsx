@@ -264,8 +264,9 @@ export default function CaseStudiesPage() {
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ duration: 0.3 }}
                     key={project.id}
-                    className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-7 shadow-md transition-all duration-500 hover:border-violet-300 dark:hover:border-slate-700 hover:shadow-2xl hover:shadow-violet-500/15 hover:-translate-y-1.5"
+                    className="h-full"
                   >
+                    <div className="h-full group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-7 shadow-md transition-all duration-300 hover:border-violet-300 dark:hover:border-slate-700 hover:shadow-2xl hover:shadow-violet-500/15 hover:-translate-y-1.5">
                     <div>
                       {/* Visual Image / Banner Header */}
                       {project.imageUrl ? (
@@ -366,7 +367,8 @@ export default function CaseStudiesPage() {
                         </a>
                       </div>
                     )}
-                  </motion.div>
+                  </div>
+                </motion.div>
                 ))}
               </AnimatePresence>
             </motion.div>

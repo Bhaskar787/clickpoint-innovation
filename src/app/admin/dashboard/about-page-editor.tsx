@@ -34,7 +34,9 @@ import {
   Linkedin,
   Sparkle,
   Loader2,
+  Milestone,
 } from "lucide-react";
+import { SectionNavSidebar, SectionNavItem } from "@/components/admin/dashboard/section-nav-sidebar";
 
 // Helper function to extract initials from First & Last Name
 function getInitials(name: string): string {
@@ -450,6 +452,49 @@ export const DEFAULT_ABOUT_DATA = {
   },
 };
 
+const ABOUT_SECTIONS_CATALOG: SectionNavItem[] = [
+  {
+    id: "about-hero",
+    number: "01",
+    title: "About Hero Banner & Metrics",
+    desc: "Header badge, video URL, headline titles, and call-to-action buttons.",
+    icon: Info,
+    badge: "Hero Banner",
+  },
+  {
+    id: "about-mission",
+    number: "02",
+    title: "Our Mission & Core Values",
+    desc: "Mission statement, engineering excellence pillars, and corporate principles.",
+    icon: ShieldCheck,
+    badge: "Mission & Values",
+  },
+  {
+    id: "about-stats",
+    number: "03",
+    title: "Pods & Corporate Statistics",
+    desc: "Global delivery pod metrics, continuous integration stats, and impact numbers.",
+    icon: Award,
+    badge: "Impact Metrics",
+  },
+  {
+    id: "about-team",
+    number: "04",
+    title: "Leadership & Executive Team",
+    desc: "Manage team member profiles, roles, bios, profile images, and LinkedIn links.",
+    icon: Users,
+    badge: "Team Profiles",
+  },
+  {
+    id: "about-journey",
+    number: "05",
+    title: "Company Journey Timeline Header",
+    desc: "Timeline section badge, headline, and continuous growth narrative.",
+    icon: Milestone,
+    badge: "Company Story",
+  },
+];
+
 interface AboutPageEditorProps {
   sectionId: string | null;
   onCloseSection: () => void;
@@ -459,6 +504,13 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
   const [formData, setFormData] = useState(DEFAULT_ABOUT_DATA);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [activeSectionId, setActiveSectionId] = useState<string>(sectionId || "about-hero");
+
+  useEffect(() => {
+    if (sectionId) {
+      setActiveSectionId(sectionId);
+    }
+  }, [sectionId]);
 
   // Fetch initial data from DB
   useEffect(() => {
@@ -531,52 +583,77 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
     );
   }
 
+  const currentSectionMeta =
+    ABOUT_SECTIONS_CATALOG.find((s) => s.id === activeSectionId) || ABOUT_SECTIONS_CATALOG[0];
+  const SectionIcon = currentSectionMeta.icon || Info;
+
   return (
-    <div className="w-full min-w-0 max-w-full overflow-hidden space-y-4 sm:space-y-6 text-slate-900 dark:text-white">
-      
-      {/* Action Header */}
-      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 overflow-hidden bg-white dark:bg-[#131927] p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
-        <div className="space-y-1 min-w-0 flex-1">
-          <h2 className="text-base sm:text-lg font-bold flex flex-wrap items-center gap-2 break-words">
-            <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0" />
-            Editing About Us Page Content & Cloudinary Uploads
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Configure every badge tag, section main title, stat metric (89%, 350+), Cloudinary images/videos, and team members dynamically.
-          </p>
+    <div className="w-full min-w-0 max-w-full space-y-4 text-slate-900 dark:text-white">
+      {/* 2-Column Master-Detail Selection Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column: Section Selector */}
+        <div className="lg:col-span-4 xl:col-span-3 lg:sticky lg:top-4">
+          <SectionNavSidebar
+            title="About Us Sections"
+            sections={ABOUT_SECTIONS_CATALOG}
+            activeSectionId={activeSectionId}
+            onSelectSection={(id) => setActiveSectionId(id)}
+            accentColor="blue"
+          />
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 shrink-0 w-full lg:w-auto">
-          <button
-            onClick={handleReset}
-            className="flex-1 sm:flex-none w-full sm:w-auto px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5"
-          >
-            <RotateCcw className="h-3.5 w-3.5" />
-            <span>Reset Defaults</span>
-          </button>
+        {/* Right Column: Active Section Editor Workspace */}
+        <div className="lg:col-span-8 xl:col-span-9 min-w-0 space-y-5">
+          {/* Active Section Header Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-5 rounded-2xl bg-white dark:bg-[#131927] border border-slate-200/80 dark:border-slate-800 shadow-xs">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-mono text-xs font-black text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-md border border-blue-500/20 shrink-0">
+                  #{currentSectionMeta.number}
+                </span>
+                <SectionIcon className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                <h2 className="text-xs sm:text-sm md:text-base font-extrabold text-slate-900 dark:text-white truncate">
+                  {currentSectionMeta.title}
+                </h2>
+              </div>
+              <p className="text-[10px] sm:text-[11px] text-slate-400 font-medium truncate mt-0.5">
+                {currentSectionMeta.desc}
+              </p>
+            </div>
 
-          <button
-            onClick={handleSave}
-            disabled={isSaving}
-            className="flex-1 sm:flex-none w-full sm:w-auto px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-500/20 transition-all disabled:opacity-50 flex items-center justify-center gap-1.5"
-          >
-            {isSaving ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Saving...</span>
-              </>
-            ) : (
-              <>
-                <Save className="h-4 w-4" />
-                <span>Save Changes</span>
-              </>
-            )}
-          </button>
-        </div>
-      </div>
+            <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+              <button
+                type="button"
+                onClick={handleReset}
+                className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Reset Defaults</span>
+              </button>
 
-      {/* SECTION 1: ABOUT HERO BANNER + STAT METRICS GRID */}
-      {(!sectionId || sectionId === "about-hero") && (
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={isSaving}
+                className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-500/20 transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4" />
+                    <span>Save Changes</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* SECTION 1: ABOUT HERO BANNER + STAT METRICS GRID */}
+          {activeSectionId === "about-hero" && (
         <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-5">
           <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
             <span className="font-mono text-[10px] sm:text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
@@ -766,7 +843,7 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
       )}
 
       {/* SECTION 2: STORY & MISSION BADGES & TITLES */}
-      {(!sectionId || sectionId === "about-mission") && (
+      {activeSectionId === "about-mission" && (
         <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-5">
           <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
             <span className="font-mono text-[10px] sm:text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
@@ -980,7 +1057,7 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
       )}
 
       {/* SECTION 3: CORE VALUES BADGES & TITLES */}
-      {(!sectionId || sectionId === "about-stats") && (
+      {activeSectionId === "about-stats" && (
         <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-2">
@@ -1101,7 +1178,7 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
       )}
 
       {/* SECTION 4: LEADERSHIP TEAM BADGES & TITLES + LINKEDIN SKILL SECTION */}
-      {(!sectionId || sectionId === "about-team") && (
+      {activeSectionId === "about-team" && (
         <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-2">
@@ -1318,7 +1395,7 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
       )}
 
       {/* SECTION 5: TIMELINE JOURNEY SECTION HEADER (ABOUT PAGE ONLY) */}
-      {(!sectionId || sectionId === "about-journey" || sectionId === "05") && (
+      {(activeSectionId === "about-journey" || activeSectionId === "05") && (
         <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4">
           <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
             <span className="font-mono text-[10px] sm:text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
@@ -1401,7 +1478,8 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
           </div>
         </div>
       )}
-
+        </div>
+      </div>
     </div>
   );
 }

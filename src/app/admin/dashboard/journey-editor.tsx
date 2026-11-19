@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import {
   Save,
@@ -22,12 +22,68 @@ import {
 } from "lucide-react";
 import { DEFAULT_JOURNEY_PAGE_DATA } from "@/data/default-journey-data";
 import { JourneyPageContent, TimelineEra, EventItem } from "@/types";
+import {
+  SectionNavSidebar,
+  SectionNavItem,
+} from "@/components/admin/dashboard/section-nav-sidebar";
+
+export const JOURNEY_SECTIONS_CATALOG: SectionNavItem[] = [
+  {
+    id: "journey-hero",
+    number: "01",
+    title: "Journey Hero & Stats Bar",
+    subtitle: "Badge, title, subtitle & key historical metrics bar",
+    icon: Milestone,
+    badge: "Hero & Stats",
+  },
+  {
+    id: "journey-eras",
+    number: "02",
+    title: "Timeline Eras Manager",
+    subtitle: "Era date ranges, milestones, story copy & preview images",
+    icon: Calendar,
+    badge: "Eras",
+  },
+  {
+    id: "journey-events",
+    number: "03",
+    title: "Culture & Events Gallery",
+    subtitle: "Event summits, dynamic category filters & photo media",
+    icon: Tag,
+    badge: "Events",
+  },
+  {
+    id: "journey-ethos",
+    number: "04",
+    title: "Engineering Ethos & Pillars",
+    subtitle: "Core guiding philosophy, badge & 4 pillars breakdown",
+    icon: Award,
+    badge: "Ethos",
+  },
+  {
+    id: "journey-cta",
+    number: "05",
+    title: "Call To Action Banner",
+    subtitle: "Bottom conversion headline, badge & primary button link",
+    icon: CheckCircle2,
+    badge: "Banner CTA",
+  },
+  {
+    id: "landing-timeline",
+    number: "06",
+    title: "Home Timeline Header & CTA",
+    subtitle: "Landing page #07 timeline section header copy & sync",
+    icon: Milestone,
+    badge: "Home Sync",
+  },
+];
 
 interface JourneyEditorProps {
-  sectionId?: string;
+  sectionId?: string | null;
+  onCloseSection?: () => void;
 }
 
-export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
+export default function JourneyEditor({ sectionId, onCloseSection }: JourneyEditorProps) {
   const [formData, setFormData] = useState<JourneyPageContent>(DEFAULT_JOURNEY_PAGE_DATA);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSaving, setIsSaving] = useState<boolean>(false);
@@ -263,12 +319,40 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
     setFormData({ ...formData, events: list });
   }
 
-  const isLandingTimeline = sectionId === "timeline" || sectionId === "landing-timeline";
-  const showHeroSection = (!sectionId || sectionId === "journey-hero" || sectionId === "01" || sectionId === "journey-page") && !isLandingTimeline;
-  const showErasSection = !sectionId || sectionId === "journey-eras" || sectionId === "02" || sectionId === "journey-page" || isLandingTimeline;
-  const showEventsSection = (!sectionId || sectionId === "journey-modal" || sectionId === "events" || sectionId === "03" || sectionId === "journey-page") && !isLandingTimeline;
-  const showEthosSection = (!sectionId || sectionId === "journey-ethos" || sectionId === "04" || sectionId === "journey-page") && !isLandingTimeline;
-  const showLandingHeader = isLandingTimeline;
+  const resolveSectionId = (secId: string | null | undefined): string => {
+    if (!secId) return "journey-hero";
+    if (secId === "timeline" || secId === "landing-timeline" || secId === "06") return "landing-timeline";
+    if (secId === "01" || secId === "journey-hero" || secId === "journey-page") return "journey-hero";
+    if (secId === "02" || secId === "journey-eras" || secId === "eras") return "journey-eras";
+    if (secId === "03" || secId === "journey-modal" || secId === "events" || secId === "journey-events") return "journey-events";
+    if (secId === "04" || secId === "journey-ethos" || secId === "ethos") return "journey-ethos";
+    if (secId === "05" || secId === "journey-cta" || secId === "cta") return "journey-cta";
+    return "journey-hero";
+  };
+
+  const [activeSectionId, setActiveSectionId] = useState<string>(() => resolveSectionId(sectionId));
+
+  useEffect(() => {
+    if (sectionId) {
+      setActiveSectionId(resolveSectionId(sectionId));
+    }
+  }, [sectionId]);
+
+  const sectionsWithCounts: SectionNavItem[] = useMemo(() => {
+    return JOURNEY_SECTIONS_CATALOG.map((sec) => {
+      if (sec.id === "journey-eras") {
+        return { ...sec, badge: `${formData.eras?.length || 0} Eras` };
+      }
+      if (sec.id === "journey-events") {
+        return { ...sec, badge: `${formData.events?.length || 0} Events` };
+      }
+      return sec;
+    });
+  }, [formData.eras?.length, formData.events?.length]);
+
+  const currentSectionMeta =
+    sectionsWithCounts.find((s) => s.id === activeSectionId) || sectionsWithCounts[0];
+  const SectionIcon = currentSectionMeta.icon || Milestone;
 
   if (isLoading) {
     return (
@@ -282,45 +366,63 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
   }
 
   return (
-    <div className="w-full min-w-0 max-w-full overflow-hidden space-y-4 sm:space-y-6 text-slate-900 dark:text-white">
-      {/* HEADER CONTROLS */}
-      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 overflow-hidden p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-white dark:bg-[#131927] border border-slate-200/80 dark:border-slate-800 shadow-xs">
-        <div className="space-y-1 min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <Milestone className="h-4 w-4 sm:h-5 sm:w-5 text-violet-600 dark:text-violet-400 shrink-0" />
-            <h2 className="text-sm sm:text-base font-extrabold tracking-tight">
-              Company Journey & Events Configurator (/journey)
-            </h2>
+    <div className="w-full min-w-0 max-w-full space-y-4 text-slate-900 dark:text-white">
+      {/* 2-Column Master-Detail Selection Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column: Section Selector */}
+        <div className="lg:col-span-4 xl:col-span-3 lg:sticky lg:top-4">
+          <SectionNavSidebar
+            title="Journey Sections"
+            sections={sectionsWithCounts}
+            activeSectionId={activeSectionId}
+            onSelectSection={(id) => setActiveSectionId(id)}
+            accentColor="violet"
+          />
+        </div>
+
+        {/* Right Column: Active Section Editor Workspace */}
+        <div className="lg:col-span-8 xl:col-span-9 min-w-0 space-y-5">
+          {/* Active Section Header Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-5 rounded-2xl bg-white dark:bg-[#131927] border border-slate-200/80 dark:border-slate-800 shadow-xs">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-mono text-xs font-black text-violet-600 dark:text-violet-400 bg-violet-500/10 px-2 py-0.5 rounded-md border border-violet-500/20 shrink-0">
+                  #{currentSectionMeta.number}
+                </span>
+                <SectionIcon className="h-4 w-4 text-violet-600 dark:text-violet-400 shrink-0" />
+                <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white truncate">
+                  {currentSectionMeta.title}
+                </h3>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate">
+                {currentSectionMeta.subtitle}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={handleResetToDefaults}
+                className="px-3 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                <span>Reset Defaults</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={isSaving}
+                className="px-4 py-2 sm:px-5 sm:py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+              >
+                {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                <span>Save All Changes</span>
+              </button>
+            </div>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Manage milestone eras, historical timeline story nodes, Cloudinary photo gallery, and event summits.
-          </p>
-        </div>
 
-        <div className="flex flex-wrap items-center gap-2 shrink-0 w-full lg:w-auto">
-          <button
-            type="button"
-            onClick={handleResetToDefaults}
-            className="flex-1 sm:flex-none px-3 py-2 sm:px-3.5 sm:py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-          >
-            <RotateCcw className="h-3.5 w-3.5" />
-            <span>Reset Defaults</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={isSaving}
-            className="flex-1 sm:flex-none px-4 py-2 sm:px-5 sm:py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-          >
-            {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
-            <span>Save All Changes</span>
-          </button>
-        </div>
-      </div>
-
-      {/* SECTION 1: HERO & METRICS BAR */}
-      {showHeroSection && (
+          {/* SECTION 1: HERO & METRICS BAR */}
+          {activeSectionId === "journey-hero" && (
         <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-5 shadow-xs">
           <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
             <span className="font-mono text-[10px] sm:text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
@@ -436,7 +538,7 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
       )}
 
       {/* SECTION LANDING TIMELINE HEADER (BOX #06) */}
-      {showLandingHeader && (
+      {activeSectionId === "landing-timeline" && (
         <div className="rounded-xl sm:rounded-2xl border border-blue-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-5 shadow-xs">
           <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
             <span className="font-mono text-[10px] sm:text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
@@ -550,7 +652,7 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
       )}
 
       {/* SECTION 2: HISTORICAL ERA NODES MANAGER */}
-      {showErasSection && (
+      {activeSectionId === "journey-eras" && (
         <div className="rounded-xl sm:rounded-2xl border border-violet-200/80 dark:border-slate-800 bg-gradient-to-b from-white via-violet-50/20 to-white dark:from-[#131927] dark:to-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-6 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-violet-100 dark:border-slate-800">
             <div className="flex items-center gap-2">
@@ -808,7 +910,7 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
       )}
 
       {/* SECTION 3: COMPANY CULTURE & EVENTS GALLERY MANAGER */}
-      {showEventsSection && (
+      {activeSectionId === "journey-events" && (
         <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-6 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-2">
@@ -1152,7 +1254,7 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
       )}
 
       {/* SECTION ENGINEERING ETHOS (4 PILLARS) */}
-      {showEthosSection && (
+      {activeSectionId === "journey-ethos" && (
         <div className="rounded-xl sm:rounded-2xl border border-violet-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-5 shadow-xs">
           <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
             <span className="font-mono text-[10px] sm:text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">
@@ -1273,46 +1375,55 @@ export default function JourneyEditor({ sectionId }: JourneyEditorProps) {
         </div>
       )}
 
-      {/* SECTION 4: CALL TO ACTION */}
-      <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 shadow-xs">
-        <h3 className="text-xs sm:text-sm font-bold">
-          Journey Bottom Call-To-Action (CTA) Section
-        </h3>
-
-        <div className="grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2">
-          <div>
-            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 block">
-              CTA Header Title
-            </label>
-            <input
-              type="text"
-              value={formData.ctaSection?.title || ""}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  ctaSection: { ...formData.ctaSection, title: e.target.value } as any,
-                })
-              }
-              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-semibold"
-            />
+      {/* SECTION 5: CALL TO ACTION */}
+      {activeSectionId === "journey-cta" && (
+        <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 shadow-xs">
+          <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
+            <span className="font-mono text-[10px] sm:text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
+              #05
+            </span>
+            <h3 className="text-xs sm:text-sm font-bold">
+              Journey Bottom Call-To-Action (CTA) Section
+            </h3>
           </div>
 
-          <div>
-            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 block">
-              CTA Button Text
-            </label>
-            <input
-              type="text"
-              value={formData.ctaSection?.buttonText || ""}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  ctaSection: { ...formData.ctaSection, buttonText: e.target.value } as any,
-                })
-              }
-              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-semibold"
-            />
+          <div className="grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2">
+            <div>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 block">
+                CTA Header Title
+              </label>
+              <input
+                type="text"
+                value={formData.ctaSection?.title || ""}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    ctaSection: { ...formData.ctaSection, title: e.target.value } as any,
+                  })
+                }
+                className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-semibold"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 block">
+                CTA Button Text
+              </label>
+              <input
+                type="text"
+                value={formData.ctaSection?.buttonText || ""}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    ctaSection: { ...formData.ctaSection, buttonText: e.target.value } as any,
+                  })
+                }
+                className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-semibold"
+              />
+            </div>
           </div>
+        </div>
+      )}
         </div>
       </div>
     </div>

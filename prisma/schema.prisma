@@ -385,12 +385,14 @@ model JobCategory {
 model JobVacancy {
   id               String           @id @default(cuid())
   title            String
+  slug             String           @default("")
   categoryId       String
   category         JobCategory      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   type             String           @default("Full-Time")
   location         String           @default("Remote (Global)")
   experience       String           @default("Senior")
   salary           String           @default("")
+  deadline         String           @default("")
   summary          String           @default("")
   responsibilities Json             @default("[]") // String[]
   requirements     Json             @default("[]") // String[]

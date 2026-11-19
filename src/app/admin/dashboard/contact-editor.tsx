@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { createPortal } from "react-dom";
 import {
@@ -34,6 +34,37 @@ import {
 import { DEFAULT_CONTACT_PAGE_DATA } from "@/data/default-contact-data";
 import { ContactInquiryItem, ContactPageContent } from "@/types";
 import { subscribeRealtimeNotifications } from "@/lib/realtime-notifications";
+import {
+  SectionNavSidebar,
+  SectionNavItem,
+} from "@/components/admin/dashboard/section-nav-sidebar";
+
+export const CONTACT_SECTIONS_CATALOG: SectionNavItem[] = [
+  {
+    id: "contact-hero",
+    number: "01",
+    title: "Hero & Office Contact Details",
+    subtitle: "Headlines, office address, phone, email & map embed configuration",
+    icon: Mail,
+    badge: "Hero & Office",
+  },
+  {
+    id: "quick-enquiry",
+    number: "02",
+    title: "Global Quick Enquiry Modal",
+    subtitle: "Quick inquiry drawer tags, placeholders, phone & SLA response note",
+    icon: Send,
+    badge: "Drawer Modal",
+  },
+  {
+    id: "inquiries",
+    number: "03",
+    title: "Client Leads & Inquiries Manager",
+    subtitle: "Moderate submissions, filter unread leads, export and inspect inquiries",
+    icon: User,
+    badge: "Leads",
+  },
+];
 
 interface ContactEditorProps {
   sectionId: string | null;
@@ -378,24 +409,44 @@ export default function ContactEditor({ sectionId, onCloseSection, selectedItemI
   const startIndex = (currentPage - 1) * pageSize;
   const pageInquiries = filteredInquiries.slice(startIndex, startIndex + pageSize);
 
-  const showHeroSection =
-    !sectionId ||
-    sectionId === "contact-hero" ||
-    sectionId === "01" ||
-    sectionId === "contact-page";
+  const resolveSectionId = (secId: string | null | undefined): string => {
+    if (!secId) return "contact-hero";
+    if (secId === "01" || secId === "contact-hero" || secId === "contact-page") return "contact-hero";
+    if (secId === "02" || secId === "quick-enquiry") return "quick-enquiry";
+    if (
+      secId === "03" ||
+      secId === "contact-form" ||
+      secId === "inquiries" ||
+      secId === "contact-inquiries" ||
+      secId === "contact-inquiries-leads"
+    )
+      return "inquiries";
+    return "contact-hero";
+  };
 
-  const showQuickEnquirySection =
-    !sectionId ||
-    sectionId === "quick-enquiry" ||
-    sectionId === "02" ||
-    sectionId === "contact-page";
+  const [activeSectionId, setActiveSectionId] = useState<string>(() => resolveSectionId(sectionId));
 
-  const showInquiriesSection =
-    !sectionId ||
-    sectionId === "contact-form" ||
-    sectionId === "inquiries" ||
-    sectionId === "03" ||
-    sectionId === "contact-page";
+  useEffect(() => {
+    if (sectionId) {
+      setActiveSectionId(resolveSectionId(sectionId));
+    }
+  }, [sectionId]);
+
+  const sectionsWithCounts: SectionNavItem[] = useMemo(() => {
+    return CONTACT_SECTIONS_CATALOG.map((sec) => {
+      if (sec.id === "inquiries") {
+        return {
+          ...sec,
+          badge: unreadCount > 0 ? `${unreadCount} Unread` : `${inquiries.length} Leads`,
+        };
+      }
+      return sec;
+    });
+  }, [unreadCount, inquiries.length]);
+
+  const currentSectionMeta =
+    sectionsWithCounts.find((s) => s.id === activeSectionId) || sectionsWithCounts[0];
+  const SectionIcon = currentSectionMeta.icon || Mail;
 
   if (isLoading) {
     return (
@@ -407,51 +458,73 @@ export default function ContactEditor({ sectionId, onCloseSection, selectedItemI
   }
 
   return (
-    <div className="w-full min-w-0 max-w-full overflow-hidden space-y-4 sm:space-y-6 text-slate-900 dark:text-white">
-      {/* HEADER CONTROLS */}
-      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 overflow-hidden p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-white dark:bg-[#131927] border border-slate-200/80 dark:border-slate-800 shadow-xs">
-        <div className="space-y-1 min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400 shrink-0" />
-            <h2 className="text-sm sm:text-base font-extrabold tracking-tight">
-              Contact Us Page & Inquiries Configurator (/contact)
-            </h2>
-            {unreadCount > 0 && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-extrabold bg-blue-500/10 text-blue-600 border border-blue-500/20">
-                <Send className="h-3 w-3" />
-                {unreadCount} Unread Inquiry Lead(s)
-              </span>
-            )}
+    <div className="w-full min-w-0 max-w-full space-y-4 text-slate-900 dark:text-white">
+      {/* 2-Column Master-Detail Selection Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column: Section Selector */}
+        <div className="lg:col-span-4 xl:col-span-3 lg:sticky lg:top-4">
+          <SectionNavSidebar
+            title="Contact Sections"
+            sections={sectionsWithCounts}
+            activeSectionId={activeSectionId}
+            onSelectSection={(id) => setActiveSectionId(id)}
+            accentColor="blue"
+          />
+        </div>
+
+        {/* Right Column: Active Section Editor Workspace */}
+        <div className="lg:col-span-8 xl:col-span-9 min-w-0 space-y-5">
+          {/* Active Section Header Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-5 rounded-2xl bg-white dark:bg-[#131927] border border-slate-200/80 dark:border-slate-800 shadow-xs">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-mono text-xs font-black text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-md border border-blue-500/20 shrink-0">
+                  #{currentSectionMeta.number}
+                </span>
+                <SectionIcon className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white truncate">
+                  {currentSectionMeta.title}
+                </h3>
+                {activeSectionId === "inquiries" && unreadCount > 0 && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-extrabold bg-blue-500/10 text-blue-600 border border-blue-500/20">
+                    <Send className="h-3 w-3" />
+                    {unreadCount} Unread Lead(s)
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate">
+                {currentSectionMeta.subtitle}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              {activeSectionId !== "inquiries" && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setFormData(DEFAULT_CONTACT_PAGE_DATA)}
+                    className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" />
+                    <span>Reset Defaults</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={isSaving}
+                    onClick={handleSaveHeader}
+                    className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-md shadow-blue-600/20 flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                    <span>{isSaving ? "Saving..." : "Save Content"}</span>
+                  </button>
+                </>
+              )}
+            </div>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Configure dynamic contact page headlines, office address, phone, email, and moderate client lead inquiries.
-          </p>
-        </div>
 
-        <div className="flex flex-wrap items-center gap-2 shrink-0 w-full lg:w-auto">
-          <button
-            type="button"
-            onClick={() => setFormData(DEFAULT_CONTACT_PAGE_DATA)}
-            className="flex-1 sm:flex-none px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all flex items-center justify-center gap-1.5"
-          >
-            <RotateCcw className="h-3.5 w-3.5" />
-            <span>Reset Defaults</span>
-          </button>
-
-          <button
-            type="button"
-            disabled={isSaving}
-            onClick={handleSaveHeader}
-            className="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-md shadow-blue-600/20 flex items-center justify-center gap-1.5"
-          >
-            {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
-            <span>{isSaving ? "Saving..." : "Save Content"}</span>
-          </button>
-        </div>
-      </div>
-
-      {/* SECTION 1: HERO & OFFICE DETAILS CONFIGURATOR */}
-      {showHeroSection && (
+          {/* SECTION 1: HERO & OFFICE DETAILS CONFIGURATOR */}
+          {activeSectionId === "contact-hero" && (
         <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-6">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-2">
@@ -1034,7 +1107,7 @@ export default function ContactEditor({ sectionId, onCloseSection, selectedItemI
       )}
 
       {/* SECTION 2: QUICK ENQUIRY MODAL CUSTOMIZATION (SEPARATE DEDICATED BOX CARD) */}
-      {showQuickEnquirySection && (
+      {activeSectionId === "quick-enquiry" && (
         <div className="rounded-xl sm:rounded-2xl border border-violet-200/80 dark:border-slate-800 bg-gradient-to-b from-white via-violet-50/20 to-white dark:from-[#131927] dark:to-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-5 shadow-xs">
           {/* Section Header Controls */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-violet-100 dark:border-slate-800">
@@ -1255,7 +1328,7 @@ export default function ContactEditor({ sectionId, onCloseSection, selectedItemI
       )}
 
       {/* SECTION 3: CLIENT INQUIRIES TABULAR LIST */}
-      {showInquiriesSection && (
+      {activeSectionId === "inquiries" && (
         <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-5 shadow-xs">
           {/* Section Header Controls */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
@@ -1562,6 +1635,8 @@ export default function ContactEditor({ sectionId, onCloseSection, selectedItemI
           )}
         </div>
       )}
+        </div>
+      </div>
 
       {/* DETAIL MODAL FOR SELECTED INQUIRY */}
       {selectedInquiry &&

@@ -42,7 +42,9 @@ import {
   SlidersHorizontal,
   Calculator,
   Code2,
+  Grid,
 } from "lucide-react";
+import { SectionNavSidebar } from "@/components/admin/dashboard/section-nav-sidebar";
 import { DEFAULT_NAVBAR_DATA, DEFAULT_COMPANY_NAV_LINKS, CompanyNavItem } from "@/data/default-navbar-data";
 import {
   DEFAULT_LANDING_DATA,
@@ -303,13 +305,18 @@ export default function LandingPageEditor({ sectionId, onCloseSection }: Landing
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Active Selected Section for Dedicated Configuration (null = Catalog Overview Grid)
-  const [activeSectionId, setActiveSectionId] = useState<string | null>(sectionId || null);
+  // View mode: "grid" (12 Cards Overview Grid, default) or "split" (2-Column Configure Workspace)
+  const [viewMode, setViewMode] = useState<"grid" | "split">(sectionId ? "split" : "grid");
+  // Active Selected Section for Dedicated Configuration
+  const [activeSectionId, setActiveSectionId] = useState<string>(sectionId || "navbar");
 
   // Sync prop changes
   useEffect(() => {
-    if (sectionId !== undefined) {
+    if (sectionId) {
       setActiveSectionId(sectionId);
+      setViewMode("split");
+    } else {
+      setViewMode("grid");
     }
   }, [sectionId]);
 
@@ -779,74 +786,99 @@ export default function LandingPageEditor({ sectionId, onCloseSection }: Landing
     );
   }
 
-  const currentSectionMeta = LANDING_SECTIONS_CATALOG.find((s) => s.id === activeSectionId);
+  const currentSectionMeta =
+    LANDING_SECTIONS_CATALOG.find((s) => s.id === activeSectionId) || LANDING_SECTIONS_CATALOG[0];
 
   // =========================================================================
-  // VIEW MODE A: DEDICATED INDIVIDUAL SECTION EDITOR WORKSPACE
+  // VIEW MODE A: MASTER-DETAIL SELECTION WORKSPACE (2-COLUMN EDITABLE LAYOUT)
   // =========================================================================
-  if (activeSectionId && currentSectionMeta) {
+  if (viewMode === "split") {
     const SectionIcon = currentSectionMeta.icon;
 
     return (
-      <div className="w-full min-w-0 max-w-full space-y-6 text-slate-900 dark:text-white">
-        {/* TOP DEDICATED SECTION NAVIGATION BAR */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#131927] border border-slate-200/80 dark:border-slate-800 shadow-sm">
-          {/* Section Info & Back Button */}
-          <div className="flex flex-wrap items-center gap-3 min-w-0 flex-1">
-            <button
-              type="button"
-              onClick={() => {
-                setActiveSectionId(null);
-                if (onCloseSection) onCloseSection();
-              }}
-              className="p-2 sm:px-3 sm:py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors flex items-center gap-1.5 text-xs font-bold shrink-0 cursor-pointer"
-            >
-              <ArrowLeft className="h-4 w-4 shrink-0" />
-              <span className="whitespace-nowrap">Back to All Landing Sections</span>
-            </button>
+      <div className="w-full min-w-0 max-w-full space-y-4 text-slate-900 dark:text-white">
+        {/* Responsive Grid: Left Section Selector + Right Active Editor */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Left Master Column: Section Selector */}
+          <div className="lg:col-span-4 xl:col-span-3 lg:sticky lg:top-4">
+            <SectionNavSidebar
+              title="Landing Sections"
+              sections={LANDING_SECTIONS_CATALOG}
+              activeSectionId={activeSectionId}
+              onSelectSection={(id) => setActiveSectionId(id)}
+              accentColor="violet"
+            />
+          </div>
 
-            <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block shrink-0" />
+          {/* Right Detail Column: Active Section Editor Workspace */}
+          <div className="lg:col-span-8 xl:col-span-9 min-w-0 space-y-5">
+            {/* TOP DEDICATED SECTION HEADER BAR */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-5 rounded-2xl bg-white dark:bg-[#131927] border border-slate-200/80 dark:border-slate-800 shadow-xs">
+              <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setViewMode("grid");
+                    if (onCloseSection) onCloseSection();
+                  }}
+                  className="p-2 sm:px-3 sm:py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors flex items-center gap-1.5 text-xs font-bold shrink-0 cursor-pointer"
+                  title="Back to All 12 Landing Sections Grid"
+                >
+                  <ArrowLeft className="h-4 w-4 shrink-0" />
+                  <span className="whitespace-nowrap">Grid View</span>
+                </button>
 
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-mono text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded shrink-0">
-                  #{currentSectionMeta.number}
-                </span>
-                <SectionIcon className="h-4 w-4 text-violet-600 shrink-0" />
-                <h2 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white truncate">
-                  {currentSectionMeta.title}
-                </h2>
+                <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block shrink-0" />
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-mono text-xs font-black text-violet-600 dark:text-violet-400 bg-violet-500/10 px-2 py-0.5 rounded-md border border-violet-500/20 shrink-0">
+                      #{currentSectionMeta.number}
+                    </span>
+                    <SectionIcon className="h-4 w-4 text-violet-600 dark:text-violet-400 shrink-0" />
+                    <h2 className="text-xs sm:text-sm md:text-base font-extrabold text-slate-900 dark:text-white truncate">
+                      {currentSectionMeta.title}
+                    </h2>
+                  </div>
+                  <p className="text-[10px] sm:text-[11px] text-slate-400 font-medium truncate mt-0.5">
+                    {currentSectionMeta.desc}
+                  </p>
+                </div>
               </div>
-              <p className="text-[10px] sm:text-[11px] text-slate-400 font-medium truncate mt-0.5">
-                {currentSectionMeta.desc}
-              </p>
+
+              {/* Right Actions: Segmented View Switcher & Save Section Config */}
+              <div className="flex flex-wrap items-center gap-2 shrink-0 justify-end w-full sm:w-auto">
+                {/* Segmented View Switcher */}
+                <div className="inline-flex items-center rounded-xl bg-slate-100 dark:bg-slate-800/90 p-1 border border-slate-200/80 dark:border-slate-700/60 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setViewMode("grid")}
+                    className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"
+                  >
+                    <Grid className="h-3.5 w-3.5" />
+                    <span className="hidden xs:inline sm:inline">Grid</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode("split")}
+                    className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-white dark:bg-[#131927] text-violet-600 dark:text-violet-400 shadow-xs cursor-pointer"
+                  >
+                    <Layers className="h-3.5 w-3.5" />
+                    <span className="hidden xs:inline sm:inline">Split</span>
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  disabled={isSaving}
+                  onClick={handleSaveLandingConfig}
+                  className="flex-1 sm:flex-none px-4 sm:px-5 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-md shadow-violet-600/20 flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
+                >
+                  {isSaving ? <Loader2 className="h-4 w-4 animate-spin shrink-0" /> : <Save className="h-4 w-4 shrink-0" />}
+                  <span className="whitespace-nowrap">{isSaving ? "Saving..." : "Save Section"}</span>
+                </button>
+              </div>
             </div>
-          </div>
-
-          {/* Right Actions: Cancel & Save Section Config */}
-          <div className="flex items-center gap-2.5 shrink-0 self-end md:self-auto pt-2 md:pt-0 border-t md:border-t-0 border-slate-100 dark:border-slate-800/60 w-full md:w-auto justify-end">
-            <button
-              type="button"
-              onClick={() => {
-                setActiveSectionId(null);
-                if (onCloseSection) onCloseSection();
-              }}
-              className="px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0"
-            >
-              Cancel
-            </button>
-
-            <button
-              type="button"
-              disabled={isSaving}
-              onClick={handleSaveLandingConfig}
-              className="px-4 sm:px-5 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-md shadow-violet-600/20 flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
-            >
-              {isSaving ? <Loader2 className="h-4 w-4 animate-spin shrink-0" /> : <Save className="h-4 w-4 shrink-0" />}
-              <span className="whitespace-nowrap">{isSaving ? "Saving..." : "Save Section Config"}</span>
-            </button>
-          </div>
-        </div>
 
         {/* SECTION 01: HEADER NAVBAR & COMPANY DROPDOWNS CONFIGURATOR */}
         {activeSectionId === "navbar" && (
@@ -3344,6 +3376,8 @@ export default function LandingPageEditor({ sectionId, onCloseSection }: Landing
             </div>
           </div>
         )}
+          </div>
+        </div>
       </div>
     );
   }
@@ -3367,21 +3401,41 @@ export default function LandingPageEditor({ sectionId, onCloseSection }: Landing
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0 w-full sm:w-auto justify-end">
+          {/* Segmented View Switcher */}
+          <div className="inline-flex items-center rounded-xl bg-slate-100 dark:bg-slate-800/90 p-1 border border-slate-200/80 dark:border-slate-700/60 shrink-0">
+            <button
+              type="button"
+              onClick={() => setViewMode("grid")}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-white dark:bg-[#131927] text-violet-600 dark:text-violet-400 shadow-xs cursor-pointer"
+            >
+              <Grid className="h-3.5 w-3.5" />
+              <span>Grid View</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("split")}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"
+            >
+              <Layers className="h-3.5 w-3.5" />
+              <span>Split View</span>
+            </button>
+          </div>
+
           <button
             type="button"
             onClick={() => setLandingData(DEFAULT_LANDING_DATA)}
             className="px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <RotateCcw className="h-3.5 w-3.5" />
-            <span>Reset Defaults</span>
+            <span className="hidden sm:inline">Reset Defaults</span>
           </button>
 
           <button
             type="button"
             disabled={isSaving}
             onClick={handleSaveLandingConfig}
-            className="px-5 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-md shadow-violet-600/20 flex items-center gap-1.5 cursor-pointer"
+            className="px-4 sm:px-5 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-md shadow-violet-600/20 flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
           >
             {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
             <span>{isSaving ? "Saving..." : "Save All Configs"}</span>
@@ -3436,7 +3490,10 @@ export default function LandingPageEditor({ sectionId, onCloseSection }: Landing
 
                 <button
                   type="button"
-                  onClick={() => setActiveSectionId(sec.id)}
+                  onClick={() => {
+                    setActiveSectionId(sec.id);
+                    setViewMode("split");
+                  }}
                   className="px-3.5 py-1.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-extrabold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
                 >
                   <SlidersHorizontal className="h-3.5 w-3.5" />

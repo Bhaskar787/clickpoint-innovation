@@ -39,6 +39,9 @@ export default function FaqsClientView({ header, faqs, categories: categoryNames
   const [quickEnquiryOpen, setQuickEnquiryOpen] = useState<boolean>(false);
   const [depths, setDepths] = useState<number[]>([]);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const lastScrollY = useRef<number>(0);
+  const lastUserOpenTime = useRef<number>(0);
+  const openScrollY = useRef<number>(0);
 
   const [headerContent, setHeaderContent] = useState<any>(
     header || DEFAULT_LANDING_DATA.faqPageHeader || DEFAULT_FAQ_PAGE_HEADER
@@ -105,21 +108,61 @@ export default function FaqsClientView({ header, faqs, categories: categoryNames
     });
   }, []);
 
+  // Auto-close open accordion dropdown when it touches the navbar top while scrolling
+  const checkAutoClose = useCallback(() => {
+    if (typeof window === "undefined") return;
+
+    const currentScrollY = window.scrollY;
+    const prevScrollY = lastScrollY.current;
+    lastScrollY.current = currentScrollY;
+
+    if (openIndex === null) return;
+
+    const el = cardRefs.current[openIndex];
+    if (!el) return;
+
+    const isScrollingDown = currentScrollY > prevScrollY;
+
+    // Prevent immediate close on click micro-jitter (within 350ms and < 15px scroll)
+    const timeSinceOpen = Date.now() - lastUserOpenTime.current;
+    const scrollDeltaSinceOpen = currentScrollY - openScrollY.current;
+    if (timeSinceOpen < 350 && scrollDeltaSinceOpen < 15) {
+      return;
+    }
+
+    const rect = el.getBoundingClientRect();
+    const cardStickyTop = STACK_TOP + openIndex * STACK_OFFSET;
+
+    const header = document.querySelector("header");
+    const navbarBottom = header ? header.getBoundingClientRect().bottom : STACK_TOP;
+
+    // Threshold where the opened card touches the navbar / reaches sticky top
+    const touchesNavbar = rect.top <= Math.max(cardStickyTop + 4, navbarBottom + 12);
+
+    if (touchesNavbar && (isScrollingDown || rect.top <= navbarBottom)) {
+      setOpenIndex(null);
+    }
+  }, [openIndex]);
+
   useEffect(() => {
     let raf = 0;
     const onScroll = () => {
       cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(measure);
+      raf = requestAnimationFrame(() => {
+        measure();
+        checkAutoClose();
+      });
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
     measure();
+    checkAutoClose();
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };
-  }, [measure, filteredFaqs.length]);
+  }, [measure, checkAutoClose, filteredFaqs.length]);
 
   const telHref = `tel:${phone.replace(/[^+\d]/g, "")}`;
 
@@ -194,6 +237,8 @@ export default function FaqsClientView({ header, faqs, categories: categoryNames
                   key={cat}
                   onClick={() => {
                     setActiveCategory(cat);
+                    lastUserOpenTime.current = Date.now();
+                    openScrollY.current = typeof window !== "undefined" ? window.scrollY : 0;
                     setOpenIndex(0);
                   }}
                   className={`rounded-full px-5 py-2.5 text-xs sm:text-sm font-semibold transition-all duration-300 cursor-pointer ${
@@ -233,7 +278,7 @@ export default function FaqsClientView({ header, faqs, categories: categoryNames
                     >
                       <div
                         ref={(el) => { cardRefs.current[i] = el; }}
-                        className={`relative rounded-2xl border transition-all duration-300 ease-out ${
+                        className={`relative rounded-2xl border transition-[border-color,box-shadow,background-color] duration-200 ${
                           isOpen
                             ? "border-violet-400 dark:border-violet-500 bg-white dark:bg-[#131c31] shadow-xl shadow-violet-950/10"
                             : "border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] shadow-xs hover:border-violet-300 dark:hover:border-slate-700"
@@ -252,7 +297,15 @@ export default function FaqsClientView({ header, faqs, categories: categoryNames
                         )}
 
                         <button
-                          onClick={() => setOpenIndex(isOpen ? null : i)}
+                          onClick={() => {
+                            if (isOpen) {
+                              setOpenIndex(null);
+                            } else {
+                              lastUserOpenTime.current = Date.now();
+                              openScrollY.current = typeof window !== "undefined" ? window.scrollY : 0;
+                              setOpenIndex(i);
+                            }
+                          }}
                           className="w-full flex items-center justify-between p-5 text-left font-display text-base font-bold text-ink dark:text-white hover:text-violet-600 dark:hover:text-violet-300 transition-colors cursor-pointer"
                         >
                           <div className="flex items-center gap-3 pr-2">

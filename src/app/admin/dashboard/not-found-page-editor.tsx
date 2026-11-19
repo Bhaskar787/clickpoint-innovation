@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import {
   Save,
@@ -20,6 +20,29 @@ import {
 } from "lucide-react";
 import { NotFoundPageContent, NotFoundActionLink } from "@/types";
 import { DEFAULT_NOT_FOUND_DATA } from "@/data/default-not-found-data";
+import {
+  SectionNavSidebar,
+  SectionNavItem,
+} from "@/components/admin/dashboard/section-nav-sidebar";
+
+export const NOT_FOUND_SECTIONS_CATALOG: SectionNavItem[] = [
+  {
+    id: "404-hero",
+    number: "01",
+    title: "404 Hero & Error Code",
+    subtitle: "Badge, error code (404), headline title & subtitle copy",
+    icon: AlertTriangle,
+    badge: "Hero 404",
+  },
+  {
+    id: "404-links",
+    number: "02",
+    title: "Recovery Navigation Links",
+    subtitle: "Add, edit, reorder & configure quick recovery action buttons",
+    icon: Link2,
+    badge: "Action Links",
+  },
+];
 
 const ICON_OPTIONS: { value: string; label: string }[] = [
   { value: "arrow-left", label: "Arrow Left" },
@@ -156,6 +179,34 @@ export default function NotFoundPageEditor({ sectionId, onCloseSection }: NotFou
     setFormData({ ...formData, actions: updated });
   }
 
+  const resolveSectionId = (secId: string | null | undefined): string => {
+    if (!secId) return "404-hero";
+    if (secId === "01" || secId === "404-hero") return "404-hero";
+    if (secId === "02" || secId === "404-links") return "404-links";
+    return "404-hero";
+  };
+
+  const [activeSectionId, setActiveSectionId] = useState<string>(() => resolveSectionId(sectionId));
+
+  useEffect(() => {
+    if (sectionId) {
+      setActiveSectionId(resolveSectionId(sectionId));
+    }
+  }, [sectionId]);
+
+  const sectionsWithCounts: SectionNavItem[] = useMemo(() => {
+    return NOT_FOUND_SECTIONS_CATALOG.map((sec) => {
+      if (sec.id === "404-links") {
+        return { ...sec, badge: `${formData.actions.length} Links` };
+      }
+      return sec;
+    });
+  }, [formData.actions.length]);
+
+  const currentSectionMeta =
+    sectionsWithCounts.find((s) => s.id === activeSectionId) || sectionsWithCounts[0];
+  const SectionIcon = currentSectionMeta.icon || AlertTriangle;
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[300px] sm:min-h-[400px] gap-3 bg-white dark:bg-[#131927] rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-8">
@@ -166,52 +217,74 @@ export default function NotFoundPageEditor({ sectionId, onCloseSection }: NotFou
   }
 
   return (
-    <div className="w-full min-w-0 max-w-full overflow-hidden space-y-4 sm:space-y-6 text-slate-900 dark:text-white">
-      {/* Action Header */}
-      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 overflow-hidden bg-white dark:bg-[#131927] p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
-        <div className="space-y-1 min-w-0 flex-1">
-          <h2 className="text-base sm:text-lg font-bold flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0" />
-            Editing 404 Error Page Content
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Configure the badge tag, error code, headline, subtitle, and every recovery navigation link dynamically.
-          </p>
+    <div className="w-full min-w-0 max-w-full space-y-4 text-slate-900 dark:text-white">
+      {/* 2-Column Master-Detail Selection Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column: Section Selector */}
+        <div className="lg:col-span-4 xl:col-span-3 lg:sticky lg:top-4">
+          <SectionNavSidebar
+            title="404 Page Sections"
+            sections={sectionsWithCounts}
+            activeSectionId={activeSectionId}
+            onSelectSection={(id) => setActiveSectionId(id)}
+            accentColor="blue"
+          />
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 shrink-0 w-full lg:w-auto">
-          <button
-            type="button"
-            onClick={handleReset}
-            className="flex-1 sm:flex-none px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5"
-          >
-            <RotateCcw className="h-3.5 w-3.5" />
-            <span>Reset Defaults</span>
-          </button>
+        {/* Right Column: Active Section Editor Workspace */}
+        <div className="lg:col-span-8 xl:col-span-9 min-w-0 space-y-5">
+          {/* Active Section Header Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-5 rounded-2xl bg-white dark:bg-[#131927] border border-slate-200/80 dark:border-slate-800 shadow-xs">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-mono text-xs font-black text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-md border border-blue-500/20 shrink-0">
+                  #{currentSectionMeta.number}
+                </span>
+                <SectionIcon className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white truncate">
+                  {currentSectionMeta.title}
+                </h3>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate">
+                {currentSectionMeta.subtitle}
+              </p>
+            </div>
 
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={isSaving}
-            className="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-500/20 transition-all disabled:opacity-50 flex items-center justify-center gap-1.5"
-          >
-            {isSaving ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Saving...</span>
-              </>
-            ) : (
-              <>
-                <Save className="h-4 w-4" />
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={handleReset}
+                className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                <span>Reset Defaults</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={isSaving}
+                className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-500/20 transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
                 <span>Save Changes</span>
-              </>
-            )}
-          </button>
-        </div>
-      </div>
+              </button>
 
-      {/* SECTION 1: 404 HERO & BLUEPRINT GRID */}
-      {(!sectionId || sectionId === "404-hero") && (
+              {activeSectionId === "404-links" && (
+                <button
+                  type="button"
+                  onClick={handleAddAction}
+                  className="flex items-center justify-center gap-1 px-3 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-colors shadow-xs cursor-pointer"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Add Link</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* SECTION 1: 404 HERO & BLUEPRINT GRID */}
+          {activeSectionId === "404-hero" && (
         <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-5">
           <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
             <span className="font-mono text-[10px] sm:text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
@@ -287,7 +360,7 @@ export default function NotFoundPageEditor({ sectionId, onCloseSection }: NotFou
       )}
 
       {/* SECTION 2: QUICK ACTION NAVIGATION LINKS */}
-      {(!sectionId || sectionId === "404-links") && (
+      {activeSectionId === "404-links" && (
         <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-2">
@@ -436,6 +509,8 @@ export default function NotFoundPageEditor({ sectionId, onCloseSection }: NotFou
           </button>
         </div>
       )}
+        </div>
+      </div>
     </div>
   );
 }

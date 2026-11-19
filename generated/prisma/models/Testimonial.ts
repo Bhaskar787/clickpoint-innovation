@@ -49,6 +49,7 @@ export type TestimonialMinAggregateOutputType = {
   isRead: boolean | null
   ipAddress: string | null
   userEmail: string | null
+  phone: string | null
   order: number | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -67,6 +68,7 @@ export type TestimonialMaxAggregateOutputType = {
   isRead: boolean | null
   ipAddress: string | null
   userEmail: string | null
+  phone: string | null
   order: number | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -85,6 +87,7 @@ export type TestimonialCountAggregateOutputType = {
   isRead: number
   ipAddress: number
   userEmail: number
+  phone: number
   order: number
   createdAt: number
   updatedAt: number
@@ -115,6 +118,7 @@ export type TestimonialMinAggregateInputType = {
   isRead?: true
   ipAddress?: true
   userEmail?: true
+  phone?: true
   order?: true
   createdAt?: true
   updatedAt?: true
@@ -133,6 +137,7 @@ export type TestimonialMaxAggregateInputType = {
   isRead?: true
   ipAddress?: true
   userEmail?: true
+  phone?: true
   order?: true
   createdAt?: true
   updatedAt?: true
@@ -151,6 +156,7 @@ export type TestimonialCountAggregateInputType = {
   isRead?: true
   ipAddress?: true
   userEmail?: true
+  phone?: true
   order?: true
   createdAt?: true
   updatedAt?: true
@@ -256,6 +262,7 @@ export type TestimonialGroupByOutputType = {
   isRead: boolean
   ipAddress: string | null
   userEmail: string | null
+  phone: string | null
   order: number
   createdAt: Date
   updatedAt: Date
@@ -297,6 +304,7 @@ export type TestimonialWhereInput = {
   isRead?: Prisma.BoolFilter<"Testimonial"> | boolean
   ipAddress?: Prisma.StringNullableFilter<"Testimonial"> | string | null
   userEmail?: Prisma.StringNullableFilter<"Testimonial"> | string | null
+  phone?: Prisma.StringNullableFilter<"Testimonial"> | string | null
   order?: Prisma.IntFilter<"Testimonial"> | number
   createdAt?: Prisma.DateTimeFilter<"Testimonial"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Testimonial"> | Date | string
@@ -315,6 +323,7 @@ export type TestimonialOrderByWithRelationInput = {
   isRead?: Prisma.SortOrder
   ipAddress?: Prisma.SortOrderInput | Prisma.SortOrder
   userEmail?: Prisma.SortOrderInput | Prisma.SortOrder
+  phone?: Prisma.SortOrderInput | Prisma.SortOrder
   order?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -336,6 +345,7 @@ export type TestimonialWhereUniqueInput = Prisma.AtLeast<{
   isRead?: Prisma.BoolFilter<"Testimonial"> | boolean
   ipAddress?: Prisma.StringNullableFilter<"Testimonial"> | string | null
   userEmail?: Prisma.StringNullableFilter<"Testimonial"> | string | null
+  phone?: Prisma.StringNullableFilter<"Testimonial"> | string | null
   order?: Prisma.IntFilter<"Testimonial"> | number
   createdAt?: Prisma.DateTimeFilter<"Testimonial"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Testimonial"> | Date | string
@@ -354,6 +364,7 @@ export type TestimonialOrderByWithAggregationInput = {
   isRead?: Prisma.SortOrder
   ipAddress?: Prisma.SortOrderInput | Prisma.SortOrder
   userEmail?: Prisma.SortOrderInput | Prisma.SortOrder
+  phone?: Prisma.SortOrderInput | Prisma.SortOrder
   order?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -380,6 +391,7 @@ export type TestimonialScalarWhereWithAggregatesInput = {
   isRead?: Prisma.BoolWithAggregatesFilter<"Testimonial"> | boolean
   ipAddress?: Prisma.StringNullableWithAggregatesFilter<"Testimonial"> | string | null
   userEmail?: Prisma.StringNullableWithAggregatesFilter<"Testimonial"> | string | null
+  phone?: Prisma.StringNullableWithAggregatesFilter<"Testimonial"> | string | null
   order?: Prisma.IntWithAggregatesFilter<"Testimonial"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Testimonial"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Testimonial"> | Date | string
@@ -398,6 +410,7 @@ export type TestimonialCreateInput = {
   isRead?: boolean
   ipAddress?: string | null
   userEmail?: string | null
+  phone?: string | null
   order?: number
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -416,6 +429,7 @@ export type TestimonialUncheckedCreateInput = {
   isRead?: boolean
   ipAddress?: string | null
   userEmail?: string | null
+  phone?: string | null
   order?: number
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -434,6 +448,7 @@ export type TestimonialUpdateInput = {
   isRead?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ipAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -452,6 +467,7 @@ export type TestimonialUncheckedUpdateInput = {
   isRead?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ipAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -470,6 +486,7 @@ export type TestimonialCreateManyInput = {
   isRead?: boolean
   ipAddress?: string | null
   userEmail?: string | null
+  phone?: string | null
   order?: number
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -488,6 +505,7 @@ export type TestimonialUpdateManyMutationInput = {
   isRead?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ipAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -506,6 +524,7 @@ export type TestimonialUncheckedUpdateManyInput = {
   isRead?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ipAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   userEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   order?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -524,6 +543,7 @@ export type TestimonialCountOrderByAggregateInput = {
   isRead?: Prisma.SortOrder
   ipAddress?: Prisma.SortOrder
   userEmail?: Prisma.SortOrder
+  phone?: Prisma.SortOrder
   order?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -547,6 +567,7 @@ export type TestimonialMaxOrderByAggregateInput = {
   isRead?: Prisma.SortOrder
   ipAddress?: Prisma.SortOrder
   userEmail?: Prisma.SortOrder
+  phone?: Prisma.SortOrder
   order?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -565,6 +586,7 @@ export type TestimonialMinOrderByAggregateInput = {
   isRead?: Prisma.SortOrder
   ipAddress?: Prisma.SortOrder
   userEmail?: Prisma.SortOrder
+  phone?: Prisma.SortOrder
   order?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -590,6 +612,7 @@ export type TestimonialSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   isRead?: boolean
   ipAddress?: boolean
   userEmail?: boolean
+  phone?: boolean
   order?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -608,6 +631,7 @@ export type TestimonialSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   isRead?: boolean
   ipAddress?: boolean
   userEmail?: boolean
+  phone?: boolean
   order?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -626,6 +650,7 @@ export type TestimonialSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   isRead?: boolean
   ipAddress?: boolean
   userEmail?: boolean
+  phone?: boolean
   order?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -644,12 +669,13 @@ export type TestimonialSelectScalar = {
   isRead?: boolean
   ipAddress?: boolean
   userEmail?: boolean
+  phone?: boolean
   order?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type TestimonialOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clientName" | "clientRole" | "company" | "content" | "rating" | "avatarUrl" | "featured" | "isApproved" | "isRead" | "ipAddress" | "userEmail" | "order" | "createdAt" | "updatedAt", ExtArgs["result"]["testimonial"]>
+export type TestimonialOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clientName" | "clientRole" | "company" | "content" | "rating" | "avatarUrl" | "featured" | "isApproved" | "isRead" | "ipAddress" | "userEmail" | "phone" | "order" | "createdAt" | "updatedAt", ExtArgs["result"]["testimonial"]>
 
 export type $TestimonialPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Testimonial"
@@ -667,6 +693,7 @@ export type $TestimonialPayload<ExtArgs extends runtime.Types.Extensions.Interna
     isRead: boolean
     ipAddress: string | null
     userEmail: string | null
+    phone: string | null
     order: number
     createdAt: Date
     updatedAt: Date
@@ -1105,6 +1132,7 @@ export interface TestimonialFieldRefs {
   readonly isRead: Prisma.FieldRef<"Testimonial", 'Boolean'>
   readonly ipAddress: Prisma.FieldRef<"Testimonial", 'String'>
   readonly userEmail: Prisma.FieldRef<"Testimonial", 'String'>
+  readonly phone: Prisma.FieldRef<"Testimonial", 'String'>
   readonly order: Prisma.FieldRef<"Testimonial", 'Int'>
   readonly createdAt: Prisma.FieldRef<"Testimonial", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Testimonial", 'DateTime'>

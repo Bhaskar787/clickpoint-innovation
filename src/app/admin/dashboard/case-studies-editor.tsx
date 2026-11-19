@@ -29,6 +29,58 @@ import {
   DEFAULT_CASE_STUDY_CATEGORIES,
   DEFAULT_CASE_STUDIES_ITEMS,
 } from "@/data/default-case-studies-data";
+import { SectionNavSidebar, SectionNavItem } from "@/components/admin/dashboard/section-nav-sidebar";
+
+const CASE_STUDIES_SECTIONS_CATALOG: SectionNavItem[] = [
+  {
+    id: "cs-hero",
+    number: "01",
+    title: "Hero Banner & Headlines",
+    desc: "Header badge, main title, orange highlight title, and descriptive subtitle.",
+    icon: Type,
+    badge: "Hero Banner",
+  },
+  {
+    id: "cs-stats",
+    number: "02",
+    title: "Impact Highlights Bar (4 Stats)",
+    desc: "Key quantitative performance statistics and enterprise metric indicators.",
+    icon: TrendingUp,
+    badge: "Impact Stats",
+  },
+  {
+    id: "cs-categories",
+    number: "03",
+    title: "Dynamic Portfolio Categories",
+    desc: "Create and manage sector filter categories for client case studies.",
+    icon: FolderPlus,
+    badge: "Categories",
+  },
+  {
+    id: "cs-items",
+    number: "04",
+    title: "Case Studies Items Manager",
+    desc: "Manage client projects, live URLs, summaries, impacts, and tech stack tags.",
+    icon: FolderGit2,
+    badge: "Case Studies",
+  },
+  {
+    id: "cs-architecture",
+    number: "05",
+    title: "Deep Architecture & Benchmarks",
+    desc: "System metrics, 4-tier system pipeline steps, and enterprise benchmark bars.",
+    icon: Layers,
+    badge: "Architecture",
+  },
+  {
+    id: "cs-testimonials",
+    number: "06",
+    title: "Executive Endorsements & Reviews",
+    desc: "Headline titles and client testimonial selectors for case study showcase.",
+    icon: Quote,
+    badge: "Testimonials",
+  },
+];
 
 interface FileUploadControlProps {
   label: string;
@@ -120,7 +172,13 @@ function FileUploadControl({ label, value, accept, onChange }: FileUploadControl
   );
 }
 
-export default function CaseStudiesEditor() {
+interface CaseStudiesEditorProps {
+  sectionId?: string | null;
+  onCloseSection?: () => void;
+}
+
+export default function CaseStudiesEditor({ sectionId, onCloseSection }: CaseStudiesEditorProps = {}) {
+  const [activeSectionId, setActiveSectionId] = useState<string>(sectionId || "cs-hero");
   const [pageContent, setPageContent] = useState<any>(DEFAULT_CASE_STUDIES_PAGE_DATA);
   const [categories, setCategories] = useState<any[]>(DEFAULT_CASE_STUDY_CATEGORIES);
   const [caseStudies, setCaseStudies] = useState<any[]>(DEFAULT_CASE_STUDIES_ITEMS);
@@ -128,6 +186,12 @@ export default function CaseStudiesEditor() {
   const [isSaving, setIsSaving] = useState(false);
   const [newCatName, setNewCatName] = useState("");
   const [allTestimonials, setAllTestimonials] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (sectionId) {
+      setActiveSectionId(sectionId);
+    }
+  }, [sectionId]);
 
   useEffect(() => {
     async function loadData() {
@@ -250,56 +314,84 @@ export default function CaseStudiesEditor() {
     );
   }
 
+  const currentSectionMeta =
+    CASE_STUDIES_SECTIONS_CATALOG.find((s) => s.id === activeSectionId) || CASE_STUDIES_SECTIONS_CATALOG[0];
+  const SectionIcon = currentSectionMeta.icon || Type;
+
   return (
-    <div className="w-full min-w-0 max-w-full overflow-hidden space-y-6">
-      {/* Page Header */}
-      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131927] p-5 shadow-xs flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 overflow-hidden">
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20">
-              <FolderGit2 className="h-3 w-3" />
-              Dynamic Content Engine
-            </span>
-            <span className="text-xs font-semibold text-slate-400">
-              {caseStudies.length} Active Studies • {categories.length} Categories
-            </span>
+    <div className="w-full min-w-0 max-w-full space-y-4 text-slate-900 dark:text-white">
+      {/* 2-Column Master-Detail Selection Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column: Section Selector */}
+        <div className="lg:col-span-4 xl:col-span-3 lg:sticky lg:top-4">
+          <SectionNavSidebar
+            title="Case Study Sections"
+            sections={CASE_STUDIES_SECTIONS_CATALOG}
+            activeSectionId={activeSectionId}
+            onSelectSection={(id) => setActiveSectionId(id)}
+            accentColor="violet"
+          />
+        </div>
+
+        {/* Right Column: Active Section Editor Workspace */}
+        <div className="lg:col-span-8 xl:col-span-9 min-w-0 space-y-5">
+          {/* Active Section Header Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-5 rounded-2xl bg-white dark:bg-[#131927] border border-slate-200/80 dark:border-slate-800 shadow-xs">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-mono text-xs font-black text-violet-600 dark:text-violet-400 bg-violet-500/10 px-2 py-0.5 rounded-md border border-violet-500/20 shrink-0">
+                  #{currentSectionMeta.number}
+                </span>
+                <SectionIcon className="h-4 w-4 text-violet-600 dark:text-violet-400 shrink-0" />
+                <h2 className="text-xs sm:text-sm md:text-base font-extrabold text-slate-900 dark:text-white truncate">
+                  {currentSectionMeta.title}
+                </h2>
+              </div>
+              <p className="text-[10px] sm:text-[11px] text-slate-400 font-medium truncate mt-0.5">
+                {currentSectionMeta.desc}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  if (!confirm("Are you sure you want to reset all Case Studies content to defaults?")) return;
+                  setPageContent(DEFAULT_CASE_STUDIES_PAGE_DATA);
+                  setCategories(DEFAULT_CASE_STUDY_CATEGORIES);
+                  setCaseStudies(DEFAULT_CASE_STUDIES_ITEMS);
+                  toast.info("Reset to default case studies content.");
+                }}
+                className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Reset Defaults</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={isSaving}
+                className="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-semibold text-xs shadow-md shadow-violet-500/20 transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4" />
+                    <span>Save Changes</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-            Case Studies & Portfolio CMS
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Manage hero badges, impact metrics, dynamic categories, portfolio cards, and custom CTA buttons.
-          </p>
-        </div>
 
-        <div className="flex flex-wrap items-center gap-2 shrink-0 w-full lg:w-auto">
-          <button
-            type="button"
-            onClick={() => {
-              setPageContent(DEFAULT_CASE_STUDIES_PAGE_DATA);
-              setCategories(DEFAULT_CASE_STUDY_CATEGORIES);
-              setCaseStudies(DEFAULT_CASE_STUDIES_ITEMS);
-              toast.info("Reset to default case studies content.");
-            }}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-200 transition-colors"
-          >
-            <RotateCcw className="h-3.5 w-3.5" />
-            <span>Reset Defaults</span>
-          </button>
-          <button
-            type="button"
-            disabled={isSaving}
-            onClick={handleSave}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold transition-all shadow-md shadow-violet-600/20"
-          >
-            {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
-            <span>Save Case Studies</span>
-          </button>
-        </div>
-      </div>
-
-      {/* STEP 1: HERO SECTION */}
-      <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131927] space-y-4 shadow-xs">
+          {/* STEP 1: HERO SECTION */}
+          {activeSectionId === "cs-hero" && (
+            <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131927] space-y-4 shadow-xs">
         <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 flex items-center gap-2">
           <Type className="h-4 w-4 text-violet-500" />
           Step 1: Hero Section Content
@@ -375,9 +467,11 @@ export default function CaseStudiesEditor() {
           </div>
         </div>
       </div>
+    )}
 
       {/* STEP 2: IMPACT HIGHLIGHTS STATS BAR */}
-      <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131927] space-y-4 shadow-xs">
+      {activeSectionId === "cs-stats" && (
+        <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131927] space-y-4 shadow-xs">
         <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 flex items-center gap-2">
           <TrendingUp className="h-4 w-4 text-violet-500" />
           Step 2: Impact Highlights Bar (4 Stats)
@@ -426,9 +520,11 @@ export default function CaseStudiesEditor() {
           ))}
         </div>
       </div>
+    )}
 
       {/* STEP 3: DYNAMIC CATEGORIES MANAGEMENT */}
-      <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131927] space-y-4 shadow-xs">
+      {activeSectionId === "cs-categories" && (
+        <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131927] space-y-4 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 flex items-center gap-2">
@@ -511,9 +607,11 @@ export default function CaseStudiesEditor() {
           ))}
         </div>
       </div>
+    )}
 
       {/* STEP 4: CASE STUDIES ITEMS MANAGEMENT */}
-      <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131927] space-y-4 shadow-xs">
+      {activeSectionId === "cs-items" && (
+        <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131927] space-y-4 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 flex items-center gap-2">
@@ -828,9 +926,11 @@ export default function CaseStudiesEditor() {
           ))}
         </div>
       </div>
+    )}
 
       {/* STEP 5: DEEP ARCHITECTURE BREAKDOWN & BENCHMARK SHOWCASE SECTION */}
-      <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131927] space-y-5 shadow-xs">
+      {activeSectionId === "cs-architecture" && (
+        <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131927] space-y-5 shadow-xs">
         <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 flex items-center gap-2">
           <Layers className="h-4 w-4 text-violet-500" />
           Step 5: Deep Architecture Breakdown & Benchmark Showcase Section
@@ -1167,10 +1267,12 @@ export default function CaseStudiesEditor() {
             ))}
           </div>
         </div>
-      </div>
+        </div>
+      )}
 
       {/* STEP 6: EXECUTIVE ENDORSEMENTS & TESTIMONIALS SELECTOR */}
-      <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131927] space-y-4 shadow-xs">
+      {activeSectionId === "cs-testimonials" && (
+        <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131927] space-y-4 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-violet-600 dark:text-violet-400 flex items-center gap-2">
@@ -1337,6 +1439,10 @@ export default function CaseStudiesEditor() {
               );
             })}
           </div>
+        </div>
+      </div>
+    )}
+
         </div>
       </div>
     </div>
