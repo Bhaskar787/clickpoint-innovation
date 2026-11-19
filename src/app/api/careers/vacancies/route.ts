@@ -134,6 +134,7 @@ export async function POST(req: Request) {
       summary,
       responsibilities,
       requirements,
+      sections,
       featured,
       isActive,
       order,
@@ -160,6 +161,29 @@ export async function POST(req: Request) {
       finalSlug = `${finalSlug}-${Date.now().toString().slice(-4)}`;
     }
 
+    // Process sections if provided
+    const parsedSections = Array.isArray(sections) ? sections : [];
+
+    // Fallback sync for summary, responsibilities, requirements if empty
+    let finalSummary = summary?.trim() || "";
+    let finalResponsibilities = Array.isArray(responsibilities) ? responsibilities : [];
+    let finalRequirements = Array.isArray(requirements) ? requirements : [];
+
+    if (parsedSections.length > 0) {
+      if (!finalSummary) {
+        const firstParagraph = parsedSections.find((s: any) => s.type === "paragraph" && s.content?.trim());
+        if (firstParagraph) finalSummary = firstParagraph.content.trim();
+      }
+      if (finalRequirements.length === 0) {
+        const reqSec = parsedSections.find((s: any) => s.type === "points" && /qualif|require/i.test(s.title || ""));
+        if (reqSec && Array.isArray(reqSec.items)) finalRequirements = reqSec.items;
+      }
+      if (finalResponsibilities.length === 0) {
+        const respSec = parsedSections.find((s: any) => s.type === "points" && /responsib|duties|description/i.test(s.title || ""));
+        if (respSec && Array.isArray(respSec.items)) finalResponsibilities = respSec.items;
+      }
+    }
+
     const vacancy = await prisma.jobVacancy.create({
       data: {
         title: title.trim(),
@@ -170,9 +194,10 @@ export async function POST(req: Request) {
         experience: experience || "Senior",
         salary: salary?.trim() || "",
         deadline: deadline?.trim() || "",
-        summary: summary?.trim() || "",
-        responsibilities: Array.isArray(responsibilities) ? responsibilities : [],
-        requirements: Array.isArray(requirements) ? requirements : [],
+        summary: finalSummary,
+        responsibilities: finalResponsibilities,
+        requirements: finalRequirements,
+        sections: parsedSections,
         featured: !!featured,
         isActive: isActive !== false,
         order: typeof order === "number" ? order : 0,
@@ -223,6 +248,30 @@ export async function PUT(req: Request) {
     }
     if (fields.requirements !== undefined) {
       updateData.requirements = Array.isArray(fields.requirements) ? fields.requirements : [];
+    }
+    if (fields.sections !== undefined) {
+      const parsedSections = Array.isArray(fields.sections) ? fields.sections : [];
+      updateData.sections = parsedSections;
+
+      // Keep legacy summary, requirements, and responsibilities synced for RAG & third-party compatibility
+      if (parsedSections.length > 0) {
+        if (!fields.summary) {
+          const firstParagraph = parsedSections.find((s: any) => s.type === "paragraph" && s.content?.trim());
+          if (firstParagraph) updateData.summary = firstParagraph.content.trim();
+        }
+        if (!fields.requirements || (Array.isArray(fields.requirements) && fields.requirements.length === 0)) {
+          const reqSec = parsedSections.find((s: any) => s.type === "points" && /qualif|require/i.test(s.title || ""));
+          if (reqSec && Array.isArray(reqSec.items) && reqSec.items.length > 0) {
+            updateData.requirements = reqSec.items;
+          }
+        }
+        if (!fields.responsibilities || (Array.isArray(fields.responsibilities) && fields.responsibilities.length === 0)) {
+          const respSec = parsedSections.find((s: any) => s.type === "points" && /responsib|duties|description/i.test(s.title || ""));
+          if (respSec && Array.isArray(respSec.items) && respSec.items.length > 0) {
+            updateData.responsibilities = respSec.items;
+          }
+        }
+      }
     }
     if (fields.featured !== undefined) updateData.featured = !!fields.featured;
     if (fields.isActive !== undefined) updateData.isActive = !!fields.isActive;

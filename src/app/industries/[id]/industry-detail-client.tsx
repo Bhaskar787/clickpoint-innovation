@@ -39,7 +39,7 @@ export default function IndustryDetailClient({ industry }: IndustryDetailClientP
           <div className="mb-8 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
             <Link href="/" className="hover:text-violet-600 dark:hover:text-white transition-colors">Home</Link>
             <span>/</span>
-            <Link href="/industries" className="hover:text-violet-600 dark:hover:text-white transition-colors">Industries</Link>
+            <Link href="/portfolio" className="hover:text-violet-600 dark:hover:text-white transition-colors">Portfolio</Link>
             <span>/</span>
             <span className="font-semibold text-violet-600 dark:text-violet-400">{industry.title}</span>
           </div>
@@ -71,11 +71,11 @@ export default function IndustryDetailClient({ industry }: IndustryDetailClientP
                 </Link>
 
                 <Link
-                  href="/industries"
+                  href="/portfolio"
                   className="inline-flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 px-5 py-3 text-xs font-bold text-slate-700 dark:text-slate-300 transition-all"
                 >
                   <ArrowLeft className="h-4 w-4" />
-                  <span>All Industry Sectors</span>
+                  <span>All Portfolio Sectors</span>
                 </Link>
               </div>
             </div>

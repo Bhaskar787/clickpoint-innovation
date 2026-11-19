@@ -3277,6 +3277,7 @@ export const JobVacancyScalarFieldEnum = {
   summary: 'summary',
   responsibilities: 'responsibilities',
   requirements: 'requirements',
+  sections: 'sections',
   featured: 'featured',
   isActive: 'isActive',
   order: 'order',

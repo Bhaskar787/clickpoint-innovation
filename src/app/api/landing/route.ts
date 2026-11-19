@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { DEFAULT_NAVBAR_DATA } from "@/data/default-navbar-data";
+import { DEFAULT_NAVBAR_DATA, DEFAULT_SYSTEM_SETTINGS } from "@/data/default-navbar-data";
 import { triggerReindexBackground } from "@/lib/reindex-trigger";
 
 export const dynamic = "force-dynamic";
@@ -16,6 +16,7 @@ export async function GET() {
           id: "default",
           content: {
             navbar: DEFAULT_NAVBAR_DATA,
+            systemSettings: DEFAULT_SYSTEM_SETTINGS,
           } as any,
         },
       });
@@ -23,6 +24,10 @@ export async function GET() {
 
     const content = (landingRecord?.content || {}) as any;
     const navbar = content.navbar || DEFAULT_NAVBAR_DATA;
+    const systemSettings = {
+      ...DEFAULT_SYSTEM_SETTINGS,
+      ...(content.systemSettings || {}),
+    };
 
     return NextResponse.json(
       {
@@ -30,6 +35,7 @@ export async function GET() {
         data: {
           ...content,
           navbar,
+          systemSettings,
         },
       },
       {
@@ -47,6 +53,7 @@ export async function GET() {
         success: true,
         data: {
           navbar: DEFAULT_NAVBAR_DATA,
+          systemSettings: DEFAULT_SYSTEM_SETTINGS,
         },
       },
       { status: 200 }
@@ -66,9 +73,14 @@ export async function PUT(req: Request) {
     let updatedRecord;
 
     if (existing) {
+      const existingContent = (existing.content as any) || {};
       const mergedContent = {
-        ...((existing.content as any) || {}),
+        ...existingContent,
         ...body,
+        systemSettings: {
+          ...(existingContent.systemSettings || {}),
+          ...(body.systemSettings || {}),
+        },
       };
       updatedRecord = await prisma.landingPage.update({
         where: { id: existing.id },
@@ -81,7 +93,7 @@ export async function PUT(req: Request) {
     }
 
     revalidateTag("landing-page");
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     triggerReindexBackground();
 
     return NextResponse.json({

@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, X, SendHorizontal, RefreshCw, Eye, Edit3, CheckCircle2, Star, Calendar, Search, XCircle, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
+import { useSiteData } from "@/components/common/theme-provider";
 
 export interface EmailModalApplication {
   id: string;
@@ -41,6 +42,12 @@ export function EmailComposerModal({
   onClose,
   onSuccess,
 }: EmailComposerModalProps) {
+  const siteData = useSiteData();
+  const emailLogoSrc =
+    siteData?.settings?.emailLogoUrl ||
+    siteData?.navbar?.logo?.logoUrl ||
+    "/images/clickpointfinal.png";
+
   const [emailType, setEmailType] = useState<EmailTemplateType>(initialType);
   const [customSubject, setCustomSubject] = useState("");
   const [customMessage, setCustomMessage] = useState("");
@@ -146,9 +153,9 @@ export function EmailComposerModal({
           <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-[#131927] flex items-center justify-between">
             <div className="flex items-center gap-3">
               <img
-                src="/images/clickpointfinal.png"
+                src={emailLogoSrc}
                 alt="Clickpoint Innovations"
-                className="h-8 w-auto object-contain"
+                className="h-8 w-auto max-w-[160px] object-contain"
               />
               <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
               <div>
@@ -287,9 +294,9 @@ export function EmailComposerModal({
                   {/* Email Header in Preview */}
                   <div className="border-b border-slate-100 dark:border-slate-800/80 pb-4 flex items-center justify-between">
                     <img
-                      src="/images/clickpointfinal.png"
+                      src={emailLogoSrc}
                       alt="Clickpoint Innovations"
-                      className="h-8 w-auto object-contain"
+                      className="h-8 w-auto max-w-[180px] object-contain"
                     />
                     <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
                       Official Email Preview

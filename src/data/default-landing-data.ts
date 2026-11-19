@@ -102,7 +102,7 @@ export const DEFAULT_FAQ_PAGE_HEADER = {
 };
 
 export const DEFAULT_FOOTER_DATA = {
-  logoUrl: "/images/clickpointfinal.png",
+  logoUrl: "https://res.cloudinary.com/dapi1jlc/image/upload/v1785998195/clickpoint_innovation/c9olq47p41iy7wbkmgxf.png",
   logoText: "Clickpoint Innovations",
   description: "An AI-first digital partner helping ambitious teams design, build, and scale software that compounds.",
   socialLinks: {
@@ -116,7 +116,7 @@ export const DEFAULT_FOOTER_DATA = {
       title: "Company",
       links: [
         { label: "About Us", href: "/about" },
-        { label: "Our Journey", href: "/journey" },
+        { label: "Events & Journey", href: "/events" },
         { label: "Careers", href: "/careers" },
         { label: "Case Studies", href: "/case-studies" },
         { label: "Testimonials", href: "/testimonials" },
@@ -135,12 +135,12 @@ export const DEFAULT_FOOTER_DATA = {
       ],
     },
     {
-      title: "Industries",
+      title: "Portfolio",
       links: [
-        { label: "FinTech & Banking", href: "/industries/fintech-banking" },
-        { label: "HealthTech & MedTech", href: "/industries/healthtech-medtech" },
-        { label: "SaaS & Enterprise", href: "/industries/saas-enterprise" },
-        { label: "E-Commerce & Retail", href: "/industries/ecommerce-retail" },
+        { label: "FinTech & Banking", href: "/portfolio/fintech" },
+        { label: "HealthTech & MedTech", href: "/portfolio/healthcare" },
+        { label: "SaaS & Enterprise", href: "/portfolio/saas" },
+        { label: "E-Commerce & Retail", href: "/portfolio/ecommerce" },
       ],
     },
   ],

@@ -305,24 +305,23 @@ export default function JourneyClientView({ initialContent }: JourneyClientViewP
               >
                 <div className="min-w-[620px] sm:min-w-0 relative w-full h-24">
                   {/* Continuous Base Spine Line */}
-                  <div className="absolute left-0 right-0 top-6 -translate-y-1/2 pointer-events-none h-1 z-0">
-                    {/* Inactive Line */}
-                    <div className="h-full w-full bg-violet-200/80 dark:bg-slate-800 rounded-full" />
+                  <div className="absolute left-0 right-0 top-6 -translate-y-1/2 pointer-events-none h-1.5 z-0">
+                    {/* Inactive Base Line */}
+                    <div className="h-full w-full bg-violet-200/70 dark:bg-slate-700/80 rounded-full" />
 
-                    {/* Active Filled Progress Line */}
-                    <motion.div
-                      className="absolute top-0 left-0 h-full bg-violet-600 dark:bg-violet-500 rounded-full"
-                      initial={false}
-                      animate={{
+                    {/* Active Filled Progress Line (Glowing & 100% visible in Night Mode) */}
+                    <div
+                      className="absolute top-0 left-0 h-full bg-gradient-to-r from-violet-600 via-indigo-500 to-violet-500 dark:from-violet-500 dark:via-purple-400 dark:to-violet-400 rounded-full transition-[width] duration-500 ease-out shadow-[0_0_10px_rgba(124,58,237,0.5)] dark:shadow-[0_0_16px_rgba(167,139,250,0.95),0_0_6px_rgba(192,132,252,0.9)] z-1"
+                      style={{
                         width: `${(activeEraIndex / Math.max(1, eras.length - 1)) * 100}%`,
                       }}
-                      transition={{ type: "spring", stiffness: 350, damping: 35 }}
                     />
                   </div>
 
                   {/* Absolute Positioned Era Nodes with Mathematical Precision */}
                   {eras.map((era, index) => {
                     const isActive = activeEraIndex === index;
+                    const isPast = index < activeEraIndex;
                     const percentLeft = (index / Math.max(1, eras.length - 1)) * 100;
 
                     return (
@@ -349,19 +348,24 @@ export default function JourneyClientView({ initialContent }: JourneyClientViewP
                               {/* Outer Translucent Halo */}
                               <motion.div
                                 layoutId="activeTimelineHalo"
-                                className="absolute size-11 sm:size-12 rounded-full bg-violet-600/20 dark:bg-violet-500/25"
+                                className="absolute size-11 sm:size-12 rounded-full bg-violet-600/20 dark:bg-violet-400/25"
                                 transition={{ type: "spring", stiffness: 350, damping: 30 }}
                               />
                               {/* Middle Solid Violet Circle */}
-                              <div className="relative z-10 size-7 sm:size-8 rounded-full bg-violet-600 dark:bg-violet-600 text-white flex items-center justify-center shadow-lg shadow-violet-600/35">
+                              <div className="relative z-10 size-7 sm:size-8 rounded-full bg-violet-600 dark:bg-violet-500 text-white flex items-center justify-center shadow-lg shadow-violet-600/40 dark:shadow-violet-400/50">
                                 {/* Center White Point Dot */}
                                 <span className="size-2 sm:size-2.5 rounded-full bg-white block" />
                               </div>
                             </div>
+                          ) : isPast ? (
+                            /* Visited / Reached Circle Dot on Fillup Line */
+                            <div className="size-7 sm:size-8 rounded-full border-2 border-violet-500 dark:border-violet-400 bg-violet-50 dark:bg-[#1a1c36] flex items-center justify-center transition-all duration-200 group-hover:scale-110 shadow-xs shadow-violet-500/20">
+                              <span className="size-2 sm:size-2.5 rounded-full bg-violet-600 dark:bg-violet-400 group-hover:scale-125 transition-transform block" />
+                            </div>
                           ) : (
-                            /* Inactive Circle Dot: Light Border Ring + Center Violet Dot */
-                            <div className="size-7 sm:size-8 rounded-full border-2 border-violet-300 dark:border-slate-700 bg-white dark:bg-[#131c31] flex items-center justify-center transition-all duration-200 group-hover:border-violet-600 dark:group-hover:border-violet-400 group-hover:scale-110 shadow-xs">
-                              <span className="size-2 sm:size-2.5 rounded-full bg-violet-400 dark:bg-slate-500 group-hover:bg-violet-600 dark:group-hover:bg-violet-400 transition-colors block" />
+                            /* Future Unvisited Circle Dot */
+                            <div className="size-7 sm:size-8 rounded-full border-2 border-violet-200/80 dark:border-slate-700 bg-white dark:bg-[#131c31] flex items-center justify-center transition-all duration-200 group-hover:border-violet-400 dark:group-hover:border-slate-500 group-hover:scale-110 shadow-xs">
+                              <span className="size-2 sm:size-2.5 rounded-full bg-slate-300 dark:bg-slate-600 group-hover:bg-violet-500 dark:group-hover:bg-slate-400 transition-colors block" />
                             </div>
                           )}
                         </button>
@@ -374,7 +378,9 @@ export default function JourneyClientView({ initialContent }: JourneyClientViewP
                             "mt-2.5 sm:mt-3 text-center whitespace-nowrap transition-colors duration-200 font-poppins cursor-pointer select-none",
                             isActive
                               ? "font-extrabold text-sm sm:text-base text-violet-600 dark:text-violet-400"
-                              : "font-semibold text-xs sm:text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                              : isPast
+                              ? "font-semibold text-xs sm:text-sm text-slate-800 dark:text-slate-200 hover:text-violet-600 dark:hover:text-violet-300"
+                              : "font-medium text-xs sm:text-sm text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                           )}
                         >
                           {era.displayYear}
@@ -383,6 +389,7 @@ export default function JourneyClientView({ initialContent }: JourneyClientViewP
                     );
                   })}
                 </div>
+
               </div>
             </div>
 

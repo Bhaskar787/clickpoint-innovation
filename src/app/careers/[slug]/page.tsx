@@ -24,6 +24,14 @@ interface JobCategory {
   name: string;
 }
 
+export interface VacancySection {
+  id: string;
+  title: string;
+  type: "paragraph" | "points";
+  content?: string;
+  items?: string[];
+}
+
 interface JobVacancy {
   id: string;
   title: string;
@@ -38,10 +46,63 @@ interface JobVacancy {
   summary: string;
   responsibilities: string[];
   requirements: string[];
+  sections?: VacancySection[];
   featured: boolean;
   isActive: boolean;
   createdAt?: string;
   updatedAt?: string;
+}
+
+function getJobSections(job: JobVacancy): VacancySection[] {
+  if (Array.isArray(job.sections) && job.sections.length > 0) {
+    return job.sections;
+  }
+  // Fallback to legacy structure
+  const fallback: VacancySection[] = [];
+  if (job.summary || (!job.requirements?.length && !job.responsibilities?.length)) {
+    fallback.push({
+      id: "sec-about",
+      title: "About the Position",
+      type: "paragraph",
+      content:
+        job.summary ||
+        `The ${job.title} is responsible for driving organizational outcomes, collaborating across technical and executive pods, and building high-impact enterprise software solutions for Clickpoint Innovation.`,
+      items: [],
+    });
+  }
+
+  if (job.requirements && job.requirements.length > 0) {
+    fallback.push({
+      id: "sec-qualifications",
+      title: "Qualification and Experience",
+      type: "points",
+      content: "",
+      items: job.requirements,
+    });
+  } else if (!job.summary && !job.responsibilities?.length) {
+    fallback.push({
+      id: "sec-qualifications",
+      title: "Qualification and Experience",
+      type: "points",
+      content: "",
+      items: [
+        "Bachelor's degree in Computer Science, Software Engineering, IT, or equivalent practical experience.",
+        "Proven experience working in high-growth software teams with modern toolchains.",
+      ],
+    });
+  }
+
+  if (job.responsibilities && job.responsibilities.length > 0) {
+    fallback.push({
+      id: "sec-responsibilities",
+      title: "Job Description & Responsibilities",
+      type: "points",
+      content: "",
+      items: job.responsibilities,
+    });
+  }
+
+  return fallback;
 }
 
 function formatSalary(salary?: string | null): string {
@@ -270,76 +331,39 @@ export default function CareerDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* LEFT COLUMN: DETAILED SPECIFICATIONS (8 COLS) */}
           <div className="lg:col-span-8 space-y-8">
-            {/* 1. ROLE SUMMARY */}
-            <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131c31] p-6 sm:p-8 space-y-4 shadow-xs">
-              <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
-                About the Position
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-line">
-                {job.summary ||
-                  `The ${job.title} is responsible for driving organizational outcomes, collaborating across technical and executive pods, and building high-impact enterprise software solutions for Clickpoint Innovation.`}
-              </p>
-            </div>
+            {/* DYNAMIC JOB CONTENT SECTIONS */}
+            {getJobSections(job).map((section, idx) => (
+              <div
+                key={section.id || idx}
+                className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131c31] p-6 sm:p-8 space-y-4 shadow-xs"
+              >
+                <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
+                  {section.title}
+                </h2>
 
-            {/* 2. QUALIFICATION AND EXPERIENCE */}
-            <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131c31] p-6 sm:p-8 space-y-4 shadow-xs">
-              <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
-                Qualification and Experience
-              </h2>
-              {job.requirements && job.requirements.length > 0 ? (
-                <ul className="space-y-2.5">
-                  {job.requirements.map((req, i) => (
-                    <li
-                      key={i}
-                      className="flex items-start gap-3 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed"
-                    >
-                      <span className="h-1.5 w-1.5 rounded-full bg-slate-900 dark:bg-white mt-2 shrink-0" />
-                      <span>{req}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <ul className="space-y-2.5 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
-                  <li className="flex items-start gap-3">
-                    <span className="h-1.5 w-1.5 rounded-full bg-slate-900 dark:bg-white mt-2 shrink-0" />
-                    <span>
-                      Bachelor&apos;s degree in Computer Science, Software Engineering, IT, or
-                      equivalent practical experience.
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="h-1.5 w-1.5 rounded-full bg-slate-900 dark:bg-white mt-2 shrink-0" />
-                    <span>
-                      Proven experience working in high-growth software teams with modern toolchains.
-                    </span>
-                  </li>
-                </ul>
-              )}
-            </div>
-
-            {/* 3. JOB DESCRIPTION / RESPONSIBILITIES */}
-            <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 sm:p-8 space-y-4 shadow-xs">
-              <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
-                Job Description &amp; Responsibilities
-              </h2>
-              {job.responsibilities && job.responsibilities.length > 0 ? (
-                <ul className="space-y-3">
-                  {job.responsibilities.map((resp, i) => (
-                    <li
-                      key={i}
-                      className="flex items-start gap-3 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed"
-                    >
-                      <CheckCircle2 className="h-4 w-4 text-violet-600 dark:text-violet-400 shrink-0 mt-0.5" />
-                      <span>{resp}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-xs sm:text-sm text-slate-500">
-                  Detailed responsibilities will be coordinated during the technical onboarding session.
-                </p>
-              )}
-            </div>
+                {section.type === "paragraph" ? (
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-line">
+                    {section.content || "Details for this position will be coordinated during onboarding."}
+                  </p>
+                ) : section.items && section.items.length > 0 ? (
+                  <ul className="space-y-3">
+                    {section.items.map((item, i) => (
+                      <li
+                        key={i}
+                        className="flex items-start gap-3 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed"
+                      >
+                        <CheckCircle2 className="h-4 w-4 text-violet-600 dark:text-violet-400 shrink-0 mt-0.5" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-xs sm:text-sm text-slate-400">
+                    No points added for this section.
+                  </p>
+                )}
+              </div>
+            ))}
 
             {/* 4. HOW TO APPLY SECTION */}
             <div className="rounded-3xl border border-violet-100 dark:border-slate-800 bg-violet-50/40 dark:bg-slate-900/40 p-6 sm:p-8 space-y-4 shadow-xs">

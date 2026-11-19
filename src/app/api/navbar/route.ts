@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_NAVBAR_DATA } from "@/data/default-navbar-data";
 
@@ -24,5 +25,50 @@ export async function GET() {
   } catch (error: any) {
     console.error("GET /api/navbar error:", error);
     return NextResponse.json({ success: true, navbar: DEFAULT_NAVBAR_DATA });
+  }
+}
+
+export async function PUT(req: Request) {
+  try {
+    const body = await req.json();
+    const navbar = body.navbar || body;
+
+    const existing = await prisma.landingPage.findFirst();
+    let updatedRecord;
+
+    if (existing) {
+      const existingContent = (existing.content as any) || {};
+      const mergedNavbar = {
+        ...DEFAULT_NAVBAR_DATA,
+        ...(existingContent.navbar || {}),
+        ...navbar,
+      };
+      const mergedContent = {
+        ...existingContent,
+        navbar: mergedNavbar,
+      };
+      updatedRecord = await prisma.landingPage.update({
+        where: { id: existing.id },
+        data: { content: mergedContent },
+      });
+    } else {
+      updatedRecord = await prisma.landingPage.create({
+        data: {
+          id: "default",
+          content: {
+            navbar,
+          },
+        },
+      });
+    }
+
+    revalidateTag("landing-page");
+    revalidatePath("/", "layout");
+
+    const content = (updatedRecord?.content || {}) as any;
+    return NextResponse.json({ success: true, navbar: content.navbar || navbar });
+  } catch (error: any) {
+    console.error("PUT /api/navbar error:", error);
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

@@ -37,11 +37,13 @@ import { useMobileMenu } from "@/hooks/use-mobile-menu";
 import Link from "next/link";
 import QuickEnquiryModal from "@/components/common/quick-enquiry-modal";
 import { ThemeToggle } from "@/components/common/theme-toggle";
+import { useSiteData } from "@/components/common/theme-provider";
 
 // Helper map to assign icons to company dropdown items based on id
 const COMPANY_ICON_MAP: Record<string, any> = {
   about: Building2,
   journey: Milestone,
+  events: Milestone,
   careers: Briefcase,
   "case-studies": FileText,
   testimonials: Star,
@@ -50,7 +52,26 @@ const COMPANY_ICON_MAP: Record<string, any> = {
   contact: Mail,
 };
 
-export default function Navbar() {
+const NAVBAR_CACHE_KEY = "clickpoint_navbar_cache_v2";
+
+function getCachedNavbarData() {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(NAVBAR_CACHE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+interface NavbarProps {
+  initialData?: any;
+}
+
+export default function Navbar({ initialData }: NavbarProps = {}) {
+  const { navbar: contextNavbar } = useSiteData();
+  const effectiveInitial = initialData || contextNavbar;
+
   const pathname = usePathname();
   const isHomePage = pathname === "/";
   const scrolled = useScrollHeader(16);
@@ -62,7 +83,16 @@ export default function Navbar() {
   const [mobileIndustriesOpen, setMobileIndustriesOpen] = useState(false);
   const [mobileCompanyOpen, setMobileCompanyOpen] = useState(false);
 
-  const [navData, setNavData] = useState<any>(DEFAULT_NAVBAR_DATA);
+  const [navData, setNavData] = useState<any>(() => effectiveInitial || getCachedNavbarData() || DEFAULT_NAVBAR_DATA);
+
+  useEffect(() => {
+    if (effectiveInitial) {
+      setNavData(effectiveInitial);
+      try {
+        localStorage.setItem(NAVBAR_CACHE_KEY, JSON.stringify(effectiveInitial));
+      } catch {}
+    }
+  }, [effectiveInitial]);
 
   useEffect(() => {
     async function loadNavbarData() {
@@ -71,12 +101,46 @@ export default function Navbar() {
         const json = await res.json();
         if (json.success && json.navbar) {
           setNavData(json.navbar);
+          try {
+            localStorage.setItem(NAVBAR_CACHE_KEY, JSON.stringify(json.navbar));
+          } catch {}
         }
       } catch (err) {
         console.warn("Failed to load dynamic navbar data:", err);
       }
     }
     loadNavbarData();
+
+    // Listen for real-time updates from Admin Dashboard across tabs
+    let channel: BroadcastChannel | null = null;
+    try {
+      channel = new BroadcastChannel("clickpoint-navbar-sync");
+      channel.onmessage = (event) => {
+        if (event.data) {
+          setNavData(event.data);
+          try {
+            localStorage.setItem(NAVBAR_CACHE_KEY, JSON.stringify(event.data));
+          } catch {}
+        }
+      };
+    } catch {}
+
+    const handleCustomEvent = (e: any) => {
+      if (e.detail) {
+        setNavData(e.detail);
+        try {
+          localStorage.setItem(NAVBAR_CACHE_KEY, JSON.stringify(e.detail));
+        } catch {}
+      }
+    };
+    window.addEventListener("clickpoint-navbar-sync", handleCustomEvent);
+
+    return () => {
+      try {
+        channel?.close();
+      } catch {}
+      window.removeEventListener("clickpoint-navbar-sync", handleCustomEvent);
+    };
   }, []);
 
   const isSolidHeader = !isHomePage || scrolled;
@@ -86,12 +150,29 @@ export default function Navbar() {
   const companyLinks: CompanyNavItem[] = navData.companyLinks || DEFAULT_NAVBAR_DATA.companyLinks;
   const cta = navData.cta || DEFAULT_NAVBAR_DATA.cta;
 
+  const journeyHref = navData.journeyLink || companyLinks.find((c) => c.id === "journey" || c.id === "events")?.href || "/events";
+  const contactHref = navData.contactLink || companyLinks.find((c) => c.id === "contact")?.href || "/contact";
+
+  const handleCtaClick = () => {
+    if (cta.openModalOnClick !== false) {
+      setQuickEnquiryOpen(true);
+    } else if (cta.buttonLink && cta.buttonLink.trim()) {
+      const link = cta.buttonLink.trim();
+      if (cta.openInNewTab) {
+        window.open(link, "_blank", "noopener,noreferrer");
+      } else if (link.startsWith("http://") || link.startsWith("https://")) {
+        window.location.href = link;
+      } else {
+        window.location.href = link;
+      }
+    } else {
+      setQuickEnquiryOpen(true);
+    }
+  };
+
   return (
     <>
-      <motion.header
-        initial={{ y: -80, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      <header
         className={cn(
           "fixed inset-x-0 top-0 z-[100] w-full transition-colors duration-150",
           isSolidHeader
@@ -180,9 +261,9 @@ export default function Navbar() {
                   </NavigationMenuContent>
                 </NavigationMenuItem>
 
-                {/* 2. Industries Dropdown */}
+                {/* 2. Portfolio / Industries Dropdown */}
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger>{titles.industries || "Industries"}</NavigationMenuTrigger>
+                  <NavigationMenuTrigger>{titles.industries || "Portfolio"}</NavigationMenuTrigger>
                   <NavigationMenuContent>
                     <ul className="grid w-[420px] grid-cols-2 gap-1.5 p-3">
                       {INDUSTRIES_DATA.map((i) => {
@@ -261,20 +342,20 @@ export default function Navbar() {
                   </NavigationMenuContent>
                 </NavigationMenuItem>
 
-                {/* 4. Standalone Journey Link */}
+                {/* 4. Standalone Events Link */}
                 <NavigationMenuItem>
                   <Link
-                    href={companyLinks.find((c) => c.id === "journey")?.href || "/journey"}
+                    href={journeyHref}
                     className="flex items-center rounded-full px-4 py-2 text-sm font-semibold text-ink/80 dark:text-slate-200 hover:bg-violet-50 dark:hover:bg-slate-800 hover:text-violet-700 dark:hover:text-violet-300 transition-colors"
                   >
-                    {titles.journey || "Our Journey"}
+                    {titles.journey || "Events"}
                   </Link>
                 </NavigationMenuItem>
 
                 {/* 5. Standalone Contact Link */}
                 <NavigationMenuItem>
                   <Link
-                    href={companyLinks.find((c) => c.id === "contact")?.href || "/contact"}
+                    href={contactHref}
                     className="flex items-center rounded-full px-4 py-2 text-sm font-semibold text-ink/80 dark:text-slate-200 hover:bg-violet-50 dark:hover:bg-slate-800 hover:text-violet-700 dark:hover:text-violet-300 transition-colors"
                   >
                     {titles.contact || "Contact"}
@@ -291,15 +372,7 @@ export default function Navbar() {
             <Button
               variant="primary"
               size="sm"
-              onClick={() => {
-                if (cta.openModalOnClick !== false) {
-                  setQuickEnquiryOpen(true);
-                } else if (cta.buttonLink) {
-                  window.location.href = cta.buttonLink;
-                } else {
-                  setQuickEnquiryOpen(true);
-                }
-              }}
+              onClick={handleCtaClick}
               className="shadow-md shadow-violet-600/25 font-bold cursor-pointer"
             >
               {cta.buttonText || "Quick Enquiry"}
@@ -319,7 +392,7 @@ export default function Navbar() {
             )}
           </button>
         </div>
-      </motion.header>
+      </header>
 
       {/* IMPROVED RESPONSIVE MOBILE SIDEBAR DRAWER */}
       <AnimatePresence>
@@ -429,7 +502,7 @@ export default function Navbar() {
                     >
                       <span className="flex items-center gap-2.5">
                         <Compass className="h-4 w-4 text-violet-600 dark:text-violet-400" />
-                        <span>{titles.industries || "Industries"}</span>
+                        <span>{titles.industries || "Portfolio"}</span>
                       </span>
                       <ChevronDown
                         className={cn(
@@ -525,19 +598,19 @@ export default function Navbar() {
 
                   <div className="pt-2 my-2 border-t border-slate-100 dark:border-slate-800/60" />
 
-                  {/* 4. Standalone Journey Link */}
+                  {/* 4. Standalone Events Link */}
                   <Link
-                    href={companyLinks.find((c) => c.id === "journey")?.href || "/journey"}
+                    href={journeyHref}
                     onClick={closeMobile}
                     className="flex items-center gap-2.5 py-2.5 px-3 rounded-xl text-slate-800 dark:text-slate-200 hover:bg-violet-50/70 dark:hover:bg-slate-800/70 hover:text-violet-700 dark:hover:text-violet-300 transition-colors"
                   >
                     <Milestone className="h-4 w-4 text-violet-600 dark:text-violet-400" />
-                    <span>{titles.journey || "Our Journey"}</span>
+                    <span>{titles.journey || "Events"}</span>
                   </Link>
 
                   {/* 5. Standalone Contact Link */}
                   <Link
-                    href={companyLinks.find((c) => c.id === "contact")?.href || "/contact"}
+                    href={contactHref}
                     onClick={closeMobile}
                     className="flex items-center gap-2.5 py-2.5 px-3 rounded-xl text-slate-800 dark:text-slate-200 hover:bg-violet-50/70 dark:hover:bg-slate-800/70 hover:text-violet-700 dark:hover:text-violet-300 transition-colors"
                   >
@@ -559,7 +632,7 @@ export default function Navbar() {
                   className="w-full justify-center font-bold text-xs py-2.5 shadow-md shadow-violet-600/20 cursor-pointer"
                   onClick={() => {
                     closeMobile();
-                    setQuickEnquiryOpen(true);
+                    handleCtaClick();
                   }}
                 >
                   {cta.buttonText || "Quick Enquiry"}

@@ -88,7 +88,7 @@ export default async function Home() {
 
   return (
     <main className="relative bg-background text-ink">
-      <Navbar />
+      <Navbar initialData={landingData?.navbar} />
       <Hero initialData={landingData?.hero} />
       <StatsSection initialHeader={landingData?.statsHeader} initialStats={landingData?.stats} />
       <Services initialHeader={landingData?.servicesHeader} initialServices={landingServices} />

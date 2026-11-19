@@ -396,6 +396,7 @@ model JobVacancy {
   summary          String           @default("")
   responsibilities Json             @default("[]") // String[]
   requirements     Json             @default("[]") // String[]
+  sections         Json?            @default("[]") // VacancySection[]: { id: string, title: string, type: "paragraph" | "points", content?: string, items?: string[] }
   featured         Boolean          @default(false)
   isActive         Boolean          @default(true)
   order            Int              @default(0)

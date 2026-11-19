@@ -539,16 +539,27 @@ export interface JobCategory {
   updatedAt: string;
 }
 
+export interface VacancySection {
+  id: string;
+  title: string;
+  type: "paragraph" | "points";
+  content?: string;
+  items?: string[];
+}
+
 export interface JobVacancy {
   id: string;
   title: string;
+  slug?: string;
   type: string;
   location: string;
   experience: string;
   salary?: string | null;
+  deadline?: string | null;
   summary: string;
   responsibilities: string[];
   requirements: string[];
+  sections?: VacancySection[];
   featured: boolean;
   active: boolean;
   categoryId: string;

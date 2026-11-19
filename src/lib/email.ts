@@ -38,7 +38,19 @@ function getTransporter() {
 }
 
 // Get inline logo attachment so image renders 100% reliably in Gmail, Outlook & Apple Mail
-function getLogoAttachment() {
+function getLogoAttachment(customLogoUrl?: string) {
+  if (customLogoUrl && customLogoUrl.startsWith("/uploads/")) {
+    const customPath = path.join(process.cwd(), "public", customLogoUrl.replace(/^\//, ""));
+    if (fs.existsSync(customPath)) {
+      return [
+        {
+          filename: path.basename(customPath),
+          path: customPath,
+          cid: "clickpoint-logo",
+        },
+      ];
+    }
+  }
   const logoPath = path.join(process.cwd(), "public", "images", "clickpointfinal.png");
   if (fs.existsSync(logoPath)) {
     return [
@@ -50,6 +62,17 @@ function getLogoAttachment() {
     ];
   }
   return [];
+}
+
+async function getCompanyEmailLogoUrl(): Promise<string | undefined> {
+  try {
+    const { prisma } = await import("@/lib/prisma");
+    const landing = await prisma.landingPage.findFirst();
+    const content = (landing?.content || {}) as any;
+    return content?.systemSettings?.emailLogoUrl || content?.navbar?.logo?.logoUrl;
+  } catch (err) {
+    return undefined;
+  }
 }
 
 // Sanitize string to prevent email header injection
@@ -68,10 +91,13 @@ export async function sendApplicationReceivedNotification(data: ApplicationEmail
   const hrEmail = sanitizeHeader(companyHrEmail);
   const subject = sanitizeHeader(`[New Job Application] ${data.name} applied for ${data.jobTitle}`);
 
+  const emailLogoUrl = await getCompanyEmailLogoUrl();
+
   const htmlContent = getHRNotificationEmailHTML({
     ...data,
     appUrl,
     useCidLogo: true,
+    companyLogoUrl: emailLogoUrl?.startsWith("http") ? emailLogoUrl : undefined,
   });
 
   const transporter = getTransporter();
@@ -83,7 +109,7 @@ export async function sendApplicationReceivedNotification(data: ApplicationEmail
         replyTo: sanitizeHeader(data.email),
         subject,
         html: htmlContent,
-        attachments: getLogoAttachment(),
+        attachments: getLogoAttachment(emailLogoUrl),
       });
       console.log(`✅ [Email Service] Sent application alert to ${hrEmail} (MessageId: ${info.messageId})`);
       return { success: true, messageId: info.messageId };
@@ -102,10 +128,13 @@ export async function sendApplicationReceivedNotification(data: ApplicationEmail
  */
 export async function sendApplicantStatusEmail(data: StatusEmailData) {
   const recipientEmail = sanitizeHeader(data.applicantEmail);
+  const emailLogoUrl = data.companyLogoUrl || (await getCompanyEmailLogoUrl());
+
   const { subject, html } = getApplicantStatusEmailHTML({
     ...data,
     appUrl: data.appUrl || getAppBaseUrl(),
     useCidLogo: true,
+    companyLogoUrl: emailLogoUrl?.startsWith("http") ? emailLogoUrl : undefined,
   });
 
   const companyHrEmail = process.env.COMPANY_HR_EMAIL || "budhabhaskar2@gmail.com";
@@ -121,7 +150,7 @@ export async function sendApplicantStatusEmail(data: StatusEmailData) {
         replyTo: `"Do Not Reply - Clickpoint Innovations" <${noReplyEmail}>`,
         subject: sanitizeHeader(subject),
         html,
-        attachments: getLogoAttachment(),
+        attachments: getLogoAttachment(emailLogoUrl),
       });
       console.log(`✅ [Email Service] Sent no-reply status email to candidate ${recipientEmail} (MessageId: ${info.messageId})`);
       return { success: true, messageId: info.messageId };

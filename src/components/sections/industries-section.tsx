@@ -172,10 +172,10 @@ export default function IndustriesSection({ initialHeader, initialIndustries }: 
                 {/* Bottom Action Link */}
                 <div className="mt-8 pt-4 border-t border-violet-100 dark:border-slate-800">
                   <Link
-                    href={`/industries/${ind.id}`}
+                    href={`/portfolio/${ind.id}`}
                     className="inline-flex items-center gap-1.5 text-fluid-xs font-bold text-violet-600 dark:text-violet-300 hover:text-violet-800 dark:hover:text-violet-200 transition-colors group/link"
                   >
-                    Explore Industry Solutions
+                    Explore Sector Solutions
                     <ArrowUpRight className="h-4 w-4 text-violet-600 dark:text-violet-300 transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
                   </Link>
                 </div>

@@ -153,7 +153,7 @@ export default function AdminPage() {
         {/* Clickpoint Logo Header */}
         <div className="mb-6 flex items-center justify-center">
           <Image
-            src="/images/clickpointfinal.png"
+            src="https://res.cloudinary.com/dapi1jlc/image/upload/v1785998195/clickpoint_innovation/c9olq47p41iy7wbkmgxf.png"
             alt="Clickpoint Innovation"
             width={1236}
             height={317}

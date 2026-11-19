@@ -299,7 +299,7 @@ export const INDUSTRIES_DATA: IndustryItem[] = [
     fullOverview:
       "Financial engineering demands zero downtime, sub-millisecond execution, and strict compliance. Clickpoint builds modern fintech software ranging from automated ledger engines to AI-powered fraud prevention and wealth management copilots.",
     heroBadge: "Fintech & Banking Technology",
-    href: "/industries/fintech",
+    href: "/portfolio/fintech",
     icon: Wallet,
     keyMetrics: [
       { label: "Daily Transaction Volume", value: "$50M+" },
@@ -342,7 +342,7 @@ export const INDUSTRIES_DATA: IndustryItem[] = [
     fullOverview:
       "We design and build secure, patient-centric healthcare systems that streamline clinical workflows and optimize patient outcomes while strictly adhering to HIPAA, HITECH, and FDA medical software standards.",
     heroBadge: "Healthcare & Digital Health",
-    href: "/industries/healthcare",
+    href: "/portfolio/healthcare",
     icon: HeartPulse,
     keyMetrics: [
       { label: "HIPAA & HITECH Compliant", value: "Verified" },
@@ -385,7 +385,7 @@ export const INDUSTRIES_DATA: IndustryItem[] = [
     fullOverview:
       "Modern e-commerce requires lightning-fast store performance and deeply personalized shopping experiences. We engineer headless commerce platforms, custom Shopify Plus apps, and AI recommendation engines.",
     heroBadge: "Headless E-Commerce & Retail",
-    href: "/industries/ecommerce",
+    href: "/portfolio/ecommerce",
     icon: ShoppingBag,
     keyMetrics: [
       { label: "Checkout Conversion Lift", value: "+34%" },
@@ -428,7 +428,7 @@ export const INDUSTRIES_DATA: IndustryItem[] = [
     fullOverview:
       "We help B2B software companies turn ideas into category-defining SaaS platforms. From multi-tenant data isolation to usage-based billing and automated onboarding flows, we build software designed to scale MRR.",
     heroBadge: "B2B SaaS & Cloud Software",
-    href: "/industries/saas",
+    href: "/portfolio/saas",
     icon: Layers,
     keyMetrics: [
       { label: "Active Enterprise Users", value: "250k+" },
@@ -471,7 +471,7 @@ export const INDUSTRIES_DATA: IndustryItem[] = [
     fullOverview:
       "Logistics operations demand real-time visibility and route efficiency. Clickpoint builds IoT-enabled logistics platforms, AI dispatch algorithms, and supply chain control towers that cut fuel costs and speed up fulfillment times.",
     heroBadge: "Logistics & Supply Chain AI",
-    href: "/industries/logistics",
+    href: "/portfolio/logistics",
     icon: Truck,
     keyMetrics: [
       { label: "Fleet Mileage Monitored", value: "5M+ Miles" },
@@ -514,7 +514,7 @@ export const INDUSTRIES_DATA: IndustryItem[] = [
     fullOverview:
       "We partner with educational institutions and EdTech startups to build engaging, personalized learning software powered by AI feedback loops, interactive video streaming, and real-time student analytics.",
     heroBadge: "EdTech & Education Technology",
-    href: "/industries/edtech",
+    href: "/portfolio/edtech",
     icon: GraduationCap,
     keyMetrics: [
       { label: "Active Student Users", value: "350k+" },
@@ -610,7 +610,7 @@ export const TEAM_MEMBERS_DATA: TeamMember[] = [
 
 export const COMPANY_DATA: CompanyLink[] = [
   { id: "about", title: "About Us", desc: "Our story, vision & leadership team", href: "/about", icon: Building2 },
-  { id: "journey", title: "Our Journey & Events", desc: "Milestones, events & culture gallery", href: "/journey", icon: Milestone },
+  { id: "journey", title: "Events & Journey", desc: "Milestones, events & culture gallery", href: "/events", icon: Milestone },
   { id: "careers", title: "Careers", desc: "Join our global engineering team", badge: "Hiring", href: "/careers", icon: Briefcase },
   { id: "case-studies", title: "Case Studies", desc: "Client success metrics & launches", href: "/case-studies", icon: FileText },
   { id: "testimonials", title: "Testimonials", desc: "Verified client reviews & impact", href: "/testimonials", icon: Star },

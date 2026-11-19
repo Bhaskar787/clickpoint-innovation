@@ -77,6 +77,74 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
   const [notificationsList, setNotificationsList] = useState<any[]>([]);
   const [showNotificationsDropdown, setShowNotificationsDropdown] = useState<boolean>(false);
   const [selectedNotificationItemId, setSelectedNotificationItemId] = useState<string | null>(null);
+
+  const [brandLogoUrl, setBrandLogoUrl] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const cached = localStorage.getItem("clickpoint_navbar_cache_v2");
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed?.logo?.logoUrl) return parsed.logo.logoUrl;
+        }
+      } catch (e) {}
+    }
+    return "";
+  });
+
+  const [collapsedIconUrl, setCollapsedIconUrl] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const cached = localStorage.getItem("clickpoint_system_settings_cache");
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed?.collapsedLogoUrl) return parsed.collapsedLogoUrl;
+          if (parsed?.faviconUrl) return parsed.faviconUrl;
+        }
+      } catch (e) {}
+    }
+    return "";
+  });
+
+  useEffect(() => {
+    fetch("/api/landing")
+      .then((r) => r.json())
+      .then((res) => {
+        if (res?.success && res?.data) {
+          if (res.data?.navbar?.logo?.logoUrl) {
+            setBrandLogoUrl(res.data.navbar.logo.logoUrl);
+          }
+          if (res.data?.systemSettings?.collapsedLogoUrl) {
+            setCollapsedIconUrl(res.data.systemSettings.collapsedLogoUrl);
+          } else if (res.data?.systemSettings?.faviconUrl) {
+            setCollapsedIconUrl(res.data.systemSettings.faviconUrl);
+          }
+        }
+      })
+      .catch(() => {});
+
+    if (typeof window !== "undefined" && "BroadcastChannel" in window) {
+      const settingsChannel = new BroadcastChannel("clickpoint-system-settings-sync");
+      settingsChannel.onmessage = (event) => {
+        if (event.data?.collapsedLogoUrl) {
+          setCollapsedIconUrl(event.data.collapsedLogoUrl);
+        } else if (event.data?.faviconUrl) {
+          setCollapsedIconUrl(event.data.faviconUrl);
+        }
+      };
+
+      const navChannel = new BroadcastChannel("clickpoint-navbar-sync");
+      navChannel.onmessage = (event) => {
+        if (event.data?.logo?.logoUrl) {
+          setBrandLogoUrl(event.data.logo.logoUrl);
+        }
+      };
+
+      return () => {
+        settingsChannel.close();
+        navChannel.close();
+      };
+    }
+  }, []);
   const isInitialMount = useRef(true);
   const prevUnreadCountRef = useRef<number>(0);
   const prevContactCountRef = useRef<number>(0);
@@ -420,6 +488,8 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
         unreadTestimonialsCount={unreadTestimonialsCount}
         unreadContactCount={unreadContactCount}
         unreadJobAppsCount={unreadJobAppsCount}
+        brandLogoUrl={brandLogoUrl}
+        collapsedIconUrl={collapsedIconUrl}
       />
 
       {/* 2. MAIN CONTENT AREA */}
@@ -506,11 +576,11 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                         : activeTab === "services-page"
                         ? "/services"
                         : activeTab === "industries-page"
-                        ? "/industries"
+                        ? "/portfolio"
                         : activeTab === "case-studies-page"
                         ? "/case-studies"
                         : activeTab === "journey-page"
-                        ? "/journey"
+                        ? "/events"
                         : activeTab === "blog-page"
                         ? "/blog"
                         : activeTab === "careers-page"

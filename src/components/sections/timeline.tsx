@@ -320,12 +320,12 @@ export default function Timeline({
           {/* DESKTOP VERTICAL SPINE TRACK (Positioned at 170px / 200px boundary with 4px width) */}
           <div
             ref={spineTrackRef}
-            className="hidden lg:block absolute bottom-12 top-6 left-[170px] xl:left-[200px] w-1 rounded-full bg-slate-200 dark:bg-slate-800 z-1 overflow-hidden"
+            className="hidden lg:block absolute bottom-12 top-6 left-[170px] xl:left-[200px] w-1.5 rounded-full bg-slate-200 dark:bg-slate-700/80 z-1 overflow-hidden"
           >
             {/* Active Violet Beam that smoothly flows down to reading line */}
             <div
               ref={spineLineRef}
-              className="w-full rounded-full bg-gradient-to-b from-violet-600 to-indigo-500 shadow-[0_0_12px_rgba(83,64,214,0.45)] will-change-[height]"
+              className="w-full rounded-full bg-gradient-to-b from-violet-600 to-indigo-500 dark:from-violet-500 dark:to-purple-400 shadow-[0_0_12px_rgba(83,64,214,0.45)] dark:shadow-[0_0_14px_rgba(167,139,250,0.85)] will-change-[height]"
               style={{ height: "0px" }}
             />
           </div>
@@ -333,11 +333,11 @@ export default function Timeline({
           {/* MOBILE VERTICAL SPINE TRACK */}
           <div
             ref={mobileSpineTrackRef}
-            className="block lg:hidden absolute left-4.5 top-4 bottom-10 w-1 rounded-full bg-slate-200 dark:bg-slate-800 z-1 overflow-hidden"
+            className="block lg:hidden absolute left-4.5 top-4 bottom-10 w-1.5 rounded-full bg-slate-200 dark:bg-slate-700/80 z-1 overflow-hidden"
           >
             <div
               ref={mobileSpineLineRef}
-              className="w-full bg-violet-600 dark:bg-violet-500 rounded-full will-change-[height]"
+              className="w-full bg-gradient-to-b from-violet-600 to-indigo-500 dark:from-violet-500 dark:to-purple-400 rounded-full shadow-[0_0_12px_rgba(83,64,214,0.45)] dark:shadow-[0_0_14px_rgba(167,139,250,0.85)] will-change-[height]"
               style={{ height: "0px" }}
             />
           </div>
@@ -545,7 +545,7 @@ export default function Timeline({
         {/* BOTTOM CTA: FULL JOURNEY & GALLERY */}
         <div className="mt-20 lg:mt-28 text-center">
           <Link
-            href="/journey"
+            href="/events"
             className="inline-flex items-center gap-2.5 rounded-full bg-violet-600 hover:bg-violet-700 dark:bg-violet-600 dark:hover:bg-violet-500 px-6 sm:px-7 py-3 sm:py-3.5 font-poppins text-xs sm:text-sm font-bold text-white shadow-lg shadow-violet-600/25 transition-all hover:scale-105 cursor-pointer"
           >
             <span>{ctaBtnText}</span>

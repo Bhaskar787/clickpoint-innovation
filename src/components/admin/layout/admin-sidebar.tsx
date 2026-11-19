@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { getNavItems } from "../dashboard/nav-config";
+import { useSiteData } from "@/components/common/theme-provider";
 
 interface AdminSidebarProps {
   collapsed: boolean;
@@ -17,6 +18,8 @@ interface AdminSidebarProps {
   unreadTestimonialsCount: number;
   unreadContactCount: number;
   unreadJobAppsCount: number;
+  brandLogoUrl?: string;
+  collapsedIconUrl?: string;
 }
 
 export function AdminSidebar({
@@ -30,7 +33,20 @@ export function AdminSidebar({
   unreadTestimonialsCount,
   unreadContactCount,
   unreadJobAppsCount,
+  brandLogoUrl,
+  collapsedIconUrl,
 }: AdminSidebarProps) {
+  const siteData = useSiteData();
+  const effectiveBrandLogo =
+    brandLogoUrl ||
+    siteData?.navbar?.logo?.logoUrl ||
+    "https://res.cloudinary.com/dapi1jlc/image/upload/v1785998195/clickpoint_innovation/c9olq47p41iy7wbkmgxf.png";
+  const effectiveCollapsedIcon =
+    collapsedIconUrl ||
+    siteData?.settings?.collapsedLogoUrl ||
+    siteData?.settings?.faviconUrl ||
+    "/images/fav3.png";
+
   const navItems = getNavItems(
     unreadTestimonialsCount,
     unreadContactCount,
@@ -58,20 +74,22 @@ export function AdminSidebar({
           <Link href="/" className="flex items-center gap-2 overflow-hidden">
             {!collapsed ? (
               <Image
-                src="/images/clickpointfinal.png"
+                src={effectiveBrandLogo}
                 alt="Clickpoint Innovation"
                 width={1236}
                 height={317}
                 priority
-                className="h-8 w-auto transition-transform hover:scale-105"
+                unoptimized
+                className="h-8 w-auto max-w-[180px] object-contain transition-transform hover:scale-105"
               />
             ) : (
               <Image
-                src="/images/fav3.png"
+                src={effectiveCollapsedIcon}
                 alt="Clickpoint Innovation"
                 width={100}
                 height={100}
                 priority
+                unoptimized
                 className="h-8 w-8 object-contain transition-transform hover:scale-110"
               />
             )}

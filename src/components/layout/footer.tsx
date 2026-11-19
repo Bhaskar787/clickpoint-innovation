@@ -5,15 +5,40 @@ import Link from "next/link";
 import Image from "next/image";
 import { Linkedin, Twitter, Instagram, Youtube } from "lucide-react";
 import { DEFAULT_LANDING_DATA, DEFAULT_FOOTER_DATA } from "@/data/default-landing-data";
+import { useSiteData } from "@/components/common/theme-provider";
+
+const FOOTER_CACHE_KEY = "clickpoint_footer_cache_v2";
+
+function getCachedFooterData() {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(FOOTER_CACHE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
 
 interface FooterProps {
   initialData?: any;
 }
 
 export default function Footer({ initialData }: FooterProps = {}) {
+  const { footer: contextFooter } = useSiteData();
+  const effectiveInitial = initialData || contextFooter;
+
   const [footerData, setFooterData] = useState<any>(
-    initialData || DEFAULT_LANDING_DATA.footerData || DEFAULT_FOOTER_DATA
+    () => effectiveInitial || getCachedFooterData() || DEFAULT_LANDING_DATA.footerData || DEFAULT_FOOTER_DATA
   );
+
+  useEffect(() => {
+    if (effectiveInitial) {
+      setFooterData(effectiveInitial);
+      try {
+        localStorage.setItem(FOOTER_CACHE_KEY, JSON.stringify(effectiveInitial));
+      } catch {}
+    }
+  }, [effectiveInitial]);
 
   useEffect(() => {
     if (!initialData) {
@@ -23,7 +48,11 @@ export default function Footer({ initialData }: FooterProps = {}) {
           const json = await res.json();
           if (json.success && json.data && (json.data.footer || json.data.footerData)) {
             const data = json.data.footer || json.data.footerData;
-            setFooterData({ ...DEFAULT_FOOTER_DATA, ...data });
+            const merged = { ...DEFAULT_FOOTER_DATA, ...data };
+            setFooterData(merged);
+            try {
+              localStorage.setItem(FOOTER_CACHE_KEY, JSON.stringify(merged));
+            } catch {}
           }
         } catch (err) {
           console.warn("Using fallback footer data:", err);
@@ -53,8 +82,9 @@ export default function Footer({ initialData }: FooterProps = {}) {
   return (
     <footer className="relative border-t border-violet-100 dark:border-slate-800 bg-white dark:bg-[#0b0f19] pt-16">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-12 pb-12 lg:grid-cols-[1.2fr_2fr]">
-          <div>
+        <div className="grid gap-12 pb-12 lg:grid-cols-12">
+          {/* Brand & Socials Column */}
+          <div className="lg:col-span-4 xl:col-span-3">
             <Link href="/" className="flex items-center group">
               {footerData.logoUrl ? (
                 <Image
@@ -90,7 +120,16 @@ export default function Footer({ initialData }: FooterProps = {}) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
+          {/* Navigation Columns Grid (Supports 4 columns per row without wrapping) */}
+          <div
+            className={`lg:col-span-8 xl:col-span-9 grid gap-8 ${
+              columns.length >= 4
+                ? "grid-cols-2 sm:grid-cols-2 md:grid-cols-4"
+                : columns.length === 3
+                ? "grid-cols-2 sm:grid-cols-3"
+                : "grid-cols-2"
+            }`}
+          >
             {columns.map((col: any, idx: number) => (
               <div key={col.title || idx}>
                 <h4 className="mb-4 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400">

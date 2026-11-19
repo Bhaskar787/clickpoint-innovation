@@ -10,6 +10,8 @@ import {
   Paperclip,
   PenTool,
   Sparkles,
+  Linkedin,
+  Globe,
 } from "lucide-react";
 import { toast } from "sonner";
 import { broadcastNotification } from "@/lib/realtime-notifications";
@@ -37,6 +39,8 @@ export default function JobApplyModal({ job, isOpen, onClose }: JobApplyModalPro
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+  const [linkedIn, setLinkedIn] = useState("");
+  const [portfolio, setPortfolio] = useState("");
   const [coverLetterMode, setCoverLetterMode] = useState<"write" | "upload">("write");
   const [coverLetterText, setCoverLetterText] = useState("");
   const [coverLetterFile, setCoverLetterFile] = useState<File | null>(null);
@@ -72,6 +76,8 @@ export default function JobApplyModal({ job, isOpen, onClose }: JobApplyModalPro
       setEmail("");
       setPhone("");
       setAddress("");
+      setLinkedIn("");
+      setPortfolio("");
       setCoverLetterText("");
       setCoverLetterFile(null);
       setResumeFile(null);
@@ -164,6 +170,12 @@ export default function JobApplyModal({ job, isOpen, onClose }: JobApplyModalPro
     fd.append("email", email.trim().toLowerCase());
     fd.append("phone", phone.trim());
     fd.append("address", address.trim());
+    if (linkedIn.trim()) {
+      fd.append("linkedIn", linkedIn.trim());
+    }
+    if (portfolio.trim()) {
+      fd.append("portfolio", portfolio.trim());
+    }
     fd.append("jobVacancyId", job.id);
     fd.append("jobTitle", job.title);
     fd.append("resume", resumeFile);
@@ -359,6 +371,40 @@ export default function JobApplyModal({ job, isOpen, onClose }: JobApplyModalPro
                     placeholder="e.g. Pulchowk, Lalitpur or Kathmandu, Nepal"
                     className="w-full rounded-xl border border-violet-200 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/20"
                   />
+                </div>
+
+                {/* LinkedIn Profile */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    LinkedIn Profile <span className="font-normal text-[11px] text-slate-500 dark:text-slate-400">(Optional)</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={linkedIn}
+                      onChange={(e) => setLinkedIn(e.target.value)}
+                      placeholder="https://linkedin.com/in/username"
+                      className="w-full rounded-xl border border-violet-200 dark:border-slate-700 bg-white dark:bg-[#0b0f19] pl-9 pr-3.5 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/20"
+                    />
+                    <Linkedin className="h-3.5 w-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  </div>
+                </div>
+
+                {/* Portfolio / Website Link */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Portfolio / Website Link <span className="font-normal text-[11px] text-slate-500 dark:text-slate-400">(Optional)</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={portfolio}
+                      onChange={(e) => setPortfolio(e.target.value)}
+                      placeholder="https://yourportfolio.com or GitHub profile"
+                      className="w-full rounded-xl border border-violet-200 dark:border-slate-700 bg-white dark:bg-[#0b0f19] pl-9 pr-3.5 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/20"
+                    />
+                    <Globe className="h-3.5 w-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  </div>
                 </div>
 
                 {/* Cover Letter (Preserved with Write Text / Attach File Mode) */}

@@ -5,13 +5,38 @@ import { motion } from "framer-motion";
 import { ArrowRight, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DEFAULT_LANDING_DATA } from "@/data/default-landing-data";
+import { useSiteData } from "@/components/common/theme-provider";
+
+const CTA_CACHE_KEY = "clickpoint_cta_cache_v2";
+
+function getCachedCtaData() {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(CTA_CACHE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
 
 interface CtaSectionProps {
   initialData?: any;
 }
 
 export default function CtaSection({ initialData }: CtaSectionProps = {}) {
-  const [ctaData, setCtaData] = useState<any>(initialData || DEFAULT_LANDING_DATA.ctaBanner);
+  const { cta: contextCta } = useSiteData();
+  const effectiveInitial = initialData || contextCta;
+
+  const [ctaData, setCtaData] = useState<any>(() => effectiveInitial || getCachedCtaData() || DEFAULT_LANDING_DATA.ctaBanner);
+
+  useEffect(() => {
+    if (effectiveInitial) {
+      setCtaData(effectiveInitial);
+      try {
+        localStorage.setItem(CTA_CACHE_KEY, JSON.stringify(effectiveInitial));
+      } catch {}
+    }
+  }, [effectiveInitial]);
 
   useEffect(() => {
     if (!initialData) {
@@ -20,10 +45,14 @@ export default function CtaSection({ initialData }: CtaSectionProps = {}) {
           const res = await fetch("/api/landing");
           const json = await res.json();
           if (json.success && json.data && json.data.ctaBanner) {
-            setCtaData({
+            const merged = {
               ...DEFAULT_LANDING_DATA.ctaBanner,
               ...json.data.ctaBanner,
-            });
+            };
+            setCtaData(merged);
+            try {
+              localStorage.setItem(CTA_CACHE_KEY, JSON.stringify(merged));
+            } catch {}
           }
         } catch (err) {
           console.warn("Using default CTA banner content:", err);

@@ -15,6 +15,7 @@ export interface HRNotificationTemplateData {
   createdAt?: string;
   appUrl: string;
   useCidLogo?: boolean;
+  companyLogoUrl?: string;
 }
 
 /**
@@ -23,7 +24,14 @@ export interface HRNotificationTemplateData {
  */
 export function getHRNotificationEmailHTML(data: HRNotificationTemplateData): string {
   const baseUrl = data.appUrl || getAppBaseUrl();
-  const logoSrc = data.useCidLogo !== false ? "cid:clickpoint-logo" : `${baseUrl}/images/clickpointfinal.png`;
+  let logoSrc = data.useCidLogo !== false ? "cid:clickpoint-logo" : `${baseUrl}/images/clickpointfinal.png`;
+  if (data.companyLogoUrl) {
+    if (data.companyLogoUrl.startsWith("http://") || data.companyLogoUrl.startsWith("https://") || data.companyLogoUrl.startsWith("//")) {
+      logoSrc = data.companyLogoUrl;
+    } else {
+      logoSrc = `${baseUrl}${data.companyLogoUrl.startsWith("/") ? "" : "/"}${data.companyLogoUrl}`;
+    }
+  }
   
   const inlineViewUrl = `${baseUrl}/api/jobs/resume?id=${data.id}&action=inline`;
   const downloadUrl = `${baseUrl}/api/jobs/resume?id=${data.id}&action=download`;

@@ -303,7 +303,7 @@ export async function PUT(req: Request) {
     }
 
     revalidateTag("chatbot-page");
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     triggerReindexBackground();
 
     return NextResponse.json({

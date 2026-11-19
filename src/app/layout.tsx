@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
-import { ThemeProvider } from "@/components/common/theme-provider";
+import { ThemeProvider, SiteDataProvider } from "@/components/common/theme-provider";
 import { ChatbotWidget } from "@/components/common/chatbot-widget";
 import { Toaster } from "sonner";
+import { getChatbotServerData, getLandingPageData } from "@/server/actions/landing";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -12,25 +13,44 @@ const poppins = Poppins({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  title: "Clickpoint Innovation | AI-First Digital Partner",
-  description:
-    "Clickpoint Innovation builds AI-focused digital products that enhance productivity and profitability for global brands.",
-  icons: {
-    icon: "/images/fav3.png",
-    shortcut: "/images/fav3.png",
-    apple: "/images/fav3.png",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const landingData = await getLandingPageData();
+  const favicon = landingData?.systemSettings?.faviconUrl || "/images/fav3.png";
+  const siteName =
+    landingData?.systemSettings?.siteName ||
+    landingData?.navbar?.logo?.brandName ||
+    "Clickpoint Innovation";
 
-export default function RootLayout({
+  return {
+    title: `${siteName} | AI-First Digital Partner`,
+    description:
+      "Clickpoint Innovation builds AI-focused digital products that enhance productivity and profitability for global brands.",
+    icons: {
+      icon: favicon,
+      shortcut: favicon,
+      apple: favicon,
+    },
+  };
+}
+
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const [chatbotData, landingData] = await Promise.all([
+    getChatbotServerData(),
+    getLandingPageData(),
+  ]);
+
+  const faviconUrl = landingData?.systemSettings?.faviconUrl || "/images/fav3.png";
+
   return (
     <html lang="en" className={poppins.variable} suppressHydrationWarning>
       <head>
+        <link rel="icon" href={faviconUrl} />
+        <link rel="shortcut icon" href={faviconUrl} />
+        <link rel="apple-touch-icon" href={faviconUrl} />
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -49,11 +69,19 @@ export default function RootLayout({
         />
       </head>
       <body className="font-poppins font-sans antialiased">
-        <ThemeProvider>
-          {children}
-          <ChatbotWidget />
-          <Toaster position="top-right" richColors closeButton duration={4000} />
-        </ThemeProvider>
+        <SiteDataProvider
+          navbar={landingData?.navbar}
+          footer={landingData?.footer || landingData?.footerData}
+          cta={landingData?.ctaBanner}
+          chatbot={chatbotData}
+          settings={landingData?.systemSettings}
+        >
+          <ThemeProvider>
+            {children}
+            <ChatbotWidget initialData={chatbotData} />
+            <Toaster position="top-right" richColors closeButton duration={4000} />
+          </ThemeProvider>
+        </SiteDataProvider>
       </body>
     </html>
   );

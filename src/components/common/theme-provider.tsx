@@ -159,3 +159,39 @@ export function useTheme() {
   }
   return context;
 }
+
+export interface SiteDataContextType {
+  navbar?: any;
+  footer?: any;
+  chatbot?: any;
+  cta?: any;
+  settings?: any;
+}
+
+const SiteDataContext = createContext<SiteDataContextType>({});
+
+export function SiteDataProvider({
+  children,
+  navbar,
+  footer,
+  chatbot,
+  cta,
+  settings,
+}: {
+  children: React.ReactNode;
+  navbar?: any;
+  footer?: any;
+  chatbot?: any;
+  cta?: any;
+  settings?: any;
+}) {
+  return (
+    <SiteDataContext.Provider value={{ navbar, footer, chatbot, cta, settings }}>
+      {children}
+    </SiteDataContext.Provider>
+  );
+}
+
+export function useSiteData() {
+  return useContext(SiteDataContext);
+}

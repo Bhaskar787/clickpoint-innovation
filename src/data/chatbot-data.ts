@@ -23,9 +23,9 @@ export interface ChatNode {
   showPricingCards?: boolean;
 }
 
-export const BOT_NAME = "Clix";
+export const BOT_NAME = "Click";
 export const BOT_TITLE = "Clickpoint Assistant";
-export const BOT_SUBTITLE = "Usually replies instantly";
+export const BOT_SUBTITLE = "assist you";
 export const WELCOME_DELAY_MS = 500;
 
 export const START_NODE = "root";
@@ -34,7 +34,7 @@ export const CHAT_NODES: Record<string, ChatNode> = {
   root: {
     id: "root",
     bot: [
-      "Hi there! I'm Clix, Clickpoint Innovation's assistant.",
+      "Hi there! I'm Clickbaaot, Clickpoint Innovation's assistant.",
       "I can answer questions about our services, pricing, client reviews, industries, careers, or FAQs. What would you like to explore?",
     ],
     replies: [
@@ -71,7 +71,7 @@ export const CHAT_NODES: Record<string, ChatNode> = {
       "• Fintech & Financial Systems\n• Healthcare & MedTech (HIPAA compliant)\n• E-Commerce & Retail AI\n• SaaS & Scaleup Platforms\n• Logistics & Supply Chain Automation",
     ],
     replies: [
-      { label: "View Industries Page", href: "/industries", icon: "ExternalLink" },
+      { label: "View Portfolio & Industries", href: "/portfolio", icon: "ExternalLink" },
       { label: "Explore Case Studies", href: "/case-studies", icon: "FolderGit2" },
       { label: "Main Menu", goTo: "root", icon: "ArrowLeft" },
     ],

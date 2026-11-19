@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { getTimeAgo } from "../dashboard/nav-config";
+import { useSiteData } from "@/components/common/theme-provider";
 
 interface AdminHeaderProps {
   mobileOpen: boolean;
@@ -50,6 +51,12 @@ export function AdminHeader({
   handleMarkSingleRead,
   handleLogout,
 }: AdminHeaderProps) {
+  const siteData = useSiteData();
+  const avatarIcon =
+    siteData?.settings?.collapsedLogoUrl ||
+    siteData?.settings?.faviconUrl ||
+    "/images/fav3.png";
+
   const totalUnreadCount = unreadTestimonialsCount + unreadContactCount + unreadJobAppsCount;
 
   return (
@@ -228,11 +235,12 @@ export function AdminHeader({
         <div className="flex items-center gap-1.5 sm:gap-3 pl-2 sm:pl-3 border-l border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-2">
             <Image
-              src="/images/fav3.png"
+              src={avatarIcon}
               alt="Clickpoint Innovation"
               width={100}
               height={100}
               priority
+              unoptimized
               className="h-7 w-7 sm:h-8 sm:w-8 object-contain transition-transform hover:scale-110"
             />
             <div className="hidden md:block text-left">

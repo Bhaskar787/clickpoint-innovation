@@ -83,6 +83,7 @@ export type JobVacancyCountAggregateOutputType = {
   summary: number
   responsibilities: number
   requirements: number
+  sections: number
   featured: number
   isActive: number
   order: number
@@ -149,6 +150,7 @@ export type JobVacancyCountAggregateInputType = {
   summary?: true
   responsibilities?: true
   requirements?: true
+  sections?: true
   featured?: true
   isActive?: true
   order?: true
@@ -256,6 +258,7 @@ export type JobVacancyGroupByOutputType = {
   summary: string
   responsibilities: runtime.JsonValue
   requirements: runtime.JsonValue
+  sections: runtime.JsonValue | null
   featured: boolean
   isActive: boolean
   order: number
@@ -299,6 +302,7 @@ export type JobVacancyWhereInput = {
   summary?: Prisma.StringFilter<"JobVacancy"> | string
   responsibilities?: Prisma.JsonFilter<"JobVacancy">
   requirements?: Prisma.JsonFilter<"JobVacancy">
+  sections?: Prisma.JsonNullableFilter<"JobVacancy">
   featured?: Prisma.BoolFilter<"JobVacancy"> | boolean
   isActive?: Prisma.BoolFilter<"JobVacancy"> | boolean
   order?: Prisma.IntFilter<"JobVacancy"> | number
@@ -321,6 +325,7 @@ export type JobVacancyOrderByWithRelationInput = {
   summary?: Prisma.SortOrder
   responsibilities?: Prisma.SortOrder
   requirements?: Prisma.SortOrder
+  sections?: Prisma.SortOrderInput | Prisma.SortOrder
   featured?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   order?: Prisma.SortOrder
@@ -346,6 +351,7 @@ export type JobVacancyWhereUniqueInput = Prisma.AtLeast<{
   summary?: Prisma.StringFilter<"JobVacancy"> | string
   responsibilities?: Prisma.JsonFilter<"JobVacancy">
   requirements?: Prisma.JsonFilter<"JobVacancy">
+  sections?: Prisma.JsonNullableFilter<"JobVacancy">
   featured?: Prisma.BoolFilter<"JobVacancy"> | boolean
   isActive?: Prisma.BoolFilter<"JobVacancy"> | boolean
   order?: Prisma.IntFilter<"JobVacancy"> | number
@@ -368,6 +374,7 @@ export type JobVacancyOrderByWithAggregationInput = {
   summary?: Prisma.SortOrder
   responsibilities?: Prisma.SortOrder
   requirements?: Prisma.SortOrder
+  sections?: Prisma.SortOrderInput | Prisma.SortOrder
   featured?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   order?: Prisma.SortOrder
@@ -396,6 +403,7 @@ export type JobVacancyScalarWhereWithAggregatesInput = {
   summary?: Prisma.StringWithAggregatesFilter<"JobVacancy"> | string
   responsibilities?: Prisma.JsonWithAggregatesFilter<"JobVacancy">
   requirements?: Prisma.JsonWithAggregatesFilter<"JobVacancy">
+  sections?: Prisma.JsonNullableWithAggregatesFilter<"JobVacancy">
   featured?: Prisma.BoolWithAggregatesFilter<"JobVacancy"> | boolean
   isActive?: Prisma.BoolWithAggregatesFilter<"JobVacancy"> | boolean
   order?: Prisma.IntWithAggregatesFilter<"JobVacancy"> | number
@@ -415,6 +423,7 @@ export type JobVacancyCreateInput = {
   summary?: string
   responsibilities?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   requirements?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  sections?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   featured?: boolean
   isActive?: boolean
   order?: number
@@ -437,6 +446,7 @@ export type JobVacancyUncheckedCreateInput = {
   summary?: string
   responsibilities?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   requirements?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  sections?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   featured?: boolean
   isActive?: boolean
   order?: number
@@ -457,6 +467,7 @@ export type JobVacancyUpdateInput = {
   summary?: Prisma.StringFieldUpdateOperationsInput | string
   responsibilities?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   requirements?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  sections?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   order?: Prisma.IntFieldUpdateOperationsInput | number
@@ -479,6 +490,7 @@ export type JobVacancyUncheckedUpdateInput = {
   summary?: Prisma.StringFieldUpdateOperationsInput | string
   responsibilities?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   requirements?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  sections?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   order?: Prisma.IntFieldUpdateOperationsInput | number
@@ -500,6 +512,7 @@ export type JobVacancyCreateManyInput = {
   summary?: string
   responsibilities?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   requirements?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  sections?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   featured?: boolean
   isActive?: boolean
   order?: number
@@ -519,6 +532,7 @@ export type JobVacancyUpdateManyMutationInput = {
   summary?: Prisma.StringFieldUpdateOperationsInput | string
   responsibilities?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   requirements?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  sections?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   order?: Prisma.IntFieldUpdateOperationsInput | number
@@ -539,6 +553,7 @@ export type JobVacancyUncheckedUpdateManyInput = {
   summary?: Prisma.StringFieldUpdateOperationsInput | string
   responsibilities?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   requirements?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  sections?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   order?: Prisma.IntFieldUpdateOperationsInput | number
@@ -569,6 +584,7 @@ export type JobVacancyCountOrderByAggregateInput = {
   summary?: Prisma.SortOrder
   responsibilities?: Prisma.SortOrder
   requirements?: Prisma.SortOrder
+  sections?: Prisma.SortOrder
   featured?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   order?: Prisma.SortOrder
@@ -693,6 +709,7 @@ export type JobVacancyCreateWithoutCategoryInput = {
   summary?: string
   responsibilities?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   requirements?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  sections?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   featured?: boolean
   isActive?: boolean
   order?: number
@@ -713,6 +730,7 @@ export type JobVacancyUncheckedCreateWithoutCategoryInput = {
   summary?: string
   responsibilities?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   requirements?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  sections?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   featured?: boolean
   isActive?: boolean
   order?: number
@@ -763,6 +781,7 @@ export type JobVacancyScalarWhereInput = {
   summary?: Prisma.StringFilter<"JobVacancy"> | string
   responsibilities?: Prisma.JsonFilter<"JobVacancy">
   requirements?: Prisma.JsonFilter<"JobVacancy">
+  sections?: Prisma.JsonNullableFilter<"JobVacancy">
   featured?: Prisma.BoolFilter<"JobVacancy"> | boolean
   isActive?: Prisma.BoolFilter<"JobVacancy"> | boolean
   order?: Prisma.IntFilter<"JobVacancy"> | number
@@ -782,6 +801,7 @@ export type JobVacancyCreateWithoutApplicationsInput = {
   summary?: string
   responsibilities?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   requirements?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  sections?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   featured?: boolean
   isActive?: boolean
   order?: number
@@ -803,6 +823,7 @@ export type JobVacancyUncheckedCreateWithoutApplicationsInput = {
   summary?: string
   responsibilities?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   requirements?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  sections?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   featured?: boolean
   isActive?: boolean
   order?: number
@@ -838,6 +859,7 @@ export type JobVacancyUpdateWithoutApplicationsInput = {
   summary?: Prisma.StringFieldUpdateOperationsInput | string
   responsibilities?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   requirements?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  sections?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   order?: Prisma.IntFieldUpdateOperationsInput | number
@@ -859,6 +881,7 @@ export type JobVacancyUncheckedUpdateWithoutApplicationsInput = {
   summary?: Prisma.StringFieldUpdateOperationsInput | string
   responsibilities?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   requirements?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  sections?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   order?: Prisma.IntFieldUpdateOperationsInput | number
@@ -878,6 +901,7 @@ export type JobVacancyCreateManyCategoryInput = {
   summary?: string
   responsibilities?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   requirements?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  sections?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   featured?: boolean
   isActive?: boolean
   order?: number
@@ -897,6 +921,7 @@ export type JobVacancyUpdateWithoutCategoryInput = {
   summary?: Prisma.StringFieldUpdateOperationsInput | string
   responsibilities?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   requirements?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  sections?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   order?: Prisma.IntFieldUpdateOperationsInput | number
@@ -917,6 +942,7 @@ export type JobVacancyUncheckedUpdateWithoutCategoryInput = {
   summary?: Prisma.StringFieldUpdateOperationsInput | string
   responsibilities?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   requirements?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  sections?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   order?: Prisma.IntFieldUpdateOperationsInput | number
@@ -937,6 +963,7 @@ export type JobVacancyUncheckedUpdateManyWithoutCategoryInput = {
   summary?: Prisma.StringFieldUpdateOperationsInput | string
   responsibilities?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   requirements?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  sections?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   order?: Prisma.IntFieldUpdateOperationsInput | number
@@ -988,6 +1015,7 @@ export type JobVacancySelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   summary?: boolean
   responsibilities?: boolean
   requirements?: boolean
+  sections?: boolean
   featured?: boolean
   isActive?: boolean
   order?: boolean
@@ -1011,6 +1039,7 @@ export type JobVacancySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   summary?: boolean
   responsibilities?: boolean
   requirements?: boolean
+  sections?: boolean
   featured?: boolean
   isActive?: boolean
   order?: boolean
@@ -1032,6 +1061,7 @@ export type JobVacancySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   summary?: boolean
   responsibilities?: boolean
   requirements?: boolean
+  sections?: boolean
   featured?: boolean
   isActive?: boolean
   order?: boolean
@@ -1053,6 +1083,7 @@ export type JobVacancySelectScalar = {
   summary?: boolean
   responsibilities?: boolean
   requirements?: boolean
+  sections?: boolean
   featured?: boolean
   isActive?: boolean
   order?: boolean
@@ -1060,7 +1091,7 @@ export type JobVacancySelectScalar = {
   updatedAt?: boolean
 }
 
-export type JobVacancyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "slug" | "categoryId" | "type" | "location" | "experience" | "salary" | "deadline" | "summary" | "responsibilities" | "requirements" | "featured" | "isActive" | "order" | "createdAt" | "updatedAt", ExtArgs["result"]["jobVacancy"]>
+export type JobVacancyOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "slug" | "categoryId" | "type" | "location" | "experience" | "salary" | "deadline" | "summary" | "responsibilities" | "requirements" | "sections" | "featured" | "isActive" | "order" | "createdAt" | "updatedAt", ExtArgs["result"]["jobVacancy"]>
 export type JobVacancyInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   category?: boolean | Prisma.JobCategoryDefaultArgs<ExtArgs>
   applications?: boolean | Prisma.JobVacancy$applicationsArgs<ExtArgs>
@@ -1092,6 +1123,7 @@ export type $JobVacancyPayload<ExtArgs extends runtime.Types.Extensions.Internal
     summary: string
     responsibilities: runtime.JsonValue
     requirements: runtime.JsonValue
+    sections: runtime.JsonValue | null
     featured: boolean
     isActive: boolean
     order: number
@@ -1534,6 +1566,7 @@ export interface JobVacancyFieldRefs {
   readonly summary: Prisma.FieldRef<"JobVacancy", 'String'>
   readonly responsibilities: Prisma.FieldRef<"JobVacancy", 'Json'>
   readonly requirements: Prisma.FieldRef<"JobVacancy", 'Json'>
+  readonly sections: Prisma.FieldRef<"JobVacancy", 'Json'>
   readonly featured: Prisma.FieldRef<"JobVacancy", 'Boolean'>
   readonly isActive: Prisma.FieldRef<"JobVacancy", 'Boolean'>
   readonly order: Prisma.FieldRef<"JobVacancy", 'Int'>

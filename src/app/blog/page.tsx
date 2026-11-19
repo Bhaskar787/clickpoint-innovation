@@ -19,16 +19,37 @@ import Footer from "@/components/layout/footer";
 import CtaSection from "@/components/sections/cta-section";
 import { DEFAULT_BLOG_PAGE_DATA } from "@/data/default-blog-data";
 
+const BLOG_CACHE_KEY = "clickpoint_blog_cache_v2";
+
+function getCachedBlog() {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(BLOG_CACHE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function BlogListingPage() {
   const [activeCategory, setActiveCategory] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const postsPerPage = 6;
 
-  const [pageConfig, setPageConfig] = useState<any>(null);
-  const [categories, setCategories] = useState<string[]>(["ALL"]);
-  const [posts, setPosts] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [pageConfig, setPageConfig] = useState<any>(() => {
+    const cached = getCachedBlog();
+    return cached?.pageConfig || DEFAULT_BLOG_PAGE_DATA;
+  });
+  const [categories, setCategories] = useState<string[]>(() => {
+    const cached = getCachedBlog();
+    return cached?.categories || ["ALL"];
+  });
+  const [posts, setPosts] = useState<any[]>(() => {
+    const cached = getCachedBlog();
+    return cached?.posts || [];
+  });
+  const [isLoading, setIsLoading] = useState(() => !getCachedBlog());
 
   useEffect(() => {
     async function loadBlogData() {
@@ -36,16 +57,19 @@ export default function BlogListingPage() {
         const res = await fetch("/api/blog");
         const json = await res.json();
         if (json.success && json.data) {
-          if (json.data.hero) {
-            setPageConfig(json.data);
-          }
-          if (json.data.categories && json.data.categories.length > 0) {
-            const catNames = json.data.categories.map((c: any) => c.name);
-            setCategories(["ALL", ...catNames]);
-          }
-          if (json.data.posts) {
-            setPosts(json.data.posts);
-          }
+          const cfg = json.data.hero ? json.data : DEFAULT_BLOG_PAGE_DATA;
+          const cats = json.data.categories && json.data.categories.length > 0
+            ? ["ALL", ...json.data.categories.map((c: any) => c.name)]
+            : ["ALL"];
+          const pst = json.data.posts || [];
+
+          setPageConfig(cfg);
+          setCategories(cats);
+          setPosts(pst);
+
+          try {
+            localStorage.setItem(BLOG_CACHE_KEY, JSON.stringify({ pageConfig: cfg, categories: cats, posts: pst }));
+          } catch {}
         }
       } catch (err) {
         console.error("Failed to fetch dynamic blog listing:", err);

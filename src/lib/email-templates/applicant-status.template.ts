@@ -9,6 +9,7 @@ export interface ApplicantStatusTemplateData {
   customMessage?: string;
   appUrl?: string;
   useCidLogo?: boolean;
+  companyLogoUrl?: string;
 }
 
 /**
@@ -19,11 +20,18 @@ export function getApplicantStatusEmailHTML(data: ApplicantStatusTemplateData): 
   subject: string;
   html: string;
 } {
-  const { applicantName, jobTitle, emailType, customSubject, customMessage, useCidLogo = true } = data;
+  const { applicantName, jobTitle, emailType, customSubject, customMessage, useCidLogo = true, companyLogoUrl } = data;
   const baseUrl = data.appUrl || getAppBaseUrl();
   
-  // Use CID inline attachment for real emails so Gmail renders logo reliably on localhost & production
-  const logoSrc = useCidLogo ? "cid:clickpoint-logo" : `${baseUrl}/images/clickpointfinal.png`;
+  // Use dynamic company logo URL if configured, otherwise fall back to CID attachment or local path
+  let logoSrc = useCidLogo ? "cid:clickpoint-logo" : `${baseUrl}/images/clickpointfinal.png`;
+  if (companyLogoUrl) {
+    if (companyLogoUrl.startsWith("http://") || companyLogoUrl.startsWith("https://") || companyLogoUrl.startsWith("//")) {
+      logoSrc = companyLogoUrl;
+    } else {
+      logoSrc = `${baseUrl}${companyLogoUrl.startsWith("/") ? "" : "/"}${companyLogoUrl}`;
+    }
+  }
 
   let defaultSubject = "";
   let badgeLabel = "";

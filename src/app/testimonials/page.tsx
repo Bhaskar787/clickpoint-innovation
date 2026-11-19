@@ -3,6 +3,7 @@ import { getTestimonialsPage, getApprovedTestimonials } from "@/server/actions/t
 import TestimonialsClientView from "./testimonials-client-view";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export const metadata: Metadata = {
   title: "Client Testimonials & Verified Reviews | Clickpoint Innovation",

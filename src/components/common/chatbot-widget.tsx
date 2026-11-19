@@ -14,6 +14,7 @@ import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
+import { useSiteData } from "@/components/common/theme-provider";
 import {
   MessageCircle,
   X,
@@ -110,6 +111,22 @@ interface PersistedState {
   open: boolean;
 }
 
+export interface ChatbotWidgetProps {
+  initialData?: any;
+}
+
+const CHATBOT_CACHE_KEY = "clickpoint_chatbot_config_cache_v2";
+
+function getCachedChatbotConfig() {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(CHATBOT_CACHE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 export function RenderIcon({ name, className = "h-3.5 w-3.5" }: { name?: string; className?: string }) {
   if (!name) return <ChevronRight className={className} />;
   switch (name) {
@@ -144,7 +161,10 @@ export function RenderIcon({ name, className = "h-3.5 w-3.5" }: { name?: string;
   }
 }
 
-export function ChatbotWidget() {
+export function ChatbotWidget({ initialData }: ChatbotWidgetProps = {}) {
+  const { chatbot: contextChatbot } = useSiteData();
+  const effectiveData = initialData || contextChatbot;
+
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -193,22 +213,41 @@ export function ChatbotWidget() {
     }
   }
 
-  // Dynamic state from API
-  const [botConfig, setBotConfig] = useState({
-    title: BOT_TITLE || "Clickpoint Assistant",
-    subtitle: BOT_SUBTITLE || "Usually replies instantly",
-    avatarUrl: "",
-    launcherIconUrl: "",
-    welcomeDelay: WELCOME_DELAY_MS || 500,
-    startNode: START_NODE || "root",
-    enabled: true,
+  // Pre-hydrated or cached initial state
+  const [botConfig, setBotConfig] = useState(() => {
+    const cached = getCachedChatbotConfig();
+    const s = effectiveData?.settings || cached?.settings;
+    return {
+      title: s?.botTitle || BOT_TITLE || "Clickpoint Assistant",
+      subtitle: s?.botSubtitle || BOT_SUBTITLE || "Usually replies instantly",
+      avatarUrl: s?.botAvatarUrl || "",
+      launcherIconUrl: s?.launcherIconUrl || s?.botAvatarUrl || "",
+      welcomeDelay: s?.welcomeDelayMs || WELCOME_DELAY_MS || 500,
+      startNode: s?.startNode || START_NODE || "root",
+      enabled: s?.enabled !== false,
+    };
   });
 
-  const [nodes, setNodes] = useState<Record<string, ChatNode>>(CHAT_NODES);
-  const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([]);
-  const [selectedTestimonialIds, setSelectedTestimonialIds] = useState<string[]>([]);
-  const [selectedFaqIds, setSelectedFaqIds] = useState<string[]>([]);
-  const [customPricingInfo, setCustomPricingInfo] = useState<any>(null);
+  const [nodes, setNodes] = useState<Record<string, ChatNode>>(() => {
+    const cached = getCachedChatbotConfig();
+    return effectiveData?.nodes || cached?.nodes || CHAT_NODES;
+  });
+  const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>(() => {
+    const cached = getCachedChatbotConfig();
+    return effectiveData?.selectedServiceIds || cached?.selectedServiceIds || [];
+  });
+  const [selectedTestimonialIds, setSelectedTestimonialIds] = useState<string[]>(() => {
+    const cached = getCachedChatbotConfig();
+    return effectiveData?.selectedTestimonialIds || cached?.selectedTestimonialIds || [];
+  });
+  const [selectedFaqIds, setSelectedFaqIds] = useState<string[]>(() => {
+    const cached = getCachedChatbotConfig();
+    return effectiveData?.selectedFaqIds || cached?.selectedFaqIds || [];
+  });
+  const [customPricingInfo, setCustomPricingInfo] = useState<any>(() => {
+    const cached = getCachedChatbotConfig();
+    return effectiveData?.customPricingInfo || cached?.customPricingInfo || null;
+  });
 
   const [realEntities, setRealEntities] = useState<{
     services: any[];
@@ -216,12 +255,15 @@ export function ChatbotWidget() {
     faqs: any[];
     jobs: any[];
     caseStudies: any[];
-  }>({
-    services: [],
-    testimonials: [],
-    faqs: [],
-    jobs: [],
-    caseStudies: [],
+  }>(() => {
+    const cached = getCachedChatbotConfig();
+    return {
+      services: effectiveData?.realEntities?.services || cached?.realEntities?.services || [],
+      testimonials: effectiveData?.realEntities?.testimonials || cached?.realEntities?.testimonials || [],
+      faqs: effectiveData?.realEntities?.faqs || cached?.realEntities?.faqs || [],
+      jobs: effectiveData?.realEntities?.jobs || cached?.realEntities?.jobs || [],
+      caseStudies: effectiveData?.realEntities?.caseStudies || cached?.realEntities?.caseStudies || [],
+    };
   });
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -237,18 +279,36 @@ export function ChatbotWidget() {
         }).then((r) => r.json());
         if (res?.success && res?.data) {
           const d = res.data;
+          try {
+            localStorage.setItem(CHATBOT_CACHE_KEY, JSON.stringify(d));
+          } catch {}
           if (d.settings) {
             setBotConfig({
               title: d.settings.botTitle || BOT_TITLE,
               subtitle: d.settings.botSubtitle || BOT_SUBTITLE,
               avatarUrl: d.settings.botAvatarUrl || "",
-              launcherIconUrl: d.settings.launcherIconUrl || "",
+              launcherIconUrl: d.settings.launcherIconUrl || d.settings.botAvatarUrl || "",
               welcomeDelay: d.settings.welcomeDelayMs || WELCOME_DELAY_MS,
               startNode: d.settings.startNode || START_NODE,
               enabled: d.settings.enabled !== false,
             });
           }
-          if (d.nodes) setNodes(d.nodes);
+          if (d.nodes) {
+            setNodes(d.nodes);
+            const startKey = d.settings?.startNode || START_NODE;
+            const welcomeLines = d.nodes[startKey]?.bot;
+            setMessages((prev) => {
+              const hasUser = prev.some((m) => m.from === "user");
+              if (!hasUser && welcomeLines && welcomeLines.length > 0) {
+                return welcomeLines.map((line: string) => ({
+                  id: uid(),
+                  from: "bot",
+                  text: line,
+                }));
+              }
+              return prev;
+            });
+          }
           if (d.selectedServiceIds) setSelectedServiceIds(d.selectedServiceIds);
           if (d.selectedTestimonialIds) setSelectedTestimonialIds(d.selectedTestimonialIds);
           if (d.selectedFaqIds) setSelectedFaqIds(d.selectedFaqIds);
@@ -263,17 +323,85 @@ export function ChatbotWidget() {
     fetchConfig();
   }, [open]);
 
+  // Listen for admin dashboard live updates across tabs
+  useEffect(() => {
+    function applyData(d: any) {
+      if (!d) return;
+      if (d.settings) {
+        setBotConfig({
+          title: d.settings.botTitle || BOT_TITLE,
+          subtitle: d.settings.botSubtitle || BOT_SUBTITLE,
+          avatarUrl: d.settings.botAvatarUrl || "",
+          launcherIconUrl: d.settings.launcherIconUrl || d.settings.botAvatarUrl || "",
+          welcomeDelay: d.settings.welcomeDelayMs || WELCOME_DELAY_MS,
+          startNode: d.settings.startNode || START_NODE,
+          enabled: d.settings.enabled !== false,
+        });
+      }
+      if (d.nodes) {
+        setNodes(d.nodes);
+        const startKey = d.settings?.startNode || START_NODE;
+        const welcomeLines = d.nodes[startKey]?.bot;
+        setMessages((prev) => {
+          const hasUser = prev.some((m) => m.from === "user");
+          if (!hasUser && welcomeLines && welcomeLines.length > 0) {
+            return welcomeLines.map((line: string) => ({
+              id: uid(),
+              from: "bot",
+              text: line,
+            }));
+          }
+          return prev;
+        });
+      }
+      if (d.selectedServiceIds) setSelectedServiceIds(d.selectedServiceIds);
+      if (d.selectedTestimonialIds) setSelectedTestimonialIds(d.selectedTestimonialIds);
+      if (d.selectedFaqIds) setSelectedFaqIds(d.selectedFaqIds);
+      if (d.customPricingInfo) setCustomPricingInfo(d.customPricingInfo);
+    }
+
+    const onCustomUpdate = (e: any) => {
+      if (e.detail) applyData(e.detail);
+    };
+    window.addEventListener("chatbot-config-updated", onCustomUpdate);
+
+    let channel: BroadcastChannel | null = null;
+    try {
+      channel = new BroadcastChannel("clickpoint-chatbot-sync");
+      channel.onmessage = (event) => {
+        if (event.data?.type === "CONFIG_UPDATED" && event.data.data) {
+          applyData(event.data.data);
+        }
+      };
+    } catch {}
+
+    return () => {
+      window.removeEventListener("chatbot-config-updated", onCustomUpdate);
+      channel?.close();
+    };
+  }, []);
+
   // 2. SessionStorage Restore
   useEffect(() => {
     try {
       const raw = sessionStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed: PersistedState = JSON.parse(raw);
-        setMessages(parsed.messages ?? []);
+        const hasUser = parsed.messages?.some((m) => m.from === "user");
+        const startKey = botConfig.startNode || START_NODE;
+        const currentWelcomeLines = nodes[startKey]?.bot || CHAT_NODES[startKey]?.bot || [];
+
+        if (!hasUser && currentWelcomeLines.length > 0) {
+          // Keep welcome greeting in sync with latest dynamic node config
+          setMessages(currentWelcomeLines.map((line) => ({ id: uid(), from: "bot", text: line })));
+        } else {
+          setMessages(parsed.messages ?? []);
+        }
+
         setCurrentNode(parsed.currentNode ?? (botConfig.startNode || START_NODE));
         setOpen(parsed.open ?? false);
         setHydrated(true);
-        initFired.current = (parsed.messages?.length ?? 0) > 0;
+        initFired.current = true;
         return;
       }
     } catch {
@@ -375,6 +503,9 @@ export function ChatbotWidget() {
   }
 
   function resetConversation() {
+    try {
+      sessionStorage.removeItem(STORAGE_KEY);
+    } catch {}
     setMessages([]);
     initFired.current = false;
     pushBotNode(botConfig.startNode || START_NODE);
@@ -405,6 +536,8 @@ export function ChatbotWidget() {
       ? customPricingInfo.packages
       : DEFAULT_PRICING_PACKAGES;
 
+  const activeLauncherIcon = botConfig.launcherIconUrl || botConfig.avatarUrl;
+
   return (
     <>
       {/* ---------------- Floating launcher button ---------------- */}
@@ -430,10 +563,10 @@ export function ChatbotWidget() {
             >
               <X className="h-6 w-6" />
             </motion.span>
-          ) : botConfig.launcherIconUrl ? (
+          ) : activeLauncherIcon ? (
             <motion.img
               key="launcher-img"
-              src={botConfig.launcherIconUrl}
+              src={activeLauncherIcon}
               alt="Chat Launcher"
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -472,7 +605,7 @@ export function ChatbotWidget() {
             transition={{ duration: 0.22, ease: "easeOut" }}
             className={cn(
               "fixed z-[70] flex flex-col overflow-hidden",
-              "bottom-24 right-5 w-[calc(100vw-2.5rem)] max-w-[390px] h-[min(620px,calc(100vh-130px))]",
+              "bottom-20 sm:bottom-24 right-3 sm:right-6 w-[calc(100vw-1.5rem)] sm:w-[440px] max-w-[450px] h-[min(650px,calc(100vh-120px))]",
               "rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10",
               "dark:border-slate-800 dark:bg-[#131927] dark:shadow-black/60"
             )}
@@ -723,6 +856,11 @@ export function ChatbotWidget() {
 
 function FormattedText({ text }: { text: string }) {
   if (!text) return null;
+  // Normalize bullet points: convert any literal bullets ('•', '●', '–') at the start of lines to markdown '* '
+  const normalizedText = text
+    .replace(/^(\s*)[•●–]\s+/gm, "$1* ")
+    .replace(/\n{3,}/g, "\n\n");
+
   return (
     <ReactMarkdown
       components={{
@@ -734,19 +872,31 @@ function FormattedText({ text }: { text: string }) {
             {children}
           </Link>
         ),
-        p: ({ children }) => <p className="mb-1.5 last:mb-0 leading-relaxed">{children}</p>,
+        p: ({ children }) => <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>,
         strong: ({ children }) => (
           <strong className="font-extrabold text-slate-900 dark:text-white">{children}</strong>
         ),
-        ul: ({ children }) => <ul className="my-1.5 space-y-1 list-disc list-inside text-violet-500 pl-1">{children}</ul>,
-        ol: ({ children }) => <ol className="my-1.5 space-y-1 list-decimal list-inside text-violet-600 pl-1">{children}</ol>,
-        li: ({ children }) => <li className="text-slate-800 dark:text-slate-100">{children}</li>,
-        h1: ({ children }) => <h1 className="text-sm font-bold text-slate-900 dark:text-white my-1">{children}</h1>,
-        h2: ({ children }) => <h2 className="text-xs font-bold text-slate-900 dark:text-white my-1">{children}</h2>,
+        ul: ({ children }) => (
+          <ul className="my-2 space-y-1.5 list-disc list-outside pl-4 text-violet-500 dark:text-violet-400 marker:text-violet-500 dark:marker:text-violet-400">
+            {children}
+          </ul>
+        ),
+        ol: ({ children }) => (
+          <ol className="my-2 space-y-1.5 list-decimal list-outside pl-4 text-violet-500 dark:text-violet-400 marker:text-violet-500 dark:marker:text-violet-400">
+            {children}
+          </ol>
+        ),
+        li: ({ children }) => (
+          <li className="text-slate-800 dark:text-slate-100 leading-relaxed pl-1 marker:text-violet-500 dark:marker:text-violet-400 [&>p]:inline [&>p]:m-0 [&>p]:leading-relaxed [&>ul]:mt-1.5 [&>ul]:mb-1 [&>ol]:mt-1.5 [&>ol]:mb-1">
+            {children}
+          </li>
+        ),
+        h1: ({ children }) => <h1 className="text-sm font-bold text-slate-900 dark:text-white my-1.5">{children}</h1>,
+        h2: ({ children }) => <h2 className="text-xs font-bold text-slate-900 dark:text-white my-1.5">{children}</h2>,
         h3: ({ children }) => <h3 className="text-xs font-bold text-slate-900 dark:text-white my-1">{children}</h3>,
       }}
     >
-      {text}
+      {normalizedText}
     </ReactMarkdown>
   );
 }
@@ -762,7 +912,7 @@ function MessageBubble({ from, text, sources }: { from: "bot" | "user"; text: st
     >
       <div
         className={cn(
-          "max-w-[85%] rounded-2xl px-4 py-2.5 text-[12.5px] leading-relaxed shadow-2xs font-medium",
+          "max-w-[92%] sm:max-w-[90%] rounded-2xl px-4 py-2.5 text-[12.5px] leading-relaxed shadow-2xs font-medium",
           isBot
             ? "rounded-bl-xs border border-slate-200/80 bg-white text-slate-800 dark:border-slate-700/80 dark:bg-slate-800 dark:text-slate-100"
             : "rounded-br-xs bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold"

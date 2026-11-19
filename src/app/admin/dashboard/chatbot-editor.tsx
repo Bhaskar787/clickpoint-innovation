@@ -260,6 +260,19 @@ export default function ChatbotEditor({ sectionId, onCloseSection }: ChatbotEdit
         toast.success("Chatbot settings saved!", {
           description: "All changes are live on the website chatbot widget.",
         });
+
+        // Broadcast live sync to all browser tabs and update local cache
+        if (typeof window !== "undefined") {
+          try {
+            window.dispatchEvent(new CustomEvent("chatbot-config-updated", { detail: payload }));
+            const channel = new BroadcastChannel("clickpoint-chatbot-sync");
+            channel.postMessage({ type: "CONFIG_UPDATED", data: payload });
+            channel.close();
+          } catch {}
+          try {
+            localStorage.setItem("clickpoint_chatbot_config_cache_v2", JSON.stringify(payload));
+          } catch {}
+        }
       } else {
         toast.error(res.error || "Failed to save chatbot settings");
       }
@@ -737,6 +750,107 @@ export default function ChatbotEditor({ sectionId, onCloseSection }: ChatbotEdit
               </div>
             </div>
           </div>
+
+          {/* Welcome Greeting Messages Editor directly in General Settings */}
+          {(() => {
+            const startKey = settings.startNode || "root";
+            const startNodeObj = nodes[startKey];
+            const welcomeList = startNodeObj?.bot || [];
+
+            const handleUpdateWelcomeMessage = (idx: number, newText: string) => {
+              setNodes((prev) => {
+                const current = prev[startKey] || { id: startKey, bot: [], replies: [] };
+                const updatedBot = [...(current.bot || [])];
+                updatedBot[idx] = newText;
+                return {
+                  ...prev,
+                  [startKey]: {
+                    ...current,
+                    bot: updatedBot,
+                  },
+                };
+              });
+            };
+
+            const handleAddWelcomeMessage = () => {
+              setNodes((prev) => {
+                const current = prev[startKey] || { id: startKey, bot: [], replies: [] };
+                const updatedBot = [...(current.bot || []), "New welcome message line..."];
+                return {
+                  ...prev,
+                  [startKey]: {
+                    ...current,
+                    bot: updatedBot,
+                  },
+                };
+              });
+            };
+
+            const handleRemoveWelcomeMessage = (idx: number) => {
+              setNodes((prev) => {
+                const current = prev[startKey] || { id: startKey, bot: [], replies: [] };
+                const updatedBot = (current.bot || []).filter((_, i) => i !== idx);
+                return {
+                  ...prev,
+                  [startKey]: {
+                    ...current,
+                    bot: updatedBot,
+                  },
+                };
+              });
+            };
+
+            return (
+              <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                      <MessageSquare className="h-4 w-4 text-violet-500" />
+                      Default Welcome Greeting Messages ({welcomeList.length})
+                    </h4>
+                    <p className="text-[11px] text-slate-500">
+                      These initial speech bubbles greet users when opening or loading the chatbot (Node: <code className="text-violet-600 font-mono font-bold">{startKey}</code>).
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddWelcomeMessage}
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    <span>Add Welcome Line</span>
+                  </button>
+                </div>
+
+                <div className="space-y-2.5">
+                  {welcomeList.map((msgText, idx) => (
+                    <div key={idx} className="flex items-start gap-2">
+                      <div className="h-7 w-7 rounded-full bg-violet-100 dark:bg-violet-950 text-violet-600 dark:text-violet-300 flex items-center justify-center shrink-0 mt-1 font-bold text-xs">
+                        {idx + 1}
+                      </div>
+                      <textarea
+                        rows={2}
+                        value={msgText}
+                        onChange={(e) => handleUpdateWelcomeMessage(idx, e.target.value)}
+                        placeholder={`Welcome message line ${idx + 1}...`}
+                        className="flex-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-[#0b0f19] p-2.5 text-xs text-slate-900 dark:text-white focus:border-blue-500 focus:outline-none resize-y"
+                      />
+                      {welcomeList.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveWelcomeMessage(idx)}
+                          className="p-1.5 text-slate-400 hover:text-red-500 transition-colors mt-1"
+                          title="Remove this welcome line"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
 
           <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
             <div>

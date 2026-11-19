@@ -33,6 +33,8 @@ import {
   GraduationCap,
   Eye,
   ExternalLink,
+  AlignLeft,
+  Layers,
 } from "lucide-react";
 import { SectionNavSidebar, SectionNavItem } from "@/components/admin/dashboard/section-nav-sidebar";
 
@@ -126,6 +128,14 @@ interface JobCategory {
   _count?: { vacancies: number };
 }
 
+export interface VacancySection {
+  id: string;
+  title: string;
+  type: "paragraph" | "points";
+  content?: string;
+  items?: string[];
+}
+
 interface JobVacancy {
   id: string;
   slug?: string;
@@ -140,6 +150,7 @@ interface JobVacancy {
   summary: string;
   responsibilities: string[];
   requirements: string[];
+  sections?: VacancySection[];
   featured: boolean;
   isActive: boolean;
   order: number;
@@ -212,6 +223,53 @@ const DEFAULT_CONTENT: CareersPageContent = {
 // Constants & Defaults
 // ---------------------------------------------------------------------------
 
+function getInitialVacancySections(v?: Partial<JobVacancy>): VacancySection[] {
+  if (Array.isArray(v?.sections) && v.sections.length > 0) {
+    return v.sections.map((sec, idx) => ({
+      id: sec.id || `sec-${idx}-${Date.now()}`,
+      title: sec.title || `Section ${idx + 1}`,
+      type: sec.type === "paragraph" ? "paragraph" : "points",
+      content: sec.content || "",
+      items: Array.isArray(sec.items) ? [...sec.items] : [],
+    }));
+  }
+
+  const sections: VacancySection[] = [];
+  sections.push({
+    id: `sec-about-${Date.now()}-1`,
+    title: "About the Position",
+    type: "paragraph",
+    content: v?.summary || "",
+    items: [],
+  });
+
+  const reqs = Array.isArray(v?.requirements) ? v.requirements : [];
+  sections.push({
+    id: `sec-qual-${Date.now()}-2`,
+    title: "Qualification and Experience",
+    type: "points",
+    content: "",
+    items: reqs.length > 0 ? [...reqs] : [
+      "Bachelor's degree in Computer Science, Software Engineering, IT, or equivalent practical experience.",
+      "Proven experience working in high-growth software teams with modern toolchains.",
+    ],
+  });
+
+  const resps = Array.isArray(v?.responsibilities) ? v.responsibilities : [];
+  sections.push({
+    id: `sec-resp-${Date.now()}-3`,
+    title: "Job Description & Responsibilities",
+    type: "points",
+    content: "",
+    items: resps.length > 0 ? [...resps] : [
+      "Architect, develop, and scale production-grade web platforms and cloud-native backend services.",
+      "Collaborate closely with UI/UX engineers and product managers to deliver seamless user experiences.",
+    ],
+  });
+
+  return sections;
+}
+
 const DEFAULT_VACANCY_FORM: Omit<JobVacancy, "id" | "category"> = {
   title: "",
   slug: "",
@@ -224,6 +282,7 @@ const DEFAULT_VACANCY_FORM: Omit<JobVacancy, "id" | "category"> = {
   summary: "",
   responsibilities: [],
   requirements: [],
+  sections: [],
   featured: false,
   isActive: true,
   order: 0,
@@ -365,6 +424,235 @@ function InteractiveListBuilder({
           <Plus className="h-3.5 w-3.5" />
           <span>Add</span>
         </button>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Helper: JobSectionsBuilder — dynamic section titles, paragraph or points, add custom sections
+// ---------------------------------------------------------------------------
+
+interface JobSectionsBuilderProps {
+  sections: VacancySection[];
+  onChange: (sections: VacancySection[]) => void;
+}
+
+function JobSectionsBuilder({ sections, onChange }: JobSectionsBuilderProps) {
+  const updateSection = (idx: number, patch: Partial<VacancySection>) => {
+    const next = [...sections];
+    next[idx] = { ...next[idx], ...patch };
+    onChange(next);
+  };
+
+  const removeSection = (idx: number) => {
+    if (sections.length <= 1) {
+      toast.error("At least one content section is required for the position.");
+      return;
+    }
+    onChange(sections.filter((_, i) => i !== idx));
+  };
+
+  const moveSection = (idx: number, direction: "up" | "down") => {
+    const targetIdx = direction === "up" ? idx - 1 : idx + 1;
+    if (targetIdx < 0 || targetIdx >= sections.length) return;
+    const next = [...sections];
+    [next[idx], next[targetIdx]] = [next[targetIdx], next[idx]];
+    onChange(next);
+  };
+
+  const addSection = (type: "paragraph" | "points") => {
+    const newSec: VacancySection = {
+      id: `sec-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      title: type === "paragraph" ? "About the Role" : "Key Responsibilities & Tasks",
+      type,
+      content: type === "paragraph" ? "" : undefined,
+      items: type === "points" ? [] : undefined,
+    };
+    onChange([...sections, newSec]);
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Header bar for sections */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#131927] border border-slate-200/80 dark:border-slate-800 shadow-xs">
+        <div>
+          <div className="flex items-center gap-2">
+            <Layers className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
+            <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
+              Position Content Sections ({sections.length})
+            </h3>
+          </div>
+          <p className="text-[11px] text-slate-400 mt-0.5">
+            Edit titles, switch between paragraph description or bullet points, and add new custom sections.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0 flex-wrap">
+          <button
+            type="button"
+            onClick={() => addSection("paragraph")}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/60 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-xs font-bold transition-colors cursor-pointer"
+          >
+            <AlignLeft className="h-3.5 w-3.5" />
+            <span>+ Add Paragraph Section</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => addSection("points")}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-violet-200 dark:border-violet-800/60 bg-violet-50/60 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300 hover:bg-violet-100 dark:hover:bg-violet-900/50 text-xs font-bold transition-colors cursor-pointer"
+          >
+            <CheckCircle2 className="h-3.5 w-3.5" />
+            <span>+ Add Points Section</span>
+          </button>
+        </div>
+      </div>
+
+      {/* List of sections */}
+      {sections.map((sec, idx) => (
+        <div
+          key={sec.id || idx}
+          className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-5 sm:p-6 space-y-4 shadow-xs"
+        >
+          {/* Section top toolbar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div className="flex items-center gap-2.5 flex-1 min-w-0">
+              <span className="font-mono text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded shrink-0">
+                #{idx + 1}
+              </span>
+              <div className="flex-1 min-w-0">
+                <input
+                  type="text"
+                  value={sec.title}
+                  onChange={(e) => updateSection(idx, { title: e.target.value })}
+                  placeholder="Section Title (e.g. About the Position, What We Offer, Requirements...)"
+                  className="w-full bg-slate-50 dark:bg-[#0b0f19] border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs sm:text-sm font-bold text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition-colors"
+                />
+              </div>
+            </div>
+
+            {/* Format toggle + Action controls */}
+            <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+              {/* Type toggle pills */}
+              <div className="flex items-center p-0.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs">
+                <button
+                  type="button"
+                  onClick={() => updateSection(idx, { type: "paragraph", content: sec.content || "" })}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all cursor-pointer ${
+                    sec.type === "paragraph"
+                      ? "bg-white dark:bg-blue-600 text-blue-700 dark:text-white shadow-xs"
+                      : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
+                  }`}
+                  title="Render section as paragraph description"
+                >
+                  <AlignLeft className="h-3 w-3" />
+                  <span>Paragraph</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => updateSection(idx, { type: "points", items: Array.isArray(sec.items) ? sec.items : [] })}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all cursor-pointer ${
+                    sec.type === "points"
+                      ? "bg-white dark:bg-violet-600 text-violet-700 dark:text-white shadow-xs"
+                      : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
+                  }`}
+                  title="Render section as bullet / checklist points"
+                >
+                  <CheckCircle2 className="h-3 w-3" />
+                  <span>Points</span>
+                </button>
+              </div>
+
+              {/* Move up / down */}
+              <div className="flex items-center border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden bg-slate-50 dark:bg-slate-800">
+                <button
+                  type="button"
+                  onClick={() => moveSection(idx, "up")}
+                  disabled={idx === 0}
+                  className="p-1.5 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 disabled:opacity-20 cursor-pointer"
+                  title="Move section up"
+                >
+                  <ChevronUp className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => moveSection(idx, "down")}
+                  disabled={idx === sections.length - 1}
+                  className="p-1.5 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 disabled:opacity-20 cursor-pointer"
+                  title="Move section down"
+                >
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </button>
+              </div>
+
+              {/* Delete */}
+              <button
+                type="button"
+                onClick={() => removeSection(idx)}
+                className="p-1.5 rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50/50 dark:bg-red-950/20 text-red-500 hover:text-red-700 dark:hover:text-red-400 transition-colors cursor-pointer"
+                title="Delete this section"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Section Body */}
+          {sec.type === "paragraph" ? (
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-[11px] text-slate-400">
+                <span>Paragraph Description Text</span>
+                <span className="font-mono text-[10px] text-blue-600 dark:text-blue-400">Multiline supported</span>
+              </div>
+              <textarea
+                rows={4}
+                value={sec.content || ""}
+                onChange={(e) => updateSection(idx, { content: e.target.value })}
+                placeholder={`Write detailed description narrative for "${sec.title || "this section"}"...`}
+                className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition-colors leading-relaxed"
+              />
+            </div>
+          ) : (
+            <InteractiveListBuilder
+              title={`Points for: ${sec.title || "Untitled Section"}`}
+              subtitle="Each entry renders as a bullet / checklist point on the public vacancy page."
+              items={sec.items || []}
+              onChange={(updatedItems) => updateSection(idx, { items: updatedItems })}
+              placeholder="Type point / responsibility / qualification and press Enter..."
+            />
+          )}
+        </div>
+      ))}
+
+      {/* Add New Section Footer Card */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/30">
+        <div className="space-y-0.5 text-center sm:text-left">
+          <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
+            Need to add more details or another section?
+          </p>
+          <p className="text-[11px] text-slate-400">
+            Add unlimited sections with custom titles and format (paragraph or checklist points).
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => addSection("paragraph")}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-colors shadow-xs cursor-pointer"
+          >
+            <AlignLeft className="h-3.5 w-3.5" />
+            <span>+ Add Paragraph Section</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => addSection("points")}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs transition-colors shadow-xs cursor-pointer"
+          >
+            <CheckCircle2 className="h-3.5 w-3.5" />
+            <span>+ Add Points Section</span>
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -596,38 +884,30 @@ function DedicatedVacancyEditor({
                 )}
               </div>
 
-              {/* Role Summary */}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                  Role Summary &amp; Overview
-                </label>
-                <textarea
-                  rows={4}
-                  value={formData.summary}
-                  onChange={(e) => setField("summary", e.target.value)}
-                  placeholder="Provide a compelling overview of this role, what the candidate will build, and how they will drive impact at Clickpoint Innovation..."
-                  className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 transition-colors leading-relaxed"
-                />
-              </div>
             </div>
           </div>
 
-          {/* CARD 2: KEY RESPONSIBILITIES */}
-          <InteractiveListBuilder
-            title="Key Responsibilities"
-            subtitle="Outline the day-to-day duties, technical ownership, and architectural milestones."
-            items={formData.responsibilities || []}
-            onChange={(items) => setField("responsibilities", items)}
-            placeholder="e.g. Architect and maintain high-throughput vector ingestion pipelines with pgvector..."
-          />
+          {/* DYNAMIC POSITION CONTENT SECTIONS BUILDER */}
+          <JobSectionsBuilder
+            sections={
+              formData.sections && formData.sections.length > 0
+                ? formData.sections
+                : getInitialVacancySections(formData)
+            }
+            onChange={(newSections) => {
+              const firstParagraph = newSections.find((s) => s.type === "paragraph" && s.content?.trim());
+              const reqSec = newSections.find((s) => s.type === "points" && /qualif|require/i.test(s.title));
+              const respSec = newSections.find((s) => s.type === "points" && /responsib|duties|description/i.test(s.title));
+              const pointsSecs = newSections.filter((s) => s.type === "points" && s.items && s.items.length > 0);
 
-          {/* CARD 3: REQUIREMENTS & QUALIFICATIONS */}
-          <InteractiveListBuilder
-            title="Candidate Requirements & Qualifications"
-            subtitle="Specify mandatory qualifications, framework expertise, years of experience, and mindsets."
-            items={formData.requirements || []}
-            onChange={(items) => setField("requirements", items)}
-            placeholder="e.g. 4+ years of production experience with Next.js App Router, TypeScript, and Prisma..."
+              onChange({
+                ...formData,
+                sections: newSections,
+                summary: firstParagraph?.content?.trim() || formData.summary,
+                requirements: reqSec?.items || pointsSecs[0]?.items || formData.requirements,
+                responsibilities: respSec?.items || pointsSecs[1]?.items || formData.responsibilities,
+              });
+            }}
           />
         </div>
 
@@ -1142,12 +1422,14 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
       ...DEFAULT_VACANCY_FORM,
       categoryId: categories[0]?.id || "",
       order: vacancies.length,
+      sections: getInitialVacancySections({}),
     });
     setVacancyViewMode("editor");
   }
 
   function openEditVacancy(v: JobVacancy) {
     setEditingVacancy(v);
+    const initialSections = getInitialVacancySections(v);
     setVacancyFormData({
       title: v.title,
       slug: v.slug || slugifyText(v.title),
@@ -1160,6 +1442,7 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
       summary: v.summary || "",
       responsibilities: Array.isArray(v.responsibilities) ? [...v.responsibilities] : [],
       requirements: Array.isArray(v.requirements) ? [...v.requirements] : [],
+      sections: initialSections,
       featured: Boolean(v.featured),
       isActive: Boolean(v.isActive),
       order: typeof v.order === "number" ? v.order : 0,

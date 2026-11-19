@@ -144,12 +144,33 @@ function formatDeadline(deadline?: string | null): string {
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
+const CAREERS_CACHE_KEY = "clickpoint_careers_cache_v2";
+
+function getCachedCareers() {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(CAREERS_CACHE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function CareersPage() {
-  const [content, setContent] = useState<CareersPageContent>(DEFAULT_CONTENT);
-  const [categories, setCategories] = useState<JobCategory[]>([]);
-  const [vacancies, setVacancies] = useState<JobVacancy[]>([]);
-  const [loadingContent, setLoadingContent] = useState(true);
-  const [loadingJobs, setLoadingJobs] = useState(true);
+  const [content, setContent] = useState<CareersPageContent>(() => {
+    const cached = getCachedCareers();
+    return cached?.content || DEFAULT_CONTENT;
+  });
+  const [categories, setCategories] = useState<JobCategory[]>(() => {
+    const cached = getCachedCareers();
+    return cached?.categories || [];
+  });
+  const [vacancies, setVacancies] = useState<JobVacancy[]>(() => {
+    const cached = getCachedCareers();
+    return cached?.vacancies || [];
+  });
+  const [loadingContent, setLoadingContent] = useState(false);
+  const [loadingJobs, setLoadingJobs] = useState(false);
 
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -164,7 +185,13 @@ export default function CareersPage() {
       try {
         const res = await fetch("/api/careers");
         const json = await res.json();
-        if (json.success && json.data) setContent(json.data as CareersPageContent);
+        if (json.success && json.data) {
+          setContent(json.data as CareersPageContent);
+          try {
+            const current = getCachedCareers() || {};
+            localStorage.setItem(CAREERS_CACHE_KEY, JSON.stringify({ ...current, content: json.data }));
+          } catch {}
+        }
       } catch {
         /* use defaults */
       } finally {
@@ -186,6 +213,17 @@ export default function CareersPage() {
         const vacJson = await vacRes.json();
         if (catJson.success && Array.isArray(catJson.data)) setCategories(catJson.data);
         if (vacJson.success && Array.isArray(vacJson.data)) setVacancies(vacJson.data);
+        try {
+          const current = getCachedCareers() || {};
+          localStorage.setItem(
+            CAREERS_CACHE_KEY,
+            JSON.stringify({
+              ...current,
+              categories: catJson.success ? catJson.data : current.categories,
+              vacancies: vacJson.success ? vacJson.data : current.vacancies,
+            })
+          );
+        } catch {}
       } catch {
         /* silent */
       } finally {

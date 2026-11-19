@@ -61,25 +61,57 @@ const TESTIMONIALS = [
   },
 ];
 
+const CASE_STUDIES_CACHE_KEY = "clickpoint_casestudies_cache_v2";
+
+function getCachedCaseStudies() {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(CASE_STUDIES_CACHE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function CaseStudiesPage() {
   const [activeCategory, setActiveCategory] = useState<string>("ALL");
-  const [pageContent, setPageContent] = useState<any>(null);
-  const [categories, setCategories] = useState<any[]>([]);
-  const [caseStudies, setCaseStudies] = useState<any[]>([]);
-  const [dbTestimonials, setDbTestimonials] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [pageContent, setPageContent] = useState<any>(() => {
+    const cached = getCachedCaseStudies();
+    return cached?.pageContent || DEFAULT_CASE_STUDIES_PAGE_DATA;
+  });
+  const [categories, setCategories] = useState<any[]>(() => {
+    const cached = getCachedCaseStudies();
+    return cached?.categories || DEFAULT_CASE_STUDY_CATEGORIES;
+  });
+  const [caseStudies, setCaseStudies] = useState<any[]>(() => {
+    const cached = getCachedCaseStudies();
+    return cached?.caseStudies || DEFAULT_CASE_STUDIES_ITEMS;
+  });
+  const [dbTestimonials, setDbTestimonials] = useState<any[]>(() => {
+    const cached = getCachedCaseStudies();
+    return cached?.testimonials || [];
+  });
+  const [isLoading, setIsLoading] = useState<boolean>(() => {
+    return !getCachedCaseStudies();
+  });
 
   useEffect(() => {
     async function loadCaseStudiesData() {
       try {
-        setIsLoading(true);
         const res = await fetch("/api/case-studies");
         const json = await res.json();
         if (json.success && json.data) {
-          setPageContent(json.data.pageContent || DEFAULT_CASE_STUDIES_PAGE_DATA);
-          setCategories(json.data.categories && json.data.categories.length > 0 ? json.data.categories : DEFAULT_CASE_STUDY_CATEGORIES);
-          setCaseStudies(json.data.caseStudies && json.data.caseStudies.length > 0 ? json.data.caseStudies : DEFAULT_CASE_STUDIES_ITEMS);
-          setDbTestimonials(json.data.testimonials || []);
+          const pc = json.data.pageContent || DEFAULT_CASE_STUDIES_PAGE_DATA;
+          const cats = json.data.categories && json.data.categories.length > 0 ? json.data.categories : DEFAULT_CASE_STUDY_CATEGORIES;
+          const cs = json.data.caseStudies && json.data.caseStudies.length > 0 ? json.data.caseStudies : DEFAULT_CASE_STUDIES_ITEMS;
+          const tm = json.data.testimonials || [];
+          setPageContent(pc);
+          setCategories(cats);
+          setCaseStudies(cs);
+          setDbTestimonials(tm);
+          try {
+            localStorage.setItem(CASE_STUDIES_CACHE_KEY, JSON.stringify({ pageContent: pc, categories: cats, caseStudies: cs, testimonials: tm }));
+          } catch {}
         } else {
           setPageContent(DEFAULT_CASE_STUDIES_PAGE_DATA);
           setCategories(DEFAULT_CASE_STUDY_CATEGORIES);
@@ -97,7 +129,7 @@ export default function CaseStudiesPage() {
     loadCaseStudiesData();
   }, []);
 
-  if (isLoading || !pageContent) {
+  if (isLoading && !pageContent) {
     return (
       <main className="relative overflow-x-hidden bg-background text-ink min-h-screen flex flex-col justify-between">
         <Navbar />

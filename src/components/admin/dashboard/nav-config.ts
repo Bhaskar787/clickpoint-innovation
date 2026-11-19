@@ -156,8 +156,8 @@ export const ALL_PAGE_CONFIGS: Record<string, PageConfig> = {
 
   "industries-page": {
     id: "industries-page",
-    title: "Industries Pages (/industries & /industries/[id])",
-    subtitle: "Manage industry sectors page (/industries) and industry detail templates (/industries/[id])",
+    title: "Portfolio & Industries Pages (/portfolio & /portfolio/[id])",
+    subtitle: "Manage portfolio sectors page (/portfolio) and portfolio detail templates (/portfolio/[id])",
     sections: [
       { id: "ind-hero", order: "#01", name: "Industries Hero Banner", description: "Configure main page heading, industry sector overview, and quick jump navigation.", icon: Building2, fieldsCount: 6, status: "Active", category: "Banner" },
       { id: "ind-grid", order: "#02", name: "Industry Sector Cards Grid", description: "Manage Fintech, Healthcare, E-Commerce, Logistics, and EdTech domain solutions.", icon: Grid, fieldsCount: 15, status: "Active", category: "Sectors" },
@@ -178,8 +178,8 @@ export const ALL_PAGE_CONFIGS: Record<string, PageConfig> = {
 
   "journey-page": {
     id: "journey-page",
-    title: "Company Journey Page (/journey)",
-    subtitle: "Manage company milestone timeline eras, historical achievements, and story nodes",
+    title: "Events & Company Journey Page (/events)",
+    subtitle: "Manage company milestone timeline eras, events gallery, and story nodes (/events)",
     sections: [
       { id: "journey-hero", order: "#01", name: "Journey Page Hero Banner", description: "Configure timeline heading, story introduction, and interactive era selector.", icon: Milestone, fieldsCount: 7, status: "Active", category: "Banner" },
       { id: "journey-eras", order: "#02", name: "Historical Era Story Nodes", description: "Edit timeline years, milestone titles, detailed narratives, and photo galleries.", icon: Calendar, fieldsCount: 16, status: "Active", category: "Timeline" },

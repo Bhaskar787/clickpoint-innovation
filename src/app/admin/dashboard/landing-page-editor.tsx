@@ -44,6 +44,7 @@ import {
   Code2,
   Grid,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { SectionNavSidebar } from "@/components/admin/dashboard/section-nav-sidebar";
 import { DEFAULT_NAVBAR_DATA, DEFAULT_COMPANY_NAV_LINKS, CompanyNavItem } from "@/data/default-navbar-data";
 import {
@@ -461,6 +462,16 @@ export default function LandingPageEditor({ sectionId, onCloseSection }: Landing
       const json = await res.json();
       if (json.success) {
         toast.success("Landing Page section updated successfully!", { id: toastId });
+        try {
+          const currentNavbar = landingData.navbar || DEFAULT_NAVBAR_DATA;
+          localStorage.setItem("clickpoint_navbar_cache_v2", JSON.stringify(currentNavbar));
+          const channel = new BroadcastChannel("clickpoint-navbar-sync");
+          channel.postMessage(currentNavbar);
+          channel.close();
+          window.dispatchEvent(new CustomEvent("clickpoint-navbar-sync", { detail: currentNavbar }));
+        } catch (e) {
+          console.warn("Could not broadcast navbar update:", e);
+        }
       } else {
         toast.error(json.error || "Failed to save configuration", { id: toastId });
       }
@@ -883,19 +894,19 @@ export default function LandingPageEditor({ sectionId, onCloseSection }: Landing
         {/* SECTION 01: HEADER NAVBAR & COMPANY DROPDOWNS CONFIGURATOR */}
         {activeSectionId === "navbar" && (
           <div className="space-y-6">
-            {/* BRAND LOGO & MENU TITLES */}
+            {/* 01.A: BRAND LOGO & IDENTITY */}
             <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-5">
               <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
                 <span className="font-mono text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">
                   01.A
                 </span>
-                <h3 className="text-sm font-bold">Brand Logo & Top Navbar Settings</h3>
+                <h3 className="text-sm font-bold">Brand Logo & Identity</h3>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
+                <div className="md:col-span-2">
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Brand Name Text (Fallback if no image logo)
+                    Brand Name Text (Fallback if image logo is not displayed)
                   </label>
                   <input
                     type="text"
@@ -909,26 +920,7 @@ export default function LandingPageEditor({ sectionId, onCloseSection }: Landing
                         },
                       })
                     }
-                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-bold"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    "Our Journey" Standalone Nav Title
-                  </label>
-                  <input
-                    type="text"
-                    value={navbarData.menuTitles?.journey || "Our Journey"}
-                    onChange={(e) =>
-                      setLandingData({
-                        ...landingData,
-                        navbar: {
-                          ...navbarData,
-                          menuTitles: { ...navbarData.menuTitles, journey: e.target.value },
-                        },
-                      })
-                    }
+                    placeholder="Click Point Innovations"
                     className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-bold"
                   />
                 </div>
@@ -953,13 +945,219 @@ export default function LandingPageEditor({ sectionId, onCloseSection }: Landing
               </div>
             </div>
 
+            {/* 01.B: DYNAMIC NAVIGATION MENU TITLES & DIRECT ROUTES */}
+            <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-5">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">
+                    01.B
+                  </span>
+                  <h3 className="text-sm font-bold">Dynamic Navigation Menu Titles & Direct Routes</h3>
+                </div>
+                <span className="text-[11px] font-semibold text-slate-400">Desktop & Mobile Navigation</span>
+              </div>
+
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Customize titles and navigation links for top navbar menus. Live updates immediately propagate across the site.
+              </p>
+
+              {/* Mega Menu / Dropdown Titles */}
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-3">
+                <p className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  Dropdown Menu Header Titles
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-500 mb-1">
+                      Services Mega Menu Title
+                    </label>
+                    <input
+                      type="text"
+                      value={navbarData.menuTitles?.services || "Services"}
+                      onChange={(e) =>
+                        setLandingData({
+                          ...landingData,
+                          navbar: {
+                            ...navbarData,
+                            menuTitles: {
+                              ...DEFAULT_NAVBAR_DATA.menuTitles,
+                              ...navbarData.menuTitles,
+                              services: e.target.value,
+                            },
+                          },
+                        })
+                      }
+                      placeholder="Services"
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3 py-1.5 text-xs text-slate-900 dark:text-white font-bold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-500 mb-1">
+                      Industries Dropdown Title
+                    </label>
+                    <input
+                      type="text"
+                      value={navbarData.menuTitles?.industries || "Industries"}
+                      onChange={(e) =>
+                        setLandingData({
+                          ...landingData,
+                          navbar: {
+                            ...navbarData,
+                            menuTitles: {
+                              ...DEFAULT_NAVBAR_DATA.menuTitles,
+                              ...navbarData.menuTitles,
+                              industries: e.target.value,
+                            },
+                          },
+                        })
+                      }
+                      placeholder="Industries"
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3 py-1.5 text-xs text-slate-900 dark:text-white font-bold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-500 mb-1">
+                      Company Dropdown Title
+                    </label>
+                    <input
+                      type="text"
+                      value={navbarData.menuTitles?.company || "Company"}
+                      onChange={(e) =>
+                        setLandingData({
+                          ...landingData,
+                          navbar: {
+                            ...navbarData,
+                            menuTitles: {
+                              ...DEFAULT_NAVBAR_DATA.menuTitles,
+                              ...navbarData.menuTitles,
+                              company: e.target.value,
+                            },
+                          },
+                        })
+                      }
+                      placeholder="Company"
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3 py-1.5 text-xs text-slate-900 dark:text-white font-bold"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Standalone Direct Navigation Links */}
+              <div className="p-4 rounded-xl bg-violet-50/50 dark:bg-violet-950/20 border border-violet-100 dark:border-slate-800 space-y-3">
+                <p className="text-xs font-bold text-violet-700 dark:text-violet-300 uppercase tracking-wider">
+                  Standalone Direct Navigation Links
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Journey Link */}
+                  <div className="p-3 rounded-lg bg-white dark:bg-[#0b0f19] border border-slate-200 dark:border-slate-800 space-y-2">
+                    <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                      <Milestone className="h-3.5 w-3.5 text-violet-600" />
+                      Our Journey Nav Item
+                    </span>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase">Label Title</label>
+                      <input
+                        type="text"
+                        value={navbarData.menuTitles?.journey || "Our Journey"}
+                        onChange={(e) =>
+                          setLandingData({
+                            ...landingData,
+                            navbar: {
+                              ...navbarData,
+                              menuTitles: {
+                                ...DEFAULT_NAVBAR_DATA.menuTitles,
+                                ...navbarData.menuTitles,
+                                journey: e.target.value,
+                              },
+                            },
+                          })
+                        }
+                        placeholder="Our Journey"
+                        className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 dark:text-white font-bold"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase">Destination URL Route</label>
+                      <input
+                        type="text"
+                        value={navbarData.journeyLink || "/events"}
+                        onChange={(e) =>
+                          setLandingData({
+                            ...landingData,
+                            navbar: {
+                              ...navbarData,
+                              journeyLink: e.target.value,
+                            },
+                          })
+                        }
+                        placeholder="/events"
+                        className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-1.5 text-xs text-violet-600 dark:text-violet-400 font-mono font-bold"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Contact Link */}
+                  <div className="p-3 rounded-lg bg-white dark:bg-[#0b0f19] border border-slate-200 dark:border-slate-800 space-y-2">
+                    <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                      <ExternalLink className="h-3.5 w-3.5 text-violet-600" />
+                      Contact Nav Item
+                    </span>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase">Label Title</label>
+                      <input
+                        type="text"
+                        value={navbarData.menuTitles?.contact || "Contact"}
+                        onChange={(e) =>
+                          setLandingData({
+                            ...landingData,
+                            navbar: {
+                              ...navbarData,
+                              menuTitles: {
+                                ...DEFAULT_NAVBAR_DATA.menuTitles,
+                                ...navbarData.menuTitles,
+                                contact: e.target.value,
+                              },
+                            },
+                          })
+                        }
+                        placeholder="Contact"
+                        className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 dark:text-white font-bold"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase">Destination URL Route</label>
+                      <input
+                        type="text"
+                        value={navbarData.contactLink || "/contact"}
+                        onChange={(e) =>
+                          setLandingData({
+                            ...landingData,
+                            navbar: {
+                              ...navbarData,
+                              contactLink: e.target.value,
+                            },
+                          })
+                        }
+                        placeholder="/contact"
+                        className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-1.5 text-xs text-violet-600 dark:text-violet-400 font-mono font-bold"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
             {/* COMPANY DROPDOWN LINKS & REDIRECT TARGET URLS */}
             <div className="rounded-2xl border border-violet-200/80 dark:border-slate-800 bg-gradient-to-b from-white via-violet-50/20 to-white dark:from-[#131927] dark:to-[#131927] p-6 space-y-5 shadow-xs">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-violet-100 dark:border-slate-800">
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">
-                      01.B
+                      01.C
                     </span>
                     <h3 className="text-sm font-bold flex items-center gap-2">
                       <LinkIcon className="h-4 w-4 text-violet-600 shrink-0" />
@@ -1097,16 +1295,20 @@ export default function LandingPageEditor({ sectionId, onCloseSection }: Landing
               </div>
             </div>
 
-            {/* NAVBAR ACTION CTA BUTTON SETTINGS */}
+            {/* 01.D: NAVBAR ACTION CTA BUTTON SETTINGS */}
             <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-5">
-              <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
-                <span className="font-mono text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">
-                  01.C
-                </span>
-                <h3 className="text-sm font-bold">Navbar Right Action Button (CTA)</h3>
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">
+                    01.D
+                  </span>
+                  <h3 className="text-sm font-bold">Navbar Right Action Button (CTA)</h3>
+                </div>
+                <span className="text-[11px] font-semibold text-slate-400">Desktop & Mobile Action</span>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-4">
+                {/* CTA Button Label */}
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                     CTA Button Label Text
@@ -1119,35 +1321,241 @@ export default function LandingPageEditor({ sectionId, onCloseSection }: Landing
                         ...landingData,
                         navbar: {
                           ...navbarData,
-                          cta: { ...navbarData.cta, buttonText: e.target.value },
+                          cta: {
+                            ...DEFAULT_NAVBAR_DATA.cta,
+                            ...navbarData.cta,
+                            buttonText: e.target.value,
+                          },
                         },
                       })
                     }
+                    placeholder="Quick Enquiry"
                     className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-extrabold"
                   />
                 </div>
 
+                {/* Click Action Mode Selector */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Redirect Target URL (If modal disabled)
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">
+                    Button Click Action Mode
                   </label>
-                  <input
-                    type="text"
-                    value={navbarData.cta?.buttonLink || "/contact"}
-                    onChange={(e) =>
-                      setLandingData({
-                        ...landingData,
-                        navbar: {
-                          ...navbarData,
-                          cta: { ...navbarData.cta, buttonLink: e.target.value },
-                        },
-                      })
-                    }
-                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-violet-600 dark:text-violet-400 font-mono font-bold"
-                  />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setLandingData({
+                          ...landingData,
+                          navbar: {
+                            ...navbarData,
+                            cta: {
+                              ...DEFAULT_NAVBAR_DATA.cta,
+                              ...navbarData.cta,
+                              openModalOnClick: true,
+                            },
+                          },
+                        })
+                      }
+                      className={cn(
+                        "flex items-start gap-3 p-3.5 rounded-xl border text-left transition-all cursor-pointer",
+                        navbarData.cta?.openModalOnClick !== false
+                          ? "border-violet-600 bg-violet-50/80 dark:bg-violet-950/40 text-violet-900 dark:text-violet-200 ring-2 ring-violet-600/30"
+                          : "border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 text-slate-600 dark:text-slate-400 hover:border-slate-300"
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          "h-5 w-5 rounded-full border flex items-center justify-center shrink-0 mt-0.5",
+                          navbarData.cta?.openModalOnClick !== false
+                            ? "border-violet-600 bg-violet-600 text-white"
+                            : "border-slate-300 dark:border-slate-700"
+                        )}
+                      >
+                        {navbarData.cta?.openModalOnClick !== false && (
+                          <div className="h-2 w-2 rounded-full bg-white" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-slate-900 dark:text-white">
+                          Open Quick Enquiry Modal
+                        </p>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                          Pops up the interactive Quick Enquiry form modal directly on screen without leaving the page.
+                        </p>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setLandingData({
+                          ...landingData,
+                          navbar: {
+                            ...navbarData,
+                            cta: {
+                              ...DEFAULT_NAVBAR_DATA.cta,
+                              ...navbarData.cta,
+                              openModalOnClick: false,
+                            },
+                          },
+                        })
+                      }
+                      className={cn(
+                        "flex items-start gap-3 p-3.5 rounded-xl border text-left transition-all cursor-pointer",
+                        navbarData.cta?.openModalOnClick === false
+                          ? "border-violet-600 bg-violet-50/80 dark:bg-violet-950/40 text-violet-900 dark:text-violet-200 ring-2 ring-violet-600/30"
+                          : "border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 text-slate-600 dark:text-slate-400 hover:border-slate-300"
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          "h-5 w-5 rounded-full border flex items-center justify-center shrink-0 mt-0.5",
+                          navbarData.cta?.openModalOnClick === false
+                            ? "border-violet-600 bg-violet-600 text-white"
+                            : "border-slate-300 dark:border-slate-700"
+                        )}
+                      >
+                        {navbarData.cta?.openModalOnClick === false && (
+                          <div className="h-2 w-2 rounded-full bg-white" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-slate-900 dark:text-white">
+                          Navigate to URL / Route
+                        </p>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                          Redirects user to a specific internal route (e.g. <code>/contact</code>) or external link.
+                        </p>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Target URL & Quick Presets */}
+                <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Destination Target URL Route
+                    </label>
+                    <input
+                      type="text"
+                      value={navbarData.cta?.buttonLink || "/contact"}
+                      onChange={(e) =>
+                        setLandingData({
+                          ...landingData,
+                          navbar: {
+                            ...navbarData,
+                            cta: {
+                              ...DEFAULT_NAVBAR_DATA.cta,
+                              ...navbarData.cta,
+                              buttonLink: e.target.value,
+                            },
+                          },
+                        })
+                      }
+                      placeholder="/contact or https://calendly.com/your-team"
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-violet-600 dark:text-violet-400 font-mono font-bold"
+                    />
+                  </div>
+
+                  {/* Preset chips */}
+                  <div>
+                    <span className="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">
+                      Quick Preset Destination URLs:
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {[
+                        "/contact",
+                        "/services",
+                        "/portfolio",
+                        "/about",
+                        "/careers",
+                        "/events",
+                        "/case-studies",
+                        "/pricing",
+                      ].map((preset) => (
+                        <button
+                          key={preset}
+                          type="button"
+                          onClick={() =>
+                            setLandingData({
+                              ...landingData,
+                              navbar: {
+                                ...navbarData,
+                                cta: {
+                                  ...DEFAULT_NAVBAR_DATA.cta,
+                                  ...navbarData.cta,
+                                  buttonLink: preset,
+                                },
+                              },
+                            })
+                          }
+                          className={cn(
+                            "px-2.5 py-1 rounded-lg text-[11px] font-mono font-semibold transition-colors cursor-pointer",
+                            navbarData.cta?.buttonLink === preset
+                              ? "bg-violet-600 text-white font-bold"
+                              : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-violet-50 dark:hover:bg-slate-700"
+                          )}
+                        >
+                          {preset}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Open in New Tab Toggle */}
+                  <div className="pt-2 border-t border-slate-200/60 dark:border-slate-800">
+                    <label className="flex items-center gap-2.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(navbarData.cta?.openInNewTab)}
+                        onChange={(e) =>
+                          setLandingData({
+                            ...landingData,
+                            navbar: {
+                              ...navbarData,
+                              cta: {
+                                ...DEFAULT_NAVBAR_DATA.cta,
+                                ...navbarData.cta,
+                                openInNewTab: e.target.checked,
+                              },
+                            },
+                          })
+                        }
+                        className="h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
+                      />
+                      <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                        Open in New Browser Tab (<code>target=&quot;_blank&quot;</code>)
+                      </span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Status indicator banner */}
+                <div
+                  className={cn(
+                    "p-3 rounded-xl border flex items-center gap-2.5 text-xs",
+                    navbarData.cta?.openModalOnClick !== false
+                      ? "bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300"
+                      : "bg-blue-50/60 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800/60 text-blue-800 dark:text-blue-300"
+                  )}
+                >
+                  <CheckCircle2 className="h-4 w-4 shrink-0" />
+                  <div>
+                    {navbarData.cta?.openModalOnClick !== false ? (
+                      <span>
+                        <strong>Modal Mode Active:</strong> Clicking &ldquo;{navbarData.cta?.buttonText || "Quick Enquiry"}&rdquo; on desktop or mobile triggers the Quick Enquiry interactive modal dialog.
+                      </span>
+                    ) : (
+                      <span>
+                        <strong>Direct Navigation Active:</strong> Clicking &ldquo;{navbarData.cta?.buttonText || "Quick Enquiry"}&rdquo; on desktop or mobile will navigate to <code>{navbarData.cta?.buttonLink || "/contact"}</code> {navbarData.cta?.openInNewTab ? "(in a new browser tab)" : "(in the same window)"}.
+                      </span>
+                    )}
+                  </div>
+
                 </div>
               </div>
             </div>
+
           </div>
         )}
 
@@ -2516,7 +2924,7 @@ export default function LandingPageEditor({ sectionId, onCloseSection }: Landing
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {(landingData.footer?.columns || landingData.footerData?.columns || DEFAULT_FOOTER_DATA.columns).map((col: any, colIdx: number) => (
                   <div key={colIdx} className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#0b0f19] space-y-3">
                     <div className="flex items-center justify-between">
