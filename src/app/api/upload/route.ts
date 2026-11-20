@@ -38,8 +38,90 @@ export async function POST(req: Request) {
     const buffer = Buffer.from(bytes);
     const mimeType = file.type || "application/octet-stream";
 
-    // 2. Primary Strategy: Local Drive Storage (Zero Cloud Quota, Instant Delivery)
-    if (storagePref !== "cloudinary") {
+    const isServerless = Boolean(
+      process.env.VERCEL ||
+      process.env.AWS_LAMBDA_FUNCTION_NAME ||
+      process.env.NETLIFY ||
+      process.env.NODE_ENV === "production"
+    );
+
+    const hasCloudinary = Boolean(
+      process.env.CLOUDINARY_CLOUD_NAME &&
+      process.env.CLOUDINARY_API_KEY &&
+      process.env.CLOUDINARY_API_SECRET
+    );
+
+    // Prefer Cloudinary if available, requested, or in serverless production (read-only filesystem)
+    const shouldTryCloudinary = hasCloudinary || isServerless || storagePref === "cloudinary";
+
+    if (shouldTryCloudinary) {
+      let existingPublicId: string | undefined = customPublicId || undefined;
+      if (!existingPublicId && previousUrl && previousUrl.includes("res.cloudinary.com")) {
+        const extracted = extractCloudinaryPublicId(previousUrl);
+        if (extracted) existingPublicId = extracted.public_id;
+      }
+
+      const dataUri = `data:${mimeType};base64,${buffer.toString("base64")}`;
+      try {
+        const resourceType = mimeType.startsWith("video/")
+          ? "video"
+          : mimeType.startsWith("image/")
+          ? "image"
+          : "raw";
+
+        const uploadOptions: any = {
+          folder: `clickpoint_innovation/${subfolder}`,
+          resource_type: resourceType,
+          overwrite: true,
+          invalidate: true,
+        };
+
+        if (existingPublicId) {
+          uploadOptions.public_id = existingPublicId.replace(/^clickpoint_innovation\//, "");
+        }
+
+        const result = await cloudinary.uploader.upload(dataUri, uploadOptions);
+
+        if (result && result.secure_url) {
+          return NextResponse.json({
+            success: true,
+            url: result.secure_url,
+            provider: "cloudinary",
+            public_id: result.public_id,
+            fileName: result.original_filename || file.name,
+            sizeBytes: buffer.length,
+          });
+        }
+      } catch (cloudinaryErr: any) {
+        console.error("[Upload API] Cloudinary upload error:", cloudinaryErr?.message || cloudinaryErr);
+
+        // If we are in serverless production (e.g. Vercel), local disk is read-only and cannot be written to
+        if (isServerless) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: `Cloud upload failed: ${cloudinaryErr?.message || "Cloudinary error"}. Serverless environments cannot write to local disk. Please verify CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET in your Vercel project environment variables.`,
+            },
+            { status: 500 }
+          );
+        }
+        // In local development, fall through to local disk storage
+        console.warn("[Upload API] Falling back to local disk storage in local dev environment.");
+      }
+    }
+
+    // Local Drive Storage Strategy (only runs in local development where disk is writable)
+    if (isServerless) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Local drive storage is not supported in production serverless environments. Please configure Cloudinary environment variables in Vercel.",
+        },
+        { status: 500 }
+      );
+    }
+
+    try {
       const uploadsDir = path.join(process.cwd(), "public", "uploads", subfolder);
       await fs.mkdir(uploadsDir, { recursive: true });
 
@@ -59,64 +141,13 @@ export async function POST(req: Request) {
         fileName: uniqueFileName,
         sizeBytes: buffer.length,
       });
+    } catch (fsErr: any) {
+      console.error("[Upload API] Local drive write failed:", fsErr);
+      return NextResponse.json(
+        { success: false, error: fsErr?.message || "Failed to save file to local storage" },
+        { status: 500 }
+      );
     }
-
-    // 3. Cloudinary Upload (when storage="cloudinary" explicitly requested)
-    let existingPublicId: string | undefined = customPublicId || undefined;
-    if (!existingPublicId && previousUrl && previousUrl.includes("res.cloudinary.com")) {
-      const extracted = extractCloudinaryPublicId(previousUrl);
-      if (extracted) existingPublicId = extracted.public_id;
-    }
-
-    const dataUri = `data:${mimeType};base64,${buffer.toString("base64")}`;
-    try {
-      const resourceType = mimeType.startsWith("video/")
-        ? "video"
-        : mimeType.startsWith("image/")
-        ? "image"
-        : "raw";
-
-      const uploadOptions: any = {
-        folder: `clickpoint_innovation/${subfolder}`,
-        resource_type: resourceType,
-        overwrite: true,
-        invalidate: true,
-      };
-
-      if (existingPublicId) {
-        uploadOptions.public_id = existingPublicId.replace(/^clickpoint_innovation\//, "");
-      }
-
-      const result = await cloudinary.uploader.upload(dataUri, uploadOptions);
-
-      if (result && result.secure_url) {
-        return NextResponse.json({
-          success: true,
-          url: result.secure_url,
-          provider: "cloudinary",
-          public_id: result.public_id,
-        });
-      }
-    } catch (cloudinaryErr: any) {
-      console.warn("Cloudinary upload failed, falling back to local drive storage:", cloudinaryErr?.message || cloudinaryErr);
-    }
-
-    // Fallback to local drive
-    const fallbackDir = path.join(process.cwd(), "public", "uploads", subfolder);
-    await fs.mkdir(fallbackDir, { recursive: true });
-    const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
-    const uniqueFileName = `${Date.now()}-${safeName}`;
-    const filePath = path.join(fallbackDir, uniqueFileName);
-
-    await fs.writeFile(filePath, buffer);
-    const localUrl = `/uploads/${subfolder}/${uniqueFileName}`;
-
-    return NextResponse.json({
-      success: true,
-      url: localUrl,
-      provider: "local",
-      sizeBytes: buffer.length,
-    });
   } catch (error: any) {
     console.error("Upload API error:", error);
     return NextResponse.json(

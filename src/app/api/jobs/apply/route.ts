@@ -130,14 +130,21 @@ export async function POST(request: Request) {
         resumeProvider = "cloudinary";
       }
     } catch (cloudErr: any) {
-      // Fallback to local storage
-      const uploadsDir = path.join(process.cwd(), "public", "uploads", "resumes");
-      await fs.mkdir(uploadsDir, { recursive: true });
-      const safeName = resumeFile.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
-      const uniqueFileName = `${Date.now()}-${randomUUID().slice(0, 8)}-${safeName}`;
-      await fs.writeFile(path.join(uploadsDir, uniqueFileName), buffer);
-      resumeUrl = `/uploads/resumes/${uniqueFileName}`;
-      resumeProvider = "local";
+      console.warn("Cloudinary upload for resume failed:", cloudErr?.message || cloudErr);
+      const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NODE_ENV === "production");
+      if (!isServerless) {
+        try {
+          const uploadsDir = path.join(process.cwd(), "public", "uploads", "resumes");
+          await fs.mkdir(uploadsDir, { recursive: true });
+          const safeName = resumeFile.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+          const uniqueFileName = `${Date.now()}-${randomUUID().slice(0, 8)}-${safeName}`;
+          await fs.writeFile(path.join(uploadsDir, uniqueFileName), buffer);
+          resumeUrl = `/uploads/resumes/${uniqueFileName}`;
+          resumeProvider = "local";
+        } catch (localErr) {
+          console.error("Local resume storage fallback failed:", localErr);
+        }
+      }
     }
 
     // Process cover letter file attachment if uploaded — Upload to Cloudinary

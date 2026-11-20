@@ -190,7 +190,6 @@ export default function SettingsEditor() {
       const formData = new FormData();
       formData.append("file", optimizedFile);
       formData.append("folder", "branding");
-      formData.append("storage", "local"); // Direct local drive storage
 
       const previousUrl =
         field === "faviconUrl"
@@ -214,7 +213,8 @@ export default function SettingsEditor() {
         else setEmailLogoUrl(res.url);
 
         const sizeKb = res.sizeBytes ? ` (${Math.round(res.sizeBytes / 1024)} KB)` : "";
-        toast.success(`Saved to local drive: ${res.url}${sizeKb}`, { id: toastId });
+        const providerLabel = res.provider === "cloudinary" ? "Cloud CDN" : "local storage";
+        toast.success(`Uploaded successfully (${providerLabel})${sizeKb}`, { id: toastId });
       } else {
         toast.error(res.error || "Upload failed", { id: toastId });
       }
@@ -412,14 +412,14 @@ export default function SettingsEditor() {
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                    Lean Local Drive Storage Architecture
+                    Cloud & CDN Media Storage Architecture
                   </h3>
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                    Auto-Optimized
+                    Production Ready
                   </span>
                 </div>
                 <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 max-w-2xl leading-relaxed">
-                  Uploaded branding media files are automatically resized, converted to lightweight WebP/PNG, and stored in <code className="px-1.5 py-0.5 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 font-mono text-[11px] text-blue-600 dark:text-blue-400 font-bold">public/uploads/branding/</code>. When replacing an image, old assets are automatically deleted to consume minimal disk storage.
+                  Uploaded branding media files are automatically optimized and served via high-speed Cloudinary CDN. When replacing an image, old cloud assets are automatically purged to prevent storage bloat.
                 </p>
               </div>
             </div>
@@ -478,7 +478,7 @@ export default function SettingsEditor() {
                     type="text"
                     value={faviconUrl}
                     onChange={(e) => setFaviconUrl(e.target.value)}
-                    placeholder="/images/fav3.png or local upload URL"
+                    placeholder="https://res.cloudinary.com/... or /images/fav3.png"
                     className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-slate-100 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                   />
                 </div>
@@ -490,7 +490,7 @@ export default function SettingsEditor() {
                     ) : (
                       <Upload className="h-3.5 w-3.5" />
                     )}
-                    <span>{uploadingFavicon ? "Optimizing..." : "Upload Local Favicon"}</span>
+                    <span>{uploadingFavicon ? "Optimizing..." : "Upload Favicon"}</span>
                     <input
                       type="file"
                       accept="image/png, image/x-icon, image/svg+xml, image/webp, image/jpeg"
