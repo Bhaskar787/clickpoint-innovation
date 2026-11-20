@@ -75,27 +75,22 @@ function getCachedCaseStudies() {
 
 export default function CaseStudiesPage() {
   const [activeCategory, setActiveCategory] = useState<string>("ALL");
-  const [pageContent, setPageContent] = useState<any>(() => {
-    const cached = getCachedCaseStudies();
-    return cached?.pageContent || DEFAULT_CASE_STUDIES_PAGE_DATA;
-  });
-  const [categories, setCategories] = useState<any[]>(() => {
-    const cached = getCachedCaseStudies();
-    return cached?.categories || DEFAULT_CASE_STUDY_CATEGORIES;
-  });
-  const [caseStudies, setCaseStudies] = useState<any[]>(() => {
-    const cached = getCachedCaseStudies();
-    return cached?.caseStudies || DEFAULT_CASE_STUDIES_ITEMS;
-  });
-  const [dbTestimonials, setDbTestimonials] = useState<any[]>(() => {
-    const cached = getCachedCaseStudies();
-    return cached?.testimonials || [];
-  });
-  const [isLoading, setIsLoading] = useState<boolean>(() => {
-    return !getCachedCaseStudies();
-  });
+  const [pageContent, setPageContent] = useState<any>(DEFAULT_CASE_STUDIES_PAGE_DATA);
+  const [categories, setCategories] = useState<any[]>(DEFAULT_CASE_STUDY_CATEGORIES);
+  const [caseStudies, setCaseStudies] = useState<any[]>(DEFAULT_CASE_STUDIES_ITEMS);
+  const [dbTestimonials, setDbTestimonials] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
+    const cached = getCachedCaseStudies();
+    if (cached) {
+      if (cached.pageContent) setPageContent(cached.pageContent);
+      if (cached.categories) setCategories(cached.categories);
+      if (cached.caseStudies) setCaseStudies(cached.caseStudies);
+      if (cached.testimonials) setDbTestimonials(cached.testimonials);
+      setIsLoading(false);
+    }
+
     async function loadCaseStudiesData() {
       try {
         const res = await fetch("/api/case-studies");

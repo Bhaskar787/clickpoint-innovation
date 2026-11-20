@@ -106,7 +106,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
       : BLOG_POSTS_DATA.filter((p) => p.slug !== params.slug).slice(0, 6);
 
   return (
-    <main className="relative bg-background text-ink selection:bg-[#f58220] selection:text-white">
+    <main className="relative bg-background text-ink selection:bg-violet-600 dark:selection:bg-[#f58220] selection:text-white">
       <Navbar />
 
       {/* ARTICLE NEWSPAPER CONTAINER */}
@@ -183,7 +183,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
 
           {/* EXCERPT LEAD PARAGRAPH */}
           {post.excerpt && (
-            <div className="mb-10 rounded-2xl bg-amber-500/10 dark:bg-amber-500/15 p-6 border-l-4 border-[#f58220]">
+            <div className="mb-10 rounded-2xl bg-violet-50/60 dark:bg-amber-500/15 p-6 border-l-4 border-violet-600 dark:border-[#f58220]">
               <p className="font-sans text-lg sm:text-xl font-bold leading-relaxed text-ink dark:text-white italic">
                 "{post.excerpt}"
               </p>
@@ -192,7 +192,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
 
           {/* MAIN ARTICLE BODY CONTENT (NEWSPAPER HTML RENDERING) */}
           <div
-            className="prose prose-violet dark:prose-invert max-w-none text-base sm:text-lg leading-relaxed text-ink/85 dark:text-slate-200 font-normal [&_p]:mb-6 [&_figcaption]:text-xs [&_figcaption]:italic [&_figcaption]:text-center [&_figcaption]:text-slate-500 [&_blockquote]:font-sans [&_blockquote]:text-xl [&_blockquote]:italic [&_blockquote]:border-l-4 [&_blockquote]:border-[#f58220] [&_blockquote]:bg-amber-500/10 [&_blockquote]:p-6 [&_blockquote]:rounded-r-2xl"
+            className="prose prose-violet dark:prose-invert max-w-none text-base sm:text-lg leading-relaxed text-ink/85 dark:text-slate-200 font-normal [&_p]:mb-6 [&_figcaption]:text-xs [&_figcaption]:italic [&_figcaption]:text-center [&_figcaption]:text-slate-500 [&_blockquote]:font-sans [&_blockquote]:text-xl [&_blockquote]:italic [&_blockquote]:border-l-4 [&_blockquote]:border-violet-600 dark:[&_blockquote]:border-[#f58220] [&_blockquote]:bg-violet-50/60 dark:[&_blockquote]:bg-amber-500/10 [&_blockquote]:p-6 [&_blockquote]:rounded-r-2xl"
             dangerouslySetInnerHTML={{ __html: post.content }}
           />
 
@@ -230,7 +230,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
           {/* Section Heading */}
           <div className="mb-10 flex items-center justify-between border-b-2 border-ink dark:border-slate-700 pb-4">
             <div>
-              <span className="text-xs font-extrabold uppercase tracking-widest text-[#f58220]">
+              <span className="text-xs font-extrabold uppercase tracking-widest text-violet-600 dark:text-violet-400">
                 Related Articles
               </span>
               <h2 className="font-sans text-2xl font-extrabold tracking-tight text-ink dark:text-white sm:text-3xl">
@@ -276,7 +276,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
                     {/* Body */}
                     <div className="p-6">
                       <div className="mb-2.5 flex items-center gap-2 text-xs text-ink/60 dark:text-slate-400 font-semibold">
-                        <Clock className="h-3.5 w-3.5 text-[#f58220]" />
+                        <Clock className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400" />
                         <span>{story.readTime || "5 min read"}</span>
                         <span>•</span>
                         <span>{authorName}</span>
@@ -299,7 +299,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
                       className="inline-flex items-center gap-1.5 text-xs font-bold text-violet-600 dark:text-violet-400 group-hover:gap-2.5 transition-all"
                     >
                       <span>Read Story</span>
-                      <ArrowRight className="h-3.5 w-3.5 text-[#f58220]" />
+                      <ArrowRight className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400" />
                     </Link>
                   </div>
                 </article>

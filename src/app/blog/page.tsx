@@ -37,21 +37,21 @@ export default function BlogListingPage() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const postsPerPage = 6;
 
-  const [pageConfig, setPageConfig] = useState<any>(() => {
-    const cached = getCachedBlog();
-    return cached?.pageConfig || DEFAULT_BLOG_PAGE_DATA;
-  });
-  const [categories, setCategories] = useState<string[]>(() => {
-    const cached = getCachedBlog();
-    return cached?.categories || ["ALL"];
-  });
-  const [posts, setPosts] = useState<any[]>(() => {
-    const cached = getCachedBlog();
-    return cached?.posts || [];
-  });
-  const [isLoading, setIsLoading] = useState(() => !getCachedBlog());
+  const [pageConfig, setPageConfig] = useState<any>(DEFAULT_BLOG_PAGE_DATA);
+  const [categories, setCategories] = useState<string[]>(["ALL"]);
+  const [posts, setPosts] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
+    // 1. Immediately hydrate from client cache to prevent layout flash safely after mount
+    const cached = getCachedBlog();
+    if (cached) {
+      if (cached.pageConfig) setPageConfig(cached.pageConfig);
+      if (cached.categories) setCategories(cached.categories);
+      if (cached.posts) setPosts(cached.posts);
+      setIsLoading(false);
+    }
+
     async function loadBlogData() {
       try {
         const res = await fetch("/api/blog");
@@ -108,7 +108,7 @@ export default function BlogListingPage() {
   };
 
   return (
-    <main className="relative overflow-x-hidden bg-background text-ink selection:bg-[#f58220] selection:text-white">
+    <main className="relative overflow-x-hidden bg-background text-ink selection:bg-violet-600 dark:selection:bg-[#f58220] selection:text-white">
       <Navbar />
 
       {/* Header Banner Section */}
@@ -131,20 +131,23 @@ export default function BlogListingPage() {
             ) : (
               <>
                 {hero.badge && (
-                  <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-violet-50 dark:bg-slate-800 px-3.5 py-1 text-xs font-bold uppercase tracking-widest text-violet-700 dark:text-violet-300">
-                    <Newspaper className="h-3.5 w-3.5 text-[#f58220]" />
-                    {hero.badge}
+                  <div
+                    suppressHydrationWarning
+                    className="mb-3 inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-violet-50 dark:bg-slate-800 px-3.5 py-1 text-xs font-bold uppercase tracking-widest text-violet-700 dark:text-violet-300"
+                  >
+                    <Newspaper className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
+                    <span>{hero.badge}</span>
                   </div>
                 )}
 
-                <h1 className="font-poppins text-4xl font-extrabold tracking-tight text-ink sm:text-5xl lg:text-6xl sm:leading-[1.12]">
+                <h1 suppressHydrationWarning className="font-poppins text-4xl font-extrabold tracking-tight text-ink sm:text-5xl lg:text-6xl sm:leading-[1.12]">
                   {hero.title}{" "}
-                  <span className="text-[#f58220]">
+                  <span className="text-violet-600 dark:text-[#f58220]">
                     {hero.titleHighlight}
                   </span>
                 </h1>
 
-                <p className="mt-4 text-base text-ink/75 sm:text-lg font-medium">
+                <p suppressHydrationWarning className="mt-4 text-base text-ink/75 sm:text-lg font-medium">
                   {hero.subtitle}
                 </p>
 
@@ -212,7 +215,7 @@ export default function BlogListingPage() {
                       className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
                     />
                     <div className="absolute top-4 left-4">
-                      <span className="rounded-full bg-[#f58220] px-3.5 py-1 text-xs font-extrabold text-white uppercase tracking-wider shadow-md">
+                      <span className="rounded-full bg-violet-600 text-white px-3.5 py-1 text-xs font-extrabold uppercase tracking-wider shadow-md">
                         Featured Lead Story
                       </span>
                     </div>
@@ -221,7 +224,7 @@ export default function BlogListingPage() {
                   <div className="lg:col-span-5 p-8 lg:p-10 flex flex-col justify-between">
                     <div>
                       <div className="mb-3 flex items-center gap-3 text-xs text-ink/60 dark:text-slate-400 font-semibold">
-                        <Clock className="h-3.5 w-3.5 text-[#f58220]" />
+                        <Clock className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400" />
                         <span>{featuredPost.readTime || "5 min read"}</span>
                         <span>•</span>
                         <span className="text-violet-600 dark:text-violet-400 font-bold">{featuredPost.category}</span>
@@ -246,7 +249,7 @@ export default function BlogListingPage() {
                         className="inline-flex items-center gap-2 text-xs font-extrabold text-violet-600 dark:text-violet-400 hover:gap-3 transition-all"
                       >
                         <span>Read Full Story</span>
-                        <ArrowRight className="h-4 w-4 text-[#f58220]" />
+                        <ArrowRight className="h-4 w-4 text-violet-600 dark:text-violet-400" />
                       </Link>
                     </div>
                   </div>
@@ -286,7 +289,7 @@ export default function BlogListingPage() {
                       <div className="p-6">
                         <div className="mb-3 flex items-center gap-3 text-xs text-ink/60 dark:text-slate-400 font-medium">
                           <div className="flex items-center gap-1">
-                            <Clock className="h-3.5 w-3.5 text-[#f58220]" />
+                            <Clock className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400" />
                             <span>{post.readTime || "5 min read"}</span>
                           </div>
                           <span>•</span>
@@ -310,7 +313,7 @@ export default function BlogListingPage() {
                         className="inline-flex items-center gap-2 text-xs font-bold text-violet-600 dark:text-violet-400 group-hover:gap-3 transition-all"
                       >
                         <span>Read Full Story</span>
-                        <ArrowRight className="h-3.5 w-3.5 text-[#f58220]" />
+                        <ArrowRight className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400" />
                       </Link>
                     </div>
                   </article>

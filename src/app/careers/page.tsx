@@ -157,18 +157,9 @@ function getCachedCareers() {
 }
 
 export default function CareersPage() {
-  const [content, setContent] = useState<CareersPageContent>(() => {
-    const cached = getCachedCareers();
-    return cached?.content || DEFAULT_CONTENT;
-  });
-  const [categories, setCategories] = useState<JobCategory[]>(() => {
-    const cached = getCachedCareers();
-    return cached?.categories || [];
-  });
-  const [vacancies, setVacancies] = useState<JobVacancy[]>(() => {
-    const cached = getCachedCareers();
-    return cached?.vacancies || [];
-  });
+  const [content, setContent] = useState<CareersPageContent>(DEFAULT_CONTENT);
+  const [categories, setCategories] = useState<JobCategory[]>([]);
+  const [vacancies, setVacancies] = useState<JobVacancy[]>([]);
   const [loadingContent, setLoadingContent] = useState(false);
   const [loadingJobs, setLoadingJobs] = useState(false);
 
@@ -181,6 +172,11 @@ export default function CareersPage() {
 
   // Fetch page content
   useEffect(() => {
+    const cached = getCachedCareers();
+    if (cached?.content) setContent(cached.content);
+    if (cached?.categories) setCategories(cached.categories);
+    if (cached?.vacancies) setVacancies(cached.vacancies);
+
     async function fetchContent() {
       try {
         const res = await fetch("/api/careers");
