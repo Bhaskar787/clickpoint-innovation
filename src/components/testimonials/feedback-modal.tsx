@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Star, X, UploadCloud, Loader2, MessageSquarePlus, CheckCircle2, User } from "lucide-react";
@@ -33,6 +34,11 @@ export default function FeedbackModal({ isOpen, onClose, onSuccess }: FeedbackMo
   const [avatarUrl, setAvatarUrl] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -135,13 +141,13 @@ export default function FeedbackModal({ isOpen, onClose, onSuccess }: FeedbackMo
     }
   }
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted || typeof window === "undefined") return null;
 
   const initials = getInitials(clientName);
 
-  return (
+  return createPortal(
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -353,6 +359,7 @@ export default function FeedbackModal({ isOpen, onClose, onSuccess }: FeedbackMo
           </form>
         </motion.div>
       </div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }

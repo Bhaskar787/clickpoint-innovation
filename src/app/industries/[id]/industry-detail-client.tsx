@@ -13,6 +13,7 @@ import {
   Layers,
   FolderGit2,
   TrendingUp,
+  Star,
 } from "lucide-react";
 import { IndustryItem } from "@/types";
 import Navbar from "@/components/layout/navbar";
@@ -191,82 +192,99 @@ export default function IndustryDetailClient({ industry }: IndustryDetailClientP
       )}
 
       {/* SEQUENCE #05: FEATURED CASE STUDIES & LIVE PROJECTS */}
-      {industry.projects && industry.projects.length > 0 && (
-        <section className="py-20 lg:py-28 border-b border-violet-100 dark:border-slate-800 bg-slate-50/50 dark:bg-[#0f172a]/40">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="mb-14 max-w-2xl">
-              <p className="mb-2 text-xs font-extrabold uppercase tracking-widest text-violet-600 dark:text-violet-400">
-                {industry.projectsTag || "Live Case Studies"}
-              </p>
-              <h2 className="font-display text-3xl font-extrabold text-ink dark:text-white sm:text-4xl">
-                {industry.projectsHeading || `Featured projects built for ${industry.title}`}
-              </h2>
-            </div>
+      {(() => {
+        const visibleProjects = (industry.projects || []).filter(
+          (p: any) => !p.isDraft && p.status !== "draft"
+        );
+        if (!visibleProjects || visibleProjects.length === 0) return null;
 
-            <div className="grid gap-8 md:grid-cols-2">
-              {industry.projects.map((proj: any, pIdx: number) => (
-                <div
-                  key={proj.id || pIdx}
-                  className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-8 shadow-sm hover:border-violet-300 dark:hover:border-slate-700 hover:shadow-xl transition-all"
-                >
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="rounded-full bg-violet-100 dark:bg-slate-800 px-3 py-1 text-xs font-bold text-violet-700 dark:text-violet-300">
-                        {proj.client}
-                      </span>
-                      {proj.impact && (
-                        <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
-                          {proj.impact}
-                        </span>
+        return (
+          <section className="py-20 lg:py-28 border-b border-violet-100 dark:border-slate-800 bg-slate-50/50 dark:bg-[#0f172a]/40">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="mb-14 max-w-2xl">
+                <p className="mb-2 text-xs font-extrabold uppercase tracking-widest text-violet-600 dark:text-violet-400">
+                  {industry.projectsTag || "Live Case Studies"}
+                </p>
+                <h2 className="font-display text-3xl font-extrabold text-ink dark:text-white sm:text-4xl">
+                  {industry.projectsHeading || `Featured projects built for ${industry.title}`}
+                </h2>
+              </div>
+
+              <div className="grid gap-8 md:grid-cols-2">
+                {visibleProjects.map((proj: any, pIdx: number) => (
+                  <div
+                    key={proj.id || pIdx}
+                    className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-8 shadow-sm hover:border-violet-300 dark:hover:border-slate-700 hover:shadow-xl transition-all"
+                  >
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="rounded-full bg-violet-100 dark:bg-slate-800 px-3 py-1 text-xs font-bold text-violet-700 dark:text-violet-300">
+                            {proj.client}
+                          </span>
+                          {proj.featured && (
+                            <span
+                              className="inline-flex items-center justify-center rounded-full bg-amber-100 dark:bg-amber-950/80 p-1 text-amber-700 dark:text-amber-300 border border-amber-300/80 dark:border-amber-700 shadow-2xs"
+                              title="Featured"
+                            >
+                              <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
+                            </span>
+                          )}
+                        </div>
+                        {proj.impact && (
+                          <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                            {proj.impact}
+                          </span>
+                        )}
+                      </div>
+
+                      <h3 className="font-display text-2xl font-bold text-ink dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-300 transition-colors">
+                        {proj.title}
+                      </h3>
+
+                      <p className="text-sm text-ink/75 dark:text-slate-300 leading-relaxed">
+                        {proj.desc}
+                      </p>
+
+                      {/* Tech Stack Pills */}
+                      {proj.techStack && proj.techStack.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 pt-2">
+                          {proj.techStack.map((tech: string, tIdx: number) => (
+                            <span
+                              key={tIdx}
+                              className="rounded-md bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-xs font-medium text-slate-700 dark:text-slate-300"
+                            >
+                              {tech}
+                            </span>
+                          ))}
+                        </div>
                       )}
                     </div>
 
-                    <h3 className="font-display text-2xl font-bold text-ink dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-300 transition-colors">
-                      {proj.title}
-                    </h3>
+                    {proj.liveUrl && (
+                      <div className="mt-8 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                        <a
+                          href={proj.liveUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-xs font-extrabold text-violet-600 dark:text-violet-400 hover:underline"
+                        >
+                          <span>View Live Project</span>
+                          <ExternalLink className="h-3.5 w-3.5" />
+                        </a>
 
-                    <p className="text-sm text-ink/75 dark:text-slate-300 leading-relaxed">
-                      {proj.desc}
-                    </p>
-
-                    {/* Tech Stack Pills */}
-                    {proj.techStack && proj.techStack.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 pt-2">
-                        {proj.techStack.map((tech: string, tIdx: number) => (
-                          <span
-                            key={tIdx}
-                            className="rounded-md bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-xs font-medium text-slate-700 dark:text-slate-300"
-                          >
-                            {tech}
-                          </span>
-                        ))}
+                        <span className="text-[10px] font-mono text-slate-400">
+                          {proj.liveUrl.replace("https://", "")}
+                        </span>
                       </div>
                     )}
                   </div>
-
-                  {proj.liveUrl && (
-                    <div className="mt-8 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                      <a
-                        href={proj.liveUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs font-extrabold text-violet-600 dark:text-violet-400 hover:underline"
-                      >
-                        <span>View Live Project</span>
-                        <ExternalLink className="h-3.5 w-3.5" />
-                      </a>
-
-                      <span className="text-[10px] font-mono text-slate-400">
-                        {proj.liveUrl.replace("https://", "")}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
-      )}
+          </section>
+        );
+      })()}
 
       {/* SEQUENCE #06: TARGET ENGINEERING SOLUTIONS GRID */}
       {industry.solutions && industry.solutions.length > 0 && (

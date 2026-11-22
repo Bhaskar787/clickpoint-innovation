@@ -8,6 +8,7 @@ import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import { Node, mergeAttributes } from "@tiptap/core";
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import {
   Bold,
@@ -164,6 +165,11 @@ export default function RichTextEditor({
   const [captionInput, setCaptionInput] = useState("");
   const [imageAlignment, setImageAlignment] = useState<"full" | "left" | "right">("full");
   const [activeTab, setActiveTab] = useState<"write" | "preview">("write");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -685,8 +691,8 @@ export default function RichTextEditor({
       )}
 
       {/* MEDIA & PHOTO CAPTION / VIDEO MODAL */}
-      {mediaModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-xs">
+      {mounted && typeof window !== "undefined" && mediaModalOpen && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-150">
           <div className="relative w-full max-w-md rounded-2xl bg-white dark:bg-[#131927] border border-slate-200 dark:border-slate-800 p-6 space-y-4 shadow-2xl text-slate-900 dark:text-white">
             <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
               <div className="flex items-center gap-2 font-bold text-sm">
@@ -839,7 +845,8 @@ export default function RichTextEditor({
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

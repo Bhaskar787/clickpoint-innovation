@@ -141,10 +141,15 @@ export default function CaseStudiesPage() {
 
   const categoryFilterList = ["ALL", ...categories.map((c) => c.name)];
 
+  // Filter out incomplete drafts (e.g. added from Industry section) until fully edited and published
+  const publishedCaseStudies = caseStudies.filter(
+    (cs) => !cs.isDraft && (cs.metrics as any)?.isDraft !== true && (cs.metrics as any)?.status !== "draft"
+  );
+
   const filteredCaseStudies =
     activeCategory === "ALL"
-      ? caseStudies
-      : caseStudies.filter(
+      ? publishedCaseStudies
+      : publishedCaseStudies.filter(
           (cs) => cs.category?.toLowerCase() === activeCategory.toLowerCase()
         );
 
@@ -344,10 +349,18 @@ export default function CaseStudiesPage() {
 
                       {/* Card Content */}
                       <div className="mt-6 space-y-3">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="rounded-md bg-violet-50 dark:bg-slate-800 px-2.5 py-0.5 text-[11px] font-bold text-violet-700 dark:text-violet-300 border border-violet-100 dark:border-slate-700">
                             {project.category}
                           </span>
+                          {project.featured && (
+                            <span
+                              className="inline-flex items-center justify-center rounded-md bg-amber-100 dark:bg-amber-950/80 p-1 text-amber-700 dark:text-amber-300 border border-amber-300/80 dark:border-amber-700 shadow-2xs"
+                              title="Featured"
+                            >
+                              <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
+                            </span>
+                          )}
                           {project.impact && (
                             <span className="text-[11px] font-extrabold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 px-2.5 py-0.5 rounded-md border border-emerald-500/20 flex items-center gap-1">
                               <TrendingUp className="h-3 w-3 text-emerald-600 dark:text-emerald-400 shrink-0" />

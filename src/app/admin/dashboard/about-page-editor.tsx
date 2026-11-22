@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import { toast } from "sonner";
 import {
@@ -35,8 +36,13 @@ import {
   Sparkle,
   Loader2,
   Milestone,
+  Pencil,
+  Search,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import { SectionNavSidebar, SectionNavItem } from "@/components/admin/dashboard/section-nav-sidebar";
+import { TeamMember } from "@/types";
 
 // Helper function to extract initials from First & Last Name
 function getInitials(name: string): string {
@@ -323,8 +329,62 @@ function LinkedInSkillSection({ skills, onChange }: LinkedInSkillSectionProps) {
   );
 }
 
+export interface AboutPageFormData {
+  hero: {
+    badge: string;
+    title: string;
+    highlightText: string;
+    subtitle: string;
+    primaryBtnText: string;
+    secondaryBtnText: string;
+    videoUrl: string;
+  };
+  stats: {
+    id: string;
+    value: string;
+    suffix: string;
+    label: string;
+  }[];
+  mission: {
+    tag: string;
+    heading: string;
+    highlightHeading: string;
+    paragraph1: string;
+    paragraph2: string;
+    bullets: string[];
+    cardTitle: string;
+    cardDesc: string;
+    statBox1Label: string;
+    statBox1Value: string;
+    statBox2Label: string;
+    statBox2Value: string;
+  };
+  values: {
+    tag: string;
+    title: string;
+    highlightTitle: string;
+    items: {
+      id: string;
+      title: string;
+      description: string;
+    }[];
+  };
+  leadership: {
+    tag: string;
+    title: string;
+    highlightTitle: string;
+    subtitle: string;
+    team: TeamMember[];
+  };
+  timelineHeader: {
+    badge: string;
+    title: string;
+    subtitle: string;
+  };
+}
+
 // Default Initial Form State
-export const DEFAULT_ABOUT_DATA = {
+export const DEFAULT_ABOUT_DATA: AboutPageFormData = {
   hero: {
     badge: "About Clickpoint Innovation",
     title: "Pioneering the AI-First Era of Software Engineering",
@@ -501,10 +561,125 @@ interface AboutPageEditorProps {
 }
 
 export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPageEditorProps) {
-  const [formData, setFormData] = useState(DEFAULT_ABOUT_DATA);
+  const [formData, setFormData] = useState<AboutPageFormData>(DEFAULT_ABOUT_DATA);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [activeSectionId, setActiveSectionId] = useState<string>(sectionId || "about-hero");
+
+  // Leadership Member Modal & Search State
+  const [editingMember, setEditingMember] = useState<{
+    member: TeamMember;
+    isNew: boolean;
+    index?: number;
+  } | null>(null);
+  const [memberSearchQuery, setMemberSearchQuery] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  function handleOpenAddMember() {
+    setEditingMember({
+      isNew: true,
+      member: {
+        id: `team-${Date.now()}`,
+        name: "",
+        role: "",
+        bio: "",
+        imageUrl: "",
+        expertise: ["Cloud Architecture", "AI Leadership"],
+        linkedinUrl: "",
+      },
+    });
+  }
+
+  function handleOpenEditMember(member: TeamMember, index: number) {
+    setEditingMember({
+      isNew: false,
+      index,
+      member: {
+        ...member,
+        expertise: [...(member.expertise || [])],
+      },
+    });
+  }
+
+  function handleSaveMember() {
+    if (!editingMember) return;
+    const { member, isNew, index } = editingMember;
+
+    if (!member.name.trim()) {
+      toast.error("Please enter the member's full name.");
+      return;
+    }
+    if (!member.role.trim()) {
+      toast.error("Please enter the member's title / designation.");
+      return;
+    }
+
+    if (isNew) {
+      setFormData((prev) => ({
+        ...prev,
+        leadership: {
+          ...prev.leadership,
+          team: [...prev.leadership.team, member],
+        },
+      }));
+      toast.success(`Added "${member.name}" to leadership team!`);
+    } else if (typeof index === "number") {
+      setFormData((prev) => {
+        const updated = [...prev.leadership.team];
+        updated[index] = member;
+        return {
+          ...prev,
+          leadership: {
+            ...prev.leadership,
+            team: updated,
+          },
+        };
+      });
+      toast.success(`Updated "${member.name}" profile!`);
+    }
+
+    setEditingMember(null);
+  }
+
+  function handleDeleteMember(memberToDelete: TeamMember) {
+    if (!confirm(`Are you sure you want to delete "${memberToDelete.name}" from the leadership team?`)) return;
+
+    if (memberToDelete.imageUrl) {
+      fetch("/api/upload", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: memberToDelete.imageUrl }),
+      }).catch((err) => console.warn("Failed to delete member photo:", err));
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      leadership: {
+        ...prev.leadership,
+        team: prev.leadership.team.filter((m) => m.id !== memberToDelete.id),
+      },
+    }));
+    toast.success(`Deleted team member "${memberToDelete.name}"`);
+  }
+
+  function handleMoveMember(currentIndex: number, direction: "up" | "down") {
+    const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+    if (targetIndex < 0 || targetIndex >= formData.leadership.team.length) return;
+
+    setFormData((prev) => {
+      const updated = [...prev.leadership.team];
+      const [moved] = updated.splice(currentIndex, 1);
+      updated.splice(targetIndex, 0, moved);
+      return {
+        ...prev,
+        leadership: { ...prev.leadership, team: updated },
+      };
+    });
+  }
 
   useEffect(() => {
     if (sectionId) {
@@ -1177,44 +1352,41 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
         </div>
       )}
 
-      {/* SECTION 4: LEADERSHIP TEAM BADGES & TITLES + LINKEDIN SKILL SECTION */}
+      {/* SECTION 4: LEADERSHIP TEAM BADGES & TITLES + TABULAR DIRECTORY & EDIT MODAL */}
       {activeSectionId === "about-team" && (
-        <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] sm:text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
+        <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-5">
+          {/* Header Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div className="flex items-center gap-2.5">
+              <span className="font-mono text-[10px] sm:text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2.5 py-1 rounded-md">
                 #04
               </span>
-              <h3 className="text-xs sm:text-sm font-bold">Leadership Section Badges, Titles & Team Members</h3>
+              <div>
+                <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
+                  Leadership Section Badges, Titles & Team Members
+                </h3>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Manage section headings and executive leadership profiles in tabular format.
+                </p>
+              </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => {
-                const newMember = {
-                  id: `team-${Date.now()}`,
-                  name: "New Team Member",
-                  role: "Software Architect",
-                  bio: "Experienced engineer leading high-scale product development.",
-                  imageUrl: "",
-                  expertise: ["Cloud Architecture", "Next.js", "AI Integrations"],
-                };
-                setFormData({
-                  ...formData,
-                  leadership: {
-                    ...formData.leadership,
-                    team: [...formData.leadership.team, newMember],
-                  },
-                });
-                toast.success("Added new team member!");
-              }}
-              className="w-full sm:w-auto flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 text-xs font-bold hover:bg-blue-100 transition-colors"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              <span>Add Member</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/40">
+                {formData.leadership?.team?.length || 0} Members Configured
+              </span>
+              <button
+                type="button"
+                onClick={handleOpenAddMember}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors shadow-xs cursor-pointer"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>Add Member</span>
+              </button>
+            </div>
           </div>
 
+          {/* Section Headings Form */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
             <div>
               <label className="flex items-center gap-1 text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
@@ -1224,7 +1396,12 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
               <input
                 type="text"
                 value={formData.leadership.tag}
-                onChange={(e) => setFormData({ ...formData, leadership: { ...formData.leadership, tag: e.target.value } })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    leadership: { ...formData.leadership, tag: e.target.value },
+                  })
+                }
                 className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-1.5 text-xs text-slate-900 dark:text-white"
               />
             </div>
@@ -1237,7 +1414,12 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
               <input
                 type="text"
                 value={formData.leadership.title}
-                onChange={(e) => setFormData({ ...formData, leadership: { ...formData.leadership, title: e.target.value } })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    leadership: { ...formData.leadership, title: e.target.value },
+                  })
+                }
                 className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-1.5 text-xs text-slate-900 dark:text-white font-bold"
               />
             </div>
@@ -1249,148 +1431,469 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
               <input
                 type="text"
                 value={formData.leadership.subtitle}
-                onChange={(e) => setFormData({ ...formData, leadership: { ...formData.leadership, subtitle: e.target.value } })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    leadership: { ...formData.leadership, subtitle: e.target.value },
+                  })
+                }
                 className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-1.5 text-xs text-slate-900 dark:text-white"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-            {formData.leadership.team.map((member, idx) => {
-              const computedInitials = getInitials(member.name);
+          {/* Members Table Directory Header with Search */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+            <div>
+              <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
+                Team Directory (Tabular View)
+              </h4>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Click “Edit” on any row to open the full profile editor popup modal.
+              </p>
+            </div>
 
+            <div className="relative w-full sm:w-72">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Filter by name, role, skill..."
+                value={memberSearchQuery}
+                onChange={(e) => setMemberSearchQuery(e.target.value)}
+                className="w-full pl-8 pr-7 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#0b0f19] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              />
+              {memberSearchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setMemberSearchQuery("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Tabular List of Team Members */}
+          {(() => {
+            const filteredTeam = (formData.leadership?.team || []).filter((m) => {
+              if (!memberSearchQuery.trim()) return true;
+              const q = memberSearchQuery.toLowerCase();
               return (
-                <div key={member.id} className="p-3.5 sm:p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 space-y-3">
-                  
-                  {/* Top Bar with Live Image / Initials Avatar Preview */}
-                  <div className="flex items-center justify-between gap-2 pb-2 border-b border-slate-200/60 dark:border-slate-700/60">
-                    <div className="flex items-center gap-3 min-w-0">
-                      {member.imageUrl && member.imageUrl.trim() !== "" ? (
-                        <div className="relative h-10 w-10 rounded-full overflow-hidden border-2 border-blue-500 shadow-sm shrink-0">
-                          <img
-                            src={member.imageUrl}
-                            alt={member.name}
-                            className="h-full w-full object-cover"
-                            onError={(e) => {
-                              (e.target as HTMLElement).style.display = "none";
-                            }}
-                          />
-                        </div>
-                      ) : (
-                        <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-blue-600 via-indigo-600 to-violet-600 text-white font-extrabold text-xs flex items-center justify-center shadow-md shadow-blue-500/20 shrink-0">
-                          {computedInitials}
-                        </div>
-                      )}
+                m.name?.toLowerCase().includes(q) ||
+                m.role?.toLowerCase().includes(q) ||
+                m.bio?.toLowerCase().includes(q) ||
+                m.expertise?.some((skill) => skill.toLowerCase().includes(q))
+              );
+            });
 
-                      <div className="min-w-0">
-                        <h4 className="text-xs font-bold truncate">{member.name || "Unnamed Member"}</h4>
-                        <p className="text-[10px] font-medium text-slate-400 truncate">
-                          {member.imageUrl && member.imageUrl.trim() !== "" ? "Custom Image Uploaded" : `Initials Avatar (${computedInitials})`}
-                        </p>
-                      </div>
-                    </div>
-
+            if (filteredTeam.length === 0) {
+              return (
+                <div className="text-center py-12 p-4 border border-dashed border-slate-300 dark:border-slate-800 rounded-xl sm:rounded-2xl space-y-2">
+                  <Users className="h-8 w-8 text-slate-400 mx-auto" />
+                  <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {memberSearchQuery ? "No members match your search filter." : "No team members configured yet."}
+                  </p>
+                  <p className="text-[11px] text-slate-400 max-w-sm mx-auto">
+                    {memberSearchQuery
+                      ? "Try searching with a different term or clear the filter."
+                      : "Add leadership and executive members to display them in the about page team section."}
+                  </p>
+                  {memberSearchQuery ? (
                     <button
                       type="button"
-                      onClick={() => {
-                        const memberToDelete = member;
-                        if (memberToDelete.imageUrl) {
-                          fetch("/api/upload", {
-                            method: "DELETE",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ url: memberToDelete.imageUrl }),
-                          }).catch((err) => console.warn("Failed to delete member photo from Cloudinary:", err));
-                        }
-                        const updated = formData.leadership.team.filter((m) => m.id !== member.id);
-                        setFormData({
-                          ...formData,
-                          leadership: { ...formData.leadership, team: updated },
-                        });
-                        toast.success(`Deleted team member "${memberToDelete.name}"`);
-                      }}
-                      className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/50 rounded transition-colors shrink-0"
-                      title="Delete member"
+                      onClick={() => setMemberSearchQuery("")}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      Clear Search Filter
                     </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleOpenAddMember}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors shadow-xs"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      <span>Add First Member</span>
+                    </button>
+                  )}
+                </div>
+              );
+            }
+
+            return (
+              <div className="overflow-x-auto rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#0f1422]">
+                <table className="w-full text-left border-collapse min-w-[760px]">
+                  <thead>
+                    <tr className="bg-slate-50 dark:bg-[#0b0f19] border-b border-slate-200 dark:border-slate-800 text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      <th className="py-3 px-3 w-16 text-center">Order</th>
+                      <th className="py-3 px-4">Member Profile</th>
+                      <th className="py-3 px-4">Role / Title</th>
+                      <th className="py-3 px-4">Bio Excerpt</th>
+                      <th className="py-3 px-4">Core Expertise</th>
+                      <th className="py-3 px-4 text-center">Social</th>
+                      <th className="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+                    {filteredTeam.map((member) => {
+                      const originalIdx = formData.leadership.team.findIndex((m) => m.id === member.id);
+                      const computedInitials = getInitials(member.name);
+                      const isFirst = originalIdx === 0;
+                      const isLast = originalIdx === formData.leadership.team.length - 1;
+
+                      return (
+                        <tr
+                          key={member.id}
+                          className="bg-white dark:bg-[#131927] hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors group"
+                        >
+                          {/* Order with Up/Down buttons */}
+                          <td className="py-3.5 px-3 text-center">
+                            <div className="flex items-center justify-center gap-1">
+                              <span className="font-mono text-[11px] font-bold text-slate-400">
+                                {String(originalIdx + 1).padStart(2, "0")}
+                              </span>
+                              <div className="flex flex-col opacity-60 group-hover:opacity-100 transition-opacity">
+                                <button
+                                  type="button"
+                                  disabled={isFirst}
+                                  onClick={() => handleMoveMember(originalIdx, "up")}
+                                  className="p-0.5 text-slate-400 hover:text-blue-600 disabled:opacity-20 disabled:hover:text-slate-400 cursor-pointer"
+                                  title="Move up"
+                                >
+                                  <ChevronUp className="h-3 w-3" />
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={isLast}
+                                  onClick={() => handleMoveMember(originalIdx, "down")}
+                                  className="p-0.5 text-slate-400 hover:text-blue-600 disabled:opacity-20 disabled:hover:text-slate-400 cursor-pointer"
+                                  title="Move down"
+                                >
+                                  <ChevronDown className="h-3 w-3" />
+                                </button>
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* Member Avatar & Full Name */}
+                          <td className="py-3.5 px-4">
+                            <div className="flex items-center gap-3">
+                              {member.imageUrl && member.imageUrl.trim() !== "" ? (
+                                <div className="relative h-10 w-10 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-xs shrink-0 bg-slate-900">
+                                  <img
+                                    src={member.imageUrl}
+                                    alt={member.name}
+                                    className="h-full w-full object-cover"
+                                    onError={(e) => {
+                                      (e.target as HTMLElement).style.display = "none";
+                                    }}
+                                  />
+                                </div>
+                              ) : (
+                                <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-violet-600 text-white font-extrabold text-xs flex items-center justify-center shadow-xs shrink-0">
+                                  {computedInitials}
+                                </div>
+                              )}
+                              <div className="min-w-0">
+                                <span className="font-extrabold text-slate-900 dark:text-white block truncate">
+                                  {member.name || "Unnamed Member"}
+                                </span>
+                                <span className="text-[10px] font-semibold text-slate-400 block truncate">
+                                  {member.imageUrl ? "Custom Photo" : `Initials (${computedInitials})`}
+                                </span>
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* Role / Title */}
+                          <td className="py-3.5 px-4">
+                            <span className="inline-block px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/40 truncate max-w-[200px]">
+                              {member.role || "No Title"}
+                            </span>
+                          </td>
+
+                          {/* Bio Excerpt */}
+                          <td className="py-3.5 px-4 max-w-[220px]">
+                            <p
+                              className="text-slate-600 dark:text-slate-300 text-xs line-clamp-2 leading-relaxed"
+                              title={member.bio}
+                            >
+                              {member.bio || <span className="text-slate-400 italic">No bio provided</span>}
+                            </p>
+                          </td>
+
+                          {/* Core Expertise Tags */}
+                          <td className="py-3.5 px-4 max-w-[200px]">
+                            <div className="flex flex-wrap items-center gap-1">
+                              {(member.expertise || []).slice(0, 2).map((skill) => (
+                                <span
+                                  key={skill}
+                                  className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 truncate max-w-[110px]"
+                                >
+                                  {skill}
+                                </span>
+                              ))}
+                              {(member.expertise || []).length > 2 && (
+                                <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-900">
+                                  +{member.expertise!.length - 2}
+                                </span>
+                              )}
+                              {(!member.expertise || member.expertise.length === 0) && (
+                                <span className="text-slate-400 text-[11px] italic">None</span>
+                              )}
+                            </div>
+                          </td>
+
+                          {/* Social / LinkedIn */}
+                          <td className="py-3.5 px-4 text-center">
+                            {member.linkedinUrl ? (
+                              <a
+                                href={member.linkedinUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center justify-center h-7 w-7 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-[#0a66c2] hover:bg-[#0a66c2] hover:text-white transition-colors"
+                                title="View LinkedIn Profile"
+                              >
+                                <Linkedin className="h-3.5 w-3.5" />
+                              </a>
+                            ) : (
+                              <span className="text-slate-300 dark:text-slate-700">-</span>
+                            )}
+                          </td>
+
+                          {/* Actions: Edit & Delete */}
+                          <td className="py-3.5 px-4 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => handleOpenEditMember(member, originalIdx)}
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-600 dark:text-blue-400 text-xs font-bold transition-colors cursor-pointer"
+                                title="Edit Member Profile"
+                              >
+                                <Pencil className="h-3 w-3" />
+                                <span>Edit</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteMember(member)}
+                                className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50 rounded-lg transition-colors cursor-pointer"
+                                title="Delete Member"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            );
+          })()}
+
+          {/* Interactive Member Edit / Add Popup Modal */}
+          {mounted && typeof window !== "undefined" && editingMember && createPortal(
+            <div className="fixed inset-0 z-[9999] bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-150">
+              <div className="bg-white dark:bg-[#131927] rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-2xl w-full my-6 flex flex-col max-h-[92vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                {/* Modal Header */}
+                <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0 bg-slate-50/60 dark:bg-slate-900/50">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-xl bg-blue-100 dark:bg-blue-950/70 text-blue-600 dark:text-blue-400">
+                      <Users className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white">
+                        {editingMember.isNew ? "Add Leadership Member" : "Edit Leadership Member"}
+                      </h4>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                        {editingMember.isNew
+                          ? "Configure member details, portrait photo, bio, and LinkedIn expertise tags."
+                          : `Editing profile for "${editingMember.member.name || "Team Member"}"`}
+                      </p>
+                    </div>
                   </div>
 
-                  {/* Member Name & Role */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400">Full Name</label>
+                  <button
+                    type="button"
+                    onClick={() => setEditingMember(null)}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+
+                {/* Modal Body */}
+                <div className="p-4 sm:p-6 overflow-y-auto space-y-4 text-xs">
+                  {/* Live Card Preview Box */}
+                  <div className="rounded-xl border border-blue-100 dark:border-blue-900/40 bg-blue-50/30 dark:bg-blue-950/20 p-3.5 flex items-center gap-3.5">
+                    {editingMember.member.imageUrl && editingMember.member.imageUrl.trim() !== "" ? (
+                      <div className="relative h-12 w-12 rounded-xl overflow-hidden border-2 border-blue-500 shadow-sm shrink-0 bg-slate-900">
+                        <img
+                          src={editingMember.member.imageUrl}
+                          alt={editingMember.member.name}
+                          className="h-full w-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLElement).style.display = "none";
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <div className="h-12 w-12 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-violet-600 text-white font-extrabold text-sm flex items-center justify-center shadow-sm shrink-0">
+                        {getInitials(editingMember.member.name)}
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-extrabold text-sm text-slate-900 dark:text-white truncate">
+                          {editingMember.member.name || "Member Name"}
+                        </span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">
+                          Live Preview
+                        </span>
+                      </div>
+                      <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 truncate">
+                        {editingMember.member.role || "Title / Designation"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Full Name & Designation */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="font-bold text-slate-700 dark:text-slate-300 block">
+                        Full Name <span className="text-red-500">*</span>
+                      </label>
                       <input
                         type="text"
-                        placeholder="First & Last Name"
-                        value={member.name}
-                        onChange={(e) => {
-                          const updated = [...formData.leadership.team];
-                          updated[idx].name = e.target.value;
-                          setFormData({ ...formData, leadership: { ...formData.leadership, team: updated } });
-                        }}
-                        className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-2.5 py-1 text-xs text-slate-900 dark:text-white"
+                        placeholder="e.g. Ashok Khanal, Rabin Shrestha"
+                        value={editingMember.member.name}
+                        onChange={(e) =>
+                          setEditingMember({
+                            ...editingMember,
+                            member: { ...editingMember.member, name: e.target.value },
+                          })
+                        }
+                        className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-semibold"
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400">Title / Designation</label>
+                    <div className="space-y-1">
+                      <label className="font-bold text-slate-700 dark:text-slate-300 block">
+                        Title / Designation <span className="text-red-500">*</span>
+                      </label>
                       <input
                         type="text"
-                        placeholder="CEO, CTO, Lead Engineer"
-                        value={member.role}
-                        onChange={(e) => {
-                          const updated = [...formData.leadership.team];
-                          updated[idx].role = e.target.value;
-                          setFormData({ ...formData, leadership: { ...formData.leadership, team: updated } });
-                        }}
-                        className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-2.5 py-1 text-xs text-slate-900 dark:text-white"
+                        placeholder="e.g. Founder & Chief Executive Officer (CEO)"
+                        value={editingMember.member.role}
+                        onChange={(e) =>
+                          setEditingMember({
+                            ...editingMember,
+                            member: { ...editingMember.member, role: e.target.value },
+                          })
+                        }
+                        className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-semibold"
                       />
                     </div>
                   </div>
 
-                  {/* Image File Upload Control */}
+                  {/* Profile Photo File Upload */}
                   <FileUploadControl
                     label="Profile Photo File / Image URL (Cloudinary Supported)"
-                    value={member.imageUrl || ""}
+                    value={editingMember.member.imageUrl || ""}
                     accept="image/*"
                     mediaType="image"
                     placeholder="Upload image file to Cloudinary or enter URL..."
-                    helperText={`Leave blank to display initials (${computedInitials})`}
-                    onChange={(val) => {
-                      const updated = [...formData.leadership.team];
-                      updated[idx].imageUrl = val;
-                      setFormData({ ...formData, leadership: { ...formData.leadership, team: updated } });
-                    }}
+                    helperText={`Leave blank to display initials (${getInitials(editingMember.member.name)})`}
+                    onChange={(val) =>
+                      setEditingMember({
+                        ...editingMember,
+                        member: { ...editingMember.member, imageUrl: val },
+                      })
+                    }
                   />
 
-                  {/* Professional Bio */}
-                  <div>
-                    <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400">Professional Bio</label>
-                    <textarea
-                      rows={2}
-                      value={member.bio}
-                      onChange={(e) => {
-                        const updated = [...formData.leadership.team];
-                        updated[idx].bio = e.target.value;
-                        setFormData({ ...formData, leadership: { ...formData.leadership, team: updated } });
-                      }}
-                      className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-2.5 py-1 text-xs text-slate-900 dark:text-white"
+                  {/* LinkedIn URL */}
+                  <div className="space-y-1">
+                    <label className="flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-300">
+                      <Linkedin className="h-3.5 w-3.5 text-[#0a66c2]" />
+                      LinkedIn Profile URL (Optional)
+                    </label>
+                    <input
+                      type="url"
+                      placeholder="https://linkedin.com/in/username"
+                      value={editingMember.member.linkedinUrl || ""}
+                      onChange={(e) =>
+                        setEditingMember({
+                          ...editingMember,
+                          member: { ...editingMember.member, linkedinUrl: e.target.value },
+                        })
+                      }
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white"
                     />
                   </div>
 
-                  {/* LINKEDIN-STYLE INTERACTIVE SKILLS SECTION */}
+                  {/* Professional Bio */}
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <label className="font-bold text-slate-700 dark:text-slate-300">
+                        Professional Bio
+                      </label>
+                      <span className="text-[10px] text-slate-400">
+                        {editingMember.member.bio?.length || 0} characters
+                      </span>
+                    </div>
+                    <textarea
+                      rows={3}
+                      placeholder="Describe the leader's engineering expertise, track record, and technical leadership..."
+                      value={editingMember.member.bio || ""}
+                      onChange={(e) =>
+                        setEditingMember({
+                          ...editingMember,
+                          member: { ...editingMember.member, bio: e.target.value },
+                        })
+                      }
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white leading-relaxed"
+                    />
+                  </div>
+
+                  {/* LinkedIn-Style Core Expertise Tag Manager */}
                   <LinkedInSkillSection
-                    skills={member.expertise || []}
-                    onChange={(updatedSkills) => {
-                      const updated = [...formData.leadership.team];
-                      updated[idx].expertise = updatedSkills;
-                      setFormData({ ...formData, leadership: { ...formData.leadership, team: updated } });
-                    }}
+                    skills={editingMember.member.expertise || []}
+                    onChange={(updatedSkills) =>
+                      setEditingMember({
+                        ...editingMember,
+                        member: { ...editingMember.member, expertise: updatedSkills },
+                      })
+                    }
                   />
                 </div>
-              );
-            })}
-          </div>
+
+                {/* Modal Footer */}
+                <div className="p-4 sm:p-5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2 shrink-0 bg-slate-50/60 dark:bg-slate-900/50">
+                  <button
+                    type="button"
+                    onClick={() => setEditingMember(null)}
+                    className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleSaveMember}
+                    className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer"
+                  >
+                    <Check className="h-4 w-4" />
+                    <span>{editingMember.isNew ? "Add Team Member" : "Save Changes"}</span>
+                  </button>
+                </div>
+              </div>
+            </div>,
+            document.body
+          )}
         </div>
       )}
 

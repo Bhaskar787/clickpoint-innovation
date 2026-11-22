@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import {
   Save,
@@ -35,6 +36,13 @@ import {
   ExternalLink,
   Loader2,
   Link as LinkIcon,
+  Pencil,
+  Search,
+  ChevronUp,
+  ChevronDown,
+  ArrowLeft,
+  ArrowRight,
+  Sparkles,
 } from "lucide-react";
 import { SectionNavSidebar, SectionNavItem } from "@/components/admin/dashboard/section-nav-sidebar";
 
@@ -459,6 +467,19 @@ export default function ServicesPageEditor({
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [selectedDetailId, setSelectedDetailId] = useState<string>("ai-eng");
+  const [catalogSearchQuery, setCatalogSearchQuery] = useState("");
+  const [editingCatalogService, setEditingCatalogService] = useState<{
+    service: (typeof DEFAULT_SERVICES_CONTENT.services)[0];
+    index?: number;
+    isNew: boolean;
+  } | null>(null);
+  const [editingDetailServiceId, setEditingDetailServiceId] = useState<string | null>(null);
+  const [detailSearchQuery, setDetailSearchQuery] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (sectionId) {
@@ -609,6 +630,130 @@ export default function ServicesPageEditor({
     }
   }
 
+  function handleOpenAddService() {
+    const uniqueId = `service-${Date.now().toString().slice(-4)}`;
+    const newSvc = {
+      id: uniqueId,
+      title: "",
+      subtitle: "",
+      buttonText: "Explore Capabilities",
+      desc: "",
+      fullOverview: "Detailed overview narrative explaining how we deliver this discipline for enterprise clients.",
+      heroBadge: "Custom Engineering Pod",
+      imageUrl: "",
+      keyMetrics: [
+        { label: "Execution Speed", value: "3x" },
+        { label: "Reliability SLA", value: "99.9%" },
+        { label: "Efficiency Gain", value: "4x" },
+      ],
+      features: [
+        { title: "Core Feature 1", desc: "Detailed breakdown of capability 1." },
+        { title: "Core Feature 2", desc: "Detailed breakdown of capability 2." },
+      ],
+      workflow: [
+        { step: "01", title: "Discovery & Architecture", desc: "Mapping specifications and assembling the engineering pod." },
+        { step: "02", title: "Prototyping & MVP Sprint", desc: "Delivering working software in 2-4 week sprint cycles." },
+        { step: "03", title: "Continuous Integration & AI", desc: "Automated peer code reviews and staging deployments." },
+        { step: "04", title: "Scale & Managed Ops", desc: "99.99% uptime monitoring and managed operations." },
+      ],
+      useCases: ["Enterprise Scale Automation", "Custom Cloud Platform Building"],
+      techStack: ["Next.js", "TypeScript", "Python"],
+      ctaPrimaryText: "Request Service Audit",
+      ctaPrimaryRoute: "/contact",
+      ctaSecondaryText: "All Services",
+      ctaSecondaryRoute: "/services",
+      overviewTag: "Detailed Overview",
+      overviewHeading: "How We Deliver Exceptional",
+      capabilitiesTag: "Core Capabilities",
+      capabilitiesHeading: "Engineered features for maximum impact",
+      blueprintTag: "Execution Blueprint",
+      blueprintHeading: "Our step-by-step delivery process",
+      useCasesHeading: "Primary Focus Areas",
+    };
+
+    setEditingCatalogService({
+      service: newSvc,
+      isNew: true,
+    });
+  }
+
+  function handleOpenEditCatalogService(svc: (typeof DEFAULT_SERVICES_CONTENT.services)[0], index: number) {
+    setEditingCatalogService({
+      service: { ...svc },
+      index,
+      isNew: false,
+    });
+  }
+
+  function handleSaveCatalogServiceModal() {
+    if (!editingCatalogService) return;
+    const { service, isNew, index } = editingCatalogService;
+    if (!service.title.trim()) {
+      toast.error("Please enter a Service Title");
+      return;
+    }
+    if (!service.id.trim()) {
+      toast.error("Please enter a unique URL Slug / ID");
+      return;
+    }
+
+    const cleanSlug = service.id.toLowerCase().replace(/[^a-z0-9-]/g, "-");
+    const finalService = {
+      ...service,
+      id: cleanSlug,
+    };
+
+    let nextServices = [...formData.services];
+    if (isNew) {
+      nextServices.push(finalService);
+      toast.success(`Service "${finalService.title}" added to catalog!`);
+    } else if (typeof index === "number") {
+      nextServices[index] = finalService;
+      toast.success(`Service "${finalService.title}" updated!`);
+    }
+
+    setFormData({ ...formData, services: nextServices });
+    setEditingCatalogService(null);
+  }
+
+  function handleDeleteService(svc: (typeof DEFAULT_SERVICES_CONTENT.services)[0], index: number) {
+    if (formData.services.length <= 1) {
+      toast.error("Cannot delete the only service in the catalog.");
+      return;
+    }
+    if (confirm(`Are you sure you want to delete service "${svc.title}" (/services/${svc.id})?`)) {
+      const updated = formData.services.filter((_, i) => i !== index);
+      setFormData({ ...formData, services: updated });
+      if (selectedDetailId === svc.id) {
+        setSelectedDetailId(updated[0]?.id || "ai-eng");
+      }
+      if (editingDetailServiceId === svc.id) {
+        setEditingDetailServiceId(null);
+      }
+      toast.success(`Deleted service "${svc.title}"`);
+    }
+  }
+
+  function handleMoveService(index: number, direction: "UP" | "DOWN") {
+    const list = [...formData.services];
+    const targetIdx = direction === "UP" ? index - 1 : index + 1;
+    if (targetIdx < 0 || targetIdx >= list.length) return;
+    const temp = list[index];
+    list[index] = list[targetIdx];
+    list[targetIdx] = temp;
+    setFormData({ ...formData, services: list });
+  }
+
+  function handleNavigateToServiceDetail(serviceId: string) {
+    setSelectedDetailId(serviceId);
+    setEditingDetailServiceId(serviceId);
+    setActiveSectionId("services-details");
+  }
+
+  function handleBackToDetailDirectory() {
+    setEditingDetailServiceId(null);
+  }
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[300px] sm:min-h-[400px] gap-3 bg-white dark:bg-[#131927] rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-8">
@@ -618,8 +763,31 @@ export default function ServicesPageEditor({
     );
   }
 
-  const selectedServiceIndex = formData.services.findIndex((s) => s.id === selectedDetailId);
+  const targetDetailId = editingDetailServiceId || selectedDetailId;
+  const selectedServiceIndex = formData.services.findIndex((s) => s.id === targetDetailId);
   const currentService = selectedServiceIndex !== -1 ? formData.services[selectedServiceIndex] : formData.services[0];
+
+  const filteredCatalogServices = formData.services.filter((s) => {
+    if (!catalogSearchQuery.trim()) return true;
+    const q = catalogSearchQuery.toLowerCase();
+    return (
+      s.title.toLowerCase().includes(q) ||
+      s.id.toLowerCase().includes(q) ||
+      (s.subtitle && s.subtitle.toLowerCase().includes(q)) ||
+      (s.desc && s.desc.toLowerCase().includes(q))
+    );
+  });
+
+  const filteredDetailServices = formData.services.filter((s) => {
+    if (!detailSearchQuery.trim()) return true;
+    const q = detailSearchQuery.toLowerCase();
+    return (
+      s.title.toLowerCase().includes(q) ||
+      s.id.toLowerCase().includes(q) ||
+      (s.heroBadge && s.heroBadge.toLowerCase().includes(q)) ||
+      (s.techStack && s.techStack.some((t: string) => t.toLowerCase().includes(q)))
+    );
+  });
 
   const currentSectionMeta =
     SERVICES_SECTIONS_CATALOG.find((s) => s.id === activeSectionId) || SERVICES_SECTIONS_CATALOG[0];
@@ -742,191 +910,234 @@ export default function ServicesPageEditor({
         </div>
       )}
 
-      {/* SECTION 2: CATALOG SERVICES LIST & UNIQUE ID MANAGER */}
+      {/* SECTION 2: CATALOG SERVICES LIST & UNIQUE ID MANAGER - TABULAR FORM */}
       {(activeSectionId === "services-list" || activeSectionId === "services-catalog") && (
-        <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] sm:text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
-                #02
-              </span>
-              <h3 className="text-xs sm:text-sm font-bold">
-                Catalog Service Cards Manager ({formData.services.length} Services)
-              </h3>
+        <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-5">
+          {/* Section Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-[10px] sm:text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
+                  #02
+                </span>
+                <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+                  Core Services Cards Catalog
+                </h3>
+                <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700">
+                  {formData.services.length} Total Services
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-2xl">
+                Manage all catalog cards displayed on the <span className="font-mono text-blue-600 dark:text-blue-400">/services</span> page. Reorder items, edit card info in a modal, or jump straight to deep detail configuration.
+              </p>
             </div>
 
-            <button
-              type="button"
-              onClick={() => {
-                const uniqueId = `service-${Date.now().toString().slice(-4)}`;
-                const newSvc = {
-                  id: uniqueId,
-                  title: "New Custom Service",
-                  subtitle: "Enterprise Engineering Discipline",
-                  buttonText: "Explore Capabilities",
-                  desc: "Description of the new service discipline.",
-                  fullOverview: "Detailed overview narrative for this enterprise service.",
-                  heroBadge: "Custom Engineering Pod",
-                  imageUrl: "",
-                  keyMetrics: [
-                    { label: "Execution Speed", value: "3x" },
-                    { label: "Reliability SLA", value: "99.9%" },
-                  ],
-                  features: [
-                    { title: "Core Feature 1", desc: "Description of capability 1" },
-                  ],
-                  workflow: [
-                    { step: "01", title: "Architecture & Setup", desc: "Initial pod configuration" },
-                  ],
-                  useCases: ["Enterprise Scale Automation"],
-                  techStack: ["Next.js", "TypeScript"],
-                  ctaPrimaryText: "Request Service Audit",
-                  ctaPrimaryRoute: "/contact",
-                  ctaSecondaryText: "All Services",
-                  ctaSecondaryRoute: "/services",
-                  overviewTag: "Detailed Overview",
-                  overviewHeading: "How We Deliver Exceptional",
-                  capabilitiesTag: "Core Capabilities",
-                  capabilitiesHeading: "Engineered features for maximum impact",
-                  blueprintTag: "Execution Blueprint",
-                  blueprintHeading: "Our step-by-step delivery process",
-                  useCasesHeading: "Primary Focus Areas",
-                };
-                setFormData({ ...formData, services: [...formData.services, newSvc] });
-                setSelectedDetailId(uniqueId);
-                setActiveSectionId("services-details");
-                toast.success(`Created new service item (ID: ${uniqueId})!`);
-              }}
-              className="w-full sm:w-auto flex items-center justify-center gap-1 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-xs"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              <span>Add New Service</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleOpenAddService}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-xs"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Add New Service</span>
+              </button>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-            {formData.services.map((svc, idx) => (
-              <div
-                key={svc.id}
-                className={`p-3.5 sm:p-4 rounded-xl border transition-all space-y-3 ${
-                  selectedDetailId === svc.id
-                    ? "border-blue-500 bg-blue-50/20 dark:bg-blue-950/20 ring-1 ring-blue-500/50"
-                    : "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50"
-                }`}
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-100 dark:bg-blue-950 px-2 py-0.5 rounded shrink-0">
-                      Service #{idx + 1}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedDetailId(svc.id);
-                        setActiveSectionId("services-details");
-                      }}
-                      className={`text-[11px] font-semibold underline transition-colors truncate ${
-                        selectedDetailId === svc.id
-                          ? "text-blue-600 font-bold"
-                          : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
-                      }`}
-                    >
-                      {selectedDetailId === svc.id ? "Currently Editing" : "Edit Details"}
-                    </button>
-                  </div>
+          {/* Filter & Live Search Toolbar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search services by title, slug, subtitle..."
+                value={catalogSearchQuery}
+                onChange={(e) => setCatalogSearchQuery(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 pl-9 pr-8 py-2 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              {catalogSearchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setCatalogSearchQuery("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+            </div>
 
-                  {formData.services.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const svcToDelete = svc;
-                        const updated = formData.services.filter((s) => s.id !== svc.id);
-                        setFormData({ ...formData, services: updated });
-                        if (selectedDetailId === svc.id) {
-                          setSelectedDetailId(updated[0]?.id || "ai-eng");
-                        }
-                        toast.success(`Deleted service "${svcToDelete.title}"`);
-                      }}
-                      className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 dark:hover:bg-red-950/50 shrink-0"
-                      title="Delete service"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  )}
-                </div>
+            <span className="text-[11px] font-medium text-slate-500 shrink-0">
+              Showing {filteredCatalogServices.length} of {formData.services.length} services
+            </span>
+          </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <div>
-                    <label className="flex items-center gap-1 text-[10px] font-bold text-slate-700 dark:text-slate-300">
-                      <LinkIcon className="h-3 w-3 text-blue-500 shrink-0" />
-                      ID / Slug
-                    </label>
-                    <input
-                      type="text"
-                      value={svc.id}
-                      onChange={(e) => {
-                        const newId = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-");
-                        const updated = [...formData.services];
-                        const oldId = updated[idx].id;
-                        updated[idx].id = newId;
-                        setFormData({ ...formData, services: updated });
-                        if (selectedDetailId === oldId) setSelectedDetailId(newId);
-                      }}
-                      className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-2.5 py-1 text-xs font-mono font-bold text-blue-600 dark:text-blue-400"
-                    />
-                    <span className="text-[9px] text-slate-400 block truncate">Route: /services/{svc.id}</span>
-                  </div>
+          {/* Tabular Form of Catalog Services */}
+          <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0b0f19]">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 tracking-wider">
+                  <th className="py-3 px-3 w-16 text-center">Order</th>
+                  <th className="py-3 px-3 min-w-[200px]">Service &amp; Slug</th>
+                  <th className="py-3 px-3 min-w-[150px]">Subtitle Badge</th>
+                  <th className="py-3 px-3 min-w-[240px]">Card Description &amp; CTA</th>
+                  <th className="py-3 px-3 min-w-[160px]">Configured Assets</th>
+                  <th className="py-3 px-3 text-right min-w-[210px]">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {filteredCatalogServices.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-8 text-center text-slate-400 text-xs">
+                      No services match your search &quot;{catalogSearchQuery}&quot;
+                    </td>
+                  </tr>
+                ) : (
+                  filteredCatalogServices.map((svc) => {
+                    const realIndex = formData.services.findIndex((s) => s.id === svc.id);
+                    return (
+                      <tr
+                        key={svc.id}
+                        className={`hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors ${
+                          selectedDetailId === svc.id ? "bg-blue-50/30 dark:bg-blue-950/20" : ""
+                        }`}
+                      >
+                        {/* Order Reorder */}
+                        <td className="py-3 px-2 text-center align-middle">
+                          <div className="flex items-center justify-center gap-0.5">
+                            <span className="font-mono text-[11px] font-bold text-slate-500 w-4">
+                              {realIndex + 1}
+                            </span>
+                            <div className="flex flex-col">
+                              <button
+                                type="button"
+                                disabled={realIndex === 0}
+                                onClick={() => handleMoveService(realIndex, "UP")}
+                                className="p-0.5 text-slate-400 hover:text-blue-600 disabled:opacity-20 disabled:hover:text-slate-400"
+                                title="Move Up"
+                              >
+                                <ChevronUp className="h-3 w-3" />
+                              </button>
+                              <button
+                                type="button"
+                                disabled={realIndex === formData.services.length - 1}
+                                onClick={() => handleMoveService(realIndex, "DOWN")}
+                                className="p-0.5 text-slate-400 hover:text-blue-600 disabled:opacity-20 disabled:hover:text-slate-400"
+                                title="Move Down"
+                              >
+                                <ChevronDown className="h-3 w-3" />
+                              </button>
+                            </div>
+                          </div>
+                        </td>
 
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-700 dark:text-slate-300">
-                      Service Title
-                    </label>
-                    <input
-                      type="text"
-                      value={svc.title}
-                      onChange={(e) => {
-                        const updated = [...formData.services];
-                        updated[idx].title = e.target.value;
-                        setFormData({ ...formData, services: updated });
-                      }}
-                      className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-2.5 py-1 text-xs text-slate-900 dark:text-white font-bold"
-                    />
-                  </div>
-                </div>
+                        {/* Title & Slug */}
+                        <td className="py-3 px-3 align-middle">
+                          <div className="font-bold text-slate-900 dark:text-white line-clamp-1">
+                            {svc.title || "Untitled Service"}
+                          </div>
+                          <div className="flex items-center gap-1 mt-0.5">
+                            <a
+                              href={`/services/${svc.id}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1 font-mono text-[11px] text-blue-600 dark:text-blue-400 hover:underline"
+                            >
+                              <span>/services/{svc.id}</span>
+                              <ExternalLink className="h-2.5 w-2.5" />
+                            </a>
+                          </div>
+                        </td>
 
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-700 dark:text-slate-300">
-                    Subtitle Badge Tag
-                  </label>
-                  <input
-                    type="text"
-                    value={svc.subtitle}
-                    onChange={(e) => {
-                      const updated = [...formData.services];
-                      updated[idx].subtitle = e.target.value;
-                      setFormData({ ...formData, services: updated });
-                    }}
-                    className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-2.5 py-1 text-xs text-slate-900 dark:text-white"
-                  />
-                </div>
+                        {/* Subtitle Badge */}
+                        <td className="py-3 px-3 align-middle">
+                          <span className="inline-block max-w-[150px] truncate px-2 py-0.5 rounded text-[11px] font-medium bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200/50 dark:border-blue-900/50">
+                            {svc.subtitle || "No Subtitle"}
+                          </span>
+                        </td>
 
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-700 dark:text-slate-300">
-                    Catalog Card Summary Description
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={svc.desc}
-                    onChange={(e) => {
-                      const updated = [...formData.services];
-                      updated[idx].desc = e.target.value;
-                      setFormData({ ...formData, services: updated });
-                    }}
-                    className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-2.5 py-1 text-xs text-slate-900 dark:text-white"
-                  />
-                </div>
-              </div>
-            ))}
+                        {/* Summary & CTA */}
+                        <td className="py-3 px-3 align-middle">
+                          <p className="line-clamp-2 text-slate-600 dark:text-slate-400 text-[11px] leading-relaxed">
+                            {svc.desc || "No description specified."}
+                          </p>
+                          <div className="mt-1">
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700">
+                              <span>Button:</span>
+                              <span className="text-slate-700 dark:text-slate-200">&quot;{svc.buttonText || "Explore Capabilities"}&quot;</span>
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Configured Assets Badges */}
+                        <td className="py-3 px-3 align-middle">
+                          <div className="flex flex-wrap gap-1">
+                            <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                              {svc.keyMetrics?.length || 0} KPIs
+                            </span>
+                            <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                              {svc.features?.length || 0} Feat.
+                            </span>
+                            <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                              {svc.workflow?.length || 0} Steps
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Actions */}
+                        <td className="py-3 px-3 align-middle text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => handleOpenEditCatalogService(svc, realIndex)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold transition-colors"
+                              title="Edit Catalog Card"
+                            >
+                              <Pencil className="h-3 w-3 text-slate-500" />
+                              <span>Edit</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleNavigateToServiceDetail(svc.id)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold transition-colors shadow-xs"
+                              title="Configure Detail Page (/services/[id])"
+                            >
+                              <span>Detail Page</span>
+                              <ArrowRight className="h-3 w-3" />
+                            </button>
+
+                            {formData.services.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteService(svc, realIndex)}
+                                className="p-1.5 rounded-lg text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors"
+                                title="Delete Service"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Quick Notice */}
+          <div className="flex items-center justify-between text-xs text-slate-500 pt-2">
+            <span>Tip: To edit the full breakdown (KPIs, Features, Workflow, Tech Stack), click &quot;Detail Page&quot; on any service.</span>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={isSaving}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-xs transition-colors"
+            >
+              <Save className="h-3.5 w-3.5" />
+              <span>{isSaving ? "Saving..." : "Save Services"}</span>
+            </button>
           </div>
         </div>
       )}
@@ -934,36 +1145,257 @@ export default function ServicesPageEditor({
       {/* SECTION 3: INDIVIDUAL SERVICE DETAIL PAGE CONFIGURATOR */}
       {(activeSectionId === "services-details" || activeSectionId === "service-detail") && (
 
-        <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] sm:text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
-                #03
-              </span>
-              <h3 className="text-xs sm:text-sm font-bold">
-                Individual Service Detail View Configurator (`/services/[id]`)
-              </h3>
-            </div>
+        <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-5">
+          {editingDetailServiceId === null ? (
+            /* =========================================================================
+               TABULAR DIRECTORY OF ALL SERVICE DETAIL PAGES
+               ========================================================================= */
+            <div className="space-y-4">
+              {/* Directory Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-[10px] sm:text-xs font-extrabold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded">
+                      #03
+                    </span>
+                    <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+                      Individual Service Detail Pages Directory
+                    </h3>
+                    <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700">
+                      {formData.services.length} Detail Pages
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 max-w-2xl">
+                    Directory of deep detail route pages (<span className="font-mono text-blue-600 dark:text-blue-400">/services/[id]</span>). Click <span className="font-semibold text-slate-700 dark:text-slate-200">&quot;Edit Detail Page&quot;</span> on any row to configure its full overview, KPI metrics, capabilities, delivery blueprint, and tech stack.
+                  </p>
+                </div>
 
-            {/* Service Selector Dropdown */}
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              <label className="text-xs font-bold text-slate-500 shrink-0">Select Service:</label>
-              <select
-                value={selectedDetailId}
-                onChange={(e) => setSelectedDetailId(e.target.value)}
-                className="w-full sm:w-auto rounded-xl border border-blue-300 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/40 px-3 py-1.5 text-xs font-bold text-blue-700 dark:text-blue-300 focus:outline-none"
-              >
-                {formData.services.map((svc) => (
-                  <option key={svc.id} value={svc.id}>
-                    {svc.title} ({svc.id})
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setActiveSectionId("services-list")}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300 transition-colors"
+                  >
+                    <span>View Catalog Grid (#02)</span>
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
 
-          {currentService && (
-            <div className="space-y-4 sm:space-y-6">
+              {/* Filter / Search Toolbar */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="relative flex-1 max-w-md">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Search detail pages by title, slug, hero badge, or tech..."
+                    value={detailSearchQuery}
+                    onChange={(e) => setDetailSearchQuery(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 pl-9 pr-8 py-2 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  {detailSearchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setDetailSearchQuery("")}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
+
+                <span className="text-[11px] font-medium text-slate-500 shrink-0">
+                  Showing {filteredDetailServices.length} of {formData.services.length} services
+                </span>
+              </div>
+
+              {/* Tabular Table of Detail Pages */}
+              <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0b0f19]">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 tracking-wider">
+                      <th className="py-3 px-3 w-12 text-center">#</th>
+                      <th className="py-3 px-3 min-w-[210px]">Service &amp; Route</th>
+                      <th className="py-3 px-3 min-w-[150px]">Hero Section Badge</th>
+                      <th className="py-3 px-3 min-w-[180px]">Key Metrics (KPIs)</th>
+                      <th className="py-3 px-3 min-w-[120px]">Capabilities</th>
+                      <th className="py-3 px-3 min-w-[120px]">Blueprint</th>
+                      <th className="py-3 px-3 min-w-[160px]">Tech Stack</th>
+                      <th className="py-3 px-3 text-right min-w-[160px]">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {filteredDetailServices.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="py-8 text-center text-slate-400 text-xs">
+                          No service detail pages match your query &quot;{detailSearchQuery}&quot;
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredDetailServices.map((svc) => {
+                        const realIdx = formData.services.findIndex((s) => s.id === svc.id);
+                        return (
+                          <tr
+                            key={svc.id}
+                            className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors"
+                          >
+                            {/* Number */}
+                            <td className="py-3.5 px-3 text-center align-middle font-mono text-[11px] font-bold text-slate-500">
+                              {realIdx + 1}
+                            </td>
+
+                            {/* Title & Slug */}
+                            <td className="py-3.5 px-3 align-middle">
+                              <div className="font-bold text-slate-900 dark:text-white line-clamp-1">
+                                {svc.title}
+                              </div>
+                              <div className="flex items-center gap-1 mt-0.5">
+                                <a
+                                  href={`/services/${svc.id}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="inline-flex items-center gap-1 font-mono text-[11px] text-blue-600 dark:text-blue-400 hover:underline"
+                                >
+                                  <span>/services/{svc.id}</span>
+                                  <ExternalLink className="h-2.5 w-2.5" />
+                                </a>
+                              </div>
+                            </td>
+
+                            {/* Hero Badge */}
+                            <td className="py-3.5 px-3 align-middle">
+                              <span className="inline-block max-w-[140px] truncate px-2 py-0.5 rounded text-[11px] font-semibold bg-violet-50 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-900/40">
+                                {svc.heroBadge || "Default Pod"}
+                              </span>
+                            </td>
+
+                            {/* Key Metrics */}
+                            <td className="py-3.5 px-3 align-middle">
+                              <div className="flex flex-wrap gap-1 max-w-[200px]">
+                                {svc.keyMetrics && svc.keyMetrics.length > 0 ? (
+                                  svc.keyMetrics.slice(0, 3).map((m: any, mIdx: number) => (
+                                    <span
+                                      key={mIdx}
+                                      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[10px] font-mono font-bold text-blue-600 dark:text-blue-400"
+                                      title={m.label}
+                                    >
+                                      <span>{m.value}</span>
+                                    </span>
+                                  ))
+                                ) : (
+                                  <span className="text-[10px] text-slate-400">None</span>
+                                )}
+                              </div>
+                            </td>
+
+                            {/* Capabilities */}
+                            <td className="py-3.5 px-3 align-middle">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                                <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                                <span>{svc.features?.length || 0} items</span>
+                              </span>
+                            </td>
+
+                            {/* Blueprint */}
+                            <td className="py-3.5 px-3 align-middle">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                                <Workflow className="h-3 w-3 text-blue-500" />
+                                <span>{svc.workflow?.length || 0} steps</span>
+                              </span>
+                            </td>
+
+                            {/* Tech Stack */}
+                            <td className="py-3.5 px-3 align-middle">
+                              <div className="flex flex-wrap gap-1 max-w-[180px]">
+                                {svc.techStack && svc.techStack.length > 0 ? (
+                                  svc.techStack.slice(0, 2).map((t: string, tIdx: number) => (
+                                    <span
+                                      key={tIdx}
+                                      className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200/50 dark:border-blue-900/40"
+                                    >
+                                      {t}
+                                    </span>
+                                  ))
+                                ) : (
+                                  <span className="text-[10px] text-slate-400">None</span>
+                                )}
+                                {(svc.techStack?.length || 0) > 2 && (
+                                  <span className="text-[10px] text-slate-400 font-semibold">
+                                    +{(svc.techStack?.length || 0) - 2}
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+
+                            {/* Action Button */}
+                            <td className="py-3.5 px-3 align-middle text-right">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedDetailId(svc.id);
+                                  setEditingDetailServiceId(svc.id);
+                                }}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition-all shadow-xs"
+                              >
+                                <Pencil className="h-3 w-3" />
+                                <span>Edit Detail Page</span>
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : (
+            /* =========================================================================
+               INDIVIDUAL SERVICE DETAIL CONFIGURATOR VIEW (Steps 1 to 6)
+               ========================================================================= */
+            <div className="space-y-5">
+              {/* Top Navigation & Service Switcher Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-3.5 rounded-xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60">
+                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-2.5 min-w-0">
+                  <button
+                    type="button"
+                    onClick={handleBackToDetailDirectory}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-[#131927] border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-all shadow-xs shrink-0"
+                  >
+                    <ArrowLeft className="h-3.5 w-3.5 shrink-0" />
+                    <span className="hidden sm:inline">Back to All Services Directory</span>
+                    <span className="sm:hidden">Back to Directory</span>
+                  </button>
+                  <div className="h-4 w-[1px] bg-slate-300 dark:bg-slate-700 hidden sm:block shrink-0" />
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="text-xs text-slate-500 hidden sm:inline shrink-0">Editing Detail Page:</span>
+                    <span className="text-xs font-extrabold text-blue-600 dark:text-blue-400 truncate max-w-[200px] md:max-w-[320px]">
+                      {currentService.title}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <label className="text-xs font-bold text-slate-500 shrink-0">Switch Service:</label>
+                  <select
+                    value={selectedDetailId}
+                    onChange={(e) => {
+                      setSelectedDetailId(e.target.value);
+                      setEditingDetailServiceId(e.target.value);
+                    }}
+                    className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#131927] px-2.5 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  >
+                    {formData.services.map((svc) => (
+                      <option key={svc.id} value={svc.id}>
+                        {svc.title} ({svc.id})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {currentService && (
+                <div className="space-y-4 sm:space-y-6">
               
               {/* STEP 1: Hero Section & Cloudinary Media Upload */}
               <div className="p-3.5 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 space-y-4">
@@ -1537,8 +1969,227 @@ export default function ServicesPageEditor({
 
             </div>
           )}
+
+          {/* Bottom Back Button & Save Bar */}
+          <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-800">
+            <button
+              type="button"
+              onClick={handleBackToDetailDirectory}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 transition-colors"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              <span>Back to All Services Directory</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={isSaving}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors shadow-xs"
+            >
+              <Save className="h-3.5 w-3.5" />
+              <span>{isSaving ? "Saving Changes..." : "Save All Services Changes"}</span>
+            </button>
+          </div>
         </div>
       )}
+    </div>
+  )}
+
+  {/* POPUP MODAL: ADD / EDIT CATALOG CARD */}
+  {mounted && typeof window !== "undefined" && editingCatalogService && createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-150">
+      <div className="w-full max-w-xl rounded-2xl bg-white dark:bg-[#131927] border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        {/* Modal Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-blue-500/10 text-blue-600">
+              <Layers className="h-4 w-4" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                {editingCatalogService.isNew ? "Add New Catalog Service" : "Edit Catalog Service Card"}
+              </h3>
+              <p className="text-[11px] text-slate-500">
+                {editingCatalogService.isNew
+                  ? "Create a new service card for the /services catalog grid"
+                  : `Route: /services/${editingCatalogService.service.id}`}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setEditingCatalogService(null)}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Modal Body */}
+        <div className="p-5 space-y-4 overflow-y-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Service Title <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. AI Engineering & Agentic"
+                value={editingCatalogService.service.title}
+                onChange={(e) =>
+                  setEditingCatalogService({
+                    ...editingCatalogService,
+                    service: { ...editingCatalogService.service, title: e.target.value },
+                  })
+                }
+                className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3 py-2 text-xs text-slate-900 dark:text-white font-bold"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                URL Slug / ID <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. ai-eng"
+                value={editingCatalogService.service.id}
+                onChange={(e) =>
+                  setEditingCatalogService({
+                    ...editingCatalogService,
+                    service: {
+                      ...editingCatalogService.service,
+                      id: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"),
+                    },
+                  })
+                }
+                className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3 py-2 text-xs font-mono font-bold text-blue-600 dark:text-blue-400"
+              />
+              <span className="text-[10px] text-slate-400 mt-0.5 block truncate">
+                Preview: /services/{editingCatalogService.service.id || "slug"}
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Subtitle Badge Tag
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Enterprise Digital Solution"
+                value={editingCatalogService.service.subtitle}
+                onChange={(e) =>
+                  setEditingCatalogService({
+                    ...editingCatalogService,
+                    service: { ...editingCatalogService.service, subtitle: e.target.value },
+                  })
+                }
+                className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3 py-2 text-xs text-slate-900 dark:text-white"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Card Button Text
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Explore Capabilities"
+                value={editingCatalogService.service.buttonText || "Explore Capabilities"}
+                onChange={(e) =>
+                  setEditingCatalogService({
+                    ...editingCatalogService,
+                    service: { ...editingCatalogService.service, buttonText: e.target.value },
+                  })
+                }
+                className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3 py-2 text-xs text-slate-900 dark:text-white font-semibold"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              Card Summary Description
+            </label>
+            <textarea
+              rows={3}
+              placeholder="Summary of the discipline displayed on the catalog card..."
+              value={editingCatalogService.service.desc}
+              onChange={(e) =>
+                setEditingCatalogService({
+                  ...editingCatalogService,
+                  service: { ...editingCatalogService.service, desc: e.target.value },
+                })
+              }
+              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3 py-2 text-xs text-slate-900 dark:text-white"
+            />
+          </div>
+
+          {/* Live Preview Card */}
+          <div className="p-3.5 rounded-xl border border-dashed border-blue-300 dark:border-blue-900/60 bg-blue-50/30 dark:bg-blue-950/20 space-y-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 block">
+              Catalog Card Live Preview
+            </span>
+            <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0b0f19] space-y-2 shadow-xs">
+              <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/10 text-blue-600">
+                {editingCatalogService.service.subtitle || "Service Subtitle"}
+              </span>
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                {editingCatalogService.service.title || "Service Title Preview"}
+              </h4>
+              <p className="text-xs text-slate-500 line-clamp-2">
+                {editingCatalogService.service.desc || "Service description preview will appear here..."}
+              </p>
+              <div className="pt-2">
+                <span className="inline-flex items-center gap-1 text-xs font-bold text-blue-600">
+                  {editingCatalogService.service.buttonText || "Explore Capabilities"} →
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Modal Footer */}
+        <div className="flex items-center justify-between px-5 py-3.5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+          <button
+            type="button"
+            onClick={() => setEditingCatalogService(null)}
+            className="px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+          >
+            Cancel
+          </button>
+
+          <div className="flex items-center gap-2">
+            {!editingCatalogService.isNew && (
+              <button
+                type="button"
+                onClick={() => {
+                  const svcId = editingCatalogService.service.id;
+                  handleSaveCatalogServiceModal();
+                  handleNavigateToServiceDetail(svcId);
+                }}
+                className="inline-flex items-center gap-1 px-3 py-2 rounded-xl border border-blue-500/50 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-xs font-bold transition-colors"
+              >
+                <span>Save &amp; Go to Details</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={handleSaveCatalogServiceModal}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors shadow-xs"
+            >
+              <Check className="h-3.5 w-3.5" />
+              <span>{editingCatalogService.isNew ? "Add Service to Catalog" : "Save Changes"}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>,
+    document.body
+  )}
 
         </div>
       </div>

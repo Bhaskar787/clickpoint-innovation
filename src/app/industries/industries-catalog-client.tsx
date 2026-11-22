@@ -92,7 +92,10 @@ export default function IndustriesCatalogClient({ initialContent }: IndustriesCa
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-3">
             {industriesList.map((ind: IndustryItem, idx: number) => {
-              const projectCount = ind.projects?.length || 0;
+              const activeProjects = (ind.projects || []).filter(
+                (p: any) => !p.isDraft && p.status !== "draft"
+              );
+              const projectCount = activeProjects.length;
               return (
                 <motion.div
                   key={ind.id}

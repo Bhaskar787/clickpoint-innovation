@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import { toast } from "sonner";
 import {
@@ -21,9 +22,26 @@ import {
   Layers,
   FolderGit2,
   ExternalLink,
+  Pencil,
+  Search,
+  ChevronUp,
+  ChevronDown,
+  ArrowLeft,
+  ArrowRight,
+  Sparkles,
+  Check,
+  Star,
+  AlertCircle,
+  AlertTriangle,
 } from "lucide-react";
 import { DEFAULT_INDUSTRIES_PAGE_DATA } from "@/data/default-industries-data";
 import { SectionNavSidebar, SectionNavItem } from "@/components/admin/dashboard/section-nav-sidebar";
+import {
+  getCaseStudiesForIndustry,
+  caseStudyToIndustryProject,
+  syncProjectCategoryUniqueness,
+  isProjectMatchingCaseStudy,
+} from "@/lib/catalog-sync";
 
 const INDUSTRIES_SECTIONS_CATALOG: SectionNavItem[] = [
   {
@@ -169,6 +187,32 @@ export default function IndustriesPageEditor({ sectionId, onCloseSection }: Indu
   const [selectedIndustryId, setSelectedIndustryId] = useState<string>("fintech");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [catalogSearchQuery, setCatalogSearchQuery] = useState("");
+  const [editingCatalogIndustry, setEditingCatalogIndustry] = useState<{
+    industry: any;
+    index?: number;
+    isNew: boolean;
+  } | null>(null);
+  const [editingDetailIndustryId, setEditingDetailIndustryId] = useState<string | null>(null);
+  const [detailSearchQuery, setDetailSearchQuery] = useState("");
+
+  // Cross-catalog Portfolio Case Studies State
+  const [availableCaseStudies, setAvailableCaseStudies] = useState<any[]>([]);
+  const [availableCategories, setAvailableCategories] = useState<any[]>([]);
+  const [importProjectModalOpen, setImportProjectModalOpen] = useState(false);
+  const [targetProjectIndexForSync, setTargetProjectIndexForSync] = useState<number | null>(null);
+  const [projectPickerSearch, setProjectPickerSearch] = useState("");
+  const [confirmDeleteSectorModal, setConfirmDeleteSectorModal] = useState<{
+    industry: any;
+    index: number;
+    linkedCount: number;
+    sampleTitles: string[];
+  } | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (sectionId) {
@@ -180,12 +224,32 @@ export default function IndustriesPageEditor({ sectionId, onCloseSection }: Indu
     async function loadIndustriesData() {
       try {
         setIsLoading(true);
-        const res = await fetch("/api/industries");
-        const json = await res.json();
+        const [indRes, csRes] = await Promise.all([
+          fetch("/api/industries"),
+          fetch("/api/case-studies").catch(() => null),
+        ]);
+        const json = await indRes.json();
+        let loadedCaseStudies: any[] = [];
+        if (csRes && csRes.ok) {
+          const csJson = await csRes.json();
+          if (csJson.success && csJson.data) {
+            loadedCaseStudies = csJson.data.caseStudies || [];
+            setAvailableCaseStudies(loadedCaseStudies);
+            setAvailableCategories(csJson.data.categories || []);
+          }
+        }
         if (json.success && json.data) {
-          setFormData(json.data);
-          if (json.data.industries && json.data.industries.length > 0) {
-            setSelectedIndustryId(json.data.industries[0].id);
+          let indData = json.data;
+          if (loadedCaseStudies.length > 0 && Array.isArray(indData.industries)) {
+            const { industries: synced } = syncProjectCategoryUniqueness(
+              loadedCaseStudies,
+              indData.industries
+            );
+            indData = { ...indData, industries: synced };
+          }
+          setFormData(indData);
+          if (indData.industries && indData.industries.length > 0) {
+            setSelectedIndustryId(indData.industries[0].id);
           }
         }
       } catch (err: any) {
@@ -244,7 +308,370 @@ export default function IndustriesPageEditor({ sectionId, onCloseSection }: Indu
     }
   }
 
-  const currentIndustry = formData.industries?.find((ind: any) => ind.id === selectedIndustryId) || formData.industries?.[0];
+  function handleOpenAddIndustry() {
+    const uniqueId = `industry-${Date.now().toString().slice(-4)}`;
+    const newInd = {
+      id: uniqueId,
+      title: "",
+      subtitle: "",
+      desc: "",
+      fullOverview: "",
+      heroBadge: "",
+      href: `/industries/${uniqueId}`,
+      keyMetrics: [],
+      complianceBadges: [],
+      projects: [],
+      solutions: [],
+      overviewTag: "",
+      overviewHeading: "",
+      complianceTag: "",
+      complianceHeading: "",
+      projectsTag: "",
+      projectsHeading: "",
+      solutionsTag: "",
+      solutionsHeading: "",
+    };
+
+    setEditingCatalogIndustry({
+      industry: newInd,
+      isNew: true,
+    });
+  }
+
+  function handleOpenEditCatalogIndustry(ind: any, index: number) {
+    setEditingCatalogIndustry({
+      industry: { ...ind },
+      index,
+      isNew: false,
+    });
+  }
+
+  function handleSaveCatalogIndustryModal() {
+    if (!editingCatalogIndustry) return;
+    const { industry, isNew, index } = editingCatalogIndustry;
+    if (!industry.title?.trim()) {
+      toast.error("Please enter an Industry Title");
+      return;
+    }
+    if (!industry.id?.trim()) {
+      toast.error("Please enter a unique URL Slug / ID");
+      return;
+    }
+
+    const cleanSlug = industry.id.toLowerCase().replace(/[^a-z0-9-]/g, "-");
+    const finalIndustry = {
+      ...industry,
+      id: cleanSlug,
+      href: `/industries/${cleanSlug}`,
+    };
+
+    let nextIndustries = [...(formData.industries || [])];
+    if (isNew) {
+      nextIndustries.push(finalIndustry);
+      toast.success(`Industry "${finalIndustry.title}" added to catalog!`);
+    } else if (typeof index === "number") {
+      nextIndustries[index] = finalIndustry;
+      toast.success(`Industry "${finalIndustry.title}" updated!`);
+    }
+
+    setFormData({ ...formData, industries: nextIndustries });
+    setEditingCatalogIndustry(null);
+  }
+
+  function handleInitiateDeleteIndustry(ind: any, index: number) {
+    if ((formData.industries?.length || 0) <= 1) {
+      toast.error("Cannot delete the only industry in the catalog.");
+      return;
+    }
+
+    const linked = (availableCaseStudies || []).filter((cs) => {
+      return (
+        cs.category?.toLowerCase() === ind.title?.toLowerCase() ||
+        cs.categoryId === ind.id ||
+        cs.categoryId === `cat-${ind.id}`
+      );
+    });
+    const sampleTitles = linked.slice(0, 3).map((cs) => cs.title);
+
+    setConfirmDeleteSectorModal({
+      industry: ind,
+      index,
+      linkedCount: linked.length,
+      sampleTitles,
+    });
+  }
+
+  function handleConfirmDeleteSector() {
+    if (!confirmDeleteSectorModal) return;
+    const { industry: ind, index, linkedCount } = confirmDeleteSectorModal;
+
+    const updated = formData.industries.filter((_: any, i: number) => i !== index);
+    setFormData({ ...formData, industries: updated });
+
+    if (selectedIndustryId === ind.id) {
+      setSelectedIndustryId(updated[0]?.id || "fintech");
+    }
+    if (editingDetailIndustryId === ind.id) {
+      setEditingDetailIndustryId(null);
+    }
+
+    // Safely reassign linked case studies to "General" in client state
+    setAvailableCaseStudies((prev) =>
+      prev.map((cs) => {
+        if (
+          cs.category?.toLowerCase() === ind.title?.toLowerCase() ||
+          cs.categoryId === ind.id ||
+          cs.categoryId === `cat-${ind.id}`
+        ) {
+          return { ...cs, category: "General", categoryId: null };
+        }
+        return cs;
+      })
+    );
+
+    // Remove matching category from available categories in client state
+    setAvailableCategories((prev) =>
+      prev.filter(
+        (c) =>
+          c.id !== ind.id &&
+          c.id !== `cat-${ind.id}` &&
+          c.name?.toLowerCase() !== ind.title?.toLowerCase()
+      )
+    );
+
+    setConfirmDeleteSectorModal(null);
+    toast.success(
+      linkedCount > 0
+        ? `Deleted sector "${ind.title}" and synced Case Studies catalog. ${linkedCount} project(s) safely moved to "General".`
+        : `Deleted industry sector "${ind.title}".`
+    );
+  }
+
+  function handleMoveIndustry(index: number, direction: "UP" | "DOWN") {
+    const list = [...(formData.industries || [])];
+    const targetIdx = direction === "UP" ? index - 1 : index + 1;
+    if (targetIdx < 0 || targetIdx >= list.length) return;
+    const temp = list[index];
+    list[index] = list[targetIdx];
+    list[targetIdx] = temp;
+    setFormData({ ...formData, industries: list });
+  }
+
+  function handleNavigateToIndustryDetail(industryId: string) {
+    setSelectedIndustryId(industryId);
+    setEditingDetailIndustryId(industryId);
+    setActiveSectionId("ind-details");
+  }
+
+  function handleBackToDetailDirectory() {
+    setEditingDetailIndustryId(null);
+  }
+
+  const targetDetailId = editingDetailIndustryId || selectedIndustryId;
+  const currentIndustry =
+    formData.industries?.find((ind: any) => ind.id === targetDetailId) || formData.industries?.[0];
+
+  const matchingCaseStudies = getCaseStudiesForIndustry(availableCaseStudies, currentIndustry);
+  const featuredCaseStudy = matchingCaseStudies.find((cs: any) => cs.featured) || matchingCaseStudies[0];
+
+  function handleAutoFillFeaturedProject() {
+    if (!featuredCaseStudy) {
+      toast.error(`No case study found for "${currentIndustry?.title || "this sector"}" in the Case Studies catalog.`);
+      return;
+    }
+    const updated = [...formData.industries];
+    const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
+    if (idx === -1) return;
+
+    const converted = caseStudyToIndustryProject(featuredCaseStudy);
+    const existing = [...(updated[idx].projects || [])];
+
+    if (existing.length === 0) {
+      existing.push(converted);
+    } else {
+      existing[0] = {
+        ...converted,
+        id: existing[0].id || converted.id,
+      };
+    }
+
+    updated[idx].projects = existing;
+
+    // Enforce 1 project = 1 sector uniqueness: purge from all other sectors
+    for (let i = 0; i < updated.length; i++) {
+      if (i !== idx && Array.isArray(updated[i].projects)) {
+        updated[i].projects = updated[i].projects.filter(
+          (p: any) => !isProjectMatchingCaseStudy(p, featuredCaseStudy)
+        );
+      }
+    }
+
+    setFormData({ ...formData, industries: updated });
+    toast.success(`Project #1 auto-filled from featured case study "${featuredCaseStudy.title}"!`);
+  }
+
+  function handleSelectCaseStudyToImport(cs: any) {
+    const updated = [...formData.industries];
+    const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
+    if (idx === -1) return;
+
+    const converted = caseStudyToIndustryProject(cs);
+    const existing = [...(updated[idx].projects || [])];
+
+    if (targetProjectIndexForSync !== null && typeof targetProjectIndexForSync === "number") {
+      existing[targetProjectIndexForSync] = {
+        ...converted,
+        id: existing[targetProjectIndexForSync].id || converted.id,
+      };
+      toast.success(`Synced Project #${targetProjectIndexForSync + 1} with "${cs.title}"!`);
+    } else {
+      existing.push(converted);
+      toast.success(`Added "${cs.title}" to featured projects!`);
+    }
+
+    updated[idx].projects = existing;
+
+    // Enforce 1 project = 1 sector uniqueness: purge from all other sectors
+    for (let i = 0; i < updated.length; i++) {
+      if (i !== idx && Array.isArray(updated[i].projects)) {
+        updated[i].projects = updated[i].projects.filter(
+          (p: any) => !isProjectMatchingCaseStudy(p, cs)
+        );
+      }
+    }
+
+    setFormData({ ...formData, industries: updated });
+    setImportProjectModalOpen(false);
+    setTargetProjectIndexForSync(null);
+  }
+
+  async function handleToggleProjectFeatured(pIdx: number) {
+    const updated = [...formData.industries];
+    const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
+    if (idx === -1) return;
+
+    const currentProj = updated[idx].projects[pIdx];
+    const nextFeatured = !Boolean(currentProj.featured);
+    updated[idx].projects[pIdx] = {
+      ...currentProj,
+      featured: nextFeatured,
+    };
+    setFormData({ ...formData, industries: updated });
+
+    toast.success(
+      nextFeatured
+        ? `"${currentProj.title || `Project #${pIdx + 1}`}" marked as Featured (ON)!`
+        : `"${currentProj.title || `Project #${pIdx + 1}`}" unfeatured (OFF).`
+    );
+
+    // Cross-Catalog Instant Sync: if linked to a case study, sync directly to Case Studies
+    const csId = currentProj.caseStudyId || (currentProj.id?.startsWith("cs-") ? currentProj.id : null);
+    if (csId) {
+      try {
+        await fetch("/api/case-studies", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: csId,
+            featured: nextFeatured,
+          }),
+        });
+      } catch (err) {
+        console.warn("Background case study sync failed:", err);
+      }
+    }
+  }
+
+  async function handleToggleProjectStatus(pIdx: number) {
+    const updated = [...formData.industries];
+    const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
+    if (idx === -1) return;
+
+    const currentProj = updated[idx].projects[pIdx];
+    const currentlyDraft = Boolean(currentProj.isDraft || currentProj.status === "draft");
+    const nextDraft = !currentlyDraft;
+    updated[idx].projects[pIdx] = {
+      ...currentProj,
+      isDraft: nextDraft,
+      status: nextDraft ? "draft" : "published",
+    };
+    setFormData({ ...formData, industries: updated });
+
+    toast.success(
+      !nextDraft
+        ? `"${currentProj.title || `Project #${pIdx + 1}`}" is now Active (Live)!`
+        : `"${currentProj.title || `Project #${pIdx + 1}`}" set to Inactive (Draft).`
+    );
+
+    // Cross-Catalog Instant Sync: if linked to a case study, sync directly to Case Studies
+    const csId = currentProj.caseStudyId || (currentProj.id?.startsWith("cs-") ? currentProj.id : null);
+    if (csId) {
+      try {
+        await fetch("/api/case-studies", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: csId,
+            isDraft: nextDraft,
+            status: nextDraft ? "draft" : "published",
+          }),
+        });
+      } catch (err) {
+        console.warn("Background case study sync failed:", err);
+      }
+    }
+  }
+
+  function handleAddBlankProject() {
+    const updated = [...formData.industries];
+    const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
+    if (idx === -1) return;
+
+    const blank = {
+      id: `proj-${Date.now().toString().slice(-4)}`,
+      title: "",
+      client: "",
+      desc: "",
+      impact: "",
+      liveUrl: "",
+      techStack: [],
+      imageGradient: "from-violet-600 to-indigo-800",
+      featured: false,
+      isDraft: true,
+      status: "draft",
+    };
+
+    const existing = [...(updated[idx].projects || [])];
+    existing.push(blank);
+    updated[idx].projects = existing;
+    setFormData({ ...formData, industries: updated });
+    setImportProjectModalOpen(false);
+    setTargetProjectIndexForSync(null);
+    toast.success(`Added blank custom project to ${currentIndustry.title}!`);
+  }
+
+  const filteredCatalogIndustries = (formData.industries || []).filter((ind: any) => {
+    if (!catalogSearchQuery.trim()) return true;
+    const q = catalogSearchQuery.toLowerCase();
+    return (
+      ind.title?.toLowerCase().includes(q) ||
+      ind.id?.toLowerCase().includes(q) ||
+      ind.subtitle?.toLowerCase().includes(q) ||
+      ind.desc?.toLowerCase().includes(q)
+    );
+  });
+
+  const filteredDetailIndustries = (formData.industries || []).filter((ind: any) => {
+    if (!detailSearchQuery.trim()) return true;
+    const q = detailSearchQuery.toLowerCase();
+    return (
+      ind.title?.toLowerCase().includes(q) ||
+      ind.id?.toLowerCase().includes(q) ||
+      ind.heroBadge?.toLowerCase().includes(q) ||
+      ind.complianceBadges?.some((b: string) => b.toLowerCase().includes(q)) ||
+      ind.projects?.some((p: any) => p.title?.toLowerCase().includes(q) || p.techStack?.some((t: string) => t.toLowerCase().includes(q)))
+    );
+  });
 
   if (isLoading) {
     return (
@@ -376,231 +803,486 @@ export default function IndustriesPageEditor({ sectionId, onCloseSection }: Indu
         </div>
       )}
 
-      {/* SECTION 2: INDUSTRY SECTOR CARDS MANAGER */}
+      {/* SECTION 2: INDUSTRY SECTOR CARDS MANAGER - TABULAR FORM */}
       {activeSectionId === "ind-grid" && (
-        <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] sm:text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">
-                #02
-              </span>
-              <h3 className="text-xs sm:text-sm font-bold">
-                Industry Sector Cards Manager ({formData.industries?.length || 0} Sectors)
-              </h3>
+        <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-5">
+          {/* Section Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-[10px] sm:text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">
+                  #02
+                </span>
+                <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+                  Industry Sector Cards Manager
+                </h3>
+                <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700">
+                  {formData.industries?.length || 0} Total Sectors
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-2xl">
+                Manage all industry sector cards displayed on the <span className="font-mono text-violet-600 dark:text-violet-400">/portfolio</span> and <span className="font-mono text-violet-600 dark:text-violet-400">/industries</span> catalog. Reorder items, edit card info in a modal, or jump straight to deep detail configuration.
+              </p>
             </div>
 
-            <button
-              type="button"
-              onClick={() => {
-                const uniqueId = `industry-${Date.now().toString().slice(-4)}`;
-                const newInd = {
-                  id: uniqueId,
-                  title: "New Enterprise Sector",
-                  subtitle: "Specialized Industry Solution & Automation",
-                  desc: "High performance cloud engineering and automated domain workflows.",
-                  fullOverview: "Detailed overview narrative for this domain sector.",
-                  heroBadge: "Custom Industry Practice",
-                  href: `/industries/${uniqueId}`,
-                  keyMetrics: [
-                    { label: "Execution Speed", value: "3x" },
-                    { label: "Audit Accuracy", value: "99.9%" },
-                  ],
-                  complianceBadges: ["SOC2 Type II", "ISO 27001"],
-                  projects: [
-                    {
-                      id: `proj-${uniqueId}`,
-                      title: "Custom Domain Platform",
-                      client: "Enterprise Client",
-                      desc: "Real-time automated domain workflow engine.",
-                      impact: "$10M+ Value Created",
-                      liveUrl: "https://clickpoint.com.np",
-                      techStack: ["Next.js", "TypeScript"],
-                    },
-                  ],
-                  solutions: [
-                    { title: "Automated Workflow Engine", desc: "Domain-specific rule execution." },
-                  ],
-                  overviewTag: "Sector Perspective",
-                  overviewHeading: "Architecting software for enterprise scale",
-                  complianceTag: "Compliance & Security",
-                  complianceHeading: "Audited architecture protocols",
-                  projectsTag: "Live Case Studies",
-                  projectsHeading: "Featured projects built for enterprise",
-                  solutionsTag: "Target Solutions",
-                  solutionsHeading: "Specialized engineering",
-                };
-                setFormData({ ...formData, industries: [...(formData.industries || []), newInd] });
-                setSelectedIndustryId(uniqueId);
-                setActiveSectionId("ind-details");
-                toast.success(`Created new industry sector item (ID: ${uniqueId})!`);
-              }}
-              className="w-full sm:w-auto flex items-center justify-center gap-1 px-3 py-1.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold transition-all shadow-xs"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              <span>Add New Industry</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleOpenAddIndustry}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold transition-all shadow-xs"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Add New Industry</span>
+              </button>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-            {formData.industries?.map((ind: any, idx: number) => (
-              <div
-                key={ind.id}
-                className={`p-3.5 sm:p-4 rounded-xl border transition-all space-y-3 ${
-                  selectedIndustryId === ind.id
-                    ? "border-violet-500 bg-violet-50/20 dark:bg-violet-950/20 ring-1 ring-violet-500/50"
-                    : "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50"
-                }`}
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-violet-600 bg-violet-100 dark:bg-violet-950 px-2 py-0.5 rounded shrink-0">
-                      Industry #{idx + 1}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedIndustryId(ind.id);
-                        setActiveSectionId("ind-details");
-                      }}
-                      className={`text-[11px] font-semibold underline transition-colors truncate ${
-                        selectedIndustryId === ind.id
-                          ? "text-violet-600 font-bold"
-                          : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
-                      }`}
-                    >
-                      {selectedIndustryId === ind.id ? "Currently Editing" : "Edit Details"}
-                    </button>
-                  </div>
+          {/* Filter & Live Search Toolbar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search sectors by title, slug, subtitle..."
+                value={catalogSearchQuery}
+                onChange={(e) => setCatalogSearchQuery(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 pl-9 pr-8 py-2 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500"
+              />
+              {catalogSearchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setCatalogSearchQuery("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+            </div>
 
-                  {formData.industries.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const indToDelete = ind;
-                        const updated = formData.industries.filter((i: any) => i.id !== ind.id);
-                        setFormData({ ...formData, industries: updated });
-                        if (selectedIndustryId === ind.id) {
-                          setSelectedIndustryId(updated[0]?.id || "fintech");
-                        }
-                        toast.success(`Deleted industry "${indToDelete.title}"`);
-                      }}
-                      className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 dark:hover:bg-red-950/50 shrink-0"
-                      title="Delete industry"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  )}
-                </div>
+            <span className="text-[11px] font-medium text-slate-500 shrink-0">
+              Showing {filteredCatalogIndustries.length} of {formData.industries?.length || 0} sectors
+            </span>
+          </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <div>
-                    <label className="flex items-center gap-1 text-[10px] font-bold text-slate-700 dark:text-slate-300">
-                      <LinkIcon className="h-3 w-3 text-violet-500 shrink-0" />
-                      ID / Slug
-                    </label>
-                    <input
-                      type="text"
-                      value={ind.id}
-                      onChange={(e) => {
-                        const newId = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-");
-                        const updated = [...formData.industries];
-                        const oldId = updated[idx].id;
-                        updated[idx].id = newId;
-                        updated[idx].href = `/industries/${newId}`;
-                        setFormData({ ...formData, industries: updated });
-                        if (selectedIndustryId === oldId) setSelectedIndustryId(newId);
-                      }}
-                      className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-2.5 py-1 text-xs font-mono font-bold text-violet-600 dark:text-violet-400"
-                    />
-                    <span className="text-[9px] text-slate-400 block truncate">Route: /industries/{ind.id}</span>
-                  </div>
+          {/* Tabular Form of Industry Sectors */}
+          <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0b0f19]">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 tracking-wider">
+                  <th className="py-3 px-3 w-16 text-center">Order</th>
+                  <th className="py-3 px-3 min-w-[200px]">Sector &amp; Slug</th>
+                  <th className="py-3 px-3 min-w-[150px]">Subtitle Badge</th>
+                  <th className="py-3 px-3 min-w-[240px]">Card Description Summary</th>
+                  <th className="py-3 px-3 min-w-[170px]">Configured Assets</th>
+                  <th className="py-3 px-3 text-right min-w-[210px]">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {filteredCatalogIndustries.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-8 text-center text-slate-400 text-xs">
+                      No industries match your search &quot;{catalogSearchQuery}&quot;
+                    </td>
+                  </tr>
+                ) : (
+                  filteredCatalogIndustries.map((ind: any) => {
+                    const realIndex = (formData.industries || []).findIndex((i: any) => i.id === ind.id);
+                    return (
+                      <tr
+                        key={ind.id}
+                        className={`hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors ${
+                          selectedIndustryId === ind.id ? "bg-violet-50/30 dark:bg-violet-950/20" : ""
+                        }`}
+                      >
+                        {/* Order Reorder */}
+                        <td className="py-3 px-2 text-center align-middle">
+                          <div className="flex items-center justify-center gap-0.5">
+                            <span className="font-mono text-[11px] font-bold text-slate-500 w-4">
+                              {realIndex + 1}
+                            </span>
+                            <div className="flex flex-col">
+                              <button
+                                type="button"
+                                disabled={realIndex === 0}
+                                onClick={() => handleMoveIndustry(realIndex, "UP")}
+                                className="p-0.5 text-slate-400 hover:text-violet-600 disabled:opacity-20 disabled:hover:text-slate-400"
+                                title="Move Up"
+                              >
+                                <ChevronUp className="h-3 w-3" />
+                              </button>
+                              <button
+                                type="button"
+                                disabled={realIndex === (formData.industries?.length || 1) - 1}
+                                onClick={() => handleMoveIndustry(realIndex, "DOWN")}
+                                className="p-0.5 text-slate-400 hover:text-violet-600 disabled:opacity-20 disabled:hover:text-slate-400"
+                                title="Move Down"
+                              >
+                                <ChevronDown className="h-3 w-3" />
+                              </button>
+                            </div>
+                          </div>
+                        </td>
 
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-700 dark:text-slate-300">
-                      Industry Title
-                    </label>
-                    <input
-                      type="text"
-                      value={ind.title}
-                      onChange={(e) => {
-                        const updated = [...formData.industries];
-                        updated[idx].title = e.target.value;
-                        setFormData({ ...formData, industries: updated });
-                      }}
-                      className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-2.5 py-1 text-xs text-slate-900 dark:text-white font-bold"
-                    />
-                  </div>
-                </div>
+                        {/* Title & Slug */}
+                        <td className="py-3 px-3 align-middle">
+                          <div className="font-bold text-slate-900 dark:text-white line-clamp-1">
+                            {ind.title || "Untitled Sector"}
+                          </div>
+                          <div className="flex items-center gap-1 mt-0.5">
+                            <a
+                              href={`/industries/${ind.id}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1 font-mono text-[11px] text-violet-600 dark:text-violet-400 hover:underline"
+                            >
+                              <span>/industries/{ind.id}</span>
+                              <ExternalLink className="h-2.5 w-2.5" />
+                            </a>
+                          </div>
+                        </td>
 
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-700 dark:text-slate-300">
-                    Subtitle Badge Tag
-                  </label>
-                  <input
-                    type="text"
-                    value={ind.subtitle || ""}
-                    onChange={(e) => {
-                      const updated = [...formData.industries];
-                      updated[idx].subtitle = e.target.value;
-                      setFormData({ ...formData, industries: updated });
-                    }}
-                    className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-2.5 py-1 text-xs text-slate-900 dark:text-white"
-                  />
-                </div>
+                        {/* Subtitle Badge */}
+                        <td className="py-3 px-3 align-middle">
+                          <span className="inline-block max-w-[150px] truncate px-2 py-0.5 rounded text-[11px] font-medium bg-violet-50 dark:bg-violet-950/50 text-violet-700 dark:text-violet-300 border border-violet-200/50 dark:border-violet-900/50">
+                            {ind.subtitle || "No Subtitle"}
+                          </span>
+                        </td>
 
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-700 dark:text-slate-300">
-                    Catalog Card Summary Description
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={ind.desc}
-                    onChange={(e) => {
-                      const updated = [...formData.industries];
-                      updated[idx].desc = e.target.value;
-                      setFormData({ ...formData, industries: updated });
-                    }}
-                    className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-2.5 py-1 text-xs text-slate-900 dark:text-white"
-                  />
-                </div>
-              </div>
-            ))}
+                        {/* Summary */}
+                        <td className="py-3 px-3 align-middle">
+                          <p className="line-clamp-2 text-slate-600 dark:text-slate-400 text-[11px] leading-relaxed">
+                            {ind.desc || "No description specified."}
+                          </p>
+                        </td>
+
+                        {/* Configured Assets Badges */}
+                        <td className="py-3 px-3 align-middle">
+                          <div className="flex flex-wrap gap-1">
+                            <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                              {ind.keyMetrics?.length || 0} KPIs
+                            </span>
+                            <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                              {ind.complianceBadges?.length || 0} Badges
+                            </span>
+                            <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                              {ind.projects?.length || 0} Projects
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Actions */}
+                        <td className="py-3 px-3 align-middle text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => handleOpenEditCatalogIndustry(ind, realIndex)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold transition-colors"
+                              title="Edit Sector Card"
+                            >
+                              <Pencil className="h-3 w-3 text-slate-500" />
+                              <span>Edit</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleNavigateToIndustryDetail(ind.id)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-700 text-white font-bold transition-colors shadow-xs"
+                              title="Configure Detail Page (/industries/[id])"
+                            >
+                              <span>Detail Page</span>
+                              <ArrowRight className="h-3 w-3" />
+                            </button>
+
+                            {(formData.industries?.length || 0) > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => handleInitiateDeleteIndustry(ind, realIndex)}
+                                className="p-1.5 rounded-lg text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors cursor-pointer"
+                                title="Delete Industry Sector"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Quick Notice */}
+          <div className="flex items-center justify-between text-xs text-slate-500 pt-2">
+            <span>Tip: To edit the full breakdown (Overview, Compliance, Projects, KPIs, Solutions), click &quot;Detail Page&quot; on any sector.</span>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={isSaving}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold shadow-xs transition-colors"
+            >
+              <Save className="h-3.5 w-3.5" />
+              <span>{isSaving ? "Saving..." : "Save Industries"}</span>
+            </button>
           </div>
         </div>
       )}
 
       {/* SECTION 3: INDIVIDUAL INDUSTRY DETAIL PAGE CONFIGURATOR */}
       {activeSectionId === "ind-details" && (
-        <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] sm:text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">
-                #03
-              </span>
-              <h3 className="text-xs sm:text-sm font-bold">
-                Individual Industry Detail View Configurator (`/industries/[id]`)
-              </h3>
-            </div>
+        <div className="rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-5">
+          {editingDetailIndustryId === null ? (
+            /* =========================================================================
+               TABULAR DIRECTORY OF ALL INDUSTRY DETAIL PAGES
+               ========================================================================= */
+            <div className="space-y-4">
+              {/* Directory Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-[10px] sm:text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">
+                      #03
+                    </span>
+                    <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+                      Individual Industry Detail Pages Directory
+                    </h3>
+                    <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700">
+                      {formData.industries?.length || 0} Detail Pages
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 max-w-2xl">
+                    Directory of deep domain route pages (<span className="font-mono text-violet-600 dark:text-violet-400">/industries/[id]</span>). Click <span className="font-semibold text-slate-700 dark:text-slate-200">&quot;Edit Detail Page&quot;</span> on any row to configure its full overview narrative, compliance protocols, featured case studies, and target solutions.
+                  </p>
+                </div>
 
-            {/* Industry Selector Dropdown */}
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              <label className="text-xs font-bold text-slate-500 shrink-0">Select Industry:</label>
-              <select
-                value={selectedIndustryId}
-                onChange={(e) => setSelectedIndustryId(e.target.value)}
-                className="w-full sm:w-auto rounded-xl border border-violet-300 dark:border-violet-800 bg-violet-50/50 dark:bg-violet-950/40 px-3 py-1.5 text-xs font-bold text-violet-700 dark:text-violet-300 focus:outline-none"
-              >
-                {formData.industries?.map((ind: any) => (
-                  <option key={ind.id} value={ind.id}>
-                    {ind.title} ({ind.id})
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setActiveSectionId("ind-grid")}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300 transition-colors"
+                  >
+                    <span>View Sectors Grid (#02)</span>
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
 
-          {currentIndustry && (
-            <div className="space-y-4 sm:space-y-6">
+              {/* Filter / Search Toolbar */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="relative flex-1 max-w-md">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Search detail pages by title, slug, hero badge, or compliance..."
+                    value={detailSearchQuery}
+                    onChange={(e) => setDetailSearchQuery(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 pl-9 pr-8 py-2 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                  />
+                  {detailSearchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setDetailSearchQuery("")}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
+
+                <span className="text-[11px] font-medium text-slate-500 shrink-0">
+                  Showing {filteredDetailIndustries.length} of {formData.industries?.length || 0} industries
+                </span>
+              </div>
+
+              {/* Tabular Table of Detail Pages */}
+              <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0b0f19]">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 tracking-wider">
+                      <th className="py-3 px-3 w-12 text-center">#</th>
+                      <th className="py-3 px-3 min-w-[210px]">Industry &amp; Route</th>
+                      <th className="py-3 px-3 min-w-[150px]">Hero Section Badge</th>
+                      <th className="py-3 px-3 min-w-[170px]">Key Metrics (KPIs)</th>
+                      <th className="py-3 px-3 min-w-[160px]">Compliance Badges</th>
+                      <th className="py-3 px-3 min-w-[130px]">Projects</th>
+                      <th className="py-3 px-3 min-w-[130px]">Solutions</th>
+                      <th className="py-3 px-3 text-right min-w-[160px]">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {filteredDetailIndustries.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="py-8 text-center text-slate-400 text-xs">
+                          No industry detail pages match your query &quot;{detailSearchQuery}&quot;
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredDetailIndustries.map((ind: any) => {
+                        const realIdx = (formData.industries || []).findIndex((i: any) => i.id === ind.id);
+                        return (
+                          <tr
+                            key={ind.id}
+                            className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors"
+                          >
+                            {/* Number */}
+                            <td className="py-3.5 px-3 text-center align-middle font-mono text-[11px] font-bold text-slate-500">
+                              {realIdx + 1}
+                            </td>
+
+                            {/* Title & Slug */}
+                            <td className="py-3.5 px-3 align-middle">
+                              <div className="font-bold text-slate-900 dark:text-white line-clamp-1">
+                                {ind.title}
+                              </div>
+                              <div className="flex items-center gap-1 mt-0.5">
+                                <a
+                                  href={`/industries/${ind.id}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="inline-flex items-center gap-1 font-mono text-[11px] text-violet-600 dark:text-violet-400 hover:underline"
+                                >
+                                  <span>/industries/{ind.id}</span>
+                                  <ExternalLink className="h-2.5 w-2.5" />
+                                </a>
+                              </div>
+                            </td>
+
+                            {/* Hero Badge */}
+                            <td className="py-3.5 px-3 align-middle">
+                              <span className="inline-block max-w-[140px] truncate px-2 py-0.5 rounded text-[11px] font-semibold bg-violet-50 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-900/40">
+                                {ind.heroBadge || "Custom Practice"}
+                              </span>
+                            </td>
+
+                            {/* Key Metrics */}
+                            <td className="py-3.5 px-3 align-middle">
+                              <div className="flex flex-wrap gap-1 max-w-[180px]">
+                                {ind.keyMetrics && ind.keyMetrics.length > 0 ? (
+                                  ind.keyMetrics.slice(0, 3).map((m: any, mIdx: number) => (
+                                    <span
+                                      key={mIdx}
+                                      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[10px] font-mono font-bold text-violet-600 dark:text-violet-400"
+                                      title={m.label}
+                                    >
+                                      <span>{m.value}</span>
+                                    </span>
+                                  ))
+                                ) : (
+                                  <span className="text-[10px] text-slate-400">None</span>
+                                )}
+                              </div>
+                            </td>
+
+                            {/* Compliance Badges */}
+                            <td className="py-3.5 px-3 align-middle">
+                              <div className="flex flex-wrap gap-1 max-w-[180px]">
+                                {ind.complianceBadges && ind.complianceBadges.length > 0 ? (
+                                  ind.complianceBadges.slice(0, 2).map((b: string, bIdx: number) => (
+                                    <span
+                                      key={bIdx}
+                                      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-900/40"
+                                    >
+                                      <CheckCircle2 className="h-2.5 w-2.5" />
+                                      <span className="truncate max-w-[80px]">{b}</span>
+                                    </span>
+                                  ))
+                                ) : (
+                                  <span className="text-[10px] text-slate-400">None</span>
+                                )}
+                                {(ind.complianceBadges?.length || 0) > 2 && (
+                                  <span className="text-[10px] text-slate-400 font-semibold">
+                                    +{(ind.complianceBadges?.length || 0) - 2}
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+
+                            {/* Projects */}
+                            <td className="py-3.5 px-3 align-middle">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                                <FolderGit2 className="h-3 w-3 text-violet-500" />
+                                <span>{ind.projects?.length || 0} projects</span>
+                              </span>
+                            </td>
+
+                            {/* Solutions */}
+                            <td className="py-3.5 px-3 align-middle">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                                <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                                <span>{ind.solutions?.length || 0} solutions</span>
+                              </span>
+                            </td>
+
+                            {/* Action Button */}
+                            <td className="py-3.5 px-3 align-middle text-right">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedIndustryId(ind.id);
+                                  setEditingDetailIndustryId(ind.id);
+                                }}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold transition-all shadow-xs"
+                              >
+                                <Pencil className="h-3 w-3" />
+                                <span>Edit Detail Page</span>
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : (
+            /* =========================================================================
+               INDIVIDUAL INDUSTRY DETAIL CONFIGURATOR VIEW (Steps 1 to 6)
+               ========================================================================= */
+            <div className="space-y-5">
+              {/* Top Navigation & Industry Switcher Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-3.5 rounded-xl bg-violet-50/70 dark:bg-violet-950/40 border border-violet-200 dark:border-violet-900/60">
+                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-2.5 min-w-0">
+                  <button
+                    type="button"
+                    onClick={handleBackToDetailDirectory}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-[#131927] border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 hover:border-violet-500 hover:text-violet-600 dark:hover:text-violet-400 transition-all shadow-xs shrink-0"
+                  >
+                    <ArrowLeft className="h-3.5 w-3.5 shrink-0" />
+                    <span className="hidden sm:inline">Back to All Industries Directory</span>
+                    <span className="sm:hidden">Back to Directory</span>
+                  </button>
+                  <div className="h-4 w-[1px] bg-slate-300 dark:bg-slate-700 hidden sm:block shrink-0" />
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="text-xs text-slate-500 hidden sm:inline shrink-0">Editing Detail Page:</span>
+                    <span className="text-xs font-extrabold text-violet-600 dark:text-violet-400 truncate max-w-[200px] md:max-w-[320px]">
+                      {currentIndustry.title}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <label className="text-xs font-bold text-slate-500 shrink-0">Switch Industry:</label>
+                  <select
+                    value={selectedIndustryId}
+                    onChange={(e) => {
+                      setSelectedIndustryId(e.target.value);
+                      setEditingDetailIndustryId(e.target.value);
+                    }}
+                    className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#131927] px-2.5 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-violet-500"
+                  >
+                    {formData.industries?.map((ind: any) => (
+                      <option key={ind.id} value={ind.id}>
+                        {ind.title} ({ind.id})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {currentIndustry && (
+                <div className="space-y-4 sm:space-y-6">
               
               {/* STEP 1: Hero & Media Upload */}
               <div className="p-3.5 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 space-y-4">
@@ -660,7 +1342,8 @@ export default function IndustriesPageEditor({ sectionId, onCloseSection }: Indu
                     </label>
                     <input
                       type="text"
-                      value={currentIndustry.overviewTag || "Sector Perspective"}
+                      placeholder="e.g. Sector Perspective"
+                      value={currentIndustry.overviewTag || ""}
                       onChange={(e) => {
                         const updated = [...formData.industries];
                         const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
@@ -677,7 +1360,8 @@ export default function IndustriesPageEditor({ sectionId, onCloseSection }: Indu
                     </label>
                     <input
                       type="text"
-                      value={currentIndustry.overviewHeading || `Architecting software for ${currentIndustry.title}`}
+                      placeholder={currentIndustry.title ? `e.g. Architecting software for ${currentIndustry.title}` : "e.g. Architecting software"}
+                      value={currentIndustry.overviewHeading || ""}
                       onChange={(e) => {
                         const updated = [...formData.industries];
                         const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
@@ -694,6 +1378,7 @@ export default function IndustriesPageEditor({ sectionId, onCloseSection }: Indu
                     </label>
                     <textarea
                       rows={3}
+                      placeholder="Detailed sector overview paragraph..."
                       value={currentIndustry.fullOverview || ""}
                       onChange={(e) => {
                         const updated = [...formData.industries];
@@ -721,198 +1406,345 @@ export default function IndustriesPageEditor({ sectionId, onCloseSection }: Indu
                       const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
                       if (idx !== -1) {
                         const badges = updated[idx].complianceBadges || [];
-                        updated[idx].complianceBadges = [...badges, "New Compliance Badge"];
+                        updated[idx].complianceBadges = [...badges, ""];
                         setFormData({ ...formData, industries: updated });
                       }
                     }}
-                    className="w-full sm:w-auto flex items-center justify-center gap-1 px-2.5 py-1 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-[11px] font-bold"
+                    className="w-full sm:w-auto flex items-center justify-center gap-1 px-2.5 py-1 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-[11px] font-bold cursor-pointer"
                   >
                     <Plus className="h-3 w-3" />
                     <span>Add Badge</span>
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                  {currentIndustry.complianceBadges?.map((badge: string, bIdx: number) => (
-                    <div key={bIdx} className="flex items-center gap-2 bg-white dark:bg-[#0b0f19] p-2 rounded-lg border border-slate-200 dark:border-slate-700">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
-                      <input
-                        type="text"
-                        value={badge}
-                        onChange={(e) => {
-                          const updated = [...formData.industries];
-                          const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
-                          if (idx !== -1) {
-                            updated[idx].complianceBadges[bIdx] = e.target.value;
-                            setFormData({ ...formData, industries: updated });
-                          }
-                        }}
-                        className="w-full bg-transparent text-xs text-slate-900 dark:text-white font-semibold focus:outline-none"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const updated = [...formData.industries];
-                          const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
-                          if (idx !== -1) {
-                            updated[idx].complianceBadges = updated[idx].complianceBadges.filter((_: any, i: number) => i !== bIdx);
-                            setFormData({ ...formData, industries: updated });
-                          }
-                        }}
-                        className="text-red-400 hover:text-red-600 p-1 shrink-0"
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* STEP 4: Featured Case Studies & Live Projects */}
-              <div className="p-3.5 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <h4 className="text-xs font-bold flex items-center gap-1.5">
-                    <FolderGit2 className="h-4 w-4 text-violet-500 shrink-0" />
-                    Step 4: Featured Projects ({currentIndustry.projects?.length || 0})
-                  </h4>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const updated = [...formData.industries];
-                      const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
-                      if (idx !== -1) {
-                        const projs = updated[idx].projects || [];
-                        updated[idx].projects = [
-                          ...projs,
-                          {
-                            id: `proj-${Date.now().toString().slice(-4)}`,
-                            title: "New Featured Project",
-                            client: "Client Name",
-                            desc: "Project summary description",
-                            impact: "$5M+ Value Impact",
-                            liveUrl: "https://clickpoint.com.np",
-                            techStack: ["Next.js", "TypeScript"],
-                            imageGradient: "from-violet-600 to-indigo-800",
-                          },
-                        ];
-                        setFormData({ ...formData, industries: updated });
-                      }
-                    }}
-                    className="w-full sm:w-auto flex items-center justify-center gap-1 px-2.5 py-1 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-[11px] font-bold"
-                  >
-                    <Plus className="h-3 w-3" />
-                    <span>Add Project</span>
-                  </button>
-                </div>
-
-                <div className="space-y-3">
-                  {currentIndustry.projects?.map((proj: any, pIdx: number) => (
-                    <div key={proj.id || pIdx} className="p-3 rounded-lg bg-white dark:bg-[#0b0f19] border border-slate-200 dark:border-slate-700 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold uppercase text-violet-600 bg-violet-50 dark:bg-violet-950 px-2 py-0.5 rounded">
-                          Project #{pIdx + 1}
-                        </span>
+                {(!currentIndustry.complianceBadges || currentIndustry.complianceBadges.length === 0) ? (
+                  <p className="text-xs text-slate-400 dark:text-slate-500 italic p-3 border border-dashed border-slate-200 dark:border-slate-800 rounded-lg text-center">
+                    No compliance badges added. Click &ldquo;Add Badge&rdquo; to define security credentials.
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                    {currentIndustry.complianceBadges?.map((badge: string, bIdx: number) => (
+                      <div key={bIdx} className="flex items-center gap-2 bg-white dark:bg-[#0b0f19] p-2 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                        <input
+                          type="text"
+                          placeholder="e.g. SOC2 Type II"
+                          value={badge}
+                          onChange={(e) => {
+                            const updated = [...formData.industries];
+                            const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
+                            if (idx !== -1) {
+                              updated[idx].complianceBadges[bIdx] = e.target.value;
+                              setFormData({ ...formData, industries: updated });
+                            }
+                          }}
+                          className="w-full bg-transparent text-xs text-slate-900 dark:text-white font-semibold focus:outline-none"
+                        />
                         <button
                           type="button"
                           onClick={() => {
                             const updated = [...formData.industries];
                             const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
                             if (idx !== -1) {
-                              updated[idx].projects = updated[idx].projects.filter((_: any, i: number) => i !== pIdx);
+                              updated[idx].complianceBadges = updated[idx].complianceBadges.filter((_: any, i: number) => i !== bIdx);
                               setFormData({ ...formData, industries: updated });
                             }
                           }}
-                          className="text-red-500 hover:text-red-700 p-1"
+                          className="text-red-400 hover:text-red-600 p-1 shrink-0 cursor-pointer"
                         >
                           <Trash2 className="h-3 w-3" />
                         </button>
                       </div>
+                    ))}
+                  </div>
+                )}
+              </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                        <div>
-                          <label className="block text-[9px] font-bold text-slate-500">Project Title</label>
-                          <input
-                            type="text"
-                            value={proj.title}
-                            onChange={(e) => {
-                              const updated = [...formData.industries];
-                              const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
-                              if (idx !== -1) {
-                                updated[idx].projects[pIdx].title = e.target.value;
-                                setFormData({ ...formData, industries: updated });
+              {/* STEP 4: Featured Case Studies & Live Projects */}
+              <div className="p-3.5 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-bold flex items-center gap-1.5 text-slate-900 dark:text-white">
+                      <FolderGit2 className="h-4 w-4 text-violet-500 shrink-0" />
+                      Step 4: Featured Projects ({currentIndustry.projects?.length || 0})
+                    </h4>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      Showcase live projects and case studies for this industry sector.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTargetProjectIndexForSync(null);
+                        setProjectPickerSearch("");
+                        setImportProjectModalOpen(true);
+                      }}
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      <span>Add Project</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Prominent Cross-Catalog Featured Link Banner */}
+                {featuredCaseStudy && (
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl bg-violet-50 dark:bg-violet-950/40 border border-violet-200/80 dark:border-violet-800/60 text-xs">
+                    <div className="flex items-start sm:items-center gap-2.5">
+                      <div className="p-1.5 rounded-lg bg-violet-600 text-white shrink-0 mt-0.5 sm:mt-0">
+                        <Sparkles className="h-3.5 w-3.5" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-bold text-slate-900 dark:text-white">
+                            Portfolio Catalog Linked:
+                          </span>
+                          <span className="font-extrabold text-violet-700 dark:text-violet-300">
+                            {featuredCaseStudy.title}
+                          </span>
+                          {featuredCaseStudy.featured && (
+                            <span
+                              className="inline-flex items-center justify-center p-1 rounded-md text-[10px] font-bold bg-amber-100 dark:bg-amber-950 text-amber-500 border border-amber-300 dark:border-amber-800 shadow-2xs"
+                              title="Featured"
+                            >
+                              <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                          {featuredCaseStudy.client} • {featuredCaseStudy.impact || "High Impact Results"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleAutoFillFeaturedProject}
+                      className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-violet-300 dark:border-violet-700 hover:bg-violet-50 dark:hover:bg-violet-900/30 text-violet-700 dark:text-violet-300 font-bold text-[11px] transition-colors shadow-2xs shrink-0 cursor-pointer"
+                    >
+                      <Sparkles className="h-3 w-3 text-violet-500" />
+                      <span>Auto-Fill / Re-Sync Project #1</span>
+                    </button>
+                  </div>
+                )}
+
+                {(!currentIndustry.projects || currentIndustry.projects.length === 0) ? (
+                  <div className="p-6 text-center rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/30">
+                    <FolderGit2 className="h-8 w-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                    <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                      No featured projects added to this industry yet.
+                    </p>
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+                      Click &ldquo;Add Project&rdquo; to select a case study or add a blank project.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {currentIndustry.projects.map((proj: any, pIdx: number) => (
+                      <div key={proj.id || pIdx} className="p-3 rounded-lg bg-white dark:bg-[#0b0f19] border border-slate-200 dark:border-slate-700 space-y-2">
+                        <div className="flex flex-wrap items-center justify-between gap-2 pb-1 border-b border-slate-100 dark:border-slate-800">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-[10px] font-bold uppercase text-violet-600 bg-violet-50 dark:bg-violet-950 px-2 py-0.5 rounded">
+                              Project #{pIdx + 1}
+                            </span>
+                            {pIdx === 0 && featuredCaseStudy && (
+                              <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/20">
+                                Primary Featured Slot
+                              </span>
+                            )}
+                            {/* Live vs Draft Status Pill */}
+                            {(() => {
+                              const isDraft = Boolean(proj.isDraft || proj.status === "draft");
+                              return isDraft ? (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 border border-amber-300/60 dark:border-amber-800/60">
+                                  <AlertCircle className="h-2.5 w-2.5 text-amber-500" />
+                                  <span>Draft (Inactive)</span>
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-300/60 dark:border-emerald-800/60">
+                                  <CheckCircle2 className="h-2.5 w-2.5 text-emerald-500" />
+                                  <span>Active (Live)</span>
+                                </span>
+                              );
+                            })()}
+                          </div>
+
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            {/* Featured Toggle Button */}
+                            <button
+                              type="button"
+                              onClick={() => handleToggleProjectFeatured(pIdx)}
+                              className={`inline-flex items-center justify-center p-2 rounded-md border transition-all cursor-pointer ${
+                                proj.featured
+                                  ? "bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 dark:bg-amber-950/80 dark:hover:bg-amber-900/90 dark:text-amber-300 dark:border-amber-700 shadow-2xs"
+                                  : "bg-slate-100 hover:bg-slate-200 text-slate-400 border border-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-500 dark:border-slate-700"
+                              }`}
+                              title={
+                                proj.featured
+                                  ? "Featured: ON (Click to turn OFF / Unfeature)"
+                                  : "Featured: OFF (Click to turn ON / Feature this project)"
                               }
-                            }}
-                            className="w-full rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1 text-xs text-slate-900 dark:text-white font-bold"
-                          />
+                            >
+                              <Star
+                                className={`h-3.5 w-3.5 ${
+                                  proj.featured ? "fill-amber-500 text-amber-500" : "text-slate-400"
+                                }`}
+                              />
+                            </button>
+
+                            {/* Active / Inactive Status Toggle Button */}
+                            {(() => {
+                              const isDraft = Boolean(proj.isDraft || proj.status === "draft");
+                              return (
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleProjectStatus(pIdx)}
+                                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
+                                    !isDraft
+                                      ? "bg-emerald-100 hover:bg-emerald-200 text-emerald-900 border border-emerald-300 dark:bg-emerald-950/80 dark:hover:bg-emerald-900/90 dark:text-emerald-300 dark:border-emerald-700 shadow-2xs"
+                                      : "bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/70 dark:hover:bg-amber-900/80 dark:text-amber-300 dark:border-amber-800"
+                                  }`}
+                                  title={
+                                    !isDraft
+                                      ? "Status: Active / Live (Click to set Inactive / Draft)"
+                                      : "Status: Inactive / Draft (Click to set Active / Live)"
+                                  }
+                                >
+                                  <span
+                                    className={`h-2 w-2 rounded-full ${
+                                      !isDraft ? "bg-emerald-500 animate-pulse" : "bg-amber-500"
+                                    }`}
+                                  />
+                                  <span>{!isDraft ? "Active" : "Draft (Off)"}</span>
+                                </button>
+                              );
+                            })()}
+
+                            {matchingCaseStudies.length > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setTargetProjectIndexForSync(pIdx);
+                                  setProjectPickerSearch("");
+                                  setImportProjectModalOpen(true);
+                                }}
+                                className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-950/60 border border-violet-200 dark:border-violet-800 transition-colors cursor-pointer"
+                                title="Sync or replace details from an existing case study"
+                              >
+                                <FolderGit2 className="h-3 w-3" />
+                                <span>Sync</span>
+                              </button>
+                            )}
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updated = [...formData.industries];
+                                const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
+                                if (idx !== -1) {
+                                  updated[idx].projects = updated[idx].projects.filter((_: any, i: number) => i !== pIdx);
+                                  setFormData({ ...formData, industries: updated });
+                                }
+                              }}
+                              className="text-red-500 hover:text-red-700 p-1 cursor-pointer"
+                              title="Delete project"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </button>
+                          </div>
                         </div>
 
-                        <div>
-                          <label className="block text-[9px] font-bold text-slate-500">Client Name</label>
-                          <input
-                            type="text"
-                            value={proj.client}
-                            onChange={(e) => {
-                              const updated = [...formData.industries];
-                              const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
-                              if (idx !== -1) {
-                                updated[idx].projects[pIdx].client = e.target.value;
-                                setFormData({ ...formData, industries: updated });
-                              }
-                            }}
-                            className="w-full rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1 text-xs text-slate-900 dark:text-white"
-                          />
-                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                          <div>
+                            <label className="block text-[9px] font-bold text-slate-500">Project Title</label>
+                            <input
+                              type="text"
+                              placeholder="e.g. Real-Time Trading Engine"
+                              value={proj.title || ""}
+                              onChange={(e) => {
+                                const updated = [...formData.industries];
+                                const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
+                                if (idx !== -1) {
+                                  updated[idx].projects[pIdx].title = e.target.value;
+                                  setFormData({ ...formData, industries: updated });
+                                }
+                              }}
+                              className="w-full rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1 text-xs text-slate-900 dark:text-white font-bold"
+                            />
+                          </div>
 
-                        <div>
-                          <label className="block text-[9px] font-bold text-slate-500">Impact Metric Statement</label>
-                          <input
-                            type="text"
-                            value={proj.impact || ""}
-                            onChange={(e) => {
-                              const updated = [...formData.industries];
-                              const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
-                              if (idx !== -1) {
-                                updated[idx].projects[pIdx].impact = e.target.value;
-                                setFormData({ ...formData, industries: updated });
-                              }
-                            }}
-                            className="w-full rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1 text-xs font-bold text-emerald-600 dark:text-emerald-400"
-                          />
-                        </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-slate-500">Client Name</label>
+                            <input
+                              type="text"
+                              placeholder="e.g. Apex Global Markets"
+                              value={proj.client || ""}
+                              onChange={(e) => {
+                                const updated = [...formData.industries];
+                                const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
+                                if (idx !== -1) {
+                                  updated[idx].projects[pIdx].client = e.target.value;
+                                  setFormData({ ...formData, industries: updated });
+                                }
+                              }}
+                              className="w-full rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1 text-xs text-slate-900 dark:text-white"
+                            />
+                          </div>
 
-                        <div className="sm:col-span-2">
-                          <label className="block text-[9px] font-bold text-slate-500">Description</label>
-                          <input
-                            type="text"
-                            value={proj.desc}
-                            onChange={(e) => {
-                              const updated = [...formData.industries];
-                              const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
-                              if (idx !== -1) {
-                                updated[idx].projects[pIdx].desc = e.target.value;
-                                setFormData({ ...formData, industries: updated });
-                              }
-                            }}
-                            className="w-full rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1 text-xs text-slate-900 dark:text-white"
-                          />
-                        </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-slate-500">Impact Metric Statement</label>
+                            <input
+                              type="text"
+                              placeholder="e.g. $10M+ Cost Saved"
+                              value={proj.impact || ""}
+                              onChange={(e) => {
+                                const updated = [...formData.industries];
+                                const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
+                                if (idx !== -1) {
+                                  updated[idx].projects[pIdx].impact = e.target.value;
+                                  setFormData({ ...formData, industries: updated });
+                                }
+                              }}
+                              className="w-full rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1 text-xs font-bold text-emerald-600 dark:text-emerald-400"
+                            />
+                          </div>
 
-                        <div>
-                          <label className="block text-[9px] font-bold text-slate-500">Live URL</label>
-                          <input
-                            type="text"
-                            value={proj.liveUrl || ""}
-                            onChange={(e) => {
-                              const updated = [...formData.industries];
-                              const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
-                              if (idx !== -1) {
-                                updated[idx].projects[pIdx].liveUrl = e.target.value;
-                                setFormData({ ...formData, industries: updated });
-                              }
-                            }}
-                            className="w-full rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1 text-xs font-mono text-violet-600 dark:text-violet-400"
-                          />
-                        </div>
+                          <div className="sm:col-span-2">
+                            <label className="block text-[9px] font-bold text-slate-500">Description</label>
+                            <input
+                              type="text"
+                              placeholder="Deliverables and architecture summary..."
+                              value={proj.desc || ""}
+                              onChange={(e) => {
+                                const updated = [...formData.industries];
+                                const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
+                                if (idx !== -1) {
+                                  updated[idx].projects[pIdx].desc = e.target.value;
+                                  setFormData({ ...formData, industries: updated });
+                                }
+                              }}
+                              className="w-full rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1 text-xs text-slate-900 dark:text-white"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[9px] font-bold text-slate-500">Live URL</label>
+                            <input
+                              type="text"
+                              placeholder="https://..."
+                              value={proj.liveUrl || ""}
+                              onChange={(e) => {
+                                const updated = [...formData.industries];
+                                const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
+                                if (idx !== -1) {
+                                  updated[idx].projects[pIdx].liveUrl = e.target.value;
+                                  setFormData({ ...formData, industries: updated });
+                                }
+                              }}
+                              className="w-full rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1 text-xs font-mono text-violet-600 dark:text-violet-400"
+                            />
+                          </div>
 
                         {/* Tech Stack Badges Management */}
                         <div className="sm:col-span-3 space-y-2 pt-3 mt-1 border-t border-slate-200/80 dark:border-slate-800">
@@ -1023,7 +1855,8 @@ export default function IndustriesPageEditor({ sectionId, onCloseSection }: Indu
                     </div>
                   ))}
                 </div>
-              </div>
+              )}
+            </div>
 
               {/* STEP 5: Key Performance Metrics */}
               <div className="p-3.5 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 space-y-4">
@@ -1041,75 +1874,83 @@ export default function IndustriesPageEditor({ sectionId, onCloseSection }: Indu
                         const metrics = updated[idx].keyMetrics || [];
                         updated[idx].keyMetrics = [
                           ...metrics,
-                          { label: "New Metric Label", value: "99%" },
+                          { label: "", value: "" },
                         ];
                         setFormData({ ...formData, industries: updated });
                       }
                     }}
-                    className="w-full sm:w-auto flex items-center justify-center gap-1 px-2.5 py-1 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-[11px] font-bold"
+                    className="w-full sm:w-auto flex items-center justify-center gap-1 px-2.5 py-1 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-[11px] font-bold cursor-pointer"
                   >
                     <Plus className="h-3 w-3" />
                     <span>Add Metric</span>
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {currentIndustry.keyMetrics?.map((metric: any, mIdx: number) => (
-                    <div key={mIdx} className="p-3 rounded-lg bg-white dark:bg-[#0b0f19] border border-slate-200 dark:border-slate-700 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[9px] font-bold text-violet-600">Metric #{mIdx + 1}</span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const updated = [...formData.industries];
-                            const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
-                            if (idx !== -1) {
-                              updated[idx].keyMetrics = updated[idx].keyMetrics.filter((_: any, i: number) => i !== mIdx);
-                              setFormData({ ...formData, industries: updated });
-                            }
-                          }}
-                          className="text-red-400 hover:text-red-600 p-1"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </button>
-                      </div>
+                {(!currentIndustry.keyMetrics || currentIndustry.keyMetrics.length === 0) ? (
+                  <p className="text-xs text-slate-400 dark:text-slate-500 italic p-3 border border-dashed border-slate-200 dark:border-slate-800 rounded-lg text-center">
+                    No key performance metrics added. Click &ldquo;Add Metric&rdquo; to define KPI statistics.
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {currentIndustry.keyMetrics?.map((metric: any, mIdx: number) => (
+                      <div key={mIdx} className="p-3 rounded-lg bg-white dark:bg-[#0b0f19] border border-slate-200 dark:border-slate-700 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[9px] font-bold text-violet-600">Metric #{mIdx + 1}</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = [...formData.industries];
+                              const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
+                              if (idx !== -1) {
+                                updated[idx].keyMetrics = updated[idx].keyMetrics.filter((_: any, i: number) => i !== mIdx);
+                                setFormData({ ...formData, industries: updated });
+                              }
+                            }}
+                            className="text-red-400 hover:text-red-600 p-1 cursor-pointer"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </button>
+                        </div>
 
-                      <div>
-                        <label className="block text-[9px] font-bold text-slate-500">Metric Value</label>
-                        <input
-                          type="text"
-                          value={metric.value}
-                          onChange={(e) => {
-                            const updated = [...formData.industries];
-                            const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
-                            if (idx !== -1) {
-                              updated[idx].keyMetrics[mIdx].value = e.target.value;
-                              setFormData({ ...formData, industries: updated });
-                            }
-                          }}
-                          className="w-full rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1 text-xs font-bold text-violet-600 dark:text-violet-400"
-                        />
-                      </div>
+                        <div>
+                          <label className="block text-[9px] font-bold text-slate-500">Metric Value</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. 99.9%"
+                            value={metric.value || ""}
+                            onChange={(e) => {
+                              const updated = [...formData.industries];
+                              const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
+                              if (idx !== -1) {
+                                updated[idx].keyMetrics[mIdx].value = e.target.value;
+                                setFormData({ ...formData, industries: updated });
+                              }
+                            }}
+                            className="w-full rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1 text-xs font-bold text-violet-600 dark:text-violet-400"
+                          />
+                        </div>
 
-                      <div>
-                        <label className="block text-[9px] font-bold text-slate-500">Metric Label</label>
-                        <input
-                          type="text"
-                          value={metric.label}
-                          onChange={(e) => {
-                            const updated = [...formData.industries];
-                            const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
-                            if (idx !== -1) {
-                              updated[idx].keyMetrics[mIdx].label = e.target.value;
-                              setFormData({ ...formData, industries: updated });
-                            }
-                          }}
-                          className="w-full rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1 text-xs text-slate-900 dark:text-white"
-                        />
+                        <div>
+                          <label className="block text-[9px] font-bold text-slate-500">Metric Label</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Uptime SLA"
+                            value={metric.label || ""}
+                            onChange={(e) => {
+                              const updated = [...formData.industries];
+                              const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
+                              if (idx !== -1) {
+                                updated[idx].keyMetrics[mIdx].label = e.target.value;
+                                setFormData({ ...formData, industries: updated });
+                              }
+                            }}
+                            className="w-full rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1 text-xs text-slate-900 dark:text-white"
+                          />
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* STEP 6: Target Solutions */}
@@ -1128,92 +1969,538 @@ export default function IndustriesPageEditor({ sectionId, onCloseSection }: Indu
                         const sols = updated[idx].solutions || [];
                         updated[idx].solutions = [
                           ...sols,
-                          { title: "New Domain Solution", desc: "Detailed solution description." },
+                          { title: "", desc: "" },
                         ];
                         setFormData({ ...formData, industries: updated });
                       }
                     }}
-                    className="w-full sm:w-auto flex items-center justify-center gap-1 px-2.5 py-1 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-[11px] font-bold"
+                    className="w-full sm:w-auto flex items-center justify-center gap-1 px-2.5 py-1 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-[11px] font-bold cursor-pointer"
                   >
                     <Plus className="h-3 w-3" />
                     <span>Add Solution</span>
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {currentIndustry.solutions?.map((sol: any, sIdx: number) => {
-                    const solTitle = typeof sol === "string" ? sol : sol.title;
-                    const solDesc = typeof sol === "string" ? "" : sol.desc || "";
+                {(!currentIndustry.solutions || currentIndustry.solutions.length === 0) ? (
+                  <p className="text-xs text-slate-400 dark:text-slate-500 italic p-3 border border-dashed border-slate-200 dark:border-slate-800 rounded-lg text-center">
+                    No domain solutions added. Click &ldquo;Add Solution&rdquo; to specify target engineering capabilities.
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {currentIndustry.solutions?.map((sol: any, sIdx: number) => {
+                      const solTitle = typeof sol === "string" ? sol : sol.title || "";
+                      const solDesc = typeof sol === "string" ? "" : sol.desc || "";
 
-                    return (
-                      <div key={sIdx} className="p-3 rounded-lg bg-white dark:bg-[#0b0f19] border border-slate-200 dark:border-slate-700 space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[9px] font-bold text-violet-600">Solution #{sIdx + 1}</span>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const updated = [...formData.industries];
-                              const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
-                              if (idx !== -1) {
-                                updated[idx].solutions = updated[idx].solutions.filter((_: any, i: number) => i !== sIdx);
-                                setFormData({ ...formData, industries: updated });
-                              }
-                            }}
-                            className="text-red-400 hover:text-red-600 p-1"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </button>
-                        </div>
+                      return (
+                        <div key={sIdx} className="p-3 rounded-lg bg-white dark:bg-[#0b0f19] border border-slate-200 dark:border-slate-700 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[9px] font-bold text-violet-600">Solution #{sIdx + 1}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updated = [...formData.industries];
+                                const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
+                                if (idx !== -1) {
+                                  updated[idx].solutions = updated[idx].solutions.filter((_: any, i: number) => i !== sIdx);
+                                  setFormData({ ...formData, industries: updated });
+                                }
+                              }}
+                              className="text-red-400 hover:text-red-600 p-1 cursor-pointer"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </button>
+                          </div>
 
-                        <div>
-                          <label className="block text-[9px] font-bold text-slate-500">Solution Title</label>
-                          <input
-                            type="text"
-                            value={solTitle}
-                            onChange={(e) => {
-                              const updated = [...formData.industries];
-                              const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
-                              if (idx !== -1) {
-                                updated[idx].solutions[sIdx] = {
-                                  title: e.target.value,
-                                  desc: solDesc,
-                                };
-                                setFormData({ ...formData, industries: updated });
-                              }
-                            }}
-                            className="w-full rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1 text-xs text-slate-900 dark:text-white font-bold"
-                          />
-                        </div>
+                          <div>
+                            <label className="block text-[9px] font-bold text-slate-500">Solution Title</label>
+                            <input
+                              type="text"
+                              placeholder="e.g. Real-Time Fraud Prevention"
+                              value={solTitle}
+                              onChange={(e) => {
+                                const updated = [...formData.industries];
+                                const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
+                                if (idx !== -1) {
+                                  updated[idx].solutions[sIdx] = {
+                                    title: e.target.value,
+                                    desc: solDesc,
+                                  };
+                                  setFormData({ ...formData, industries: updated });
+                                }
+                              }}
+                              className="w-full rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1 text-xs text-slate-900 dark:text-white font-bold"
+                            />
+                          </div>
 
-                        <div>
-                          <label className="block text-[9px] font-bold text-slate-500">Solution Description</label>
-                          <input
-                            type="text"
-                            value={solDesc}
-                            onChange={(e) => {
-                              const updated = [...formData.industries];
-                              const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
-                              if (idx !== -1) {
-                                updated[idx].solutions[sIdx] = {
-                                  title: solTitle,
-                                  desc: e.target.value,
-                                };
-                                setFormData({ ...formData, industries: updated });
-                              }
-                            }}
-                            className="w-full rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1 text-xs text-slate-900 dark:text-white"
-                          />
+                          <div>
+                            <label className="block text-[9px] font-bold text-slate-500">Solution Description</label>
+                            <input
+                              type="text"
+                              placeholder="Describe this solution capability..."
+                              value={solDesc}
+                              onChange={(e) => {
+                                const updated = [...formData.industries];
+                                const idx = updated.findIndex((i: any) => i.id === currentIndustry.id);
+                                if (idx !== -1) {
+                                  updated[idx].solutions[sIdx] = {
+                                    title: solTitle,
+                                    desc: e.target.value,
+                                  };
+                                  setFormData({ ...formData, industries: updated });
+                                }
+                              }}
+                              className="w-full rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1 text-xs text-slate-900 dark:text-white"
+                            />
                         </div>
                       </div>
                     );
                   })}
                 </div>
-              </div>
+              )}
+            </div>
 
             </div>
           )}
+
+          {/* Bottom Back Button & Save Bar */}
+          <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-800">
+            <button
+              type="button"
+              onClick={handleBackToDetailDirectory}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 transition-colors"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              <span>Back to All Industries Directory</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={isSaving}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold transition-colors shadow-xs"
+            >
+              <Save className="h-3.5 w-3.5" />
+              <span>{isSaving ? "Saving Changes..." : "Save All Industries Changes"}</span>
+            </button>
+          </div>
         </div>
       )}
+    </div>
+  )}
+
+  {/* POPUP MODAL: ADD / EDIT CATALOG INDUSTRY CARD */}
+  {mounted && typeof window !== "undefined" && editingCatalogIndustry && createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-150">
+      <div className="w-full max-w-xl rounded-2xl bg-white dark:bg-[#131927] border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        {/* Modal Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-violet-500/10 text-violet-600">
+              <Sparkles className="h-4 w-4" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                {editingCatalogIndustry.isNew ? "Add New Industry Sector" : "Edit Industry Sector Card"}
+              </h3>
+              <p className="text-[11px] text-slate-500">
+                {editingCatalogIndustry.isNew
+                  ? "Create a new sector card for the /portfolio & /industries grid"
+                  : `Route: /industries/${editingCatalogIndustry.industry.id}`}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setEditingCatalogIndustry(null)}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Modal Body */}
+        <div className="p-5 space-y-4 overflow-y-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Industry Title <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Fintech & Financial Systems"
+                value={editingCatalogIndustry.industry.title}
+                onChange={(e) =>
+                  setEditingCatalogIndustry({
+                    ...editingCatalogIndustry,
+                    industry: { ...editingCatalogIndustry.industry, title: e.target.value },
+                  })
+                }
+                className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3 py-2 text-xs text-slate-900 dark:text-white font-bold"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                URL Slug / ID <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. fintech"
+                value={editingCatalogIndustry.industry.id}
+                onChange={(e) =>
+                  setEditingCatalogIndustry({
+                    ...editingCatalogIndustry,
+                    industry: {
+                      ...editingCatalogIndustry.industry,
+                      id: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"),
+                    },
+                  })
+                }
+                className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3 py-2 text-xs font-mono font-bold text-violet-600 dark:text-violet-400"
+              />
+              <span className="text-[10px] text-slate-400 mt-0.5 block truncate">
+                Preview: /industries/{editingCatalogIndustry.industry.id || "slug"}
+              </span>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              Subtitle Badge Tag
+            </label>
+            <input
+              type="text"
+              placeholder="e.g. AI-Powered Payments, Banking & Automated Ledger Intelligence"
+              value={editingCatalogIndustry.industry.subtitle || ""}
+              onChange={(e) =>
+                setEditingCatalogIndustry({
+                  ...editingCatalogIndustry,
+                  industry: { ...editingCatalogIndustry.industry, subtitle: e.target.value },
+                })
+              }
+              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3 py-2 text-xs text-slate-900 dark:text-white"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              Catalog Card Summary Description
+            </label>
+            <textarea
+              rows={3}
+              placeholder="Summary of the industry sector displayed on catalog cards..."
+              value={editingCatalogIndustry.industry.desc || ""}
+              onChange={(e) =>
+                setEditingCatalogIndustry({
+                  ...editingCatalogIndustry,
+                  industry: { ...editingCatalogIndustry.industry, desc: e.target.value },
+                })
+              }
+              className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3 py-2 text-xs text-slate-900 dark:text-white"
+            />
+          </div>
+
+          {/* Live Preview Card */}
+          <div className="p-3.5 rounded-xl border border-dashed border-violet-300 dark:border-violet-900/60 bg-violet-50/30 dark:bg-violet-950/20 space-y-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-violet-600 block">
+              Sector Card Live Preview
+            </span>
+            <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0b0f19] space-y-2 shadow-xs">
+              <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-violet-500/10 text-violet-600">
+                {editingCatalogIndustry.industry.subtitle || "Industry Subtitle"}
+              </span>
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                {editingCatalogIndustry.industry.title || "Industry Title Preview"}
+              </h4>
+              <p className="text-xs text-slate-500 line-clamp-2">
+                {editingCatalogIndustry.industry.desc || "Sector description preview will appear here..."}
+              </p>
+              <div className="pt-2">
+                <span className="inline-flex items-center gap-1 text-xs font-bold text-violet-600">
+                  Explore Solutions →
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Modal Footer */}
+        <div className="flex items-center justify-between px-5 py-3.5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+          <button
+            type="button"
+            onClick={() => setEditingCatalogIndustry(null)}
+            className="px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+          >
+            Cancel
+          </button>
+
+          <div className="flex items-center gap-2">
+            {!editingCatalogIndustry.isNew && (
+              <button
+                type="button"
+                onClick={() => {
+                  const indId = editingCatalogIndustry.industry.id;
+                  handleSaveCatalogIndustryModal();
+                  handleNavigateToIndustryDetail(indId);
+                }}
+                className="inline-flex items-center gap-1 px-3 py-2 rounded-xl border border-violet-500/50 text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-950/40 text-xs font-bold transition-colors"
+              >
+                <span>Save &amp; Go to Details</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={handleSaveCatalogIndustryModal}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold transition-colors shadow-xs"
+            >
+              <Check className="h-3.5 w-3.5" />
+              <span>{editingCatalogIndustry.isNew ? "Add Industry to Catalog" : "Save Changes"}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>,
+    document.body
+  )}
+
+  {/* MODAL: ADD / IMPORT PROJECT FROM CASE STUDIES */}
+  {mounted && typeof window !== "undefined" && importProjectModalOpen && createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-150">
+      <div className="relative w-full max-w-2xl rounded-2xl bg-white dark:bg-[#111726] border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        {/* Modal Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-violet-600/10 text-violet-600 dark:text-violet-400">
+              <FolderGit2 className="h-4 w-4" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                {targetProjectIndexForSync !== null
+                  ? `Sync Project #${targetProjectIndexForSync + 1} from Case Studies`
+                  : `Add Featured Project: ${currentIndustry?.title}`}
+              </h3>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Choose an existing case study from the portfolio catalog ({matchingCaseStudies.length} in this category), or create a custom project manually.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setImportProjectModalOpen(false)}
+            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Modal Body */}
+        <div className="p-5 space-y-4 overflow-y-auto flex-1">
+          {/* Quick Manual Add Button Banner */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40">
+            <div>
+              <p className="text-xs font-bold text-slate-900 dark:text-white">
+                Need a custom enterprise project not in the catalog?
+              </p>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                You can add a blank project card and fill in the details manually.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleAddBlankProject}
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 transition-colors shrink-0 cursor-pointer"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>Add Custom Project Manually</span>
+            </button>
+          </div>
+
+          {/* Section: Category Case Studies */}
+          <div className="space-y-3 pt-1">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-violet-600" />
+                Case Studies in &quot;{currentIndustry?.title}&quot; ({matchingCaseStudies.length})
+              </span>
+              {matchingCaseStudies.length > 2 && (
+                <div className="relative w-full sm:w-56">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Filter case studies..."
+                    value={projectPickerSearch}
+                    onChange={(e) => setProjectPickerSearch(e.target.value)}
+                    className="w-full pl-7 pr-3 py-1 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0b0f19] text-slate-900 dark:text-white"
+                  />
+                </div>
+              )}
+            </div>
+
+            {matchingCaseStudies.length === 0 ? (
+              <div className="text-center py-8 px-4 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 space-y-2">
+                <FolderGit2 className="h-8 w-8 text-slate-300 dark:text-slate-600 mx-auto" />
+                <p className="text-xs font-bold text-slate-600 dark:text-slate-400">
+                  No case studies created under &quot;{currentIndustry?.title}&quot; yet.
+                </p>
+                <p className="text-[11px] text-slate-400 max-w-sm mx-auto">
+                  You can create case studies in the Case Studies Page, or click &quot;Add Custom Project Manually&quot; above.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-2.5 max-h-[380px] overflow-y-auto pr-1">
+                {matchingCaseStudies
+                  .filter((cs) => {
+                    if (!projectPickerSearch.trim()) return true;
+                    const q = projectPickerSearch.toLowerCase();
+                    return (
+                      cs.title?.toLowerCase().includes(q) ||
+                      cs.client?.toLowerCase().includes(q) ||
+                      cs.impact?.toLowerCase().includes(q) ||
+                      cs.techStack?.some((t: string) => t.toLowerCase().includes(q))
+                    );
+                  })
+                  .map((cs) => {
+                    const isFeatured = Boolean(cs.featured);
+                    return (
+                      <div
+                        key={cs.id || cs.slug}
+                        className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0b0f19] hover:border-violet-400 dark:hover:border-violet-600/60 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
+                      >
+                        <div className="space-y-1.5 flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h4 className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
+                              {cs.title}
+                            </h4>
+                            {isFeatured && (
+                              <span
+                                className="inline-flex items-center justify-center p-1 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-500 border border-amber-200 dark:border-amber-800/50"
+                                title="Featured"
+                              >
+                                <Star className="h-2.5 w-2.5 fill-amber-500 text-amber-500" />
+                              </span>
+                            )}
+                            <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">
+                              {cs.client || "Client"}
+                            </span>
+                            {cs.impact && (
+                              <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-500/20">
+                                {cs.impact}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                            {cs.description}
+                          </p>
+                          <div className="flex flex-wrap gap-1 pt-0.5">
+                            {(cs.techStack || []).slice(0, 5).map((t: string, i: number) => (
+                              <span key={i} className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                                {t}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => handleSelectCaseStudyToImport(cs)}
+                          className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold transition-all shrink-0 cursor-pointer shadow-xs"
+                        >
+                          <Check className="h-3.5 w-3.5" />
+                          <span>{targetProjectIndexForSync !== null ? "Sync to This Slot" : "Import Project"}</span>
+                        </button>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Modal Footer */}
+        <div className="flex items-center justify-between px-5 py-3.5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+          <button
+            type="button"
+            onClick={() => setImportProjectModalOpen(false)}
+            className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  )}
+
+  {/* =========================================================================
+     CROSS-CATALOG INDUSTRY SECTOR DELETE CONFIRMATION MODAL
+     ========================================================================= */}
+  {mounted && typeof window !== "undefined" && confirmDeleteSectorModal && createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-150">
+      <div className="relative w-full max-w-md rounded-2xl border border-red-200 dark:border-red-900/60 bg-white dark:bg-[#131927] p-5 sm:p-6 shadow-2xl space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-red-500/10 text-red-600 dark:text-red-400 shrink-0">
+            <AlertTriangle className="h-6 w-6" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">
+              Delete Industry Sector & Category?
+            </h3>
+            <p className="text-xs text-red-600 dark:text-red-400 font-semibold">
+              Cross-catalog synchronization & data safety notice
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-3 text-xs text-slate-600 dark:text-slate-300">
+          <p>
+            You are about to delete industry sector <strong className="text-slate-900 dark:text-white">"{confirmDeleteSectorModal.industry.title}"</strong> (`/industries/{confirmDeleteSectorModal.industry.id}`). This will remove the sector card, detail route, and matching Case Studies portfolio category.
+          </p>
+
+          {confirmDeleteSectorModal.linkedCount > 0 ? (
+            <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 space-y-2">
+              <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 font-bold">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                <span>{confirmDeleteSectorModal.linkedCount} Case Study Project(s) Linked</span>
+              </div>
+              <p className="text-[11px] text-amber-800 dark:text-amber-300">
+                To protect your data and prevent broken links, all {confirmDeleteSectorModal.linkedCount} project(s) will be automatically and safely reassigned to the <strong>"General"</strong> category:
+              </p>
+              {confirmDeleteSectorModal.sampleTitles.length > 0 && (
+                <ul className="list-disc list-inside text-[11px] text-amber-900 dark:text-amber-200 font-mono space-y-0.5">
+                  {confirmDeleteSectorModal.sampleTitles.map((t, idx) => (
+                    <li key={idx} className="truncate">{t}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ) : (
+            <p className="text-slate-500 italic">
+              No case studies are currently assigned to this industry sector.
+            </p>
+          )}
+        </div>
+
+        <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <button
+            type="button"
+            onClick={() => setConfirmDeleteSectorModal(null)}
+            className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleConfirmDeleteSector}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            <span>Confirm & Delete Everywhere</span>
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  )}
 
         </div>
       </div>

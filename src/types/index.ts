@@ -176,6 +176,10 @@ export interface IndustryItem {
     liveUrl?: string;
     techStack?: string[];
     tags?: string[];
+    caseStudyId?: string;
+    featured?: boolean;
+    isDraft?: boolean;
+    status?: string;
   }[];
   solutions: (string | { title: string; desc: string })[];
 }

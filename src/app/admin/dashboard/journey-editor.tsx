@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import {
   Save,
@@ -32,6 +33,11 @@ import {
   LayoutGrid,
   Check,
   MapPin,
+  Pencil,
+  Search,
+  ChevronUp,
+  ChevronDown,
+  Sparkles,
 } from "lucide-react";
 import { DEFAULT_JOURNEY_PAGE_DATA } from "@/data/default-journey-data";
 import { JourneyPageContent, TimelineEra, EventItem } from "@/types";
@@ -108,6 +114,17 @@ export default function JourneyEditor({ sectionId, onCloseSection }: JourneyEdit
     index?: number;
   } | null>(null);
   const [newPhotoUrlInput, setNewPhotoUrlInput] = useState<string>("");
+  const [editingEra, setEditingEra] = useState<{
+    era: TimelineEra;
+    index?: number;
+    isNew: boolean;
+  } | null>(null);
+  const [eraSearchQuery, setEraSearchQuery] = useState<string>("");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   function autoSaveToDatabase(dataToSave: JourneyPageContent) {
     fetch("/api/journey", {
@@ -502,36 +519,151 @@ export default function JourneyEditor({ sectionId, onCloseSection }: JourneyEdit
     }
   }
 
+  function handleOpenAddEra() {
+    const nextYear = new Date().getFullYear();
+    const newEra: TimelineEra = {
+      id: `era-${Date.now()}`,
+      yearRange: `${nextYear}`,
+      displayYear: `${nextYear}s`,
+      title: "",
+      subtitle: "",
+      narrativeParagraphs: [""],
+      quoteText: "",
+      quoteAuthor: "",
+      imageUrl: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=1200&auto=format&fit=crop",
+      stats: [
+        { value: "4 Engineers", label: "Engineers", sublabel: "Founding Team" },
+        { value: "12 Shipped", label: "Shipped", sublabel: "First Year MVPs" },
+        { value: "100% TDD", label: "TDD", sublabel: "Core Protocol" },
+      ],
+      achievements: [],
+    };
+    setEditingEra({
+      era: newEra,
+      isNew: true,
+    });
+  }
+
+  function handleOpenEditEra(era: TimelineEra, index: number) {
+    const defaultStats = [
+      { value: "", label: "", sublabel: "" },
+      { value: "", label: "", sublabel: "" },
+      { value: "", label: "", sublabel: "" },
+    ];
+    const eraStats = era.stats && era.stats.length > 0 ? [...era.stats] : defaultStats;
+    while (eraStats.length < 3) {
+      eraStats.push({ value: "", label: "", sublabel: "" });
+    }
+
+    setEditingEra({
+      era: {
+        ...era,
+        stats: eraStats,
+        narrativeParagraphs: era.narrativeParagraphs?.length ? [...era.narrativeParagraphs] : [""],
+      },
+      index,
+      isNew: false,
+    });
+  }
+
+  function handleSaveEraModal() {
+    if (!editingEra) return;
+    const { era, isNew, index } = editingEra;
+    if (!era.title.trim()) {
+      toast.error("Please enter an Era Title");
+      return;
+    }
+    if (!era.displayYear.trim()) {
+      toast.error("Please enter a Display Year (e.g. 2016s)");
+      return;
+    }
+
+    const cleanedStats = (era.stats || []).filter(
+      (st) => st.value?.trim() || st.sublabel?.trim() || st.label?.trim()
+    );
+
+    const finalEra: TimelineEra = {
+      ...era,
+      stats: cleanedStats,
+      narrativeParagraphs: (era.narrativeParagraphs || []).filter((p) => p.trim()),
+    };
+
+    let nextEras = [...formData.eras];
+    if (isNew) {
+      nextEras.push(finalEra);
+      toast.success(`Era milestone "${finalEra.title}" added!`);
+    } else if (typeof index === "number") {
+      nextEras[index] = finalEra;
+      toast.success(`Era milestone "${finalEra.title}" updated!`);
+    }
+
+    const nextFormData = { ...formData, eras: nextEras };
+    setFormData(nextFormData);
+    setEditingEra(null);
+    autoSaveToDatabase(nextFormData);
+  }
+
+  function handleDeleteEraItem(eraToDelete: TimelineEra, index: number) {
+    if (confirm(`Are you sure you want to delete Era "${eraToDelete.title || eraToDelete.displayYear}"?`)) {
+      if (eraToDelete.imageUrl) {
+        triggerCloudinaryDelete(eraToDelete.imageUrl);
+      }
+      const nextEras = formData.eras.filter((_, i) => i !== index);
+      const nextFormData = { ...formData, eras: nextEras };
+      setFormData(nextFormData);
+      autoSaveToDatabase(nextFormData);
+      toast.success(`Deleted Era "${eraToDelete.title || eraToDelete.displayYear}"`);
+    }
+  }
+
+  async function handleUploadEraModalPhoto(file: File) {
+    if (!file || !editingEra) return;
+    setUploadingField("era-modal-photo");
+    const toastId = toast.loading("Uploading era photo to Cloudinary...");
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      if (editingEra.era.imageUrl) {
+        fd.append("previousUrl", editingEra.era.imageUrl);
+      }
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const json = await res.json();
+      if (json.success && json.url) {
+        setEditingEra({
+          ...editingEra,
+          era: {
+            ...editingEra.era,
+            imageUrl: json.url,
+          },
+        });
+        toast.success("Photo uploaded to Cloudinary!", { id: toastId });
+      } else {
+        toast.error(json.error || "Upload failed", { id: toastId });
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Upload failed", { id: toastId });
+    } finally {
+      setUploadingField(null);
+    }
+  }
+
   function handleUpdateEra(index: number, field: keyof TimelineEra, value: any) {
     const updated = [...(formData.eras || DEFAULT_JOURNEY_PAGE_DATA.eras)];
     updated[index] = { ...updated[index], [field]: value };
-    setFormData({ ...formData, eras: updated });
+    const nextData = { ...formData, eras: updated };
+    setFormData(nextData);
+    autoSaveToDatabase(nextData);
   }
 
   function handleAddEra() {
-    const newEra: TimelineEra = {
-      id: `era-${Date.now()}`,
-      yearRange: "2027",
-      displayYear: "2027",
-      title: "Future Expansion Era",
-      subtitle: "Autonomous Cloud Pods",
-      narrativeParagraphs: ["Enter story description for this new milestone..."],
-      quoteText: "Innovation accelerates every day.",
-      quoteAuthor: "Engineering Leadership",
-      imageUrl: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=1200&auto=format&fit=crop",
-      stats: [{ label: "Team Members", value: "200+" }],
-      achievements: ["Achieved new tech milestone"],
-    };
-    setFormData({ ...formData, eras: [...formData.eras, newEra] });
+    handleOpenAddEra();
   }
 
   function handleRemoveEra(index: number) {
     const targetEra = formData.eras[index];
-    if (targetEra?.imageUrl) {
-      triggerCloudinaryDelete(targetEra.imageUrl);
+    if (targetEra) {
+      handleDeleteEraItem(targetEra, index);
     }
-    const updated = formData.eras.filter((_, i) => i !== index);
-    setFormData({ ...formData, eras: updated });
   }
 
   function handleMoveEra(index: number, direction: "UP" | "DOWN") {
@@ -541,7 +673,9 @@ export default function JourneyEditor({ sectionId, onCloseSection }: JourneyEdit
     const temp = list[index];
     list[index] = list[targetIdx];
     list[targetIdx] = temp;
-    setFormData({ ...formData, eras: list });
+    const nextData = { ...formData, eras: list };
+    setFormData(nextData);
+    autoSaveToDatabase(nextData);
   }
 
   const resolveSectionId = (secId: string | null | undefined): string => {
@@ -939,261 +1073,665 @@ export default function JourneyEditor({ sectionId, onCloseSection }: JourneyEdit
         </div>
       )}
 
-      {/* SECTION 2: HISTORICAL ERA NODES MANAGER */}
+      {/* SECTION 2: HISTORICAL ERA NODES MANAGER - TABULAR DIRECTORY & EDIT MODAL */}
       {activeSectionId === "journey-eras" && (
-        <div className="rounded-xl sm:rounded-2xl border border-violet-200/80 dark:border-slate-800 bg-gradient-to-b from-white via-violet-50/20 to-white dark:from-[#131927] dark:to-[#131927] p-4 sm:p-6 space-y-4 sm:space-y-6 shadow-xs">
+        <div className="rounded-xl sm:rounded-2xl border border-violet-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-4 sm:p-6 space-y-5 shadow-xs">
+          {/* Header Bar */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-violet-100 dark:border-slate-800">
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] sm:text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">
+            <div className="flex items-center gap-2.5">
+              <span className="font-mono text-[10px] sm:text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2.5 py-1 rounded-md">
                 #02
               </span>
-              <h3 className="text-xs sm:text-sm font-bold flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-violet-600 dark:text-violet-400 shrink-0" />
-                Historical Timeline Milestone Era Nodes ({formData.eras?.length || 0} Total Eras)
-              </h3>
+              <div>
+                <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-violet-600 dark:text-violet-400 shrink-0" />
+                  Historical Timeline Milestone Era Nodes
+                </h3>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Chronological milestone eras displayed across the interactive company journey timeline.
+                </p>
+              </div>
             </div>
 
-            <button
-              type="button"
-              onClick={handleAddEra}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-violet-600 text-white text-xs font-bold hover:bg-violet-700 transition-colors shadow-xs cursor-pointer"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              <span>Add New Era Milestone</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase bg-violet-50 dark:bg-violet-950/70 text-violet-700 dark:text-violet-300 border border-violet-200/60 dark:border-violet-800/40">
+                {formData.eras?.length || 0} Eras Configured
+              </span>
+              <button
+                type="button"
+                onClick={handleOpenAddEra}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold transition-colors shadow-xs cursor-pointer"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>Add New Era Milestone</span>
+              </button>
+            </div>
           </div>
 
-          <div className="space-y-4 sm:space-y-6">
-            {formData.eras.map((era, idx) => (
-              <div
-                key={era.id || idx}
-                className="p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#0b0f19] space-y-3 sm:space-y-4 shadow-xs relative group"
-              >
-                {/* Era Control Bar */}
-                <div className="flex items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="font-mono text-[10px] sm:text-xs font-extrabold text-violet-600 bg-violet-100 dark:bg-violet-950 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg shrink-0">
-                      Era #{idx + 1} ({era.displayYear})
-                    </span>
-                    <span className="text-xs font-bold truncate">
-                      {era.title}
-                    </span>
-                  </div>
+          {/* Directory Toolbar with Search */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+            <div>
+              <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
+                Timeline Eras Directory (Tabular View)
+              </h4>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Click “Edit” on any era row to open the complete milestone editor popup modal.
+              </p>
+            </div>
 
-                  <div className="flex items-center gap-1 shrink-0">
+            <div className="relative w-full sm:w-80">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Filter eras by year, title, subtitle, or story..."
+                value={eraSearchQuery}
+                onChange={(e) => setEraSearchQuery(e.target.value)}
+                className="w-full pl-8 pr-7 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#0b0f19] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
+              />
+              {eraSearchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setEraSearchQuery("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Tabular List of Timeline Eras */}
+          {(() => {
+            const filteredEras = (formData.eras || []).filter((era) => {
+              if (!eraSearchQuery.trim()) return true;
+              const q = eraSearchQuery.toLowerCase();
+              return (
+                era.title?.toLowerCase().includes(q) ||
+                era.subtitle?.toLowerCase().includes(q) ||
+                era.displayYear?.toLowerCase().includes(q) ||
+                era.yearRange?.toLowerCase().includes(q) ||
+                era.quoteAuthor?.toLowerCase().includes(q) ||
+                era.quoteText?.toLowerCase().includes(q) ||
+                era.narrativeParagraphs?.some((p) => p.toLowerCase().includes(q)) ||
+                era.stats?.some(
+                  (st) =>
+                    st.value?.toLowerCase().includes(q) ||
+                    st.sublabel?.toLowerCase().includes(q) ||
+                    st.label?.toLowerCase().includes(q)
+                )
+              );
+            });
+
+            if (filteredEras.length === 0) {
+              return (
+                <div className="text-center py-12 p-4 border border-dashed border-slate-300 dark:border-slate-800 rounded-xl sm:rounded-2xl space-y-2">
+                  <Calendar className="h-8 w-8 text-slate-400 mx-auto" />
+                  <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {eraSearchQuery ? "No milestone eras match your search filter." : "No timeline milestone eras configured yet."}
+                  </p>
+                  <p className="text-[11px] text-slate-400 max-w-sm mx-auto">
+                    {eraSearchQuery
+                      ? "Try searching with a different keyword or clear the filter."
+                      : "Add milestone era nodes to display them along the interactive company journey timeline."}
+                  </p>
+                  {eraSearchQuery ? (
                     <button
                       type="button"
-                      disabled={idx === 0}
-                      onClick={() => handleMoveEra(idx, "UP")}
-                      title="Move Era Up"
-                      className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 transition-colors"
+                      onClick={() => setEraSearchQuery("")}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                     >
-                      <ArrowUp className="h-3.5 w-3.5" />
+                      Clear Search Filter
                     </button>
-
+                  ) : (
                     <button
                       type="button"
-                      disabled={idx === formData.eras.length - 1}
-                      onClick={() => handleMoveEra(idx, "DOWN")}
-                      title="Move Era Down"
-                      className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 transition-colors"
+                      onClick={handleOpenAddEra}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold transition-colors shadow-xs cursor-pointer"
                     >
-                      <ArrowDown className="h-3.5 w-3.5" />
+                      <Plus className="h-3.5 w-3.5" />
+                      <span>Add First Era Milestone</span>
                     </button>
+                  )}
+                </div>
+              );
+            }
 
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveEra(idx)}
-                      title="Delete Era Node"
-                      className="p-1.5 rounded-lg bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900 transition-colors ml-0.5"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+            return (
+              <div className="overflow-x-auto rounded-xl sm:rounded-2xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#0f1422]">
+                <table className="w-full text-left border-collapse min-w-[820px]">
+                  <thead>
+                    <tr className="bg-slate-50 dark:bg-[#0b0f19] border-b border-slate-200 dark:border-slate-800 text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      <th className="py-3 px-3 w-16 text-center">Order</th>
+                      <th className="py-3 px-4">Era Milestone & Photo</th>
+                      <th className="py-3 px-4">Display Year & Range</th>
+                      <th className="py-3 px-4">Key Metrics / Badges</th>
+                      <th className="py-3 px-4">Story & Quote Excerpt</th>
+                      <th className="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+                    {filteredEras.map((era) => {
+                      const originalIdx = (formData.eras || []).findIndex((e) => e.id === era.id);
+                      const isFirst = originalIdx === 0;
+                      const isLast = originalIdx === (formData.eras || []).length - 1;
+
+                      return (
+                        <tr
+                          key={era.id || originalIdx}
+                          className="bg-white dark:bg-[#131927] hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors group"
+                        >
+                          {/* Order with Up/Down buttons */}
+                          <td className="py-3.5 px-3 text-center">
+                            <div className="flex items-center justify-center gap-1">
+                              <span className="font-mono text-[11px] font-bold text-slate-400">
+                                {String(originalIdx + 1).padStart(2, "0")}
+                              </span>
+                              <div className="flex flex-col opacity-60 group-hover:opacity-100 transition-opacity">
+                                <button
+                                  type="button"
+                                  disabled={isFirst}
+                                  onClick={() => handleMoveEra(originalIdx, "UP")}
+                                  className="p-0.5 text-slate-400 hover:text-violet-600 disabled:opacity-20 disabled:hover:text-slate-400 cursor-pointer"
+                                  title="Move era earlier"
+                                >
+                                  <ChevronUp className="h-3 w-3" />
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={isLast}
+                                  onClick={() => handleMoveEra(originalIdx, "DOWN")}
+                                  className="p-0.5 text-slate-400 hover:text-violet-600 disabled:opacity-20 disabled:hover:text-slate-400 cursor-pointer"
+                                  title="Move era later"
+                                >
+                                  <ChevronDown className="h-3 w-3" />
+                                </button>
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* Era Photo Thumbnail & Title */}
+                          <td className="py-3.5 px-4">
+                            <div className="flex items-center gap-3">
+                              {era.imageUrl && era.imageUrl.trim() !== "" ? (
+                                <div className="relative h-11 w-14 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 shadow-2xs shrink-0 bg-slate-900">
+                                  <img
+                                    src={era.imageUrl}
+                                    alt={era.title}
+                                    className="h-full w-full object-cover"
+                                    onError={(e) => {
+                                      (e.target as HTMLElement).style.display = "none";
+                                    }}
+                                  />
+                                </div>
+                              ) : (
+                                <div className="h-11 w-14 rounded-lg bg-gradient-to-tr from-violet-600 via-indigo-600 to-purple-600 text-white flex items-center justify-center shadow-2xs shrink-0">
+                                  <Milestone className="h-5 w-5" />
+                                </div>
+                              )}
+                              <div className="min-w-0 max-w-[220px]">
+                                <span className="font-extrabold text-slate-900 dark:text-white block truncate">
+                                  {era.title || "Untitled Era"}
+                                </span>
+                                <span className="text-[11px] text-slate-500 dark:text-slate-400 block truncate">
+                                  {era.subtitle || "No subtitle"}
+                                </span>
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* Year Badge & Range */}
+                          <td className="py-3.5 px-4">
+                            <div className="space-y-1">
+                              <span className="inline-block px-2.5 py-0.5 rounded-md text-xs font-black bg-violet-100 dark:bg-violet-950/80 text-violet-700 dark:text-violet-300 border border-violet-200/60 dark:border-violet-800/60 font-mono">
+                                {era.displayYear || "N/A"}
+                              </span>
+                              <span className="text-[11px] text-slate-500 dark:text-slate-400 block font-medium">
+                                {era.yearRange || "-"}
+                              </span>
+                            </div>
+                          </td>
+
+                          {/* Era Key Stats / Badges */}
+                          <td className="py-3.5 px-4 max-w-[220px]">
+                            <div className="flex flex-wrap items-center gap-1">
+                              {(era.stats || []).map((st, sIdx) => {
+                                if (!st.value && !st.label && !st.sublabel) return null;
+                                return (
+                                  <span
+                                    key={sIdx}
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+                                    title={st.sublabel || st.label}
+                                  >
+                                    <span className="font-extrabold text-violet-600 dark:text-violet-400">
+                                      {st.value}
+                                    </span>
+                                    {st.sublabel && (
+                                      <span className="text-slate-400 font-normal truncate max-w-[70px]">
+                                        ({st.sublabel})
+                                      </span>
+                                    )}
+                                  </span>
+                                );
+                              })}
+                              {(!era.stats || era.stats.length === 0) && (
+                                <span className="text-slate-400 text-[11px] italic">No stats</span>
+                              )}
+                            </div>
+                          </td>
+
+                          {/* Story Narrative & Quote Excerpt */}
+                          <td className="py-3.5 px-4 max-w-[230px]">
+                            <p
+                              className="text-slate-600 dark:text-slate-300 text-xs line-clamp-2 leading-relaxed"
+                              title={
+                                (era.narrativeParagraphs && era.narrativeParagraphs[0]) ||
+                                era.quoteText ||
+                                ""
+                              }
+                            >
+                              {(era.narrativeParagraphs && era.narrativeParagraphs[0]) ||
+                                era.quoteText || (
+                                  <span className="text-slate-400 italic">No narrative provided</span>
+                                )}
+                            </p>
+                            {era.quoteAuthor && (
+                              <span className="text-[10px] text-violet-500 font-semibold block truncate mt-0.5">
+                                “{era.quoteAuthor}”
+                              </span>
+                            )}
+                          </td>
+
+                          {/* Actions: Edit & Delete */}
+                          <td className="py-3.5 px-4 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => handleOpenEditEra(era, originalIdx)}
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-violet-50 dark:bg-violet-950/60 hover:bg-violet-100 dark:hover:bg-violet-900/60 text-violet-600 dark:text-violet-400 text-xs font-bold transition-colors cursor-pointer"
+                                title="Edit Era Milestone"
+                              >
+                                <Pencil className="h-3 w-3" />
+                                <span>Edit</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteEraItem(era, originalIdx)}
+                                className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50 rounded-lg transition-colors cursor-pointer"
+                                title="Delete Era Milestone"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            );
+          })()}
+
+          {/* Interactive Era Edit / Add Popup Modal */}
+          {mounted && typeof window !== "undefined" && editingEra && createPortal(
+            <div className="fixed inset-0 z-[9999] bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-150">
+              <div className="bg-white dark:bg-[#131927] rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-3xl w-full my-6 flex flex-col max-h-[92vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                {/* Modal Header */}
+                <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0 bg-slate-50/60 dark:bg-slate-900/50">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-xl bg-violet-100 dark:bg-violet-950/70 text-violet-600 dark:text-violet-400">
+                      <Calendar className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white">
+                        {editingEra.isNew ? "Add Timeline Era Milestone" : "Edit Timeline Era Milestone"}
+                      </h4>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                        {editingEra.isNew
+                          ? "Configure timeline era date range, narrative copy, stats, and photo media."
+                          : `Editing milestone for "${editingEra.era.title || editingEra.era.displayYear}"`}
+                      </p>
+                    </div>
                   </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setEditingEra(null)}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
                 </div>
 
-                <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-                  <div>
-                    <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1 block">
-                      Year Range (e.g. 2016 - 2017)
-                    </label>
-                    <input
-                      type="text"
-                      value={era.yearRange}
-                      onChange={(e) => handleUpdateEra(idx, "yearRange", e.target.value)}
-                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 dark:text-white font-semibold"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1 block">
-                      Display Year Button Label (e.g. 2016s)
-                    </label>
-                    <input
-                      type="text"
-                      value={era.displayYear}
-                      onChange={(e) => handleUpdateEra(idx, "displayYear", e.target.value)}
-                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 dark:text-white font-semibold"
-                    />
-                  </div>
-
-                  <div className="sm:col-span-2 md:col-span-1">
-                    <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1 block">
-                      Era Title
-                    </label>
-                    <input
-                      type="text"
-                      value={era.title}
-                      onChange={(e) => handleUpdateEra(idx, "title", e.target.value)}
-                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 dark:text-white font-semibold"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2">
-                  <div>
-                    <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1 block">
-                      Subtitle / Tagline
-                    </label>
-                    <input
-                      type="text"
-                      value={era.subtitle}
-                      onChange={(e) => handleUpdateEra(idx, "subtitle", e.target.value)}
-                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 dark:text-white font-semibold"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1 block">
-                      Quote Author
-                    </label>
-                    <input
-                      type="text"
-                      value={era.quoteAuthor || ""}
-                      placeholder="e.g. Founding Engineering Team"
-                      onChange={(e) => handleUpdateEra(idx, "quoteAuthor", e.target.value)}
-                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 dark:text-white font-semibold"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1 block">
-                    Quote Text
-                  </label>
-                  <input
-                    type="text"
-                    value={era.quoteText || ""}
-                    placeholder="Key quote for this era..."
-                    onChange={(e) => handleUpdateEra(idx, "quoteText", e.target.value)}
-                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 dark:text-white font-medium"
-                  />
-                </div>
-
-                {/* Dynamic Era Metric Badges (3 Badges) */}
-                <div className="p-3 sm:p-3.5 rounded-xl border border-violet-100 dark:border-slate-800 bg-violet-50/40 dark:bg-slate-900/50 space-y-2">
-                  <label className="text-[11px] font-bold text-violet-700 dark:text-violet-300 flex items-center gap-1.5 uppercase tracking-wider">
-                    <Award className="h-3.5 w-3.5 text-violet-600 shrink-0" />
-                    Era Key Stats / Badges (e.g. "4 Engineers", "12 Shipped", "100% TDD")
-                  </label>
-                  <div className="grid gap-2.5 sm:gap-3 grid-cols-1 sm:grid-cols-3">
-                    {(era.stats?.length ? era.stats : [
-                      { value: "4 Engineers", label: "Engineers", sublabel: "Founding Team" },
-                      { value: "12 Shipped", label: "Shipped", sublabel: "First Year MVPs" },
-                      { value: "100% TDD", label: "TDD", sublabel: "Core Protocol" }
-                    ]).map((st, stIdx) => (
-                      <div key={stIdx} className="p-2.5 rounded-lg bg-white dark:bg-[#0b0f19] border border-slate-200 dark:border-slate-800 space-y-1.5 shadow-2xs">
-                        <span className="text-[10px] font-extrabold text-violet-600 dark:text-violet-400 uppercase">Stat #{stIdx + 1}</span>
-                        <div>
-                          <label className="text-[9px] font-bold text-slate-500 uppercase block">Big Value (e.g. 4 Engineers)</label>
-                          <input
-                            type="text"
-                            value={st.value || ""}
-                            placeholder="e.g. 4 Engineers"
-                            onChange={(e) => {
-                              const currentEras = [...formData.eras];
-                              const currentStats = [...(currentEras[idx].stats || [])];
-                              if (!currentStats[stIdx]) currentStats[stIdx] = { value: "", label: "", sublabel: "" };
-                              currentStats[stIdx] = { ...currentStats[stIdx], value: e.target.value };
-                              currentEras[idx].stats = currentStats;
-                              setFormData({ ...formData, eras: currentEras });
-                            }}
-                            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-1 text-xs text-violet-600 dark:text-violet-300 font-extrabold"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-[9px] font-bold text-slate-400 uppercase block">Sublabel / Tag (e.g. Founding Team)</label>
-                          <input
-                            type="text"
-                            value={st.sublabel || st.label || ""}
-                            placeholder="e.g. Founding Team"
-                            onChange={(e) => {
-                              const currentEras = [...formData.eras];
-                              const currentStats = [...(currentEras[idx].stats || [])];
-                              if (!currentStats[stIdx]) currentStats[stIdx] = { value: "", label: "", sublabel: "" };
-                              currentStats[stIdx] = { ...currentStats[stIdx], sublabel: e.target.value, label: e.target.value };
-                              currentEras[idx].stats = currentStats;
-                              setFormData({ ...formData, eras: currentEras });
-                            }}
-                            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-1 text-[11px] text-slate-700 dark:text-slate-300 font-semibold"
-                          />
-                        </div>
+                {/* Modal Body */}
+                <div className="p-4 sm:p-6 overflow-y-auto space-y-5 text-xs">
+                  {/* Live Era Card Preview */}
+                  <div className="rounded-xl border border-violet-100 dark:border-violet-900/40 bg-violet-50/30 dark:bg-violet-950/20 p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                    {editingEra.era.imageUrl && editingEra.era.imageUrl.trim() !== "" ? (
+                      <div className="relative h-16 w-24 rounded-xl overflow-hidden border border-violet-300 dark:border-violet-800 shadow-sm shrink-0 bg-slate-900">
+                        <img
+                          src={editingEra.era.imageUrl}
+                          alt={editingEra.era.title}
+                          className="h-full w-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLElement).style.display = "none";
+                          }}
+                        />
                       </div>
-                    ))}
+                    ) : (
+                      <div className="h-16 w-24 rounded-xl bg-gradient-to-tr from-violet-600 via-indigo-600 to-purple-600 text-white flex items-center justify-center shadow-sm shrink-0">
+                        <Milestone className="h-6 w-6" />
+                      </div>
+                    )}
+
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-mono text-xs font-black px-2.5 py-0.5 rounded-md bg-violet-600 text-white">
+                          {editingEra.era.displayYear || "Year"}
+                        </span>
+                        <span className="font-extrabold text-sm text-slate-900 dark:text-white truncate">
+                          {editingEra.era.title || "Era Milestone Title"}
+                        </span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-violet-100 dark:bg-violet-900 text-violet-700 dark:text-violet-300">
+                          Live Preview
+                        </span>
+                      </div>
+                      <p className="text-xs font-semibold text-violet-600 dark:text-violet-400 truncate">
+                        {editingEra.era.subtitle || "Era Subtitle / Tagline"}
+                      </p>
+                      <div className="flex items-center gap-2 flex-wrap pt-0.5">
+                        {(editingEra.era.stats || []).map((st, i) => {
+                          if (!st.value && !st.sublabel) return null;
+                          return (
+                            <span
+                              key={i}
+                              className="px-2 py-0.5 rounded text-[10px] font-bold bg-white dark:bg-slate-900 border border-violet-200 dark:border-slate-800 text-slate-700 dark:text-slate-300"
+                            >
+                              <strong className="text-violet-600">{st.value}</strong>{" "}
+                              {st.sublabel && <span>• {st.sublabel}</span>}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </div>
-                </div>
 
-                <div>
-                  <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1 block">
-                    Story Narrative Paragraphs (Separate paragraphs with new line)
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={era.narrativeParagraphs?.join("\n\n") || ""}
-                    onChange={(e) =>
-                      handleUpdateEra(
-                        idx,
-                        "narrativeParagraphs",
-                        e.target.value.split("\n\n").filter((p) => p.trim())
-                      )
-                    }
-                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-900 dark:text-white font-medium"
-                  />
-                </div>
-
-                {/* Cloudinary Image Uploader Widget */}
-                <div className="p-3 sm:p-3.5 rounded-xl border border-violet-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/60 space-y-2">
-                  <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                    <ImageIcon className="h-3.5 w-3.5 text-violet-600 shrink-0" />
-                    Era Photo Image (Cloudinary Upload)
-                  </label>
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
-                    <input
-                      type="text"
-                      value={era.imageUrl}
-                      onChange={(e) => handleUpdateEra(idx, "imageUrl", e.target.value)}
-                      placeholder="https://images.unsplash.com/..."
-                      className="w-full sm:flex-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 dark:text-white font-mono"
-                    />
-                    <label className="shrink-0 px-3.5 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-colors">
-                      {uploadingField === `era-${idx}` ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      ) : (
-                        <Upload className="h-3.5 w-3.5" />
-                      )}
-                      <span>Upload Cloudinary Photo</span>
+                  {/* Section 1: Era Identity Fields */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                    <div>
+                      <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1 block">
+                        Year Range (e.g. 2016 – 2017)
+                      </label>
                       <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => handleImageUpload(e, `era-${idx}`, era.imageUrl)}
-                        className="hidden"
+                        type="text"
+                        placeholder="2016 – 2017"
+                        value={editingEra.era.yearRange || ""}
+                        onChange={(e) =>
+                          setEditingEra({
+                            ...editingEra,
+                            era: { ...editingEra.era, yearRange: e.target.value },
+                          })
+                        }
+                        className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-semibold"
                       />
-                    </label>
+                    </div>
+
+                    <div>
+                      <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1 block">
+                        Display Year (e.g. 2016s) <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="2016s"
+                        value={editingEra.era.displayYear || ""}
+                        onChange={(e) =>
+                          setEditingEra({
+                            ...editingEra,
+                            era: { ...editingEra.era, displayYear: e.target.value },
+                          })
+                        }
+                        className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-semibold font-mono"
+                      />
+                    </div>
+
+                    <div className="sm:col-span-2">
+                      <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1 block">
+                        Era Milestone Title <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Founding Clickpoint Innovation"
+                        value={editingEra.era.title || ""}
+                        onChange={(e) =>
+                          setEditingEra({
+                            ...editingEra,
+                            era: { ...editingEra.era, title: e.target.value },
+                          })
+                        }
+                        className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-bold"
+                      />
+                    </div>
+
+                    <div className="sm:col-span-2 md:col-span-4">
+                      <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1 block">
+                        Subtitle / Tagline
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. The Inception of High-Concurrency Engineering"
+                        value={editingEra.era.subtitle || ""}
+                        onChange={(e) =>
+                          setEditingEra({
+                            ...editingEra,
+                            era: { ...editingEra.era, subtitle: e.target.value },
+                          })
+                        }
+                        className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-semibold"
+                      />
+                    </div>
                   </div>
+
+                  {/* Section 2: Era Photo Image with Cloudinary Upload */}
+                  <div className="p-3.5 rounded-xl border border-violet-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/60 space-y-2">
+                    <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                      <ImageIcon className="h-3.5 w-3.5 text-violet-600 shrink-0" />
+                      Era Photo Image (Cloudinary Supported)
+                    </label>
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+                      <input
+                        type="text"
+                        value={editingEra.era.imageUrl || ""}
+                        onChange={(e) =>
+                          setEditingEra({
+                            ...editingEra,
+                            era: { ...editingEra.era, imageUrl: e.target.value },
+                          })
+                        }
+                        placeholder="https://images.unsplash.com/... or Cloudinary URL"
+                        className="w-full sm:flex-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-mono"
+                      />
+                      <label className="shrink-0 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-colors shadow-xs">
+                        {uploadingField === "era-modal-photo" ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Upload className="h-3.5 w-3.5" />
+                        )}
+                        <span>Upload Photo</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleUploadEraModalPhoto(file);
+                            e.target.value = "";
+                          }}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+                    <p className="text-[10px] text-slate-400">
+                      Landscape 16:9 or 4:3 high-res photo displayed on public timeline hero card.
+                    </p>
+                  </div>
+
+                  {/* Section 3: 3 Key Metrics / Badges */}
+                  <div className="p-3.5 rounded-xl border border-violet-100 dark:border-slate-800 bg-violet-50/40 dark:bg-slate-900/50 space-y-2.5">
+                    <label className="text-[11px] font-bold text-violet-700 dark:text-violet-300 flex items-center gap-1.5 uppercase tracking-wider">
+                      <Award className="h-3.5 w-3.5 text-violet-600 shrink-0" />
+                      Era Key Stats / Badges (Up to 3 Metrics)
+                    </label>
+                    <div className="grid gap-3 grid-cols-1 sm:grid-cols-3">
+                      {[0, 1, 2].map((stIdx) => {
+                        const curStat = editingEra.era.stats?.[stIdx] || { value: "", label: "", sublabel: "" };
+                        return (
+                          <div
+                            key={stIdx}
+                            className="p-3 rounded-xl bg-white dark:bg-[#0b0f19] border border-slate-200 dark:border-slate-800 space-y-2 shadow-2xs"
+                          >
+                            <span className="text-[10px] font-extrabold text-violet-600 dark:text-violet-400 uppercase">
+                              Metric #{stIdx + 1}
+                            </span>
+                            <div>
+                              <label className="text-[9px] font-bold text-slate-500 uppercase block mb-0.5">
+                                Big Value (e.g. 4 Engineers)
+                              </label>
+                              <input
+                                type="text"
+                                value={curStat.value || ""}
+                                placeholder="e.g. 4 Engineers"
+                                onChange={(e) => {
+                                  const updatedStats = [...(editingEra.era.stats || [])];
+                                  while (updatedStats.length < 3) updatedStats.push({ value: "", label: "", sublabel: "" });
+                                  updatedStats[stIdx] = { ...updatedStats[stIdx], value: e.target.value };
+                                  setEditingEra({
+                                    ...editingEra,
+                                    era: { ...editingEra.era, stats: updatedStats },
+                                  });
+                                }}
+                                className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#131927] px-2.5 py-1.5 text-xs text-violet-600 dark:text-violet-300 font-extrabold"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[9px] font-bold text-slate-400 uppercase block mb-0.5">
+                                Sublabel / Tag (e.g. Founding Team)
+                              </label>
+                              <input
+                                type="text"
+                                value={curStat.sublabel || curStat.label || ""}
+                                placeholder="e.g. Founding Team"
+                                onChange={(e) => {
+                                  const updatedStats = [...(editingEra.era.stats || [])];
+                                  while (updatedStats.length < 3) updatedStats.push({ value: "", label: "", sublabel: "" });
+                                  updatedStats[stIdx] = {
+                                    ...updatedStats[stIdx],
+                                    sublabel: e.target.value,
+                                    label: e.target.value,
+                                  };
+                                  setEditingEra({
+                                    ...editingEra,
+                                    era: { ...editingEra.era, stats: updatedStats },
+                                  });
+                                }}
+                                className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#131927] px-2.5 py-1.5 text-[11px] text-slate-700 dark:text-slate-300 font-semibold"
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Section 4: Narrative Paragraphs */}
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                        Story Narrative Paragraphs (Separate paragraphs with blank lines)
+                      </label>
+                      <span className="text-[10px] text-slate-400">
+                        {(editingEra.era.narrativeParagraphs || []).filter((p) => p.trim()).length} paragraphs
+                      </span>
+                    </div>
+                    <textarea
+                      rows={4}
+                      placeholder="Write the historical narrative for this milestone era..."
+                      value={editingEra.era.narrativeParagraphs?.join("\n\n") || ""}
+                      onChange={(e) =>
+                        setEditingEra({
+                          ...editingEra,
+                          era: {
+                            ...editingEra.era,
+                            narrativeParagraphs: e.target.value.split("\n\n"),
+                          },
+                        })
+                      }
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white leading-relaxed font-medium"
+                    />
+                  </div>
+
+                  {/* Section 5: Era Quote & Author */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="md:col-span-2 space-y-1">
+                      <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 block">
+                        Quote Text (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Key quote for this era..."
+                        value={editingEra.era.quoteText || ""}
+                        onChange={(e) =>
+                          setEditingEra({
+                            ...editingEra,
+                            era: { ...editingEra.era, quoteText: e.target.value },
+                          })
+                        }
+                        className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-medium"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 block">
+                        Quote Author
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Founding Engineering Team"
+                        value={editingEra.era.quoteAuthor || ""}
+                        onChange={(e) =>
+                          setEditingEra({
+                            ...editingEra,
+                            era: { ...editingEra.era, quoteAuthor: e.target.value },
+                          })
+                        }
+                        className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-semibold"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Modal Footer */}
+                <div className="p-4 sm:p-5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2 shrink-0 bg-slate-50/60 dark:bg-slate-900/50">
+                  <button
+                    type="button"
+                    onClick={() => setEditingEra(null)}
+                    className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleSaveEraModal}
+                    className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer"
+                  >
+                    <Check className="h-4 w-4" />
+                    <span>{editingEra.isNew ? "Add Era Milestone" : "Save Changes"}</span>
+                  </button>
                 </div>
               </div>
-            ))}
-          </div>
+            </div>,
+            document.body
+          )}
         </div>
       )}
 
@@ -1346,7 +1884,7 @@ export default function JourneyEditor({ sectionId, onCloseSection }: JourneyEdit
                     return (
                       <div
                         key={evt.id || idx}
-                        className="rounded-[4px] border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900/70 overflow-hidden shadow-xs hover:border-violet-400 dark:hover:border-violet-600 hover:shadow-md transition-all group flex flex-col"
+                        className="rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-[#131927] overflow-hidden shadow-xs hover:border-violet-400 dark:hover:border-violet-600 hover:shadow-md transition-all group flex flex-col"
                       >
                         {/* Cover Image & Count Badge */}
                         <div
@@ -1359,31 +1897,31 @@ export default function JourneyEditor({ sectionId, onCloseSection }: JourneyEdit
                             alt={evt.title}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30 pointer-events-none" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/30 pointer-events-none" />
 
                           {/* Top Tag & Photos Counter */}
-                          <div className="absolute top-2.5 inset-x-2.5 flex items-center justify-between pointer-events-none">
-                            <span className="px-2 py-0.5 rounded-[4px] bg-violet-600/95 backdrop-blur-md text-[10px] font-black uppercase tracking-wider text-white flex items-center gap-1 shadow-xs">
-                              <Folder className="h-3 w-3" />
-                              Folder
+                          <div className="absolute top-2.5 inset-x-2.5 flex items-center justify-between pointer-events-none z-20">
+                            <span className="px-2.5 py-1 rounded-md bg-violet-600 text-white backdrop-blur-md text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md border border-violet-400/40">
+                              <Folder className="h-3 w-3 text-white fill-white/20" />
+                              <span className="text-white font-black">Folder</span>
                             </span>
-                            <span className="px-2 py-0.5 rounded-[4px] bg-black/80 backdrop-blur-md text-[11px] font-bold text-white flex items-center gap-1.5 shadow-xs border border-white/10">
+                            <span className="px-2.5 py-1 rounded-md bg-black/85 backdrop-blur-md text-[11px] font-bold text-white flex items-center gap-1.5 shadow-md border border-white/20">
                               <Camera className="h-3 w-3 text-cyan-400" />
-                              {photosCount} {photosCount === 1 ? "Photo" : "Photos"}
+                              <span className="text-white font-bold">{photosCount} {photosCount === 1 ? "Photo" : "Photos"}</span>
                             </span>
                           </div>
 
                           {/* Hover Overlay Hint */}
-                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 backdrop-blur-[2px]">
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] bg-white text-slate-900 text-xs font-bold shadow-lg">
-                              <FolderOpen className="h-3.5 w-3.5 text-violet-600" />
-                              Open Photos Studio
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/55 backdrop-blur-[2px] z-10">
+                            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-extrabold shadow-2xl border border-white/30 transition-transform group-hover:scale-105">
+                              <FolderOpen className="h-4 w-4 text-white" />
+                              <span className="text-white font-extrabold">Open Photos Studio</span>
                             </span>
                           </div>
                         </div>
 
                         {/* Folder Info */}
-                        <div className="p-3.5 flex-1 flex flex-col justify-between space-y-2.5">
+                        <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
                           <div>
                             <h4
                               onClick={() => setSelectedFolderId(evt.id)}
@@ -1392,38 +1930,38 @@ export default function JourneyEditor({ sectionId, onCloseSection }: JourneyEdit
                             >
                               {evt.title}
                             </h4>
-                            <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5">
+                            <p className="text-[11px] text-slate-500 dark:text-slate-300 line-clamp-1 mt-0.5">
                               {evt.subtitle || "No subtitle"}
                             </p>
                           </div>
 
-                          <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 space-y-1 text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                          <div className="pt-2.5 border-t border-slate-100 dark:border-slate-800/80 space-y-1.5 text-[11px] text-slate-600 dark:text-slate-300 font-medium">
                             <div className="flex items-center gap-1.5 truncate">
-                              <Calendar className="h-3 w-3 text-violet-500 shrink-0" />
+                              <Calendar className="h-3.5 w-3.5 text-violet-500 shrink-0" />
                               <span className="truncate">{evt.date || "Ongoing"}</span>
                             </div>
                             <div className="flex items-center gap-1.5 truncate">
-                              <MapPin className="h-3 w-3 text-amber-500 shrink-0" />
+                              <MapPin className="h-3.5 w-3.5 text-amber-500 shrink-0" />
                               <span className="truncate">{evt.location || "Kathmandu"}</span>
                             </div>
                           </div>
 
                           {/* Action Buttons */}
-                          <div className="pt-2 flex items-center gap-1.5">
+                          <div className="pt-2 flex items-center gap-2">
                             <button
                               type="button"
                               onClick={() => setSelectedFolderId(evt.id)}
-                              className="flex-1 py-1.5 px-2 rounded-[4px] bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                              className="flex-1 py-2 px-2.5 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer"
                             >
-                              <FolderOpen className="h-3.5 w-3.5" />
-                              <span>Photos ({photosCount})</span>
+                              <FolderOpen className="h-3.5 w-3.5 text-white" />
+                              <span className="text-white font-bold">Photos ({photosCount})</span>
                             </button>
 
                             <button
                               type="button"
                               onClick={() => handleOpenEditCover(evt, idx)}
                               title="Edit Cover Details & Story"
-                              className="p-1.5 rounded-[4px] border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
+                              className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
                             >
                               <Edit3 className="h-3.5 w-3.5" />
                             </button>
@@ -1432,7 +1970,7 @@ export default function JourneyEditor({ sectionId, onCloseSection }: JourneyEdit
                               type="button"
                               onClick={() => handleDeleteFolderById(evt.id)}
                               title="Delete Folder"
-                              className="p-1.5 rounded-[4px] border border-red-200 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400 transition-colors cursor-pointer"
+                              className="p-2 rounded-lg border border-red-200 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400 transition-colors cursor-pointer"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
                             </button>
@@ -1630,7 +2168,7 @@ export default function JourneyEditor({ sectionId, onCloseSection }: JourneyEdit
                           <p className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200">
                             Click or drag & drop multiple photos to upload
                           </p>
-                          <p className="text-[11px] text-slate-500">
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400">
                             Supports JPG, PNG, WEBP, GIF. Uploads directly to Cloudinary and saves to folder.
                           </p>
                         </>
@@ -1673,7 +2211,7 @@ export default function JourneyEditor({ sectionId, onCloseSection }: JourneyEdit
                       <LayoutGrid className="h-4 w-4 text-violet-600" />
                       <span>All Photos in this Album ({photos.length})</span>
                     </h5>
-                    <span className="text-[11px] text-slate-500">
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400">
                       Click "Set Cover" on any photo to make it the album cover card.
                     </span>
                   </div>
@@ -1682,7 +2220,7 @@ export default function JourneyEditor({ sectionId, onCloseSection }: JourneyEdit
                     <div className="p-12 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-900/20">
                       <Camera className="h-10 w-10 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
                       <p className="text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-400">No photos added to this folder yet.</p>
-                      <p className="text-[11px] text-slate-500 mt-0.5">Use the upload box above or click "Add Sample Photos" to get started.</p>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Use the upload box above or click "Add Sample Photos" to get started.</p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
@@ -1736,7 +2274,7 @@ export default function JourneyEditor({ sectionId, onCloseSection }: JourneyEdit
                             </div>
 
                             <div className="p-1.5 bg-white dark:bg-slate-900 text-[10px] text-slate-500 dark:text-slate-400 flex items-center justify-between">
-                              <span className="font-mono">#{pIdx + 1}</span>
+                              <span className="font-mono font-bold text-slate-700 dark:text-slate-300">#{pIdx + 1}</span>
                               {isCover ? (
                                 <span className="text-emerald-600 dark:text-emerald-400 font-bold">Album Cover</span>
                               ) : (
@@ -1762,8 +2300,8 @@ export default function JourneyEditor({ sectionId, onCloseSection }: JourneyEdit
       )}
 
           {/* MODAL: CREATE FOLDER OR EDIT COVER & STORY */}
-          {editingCoverEvent && (
-            <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          {mounted && typeof window !== "undefined" && editingCoverEvent && createPortal(
+            <div className="fixed inset-0 z-[9999] bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-150">
               <div className="bg-white dark:bg-[#131927] rounded-[4px] border border-slate-200 dark:border-slate-800 shadow-2xl max-w-2xl w-full my-8 flex flex-col max-h-[90vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                 {/* Modal Header */}
                 <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0 bg-slate-50/50 dark:bg-slate-900/50">
@@ -1991,7 +2529,8 @@ export default function JourneyEditor({ sectionId, onCloseSection }: JourneyEdit
                   </button>
                 </div>
               </div>
-            </div>
+            </div>,
+            document.body
           )}
         </>
       )}

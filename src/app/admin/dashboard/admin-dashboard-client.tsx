@@ -18,6 +18,7 @@ import {
   GripVertical,
   Edit3,
   Eye,
+  ExternalLink,
   Check,
   Globe,
   Milestone,
@@ -566,7 +567,7 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
                   <a
                     href={
                       activeTab === "landing-management"
@@ -595,10 +596,11 @@ export default function AdminDashboardClient({ userEmail }: AdminDashboardClient
                     }
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors"
+                    className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors w-full sm:w-auto shrink-0 whitespace-nowrap active:scale-95 shadow-xs"
                   >
-                    <Eye className="h-3.5 w-3.5 text-blue-500" />
+                    <Eye className="h-3.5 w-3.5 text-blue-500 shrink-0" />
                     <span>Preview Live Page</span>
+                    <ExternalLink className="h-3 w-3 opacity-60 shrink-0" />
                   </a>
                 </div>
               </div>
