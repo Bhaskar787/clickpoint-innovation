@@ -54,6 +54,8 @@ const DEFAULT_SERVICES_CONTENT = {
       fullOverview:
         "Clickpoint Innovation specializes in building LLM-native applications that go far beyond standard API integrations. We design production-grade autonomous agent pods, vector database knowledge bases, and fine-tuned domain models.",
       heroBadge: "AI & Autonomous Systems",
+      icon: "BsRobot",
+      iconName: "BsRobot",
       imageUrl: "",
       keyMetrics: [
         { label: "Execution Latency", value: "< 250ms" },
@@ -99,6 +101,8 @@ const DEFAULT_SERVICES_CONTENT = {
       fullOverview:
         "Our full-stack engineering pods build mission-critical web applications, enterprise portals, and mobile apps using Next.js App Router, React Native, and serverless edge computing architectures.",
       heroBadge: "Full-Stack Web & Mobile",
+      icon: "BsCodeSlash",
+      iconName: "BsCodeSlash",
       imageUrl: "",
       keyMetrics: [
         { label: "Lighthouse Score", value: "98/100" },
@@ -144,6 +148,8 @@ const DEFAULT_SERVICES_CONTENT = {
       fullOverview:
         "We craft conversion-focused design systems, interactive prototypes, and accessible UI component libraries tailored for B2B SaaS and complex web applications.",
       heroBadge: "Design Systems & UX",
+      icon: "BsPalette",
+      iconName: "BsPalette",
       imageUrl: "",
       keyMetrics: [
         { label: "Conversion Lift", value: "+38%" },
@@ -188,6 +194,8 @@ const DEFAULT_SERVICES_CONTENT = {
       fullOverview:
         "Our growth specialists combine technical SEO, CRO A/B testing frameworks, and automated email lifecycle sequences to scale monthly recurring revenue.",
       heroBadge: "Growth & Conversion",
+      icon: "BsGraphUpArrow",
+      iconName: "BsGraphUpArrow",
       imageUrl: "",
       keyMetrics: [
         { label: "Organic Traffic", value: "+210%" },

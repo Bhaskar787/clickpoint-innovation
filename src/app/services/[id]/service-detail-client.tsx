@@ -19,6 +19,7 @@ import Footer from "@/components/layout/footer";
 import CtaSection from "@/components/sections/cta-section";
 import { Button } from "@/components/ui/button";
 import { SERVICES_DATA } from "@/data/landing-data";
+import { ServiceIcon } from "@/components/ui/industry-icon";
 
 interface ServiceDetailClientProps {
   initialService: any;
@@ -113,7 +114,12 @@ export default function ServiceDetailClient({ initialService, serviceId }: Servi
           <div className="mx-auto max-w-4xl text-center">
             {/* Hero Tag Badge */}
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-violet-50 dark:bg-slate-800/90 px-4 py-1.5 text-xs font-bold text-violet-600 dark:text-violet-300 shadow-sm backdrop-blur-md">
-              <Zap className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
+              <ServiceIcon
+                icon={service.icon}
+                iconName={service.iconName}
+                serviceId={service.id}
+                className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300"
+              />
               <span>{service.heroBadge || service.subtitle || "Custom Engineering Pod"}</span>
             </div>
 

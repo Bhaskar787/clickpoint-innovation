@@ -19,6 +19,7 @@ import { IndustryItem } from "@/types";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import CTASection from "@/components/sections/cta-section";
+import { IndustryIcon } from "@/components/ui/industry-icon";
 
 interface IndustryDetailClientProps {
   industry: IndustryItem;
@@ -50,7 +51,12 @@ export default function IndustryDetailClient({ industry }: IndustryDetailClientP
             {/* Left Column: Title & Description */}
             <div className="space-y-6">
               <div className="inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-violet-50/80 dark:bg-slate-800/80 px-4 py-1.5 text-xs font-bold text-violet-700 dark:text-violet-300 backdrop-blur-md">
-                <Building2 className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
+                <IndustryIcon
+                  icon={industry.icon}
+                  iconName={industry.iconName}
+                  industryId={industry.id}
+                  className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300 shrink-0"
+                />
                 <span>{industry.heroBadge || industry.subtitle || "Enterprise Domain Practice"}</span>
               </div>
 

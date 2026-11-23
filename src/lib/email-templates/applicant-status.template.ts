@@ -4,7 +4,7 @@ export interface ApplicantStatusTemplateData {
   applicantName: string;
   applicantEmail: string;
   jobTitle: string;
-  emailType: "APPROVED" | "REJECTED" | "REVIEWING" | "INTERVIEW" | "CUSTOM";
+  emailType: "APPROVED" | "REJECTED" | "REVIEWING" | "INTERVIEW" | "HIRED" | "CUSTOM";
   customSubject?: string;
   customMessage?: string;
   appUrl?: string;
@@ -38,7 +38,21 @@ export function getApplicantStatusEmailHTML(data: ApplicantStatusTemplateData): 
   let badgeStyle = "";
   let bodyContent = "";
 
-  if (emailType === "APPROVED") {
+  if (emailType === "HIRED") {
+    defaultSubject = `Congratulations & Welcome to Clickpoint Innovations! Job Offer for ${jobTitle}`;
+    badgeLabel = "Job Offer & Welcome Aboard";
+    badgeStyle = "background-color: #ecfdf5; color: #047857; border: 1px solid #10b981;";
+    bodyContent = customMessage
+      ? customMessage.replace(/\n/g, "<br/>")
+      : `
+      <p>Dear <strong>${applicantName}</strong>,</p>
+      <p><strong>Congratulations!</strong> On behalf of the entire team, we are thrilled to offer you the position of <strong>${jobTitle}</strong> at <strong>Clickpoint Innovations</strong>!</p>
+      <p>We were exceptionally impressed by your technical expertise, vision, and problem-solving skills throughout the evaluation process. We are confident that you will be a tremendous addition to our team and play a vital role in our ongoing innovation.</p>
+      <p>Our People Operations team will follow up with you shortly with your official employment agreement, compensation details, and onboarding itinerary.</p>
+      <p>Welcome aboard to Clickpoint Innovations!</p>
+      <p>Warmest regards,<br/><strong>Clickpoint Innovations Executive & HR Leadership Team</strong></p>
+    `;
+  } else if (emailType === "APPROVED") {
     defaultSubject = `Application Shortlisted: ${jobTitle} at Clickpoint Innovations`;
     badgeLabel = "Application Shortlisted";
     badgeStyle = "background-color: #ecfdf5; color: #047857; border: 1px solid #a7f3d0;";

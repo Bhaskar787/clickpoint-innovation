@@ -426,6 +426,8 @@ model JobApplication {
   status             ApplicationStatus @default(PENDING)
   isRead             Boolean           @default(false)
   ipAddress          String?
+  sentEmailTypes     Json              @default("[]")
+  attemptCount       Int               @default(1)
   createdAt          DateTime          @default(now())
   updatedAt          DateTime          @updatedAt
 

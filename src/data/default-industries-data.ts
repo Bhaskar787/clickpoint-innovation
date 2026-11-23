@@ -1,5 +1,14 @@
 import { INDUSTRIES_DATA } from "@/data/landing-data";
 
+const DEFAULT_ICON_IDS: Record<string, string> = {
+  fintech: "BsWallet2",
+  healthcare: "BsHeartPulse",
+  ecommerce: "BsBagCheck",
+  saas: "BsLayers",
+  logistics: "BsTruck",
+  edtech: "BsMortarboard",
+};
+
 export const DEFAULT_INDUSTRIES_PAGE_DATA = {
   hero: {
     badge: "Industry Domain Solutions",
@@ -9,8 +18,11 @@ export const DEFAULT_INDUSTRIES_PAGE_DATA = {
   },
   industries: INDUSTRIES_DATA.map((ind) => {
     const { icon, ...rest } = ind;
+    const iconId = DEFAULT_ICON_IDS[ind.id] || "BsBuildings";
     return {
       ...rest,
+      icon: iconId,
+      iconName: iconId,
       overviewTag: "Sector Perspective",
       overviewHeading: `Architecting software for ${ind.title}`,
       complianceTag: "Compliance & Security Standards",

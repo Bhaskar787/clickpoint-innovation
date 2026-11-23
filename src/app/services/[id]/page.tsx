@@ -55,12 +55,23 @@ export default async function ServiceDetailPage({ params }: ServicePageProps) {
     const raw = SERVICES_DATA.find((s) => s.id === params.id) || null;
     if (raw) {
       const { icon, ...cleanRaw } = raw as any;
-      targetService = cleanRaw;
+      const iconStr = typeof icon === "string" ? icon : (raw.iconName || "");
+      targetService = {
+        ...cleanRaw,
+        icon: iconStr,
+        iconName: iconStr,
+      };
     }
   } else {
-    // Ensure any icon property from older records is removed
+    const iconStr = typeof targetService.icon === "string"
+      ? targetService.icon
+      : (typeof targetService.iconName === "string" ? targetService.iconName : "");
     const { icon, ...cleanTarget } = targetService;
-    targetService = cleanTarget;
+    targetService = {
+      ...cleanTarget,
+      icon: iconStr,
+      iconName: iconStr,
+    };
   }
 
   return (

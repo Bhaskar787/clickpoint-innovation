@@ -510,6 +510,8 @@ export const JobApplicationScalarFieldEnum = {
   status: 'status',
   isRead: 'isRead',
   ipAddress: 'ipAddress',
+  sentEmailTypes: 'sentEmailTypes',
+  attemptCount: 'attemptCount',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

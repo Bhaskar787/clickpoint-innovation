@@ -48,8 +48,10 @@ const DEFAULT_SERVICES_CONTENT = {
       },
     ],
   },
-  services: SERVICES_DATA.map(({ icon, ...s }: any) => ({
+  services: SERVICES_DATA.map((s: any) => ({
     ...s,
+    icon: typeof s.icon === "string" ? s.icon : (s.iconName || ""),
+    iconName: typeof s.iconName === "string" ? s.iconName : (typeof s.icon === "string" ? s.icon : ""),
     imageUrl: s.imageUrl || "",
     keyMetrics: s.keyMetrics || [],
     features: s.features || [],

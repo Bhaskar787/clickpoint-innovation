@@ -13,6 +13,7 @@ import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import CTASection from "@/components/sections/cta-section";
 import { Button } from "@/components/ui/button";
+import { ServiceIcon } from "@/components/ui/industry-icon";
 
 interface ServicesCatalogClientProps {
   initialContent: any;
@@ -118,7 +119,12 @@ export default function ServicesCatalogClient({ initialContent }: ServicesCatalo
                 <div>
                   <div className="flex items-center justify-between gap-4 mb-4">
                     <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-200 dark:border-slate-700 bg-violet-50 dark:bg-slate-800 px-3 py-1 text-[11px] font-bold text-violet-700 dark:text-violet-300">
-                      <Boxes className="h-3 w-3 text-violet-600 dark:text-violet-400" />
+                      <ServiceIcon
+                        icon={service.icon}
+                        iconName={service.iconName}
+                        serviceId={service.id}
+                        className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400"
+                      />
                       <span>{service.heroBadge || service.subtitle}</span>
                     </span>
 

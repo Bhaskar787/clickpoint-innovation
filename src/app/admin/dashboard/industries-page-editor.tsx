@@ -42,6 +42,7 @@ import {
   syncProjectCategoryUniqueness,
   isProjectMatchingCaseStudy,
 } from "@/lib/catalog-sync";
+import { IndustryIcon, IndustryIconPicker } from "@/components/ui/industry-icon";
 
 const INDUSTRIES_SECTIONS_CATALOG: SectionNavItem[] = [
   {
@@ -318,6 +319,8 @@ export default function IndustriesPageEditor({ sectionId, onCloseSection }: Indu
       fullOverview: "",
       heroBadge: "",
       href: `/industries/${uniqueId}`,
+      icon: "",
+      iconName: "",
       keyMetrics: [],
       complianceBadges: [],
       projects: [],
@@ -340,7 +343,11 @@ export default function IndustriesPageEditor({ sectionId, onCloseSection }: Indu
 
   function handleOpenEditCatalogIndustry(ind: any, index: number) {
     setEditingCatalogIndustry({
-      industry: { ...ind },
+      industry: {
+        ...ind,
+        icon: ind.icon || ind.iconName || "",
+        iconName: ind.iconName || ind.icon || "",
+      },
       index,
       isNew: false,
     });
@@ -925,19 +932,31 @@ export default function IndustriesPageEditor({ sectionId, onCloseSection }: Indu
 
                         {/* Title & Slug */}
                         <td className="py-3 px-3 align-middle">
-                          <div className="font-bold text-slate-900 dark:text-white line-clamp-1">
-                            {ind.title || "Untitled Sector"}
-                          </div>
-                          <div className="flex items-center gap-1 mt-0.5">
-                            <a
-                              href={`/industries/${ind.id}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="inline-flex items-center gap-1 font-mono text-[11px] text-violet-600 dark:text-violet-400 hover:underline"
-                            >
-                              <span>/industries/{ind.id}</span>
-                              <ExternalLink className="h-2.5 w-2.5" />
-                            </a>
+                          <div className="flex items-center gap-2.5">
+                            <div className="h-8 w-8 rounded-lg bg-violet-50 dark:bg-violet-950/60 border border-violet-200/80 dark:border-violet-900/60 flex items-center justify-center shrink-0 text-violet-600 dark:text-violet-300">
+                              <IndustryIcon
+                                icon={ind.icon}
+                                iconName={ind.iconName}
+                                industryId={ind.id}
+                                className="h-4 w-4"
+                              />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="font-bold text-slate-900 dark:text-white line-clamp-1">
+                                {ind.title || "Untitled Sector"}
+                              </div>
+                              <div className="flex items-center gap-1 mt-0.5">
+                                <a
+                                  href={`/industries/${ind.id}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="inline-flex items-center gap-1 font-mono text-[11px] text-violet-600 dark:text-violet-400 hover:underline"
+                                >
+                                  <span>/industries/{ind.id}</span>
+                                  <ExternalLink className="h-2.5 w-2.5" />
+                                </a>
+                              </div>
+                            </div>
                           </div>
                         </td>
 
@@ -2199,15 +2218,47 @@ export default function IndustriesPageEditor({ sectionId, onCloseSection }: Indu
             />
           </div>
 
+          {/* Dynamic Industry Sector Icon Picker */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+              Sector Domain Icon (React / Bootstrap Icons)
+            </label>
+            <IndustryIconPicker
+              value={editingCatalogIndustry.industry.icon || editingCatalogIndustry.industry.iconName || ""}
+              onChange={(iconId) =>
+                setEditingCatalogIndustry({
+                  ...editingCatalogIndustry,
+                  industry: {
+                    ...editingCatalogIndustry.industry,
+                    icon: iconId,
+                    iconName: iconId,
+                  },
+                })
+              }
+              industryId={editingCatalogIndustry.industry.id}
+              industryTitle={editingCatalogIndustry.industry.title}
+            />
+          </div>
+
           {/* Live Preview Card */}
           <div className="p-3.5 rounded-xl border border-dashed border-violet-300 dark:border-violet-900/60 bg-violet-50/30 dark:bg-violet-950/20 space-y-2">
             <span className="text-[10px] font-bold uppercase tracking-wider text-violet-600 block">
               Sector Card Live Preview
             </span>
-            <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0b0f19] space-y-2 shadow-xs">
-              <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-violet-500/10 text-violet-600">
-                {editingCatalogIndustry.industry.subtitle || "Industry Subtitle"}
-              </span>
+            <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0b0f19] space-y-3 shadow-xs">
+              <div className="flex items-center justify-between">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-100/80 dark:bg-slate-800 text-violet-600 dark:text-violet-300 border border-violet-100/50 dark:border-slate-700 shadow-xs">
+                  <IndustryIcon
+                    icon={editingCatalogIndustry.industry.icon}
+                    iconName={editingCatalogIndustry.industry.iconName}
+                    industryId={editingCatalogIndustry.industry.id}
+                    className="h-5 w-5 text-violet-600 dark:text-violet-300"
+                  />
+                </span>
+                <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-violet-500/10 text-violet-600">
+                  {editingCatalogIndustry.industry.subtitle || "Industry Subtitle"}
+                </span>
+              </div>
               <h4 className="text-sm font-bold text-slate-900 dark:text-white">
                 {editingCatalogIndustry.industry.title || "Industry Title Preview"}
               </h4>

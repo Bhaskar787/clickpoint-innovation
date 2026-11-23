@@ -56,6 +56,7 @@ import {
   DEFAULT_FOOTER_DATA,
 } from "@/data/default-landing-data";
 import { SERVICES_DATA, INDUSTRIES_DATA } from "@/data/landing-data";
+import { IndustryIcon, ServiceIcon } from "@/components/ui/industry-icon";
 
 interface FileUploadControlProps {
   label: string;
@@ -3465,16 +3466,26 @@ export default function LandingPageEditor({ sectionId, onCloseSection }: Landing
                             }}
                             className="mt-0.5 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
                           />
-                          <div className="min-w-0 flex-1">
-                            <span className="inline-block px-2 py-0.5 text-[10px] font-bold rounded bg-violet-100 dark:bg-slate-800 text-violet-600 dark:text-violet-300 mb-1">
-                              {srv.badge || srv.category || "Capability"}
-                            </span>
-                            <p className="text-xs font-bold text-slate-900 dark:text-white leading-snug line-clamp-1">
-                              {srv.title}
-                            </p>
-                            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
-                              {srv.description || srv.subtitle || srv.shortDesc}
-                            </p>
+                          <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                            <div className="h-8 w-8 rounded-lg bg-violet-100/80 dark:bg-slate-800 text-violet-600 dark:text-violet-300 flex items-center justify-center shrink-0 border border-violet-200/60 dark:border-slate-700 mt-0.5">
+                              <ServiceIcon
+                                icon={srv.icon}
+                                iconName={srv.iconName}
+                                serviceId={srv.id}
+                                className="h-4 w-4"
+                              />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <span className="inline-block px-2 py-0.5 text-[10px] font-bold rounded bg-violet-100 dark:bg-slate-800 text-violet-600 dark:text-violet-300 mb-1">
+                                {srv.badge || srv.heroBadge || srv.subtitle || srv.category || "Capability"}
+                              </span>
+                              <p className="text-xs font-bold text-slate-900 dark:text-white leading-snug line-clamp-1">
+                                {srv.title}
+                              </p>
+                              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
+                                {srv.description || srv.subtitle || srv.desc || srv.shortDesc}
+                              </p>
+                            </div>
                           </div>
                         </label>
                       );
@@ -3561,16 +3572,26 @@ export default function LandingPageEditor({ sectionId, onCloseSection }: Landing
                             }}
                             className="mt-0.5 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
                           />
-                          <div className="min-w-0 flex-1">
-                            <span className="inline-block px-2 py-0.5 text-[10px] font-bold rounded bg-violet-100 dark:bg-slate-800 text-violet-600 dark:text-violet-300 mb-1">
-                              {ind.badge || "Domain"}
-                            </span>
-                            <p className="text-xs font-bold text-slate-900 dark:text-white leading-snug line-clamp-1">
-                              {ind.title}
-                            </p>
-                            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
-                              {ind.description || ind.subtitle}
-                            </p>
+                          <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                            <div className="h-8 w-8 rounded-lg bg-violet-100/80 dark:bg-slate-800 text-violet-600 dark:text-violet-300 flex items-center justify-center shrink-0 border border-violet-200/60 dark:border-slate-700 mt-0.5">
+                              <IndustryIcon
+                                icon={ind.icon}
+                                iconName={ind.iconName}
+                                industryId={ind.id}
+                                className="h-4 w-4"
+                              />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <span className="inline-block px-2 py-0.5 text-[10px] font-bold rounded bg-violet-100 dark:bg-slate-800 text-violet-600 dark:text-violet-300 mb-1">
+                                {ind.badge || "Domain"}
+                              </span>
+                              <p className="text-xs font-bold text-slate-900 dark:text-white leading-snug line-clamp-1">
+                                {ind.title}
+                              </p>
+                              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
+                                {ind.description || ind.subtitle}
+                              </p>
+                            </div>
                           </div>
                         </label>
                       );

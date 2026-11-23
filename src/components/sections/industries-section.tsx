@@ -7,34 +7,13 @@ import {
   ArrowUpRight,
   ExternalLink,
   Building2,
-  Wallet,
-  HeartPulse,
-  ShoppingBag,
-  Layers,
-  Truck,
-  GraduationCap,
 } from "lucide-react";
 import { DEFAULT_LANDING_DATA } from "@/data/default-landing-data";
 import { INDUSTRIES_DATA } from "@/data/landing-data";
+import { IndustryIcon } from "@/components/ui/industry-icon";
 
 // Number of industries shown in the homepage preview grid before linking out to /industries
 const HOMEPAGE_INDUSTRIES_PREVIEW_COUNT = 6;
-
-// Fallback icon lookup keyed by known industry ids (matches admin-seeded defaults);
-// unknown/custom industries added later in admin cycle through the fallback list below.
-const INDUSTRY_ICON_MAP: Record<string, any> = {
-  fintech: Wallet,
-  healthcare: HeartPulse,
-  ecommerce: ShoppingBag,
-  saas: Layers,
-  logistics: Truck,
-  edtech: GraduationCap,
-};
-const FALLBACK_ICONS = [Building2, Layers, Wallet, HeartPulse, ShoppingBag, Truck];
-
-function resolveIndustryIcon(id: string, idx: number) {
-  return INDUSTRY_ICON_MAP[id] || FALLBACK_ICONS[idx % FALLBACK_ICONS.length];
-}
 
 interface IndustriesSectionProps {
   initialHeader?: any;
@@ -78,7 +57,12 @@ export default function IndustriesSection({ initialHeader, initialIndustries }: 
     if (!initialIndustries || initialIndustries.length === 0) loadDynamicIndustriesCatalog();
   }, [initialHeader, initialIndustries]);
 
-  const displayItems = industries.slice(0, HOMEPAGE_INDUSTRIES_PREVIEW_COUNT);
+  const selectedIds: string[] = industriesHeader?.selectedIndustryIds || [];
+  const displayItems = (
+    selectedIds.length > 0
+      ? industries.filter((ind) => selectedIds.includes(ind.id))
+      : industries
+  ).slice(0, HOMEPAGE_INDUSTRIES_PREVIEW_COUNT);
 
   return (
     <section id="industries" className="relative py-20 lg:py-28 bg-cloud-100/70 border-y border-violet-100/80">
@@ -102,7 +86,6 @@ export default function IndustriesSection({ initialHeader, initialIndustries }: 
         {/* Industry Cards Grid */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {displayItems.map((ind, idx) => {
-            const Icon = ind.icon || resolveIndustryIcon(ind.id, idx);
             return (
               <motion.div
                 key={ind.id}
@@ -116,11 +99,15 @@ export default function IndustriesSection({ initialHeader, initialIndustries }: 
                 <div>
                   {/* Top Header */}
                   <div className="flex items-center justify-between mb-4">
-                    {Icon && (
-                      <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-100/80 dark:bg-slate-800 text-violet-600 dark:text-violet-300 border border-violet-100/50 dark:border-slate-700 group-hover:bg-violet-600 group-hover:text-white transition-colors shadow-sm">
-                        <Icon className="h-6 w-6 text-violet-600 dark:text-violet-300 group-hover:text-white transition-colors" />
-                      </span>
-                    )}
+                    <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-100/80 dark:bg-slate-800 text-violet-600 dark:text-violet-300 border border-violet-100/50 dark:border-slate-700 group-hover:bg-violet-600 group-hover:text-white transition-colors shadow-sm">
+                      <IndustryIcon
+                        icon={ind.icon}
+                        iconName={ind.iconName}
+                        industryId={ind.id}
+                        fallbackIndex={idx}
+                        className="h-6 w-6 text-violet-600 dark:text-violet-300 group-hover:text-white transition-colors"
+                      />
+                    </span>
                     {ind.keyMetrics?.[0] && (
                       <span className="rounded-full bg-violet-50 dark:bg-slate-800 px-2.5 py-1 text-fluid-2xs font-bold text-violet-600 dark:text-violet-300 border border-violet-100 dark:border-slate-700">
                         {ind.keyMetrics[0].value} {ind.keyMetrics[0].label}

@@ -13,18 +13,20 @@ export interface EmailModalApplication {
   email: string;
   jobTitle: string;
   status: string;
+  sentEmailTypes?: string[];
 }
 
-export type EmailTemplateType = "APPROVED" | "REJECTED" | "REVIEWING" | "INTERVIEW" | "CUSTOM";
+export type EmailTemplateType = "HIRED" | "APPROVED" | "INTERVIEW" | "REVIEWING" | "REJECTED" | "CUSTOM";
 
 interface EmailComposerModalProps {
   app: EmailModalApplication | null;
   initialType?: EmailTemplateType;
   onClose: () => void;
-  onSuccess?: (newStatus?: string) => void;
+  onSuccess?: (newStatus?: string, sentType?: string) => void;
 }
 
 const TEMPLATE_OPTIONS: { type: EmailTemplateType; label: string; icon: any; color: string }[] = [
+  { type: "HIRED", label: "Job Offer / Hired", icon: CheckCircle2, color: "bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-emerald-200 dark:bg-emerald-950/80 dark:text-emerald-200 dark:border-emerald-700 dark:hover:bg-emerald-900/80" },
   { type: "APPROVED", label: "Shortlist Candidate", icon: Star, color: "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/80 dark:hover:bg-emerald-900/60" },
   { type: "INTERVIEW", label: "Invite for Interview", icon: Calendar, color: "bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800/80 dark:hover:bg-purple-900/60" },
   { type: "REVIEWING", label: "Under Active Review", icon: Search, color: "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800/80 dark:hover:bg-blue-900/60" },
@@ -55,12 +57,26 @@ export function EmailComposerModal({
   const [sendingEmail, setSendingEmail] = useState(false);
   const [activeTab, setActiveTab] = useState<"edit" | "preview">("edit");
 
-  // Default auto-fill when modal opens or template changes
+  // Synchronize email template when initialType or app changes, resolving to an available template if locked/sent
   useEffect(() => {
     if (app) {
-      updateDefaultTemplateFields(emailType, app);
+      const isSent = (t: EmailTemplateType) => t !== "CUSTOM" && Boolean(app.sentEmailTypes?.includes(t));
+      const isHired = app.status === "HIRED" || Boolean(app.sentEmailTypes?.includes("HIRED"));
+      const isRejected = app.status === "REJECTED";
+      const isLockedByHired = (t: EmailTemplateType) => isHired && (t === "APPROVED" || t === "INTERVIEW" || t === "REJECTED" || t === "REVIEWING");
+      const isLockedByRejected = (t: EmailTemplateType) => isRejected && t === "HIRED";
+      const isLocked = (t: EmailTemplateType) => isLockedByHired(t) || isLockedByRejected(t);
+
+      let resolvedType = initialType || "APPROVED";
+      if (isSent(resolvedType) || isLocked(resolvedType)) {
+        const available = TEMPLATE_OPTIONS.find((opt) => !isSent(opt.type) && !isLocked(opt.type));
+        resolvedType = available ? available.type : "CUSTOM";
+      }
+
+      setEmailType(resolvedType);
+      updateDefaultTemplateFields(resolvedType, app);
     }
-  }, [app, emailType]);
+  }, [initialType, app?.id]);
 
   // Lock body scroll when modal is open
   useEffect(() => {
@@ -73,7 +89,10 @@ export function EmailComposerModal({
   }, [app]);
 
   const updateDefaultTemplateFields = (type: EmailTemplateType, application: EmailModalApplication) => {
-    if (type === "APPROVED") {
+    if (type === "HIRED") {
+      setCustomSubject(`Congratulations & Welcome to Clickpoint Innovations! Job Offer for ${application.jobTitle}`);
+      setCustomMessage(`Dear ${application.name},\n\nCongratulations! We are thrilled to officially offer you the position of ${application.jobTitle} at Clickpoint Innovations!\n\nOur entire team was exceptionally impressed with your skills and background throughout the interview process. We believe your contributions will make a substantial impact on our journey.\n\nOur People Operations team will follow up with you directly regarding your formal offer letter, onboarding schedule, and next steps.\n\nWelcome to the team!\n\nWarmest regards,\nClickpoint Innovations Executive & HR Leadership Team`);
+    } else if (type === "APPROVED") {
       setCustomSubject(`Application Shortlisted: ${application.jobTitle} at Clickpoint Innovations`);
       setCustomMessage(`Dear ${application.name},\n\nThank you for applying for the position of ${application.jobTitle} at Clickpoint Innovations.\n\nWe are pleased to inform you that after reviewing your application and resume, your profile has been shortlisted for the next round of our selection process.\n\nOur talent acquisition team will be in touch with you shortly regarding the schedule for your initial interview.\n\nBest regards,\nClickpoint Innovations Hiring Team`);
     } else if (type === "REJECTED") {
@@ -97,6 +116,7 @@ export function EmailComposerModal({
     try {
       let statusToUpdate: string | undefined = undefined;
       if (updateStatusWithEmail) {
+        if (emailType === "HIRED") statusToUpdate = "HIRED";
         if (emailType === "APPROVED") statusToUpdate = "SHORTLISTED";
         if (emailType === "REJECTED") statusToUpdate = "REJECTED";
         if (emailType === "REVIEWING") statusToUpdate = "REVIEWING";
@@ -120,7 +140,7 @@ export function EmailComposerModal({
       const json = await res.json();
       if (json.success) {
         toast.success(`Email successfully delivered to ${app.email}!`);
-        if (onSuccess) onSuccess(statusToUpdate);
+        if (onSuccess) onSuccess(statusToUpdate, emailType);
         onClose();
       } else {
         toast.error(json.error || "Failed to send email");
@@ -219,22 +239,52 @@ export function EmailComposerModal({
                     Select Candidate Email Template
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {TEMPLATE_OPTIONS.map(({ type, label, icon: Icon, color }) => (
-                      <button
-                        key={type}
-                        type="button"
-                        onClick={() => {
-                          setEmailType(type);
-                          updateDefaultTemplateFields(type, app);
-                        }}
-                        className={`px-3 py-2 text-xs font-semibold rounded-xl border text-left transition-all flex items-center gap-2 ${color} ${
-                          emailType === type ? "ring-2 ring-emerald-500 shadow-sm opacity-100" : "opacity-80"
-                        }`}
-                      >
-                        <Icon className="h-3.5 w-3.5 shrink-0" />
-                        <span className="truncate">{label}</span>
-                      </button>
-                    ))}
+                    {TEMPLATE_OPTIONS.map(({ type, label, icon: Icon, color }) => {
+                      const isAlreadySent = type !== "CUSTOM" && Boolean(app.sentEmailTypes?.includes(type));
+                      const isHiredCandidate = app.status === "HIRED" || Boolean(app.sentEmailTypes?.includes("HIRED"));
+                      const isRejectedCandidate = app.status === "REJECTED";
+                      const isLockedByHired = isHiredCandidate && (type === "APPROVED" || type === "INTERVIEW" || type === "REJECTED" || type === "REVIEWING");
+                      const isLockedByRejected = isRejectedCandidate && type === "HIRED";
+                      const isButtonDisabled = isAlreadySent || isLockedByHired || isLockedByRejected;
+
+                      return (
+                        <button
+                          key={type}
+                          type="button"
+                          disabled={isButtonDisabled}
+                          onClick={() => {
+                            if (isButtonDisabled) return;
+                            setEmailType(type);
+                            updateDefaultTemplateFields(type, app);
+                          }}
+                          className={`px-3 py-2 text-xs font-semibold rounded-xl border text-left transition-all flex items-center justify-between gap-1.5 ${
+                            isButtonDisabled
+                              ? "opacity-40 bg-slate-100 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed"
+                              : `${color} ${emailType === type ? "ring-2 ring-emerald-500 shadow-sm opacity-100 font-bold" : "opacity-80"}`
+                          }`}
+                        >
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <Icon className="h-3.5 w-3.5 shrink-0" />
+                            <span className="truncate">{label}</span>
+                          </div>
+                          {isAlreadySent && (
+                            <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 shrink-0">
+                              Sent ✓
+                            </span>
+                          )}
+                          {isLockedByHired && !isAlreadySent && (
+                            <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 shrink-0">
+                              Locked
+                            </span>
+                          )}
+                          {isLockedByRejected && !isAlreadySent && (
+                            <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-400 shrink-0">
+                              Locked
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -277,7 +327,9 @@ export function EmailComposerModal({
                     <span>
                       Sync dashboard application status to{" "}
                       <strong className="text-slate-900 dark:text-white">
-                        {emailType === "APPROVED"
+                        {emailType === "HIRED"
+                          ? "Hired"
+                          : emailType === "APPROVED"
                           ? "Shortlisted"
                           : emailType === "REJECTED"
                           ? "Rejected"
@@ -343,23 +395,54 @@ export function EmailComposerModal({
               >
                 Cancel
               </button>
-              <button
-                onClick={handleSendEmail}
-                disabled={sendingEmail || !customSubject.trim() || !customMessage.trim()}
-                className="inline-flex items-center gap-2 px-5 py-2 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white transition-colors shadow-md"
-              >
-                {sendingEmail ? (
-                  <>
-                    <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                    Sending Email...
-                  </>
-                ) : (
-                  <>
-                    <SendHorizontal className="h-3.5 w-3.5" />
-                    Send Email Now
-                  </>
-                )}
-              </button>
+              {(() => {
+                const isSelectedTypeAlreadySent = emailType !== "CUSTOM" && Boolean(app.sentEmailTypes?.includes(emailType));
+                const isHiredCandidate = app.status === "HIRED" || Boolean(app.sentEmailTypes?.includes("HIRED"));
+                const isRejectedCandidate = app.status === "REJECTED";
+                const isSelectedTypeLockedByHired = isHiredCandidate && (emailType === "APPROVED" || emailType === "INTERVIEW" || emailType === "REJECTED" || emailType === "REVIEWING");
+                const isSelectedTypeLockedByRejected = isRejectedCandidate && emailType === "HIRED";
+                const isSendBlocked = isSelectedTypeAlreadySent || isSelectedTypeLockedByHired || isSelectedTypeLockedByRejected;
+                const isSendDisabled = sendingEmail || !customSubject.trim() || !customMessage.trim() || isSendBlocked;
+
+                return (
+                  <button
+                    onClick={handleSendEmail}
+                    disabled={isSendDisabled}
+                    className={`inline-flex items-center gap-2 px-5 py-2 text-xs font-bold rounded-xl text-white transition-colors shadow-md ${
+                      isSendBlocked
+                        ? "bg-slate-400 dark:bg-slate-700 cursor-not-allowed opacity-60"
+                        : "bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50"
+                    }`}
+                  >
+                    {sendingEmail ? (
+                      <>
+                        <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                        <span>Sending Email...</span>
+                      </>
+                    ) : isSelectedTypeAlreadySent ? (
+                      <>
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        <span>Email Already Sent (1x Limit)</span>
+                      </>
+                    ) : isSelectedTypeLockedByHired ? (
+                      <>
+                        <XCircle className="h-3.5 w-3.5" />
+                        <span>Locked — Candidate Hired</span>
+                      </>
+                    ) : isSelectedTypeLockedByRejected ? (
+                      <>
+                        <XCircle className="h-3.5 w-3.5" />
+                        <span>Locked — Candidate Rejected</span>
+                      </>
+                    ) : (
+                      <>
+                        <SendHorizontal className="h-3.5 w-3.5" />
+                        <span>Send Email Now</span>
+                      </>
+                    )}
+                  </button>
+                );
+              })()}
             </div>
           </div>
         </motion.div>

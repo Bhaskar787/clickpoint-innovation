@@ -5,35 +5,13 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   ArrowUpRight,
-  Bot,
-  Code2,
-  Palette,
-  LineChart,
-  Boxes,
-  Cpu,
-  Layers,
 } from "lucide-react";
 import { DEFAULT_LANDING_DATA } from "@/data/default-landing-data";
 import { SERVICES_DATA } from "@/data/landing-data";
+import { ServiceIcon } from "@/components/ui/industry-icon";
 
 // Number of services shown in the homepage preview grid before linking out to /services
 const HOMEPAGE_SERVICES_PREVIEW_COUNT = 6;
-
-// Fallback icon lookup keyed by known service ids (matches admin-seeded defaults);
-// unknown/custom services added later in admin cycle through the fallback list below.
-const SERVICE_ICON_MAP: Record<string, any> = {
-  "ai-eng": Bot,
-  "web-dev": Code2,
-  "ui-ux": Palette,
-  growth: LineChart,
-  "platform-mod": Boxes,
-  mlops: Cpu,
-};
-const FALLBACK_ICONS = [Layers, Boxes, Code2, Cpu, LineChart, Palette];
-
-function resolveServiceIcon(id: string, idx: number) {
-  return SERVICE_ICON_MAP[id] || FALLBACK_ICONS[idx % FALLBACK_ICONS.length];
-}
 
 interface ServicesProps {
   initialHeader?: any;
@@ -77,7 +55,13 @@ export default function Services({ initialHeader, initialServices }: ServicesPro
     if (!initialServices || initialServices.length === 0) loadDynamicServicesCatalog();
   }, [initialHeader, initialServices]);
 
-  const displayItems = services.slice(0, HOMEPAGE_SERVICES_PREVIEW_COUNT);
+  const displayItems = (
+    Array.isArray(servicesHeader?.selectedServiceIds) && servicesHeader.selectedServiceIds.length > 0
+      ? servicesHeader.selectedServiceIds
+          .map((id: string) => services.find((s: any) => s.id === id))
+          .filter(Boolean)
+      : services
+  ).slice(0, HOMEPAGE_SERVICES_PREVIEW_COUNT);
 
   return (
     <section id="services" className="relative py-20 lg:py-28">
@@ -98,8 +82,7 @@ export default function Services({ initialHeader, initialServices }: ServicesPro
         </div>
 
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {displayItems.map((s, idx) => {
-            const Icon = s.icon || resolveServiceIcon(s.id, idx);
+          {displayItems.map((s: any, idx: number) => {
             return (
               <motion.div
                 key={s.id}
@@ -115,11 +98,15 @@ export default function Services({ initialHeader, initialServices }: ServicesPro
                 >
                   <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-violet-50 dark:bg-slate-800/50 transition-transform duration-500 group-hover:scale-150" />
                   <div className="relative">
-                    {Icon && (
-                      <span className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-violet-100 dark:bg-slate-800 text-violet-600 dark:text-violet-300 transition-colors group-hover:bg-violet-600 group-hover:text-white shadow-sm">
-                        <Icon className="h-5 w-5" />
-                      </span>
-                    )}
+                    <span className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-violet-100 dark:bg-slate-800 text-violet-600 dark:text-violet-300 transition-colors group-hover:bg-violet-600 group-hover:text-white shadow-sm">
+                      <ServiceIcon
+                        icon={s.icon}
+                        iconName={s.iconName}
+                        serviceId={s.id}
+                        fallbackIndex={idx}
+                        className="h-5 w-5 text-violet-600 dark:text-violet-300 group-hover:text-white transition-colors"
+                      />
+                    </span>
                     <h3 className="mb-2 flex items-center gap-1.5 card-title text-ink dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-300 transition-colors">
                       {s.title}
                       <ArrowUpRight className="h-4 w-4 -translate-y-0.5 opacity-0 transition-all group-hover:translate-y-0 group-hover:opacity-100 text-violet-600 dark:text-violet-300" />

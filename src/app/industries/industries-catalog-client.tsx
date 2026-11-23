@@ -7,6 +7,7 @@ import { IndustriesPageContent, IndustryItem } from "@/types";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import CTASection from "@/components/sections/cta-section";
+import { IndustryIcon } from "@/components/ui/industry-icon";
 
 interface IndustriesCatalogClientProps {
   initialContent: IndustriesPageContent;
@@ -109,7 +110,14 @@ export default function IndustriesCatalogClient({ initialContent }: IndustriesCa
                     <div>
                       {/* Top Badges Row */}
                       <div className="flex items-center justify-between gap-2">
-                        <span className="inline-flex items-center rounded-full border border-violet-200/80 dark:border-slate-700 bg-violet-50/80 dark:bg-slate-800/80 px-2.5 py-1 text-[11px] font-bold text-violet-700 dark:text-violet-300 truncate max-w-[65%]">
+                        <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-200/80 dark:border-slate-700 bg-violet-50/80 dark:bg-slate-800/80 px-2.5 py-1 text-[11px] font-bold text-violet-700 dark:text-violet-300 truncate max-w-[65%]">
+                          <IndustryIcon
+                            icon={ind.icon}
+                            iconName={ind.iconName}
+                            industryId={ind.id}
+                            fallbackIndex={idx}
+                            className="h-3.5 w-3.5 shrink-0 text-violet-600 dark:text-violet-400"
+                          />
                           <span className="truncate">{ind.heroBadge || ind.title}</span>
                         </span>
 

@@ -154,6 +154,7 @@ export interface IndustryItem {
   tag?: string;
   desc: string;
   icon?: any;
+  iconName?: string;
   overviewTag?: string;
   overviewHeading?: string;
   complianceTag?: string;

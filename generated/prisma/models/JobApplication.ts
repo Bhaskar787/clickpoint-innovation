@@ -20,8 +20,18 @@ export type JobApplicationModel = runtime.Types.Result.DefaultSelection<Prisma.$
 
 export type AggregateJobApplication = {
   _count: JobApplicationCountAggregateOutputType | null
+  _avg: JobApplicationAvgAggregateOutputType | null
+  _sum: JobApplicationSumAggregateOutputType | null
   _min: JobApplicationMinAggregateOutputType | null
   _max: JobApplicationMaxAggregateOutputType | null
+}
+
+export type JobApplicationAvgAggregateOutputType = {
+  attemptCount: number | null
+}
+
+export type JobApplicationSumAggregateOutputType = {
+  attemptCount: number | null
 }
 
 export type JobApplicationMinAggregateOutputType = {
@@ -42,6 +52,7 @@ export type JobApplicationMinAggregateOutputType = {
   status: $Enums.ApplicationStatus | null
   isRead: boolean | null
   ipAddress: string | null
+  attemptCount: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -64,6 +75,7 @@ export type JobApplicationMaxAggregateOutputType = {
   status: $Enums.ApplicationStatus | null
   isRead: boolean | null
   ipAddress: string | null
+  attemptCount: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -86,11 +98,21 @@ export type JobApplicationCountAggregateOutputType = {
   status: number
   isRead: number
   ipAddress: number
+  sentEmailTypes: number
+  attemptCount: number
   createdAt: number
   updatedAt: number
   _all: number
 }
 
+
+export type JobApplicationAvgAggregateInputType = {
+  attemptCount?: true
+}
+
+export type JobApplicationSumAggregateInputType = {
+  attemptCount?: true
+}
 
 export type JobApplicationMinAggregateInputType = {
   id?: true
@@ -110,6 +132,7 @@ export type JobApplicationMinAggregateInputType = {
   status?: true
   isRead?: true
   ipAddress?: true
+  attemptCount?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -132,6 +155,7 @@ export type JobApplicationMaxAggregateInputType = {
   status?: true
   isRead?: true
   ipAddress?: true
+  attemptCount?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -154,6 +178,8 @@ export type JobApplicationCountAggregateInputType = {
   status?: true
   isRead?: true
   ipAddress?: true
+  sentEmailTypes?: true
+  attemptCount?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -197,6 +223,18 @@ export type JobApplicationAggregateArgs<ExtArgs extends runtime.Types.Extensions
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: JobApplicationAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: JobApplicationSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: JobApplicationMinAggregateInputType
@@ -227,6 +265,8 @@ export type JobApplicationGroupByArgs<ExtArgs extends runtime.Types.Extensions.I
   take?: number
   skip?: number
   _count?: JobApplicationCountAggregateInputType | true
+  _avg?: JobApplicationAvgAggregateInputType
+  _sum?: JobApplicationSumAggregateInputType
   _min?: JobApplicationMinAggregateInputType
   _max?: JobApplicationMaxAggregateInputType
 }
@@ -249,9 +289,13 @@ export type JobApplicationGroupByOutputType = {
   status: $Enums.ApplicationStatus
   isRead: boolean
   ipAddress: string | null
+  sentEmailTypes: runtime.JsonValue
+  attemptCount: number
   createdAt: Date
   updatedAt: Date
   _count: JobApplicationCountAggregateOutputType | null
+  _avg: JobApplicationAvgAggregateOutputType | null
+  _sum: JobApplicationSumAggregateOutputType | null
   _min: JobApplicationMinAggregateOutputType | null
   _max: JobApplicationMaxAggregateOutputType | null
 }
@@ -292,6 +336,8 @@ export type JobApplicationWhereInput = {
   status?: Prisma.EnumApplicationStatusFilter<"JobApplication"> | $Enums.ApplicationStatus
   isRead?: Prisma.BoolFilter<"JobApplication"> | boolean
   ipAddress?: Prisma.StringNullableFilter<"JobApplication"> | string | null
+  sentEmailTypes?: Prisma.JsonFilter<"JobApplication">
+  attemptCount?: Prisma.IntFilter<"JobApplication"> | number
   createdAt?: Prisma.DateTimeFilter<"JobApplication"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"JobApplication"> | Date | string
   jobVacancy?: Prisma.XOR<Prisma.JobVacancyScalarRelationFilter, Prisma.JobVacancyWhereInput>
@@ -315,6 +361,8 @@ export type JobApplicationOrderByWithRelationInput = {
   status?: Prisma.SortOrder
   isRead?: Prisma.SortOrder
   ipAddress?: Prisma.SortOrderInput | Prisma.SortOrder
+  sentEmailTypes?: Prisma.SortOrder
+  attemptCount?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   jobVacancy?: Prisma.JobVacancyOrderByWithRelationInput
@@ -341,6 +389,8 @@ export type JobApplicationWhereUniqueInput = Prisma.AtLeast<{
   status?: Prisma.EnumApplicationStatusFilter<"JobApplication"> | $Enums.ApplicationStatus
   isRead?: Prisma.BoolFilter<"JobApplication"> | boolean
   ipAddress?: Prisma.StringNullableFilter<"JobApplication"> | string | null
+  sentEmailTypes?: Prisma.JsonFilter<"JobApplication">
+  attemptCount?: Prisma.IntFilter<"JobApplication"> | number
   createdAt?: Prisma.DateTimeFilter<"JobApplication"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"JobApplication"> | Date | string
   jobVacancy?: Prisma.XOR<Prisma.JobVacancyScalarRelationFilter, Prisma.JobVacancyWhereInput>
@@ -364,11 +414,15 @@ export type JobApplicationOrderByWithAggregationInput = {
   status?: Prisma.SortOrder
   isRead?: Prisma.SortOrder
   ipAddress?: Prisma.SortOrderInput | Prisma.SortOrder
+  sentEmailTypes?: Prisma.SortOrder
+  attemptCount?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.JobApplicationCountOrderByAggregateInput
+  _avg?: Prisma.JobApplicationAvgOrderByAggregateInput
   _max?: Prisma.JobApplicationMaxOrderByAggregateInput
   _min?: Prisma.JobApplicationMinOrderByAggregateInput
+  _sum?: Prisma.JobApplicationSumOrderByAggregateInput
 }
 
 export type JobApplicationScalarWhereWithAggregatesInput = {
@@ -392,6 +446,8 @@ export type JobApplicationScalarWhereWithAggregatesInput = {
   status?: Prisma.EnumApplicationStatusWithAggregatesFilter<"JobApplication"> | $Enums.ApplicationStatus
   isRead?: Prisma.BoolWithAggregatesFilter<"JobApplication"> | boolean
   ipAddress?: Prisma.StringNullableWithAggregatesFilter<"JobApplication"> | string | null
+  sentEmailTypes?: Prisma.JsonWithAggregatesFilter<"JobApplication">
+  attemptCount?: Prisma.IntWithAggregatesFilter<"JobApplication"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"JobApplication"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"JobApplication"> | Date | string
 }
@@ -413,6 +469,8 @@ export type JobApplicationCreateInput = {
   status?: $Enums.ApplicationStatus
   isRead?: boolean
   ipAddress?: string | null
+  sentEmailTypes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  attemptCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
   jobVacancy: Prisma.JobVacancyCreateNestedOneWithoutApplicationsInput
@@ -436,6 +494,8 @@ export type JobApplicationUncheckedCreateInput = {
   status?: $Enums.ApplicationStatus
   isRead?: boolean
   ipAddress?: string | null
+  sentEmailTypes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  attemptCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -457,6 +517,8 @@ export type JobApplicationUpdateInput = {
   status?: Prisma.EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
   isRead?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ipAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sentEmailTypes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   jobVacancy?: Prisma.JobVacancyUpdateOneRequiredWithoutApplicationsNestedInput
@@ -480,6 +542,8 @@ export type JobApplicationUncheckedUpdateInput = {
   status?: Prisma.EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
   isRead?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ipAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sentEmailTypes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -502,6 +566,8 @@ export type JobApplicationCreateManyInput = {
   status?: $Enums.ApplicationStatus
   isRead?: boolean
   ipAddress?: string | null
+  sentEmailTypes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  attemptCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -523,6 +589,8 @@ export type JobApplicationUpdateManyMutationInput = {
   status?: Prisma.EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
   isRead?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ipAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sentEmailTypes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -545,6 +613,8 @@ export type JobApplicationUncheckedUpdateManyInput = {
   status?: Prisma.EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
   isRead?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ipAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sentEmailTypes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -577,8 +647,14 @@ export type JobApplicationCountOrderByAggregateInput = {
   status?: Prisma.SortOrder
   isRead?: Prisma.SortOrder
   ipAddress?: Prisma.SortOrder
+  sentEmailTypes?: Prisma.SortOrder
+  attemptCount?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type JobApplicationAvgOrderByAggregateInput = {
+  attemptCount?: Prisma.SortOrder
 }
 
 export type JobApplicationMaxOrderByAggregateInput = {
@@ -599,6 +675,7 @@ export type JobApplicationMaxOrderByAggregateInput = {
   status?: Prisma.SortOrder
   isRead?: Prisma.SortOrder
   ipAddress?: Prisma.SortOrder
+  attemptCount?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -621,8 +698,13 @@ export type JobApplicationMinOrderByAggregateInput = {
   status?: Prisma.SortOrder
   isRead?: Prisma.SortOrder
   ipAddress?: Prisma.SortOrder
+  attemptCount?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type JobApplicationSumOrderByAggregateInput = {
+  attemptCount?: Prisma.SortOrder
 }
 
 export type JobApplicationCreateNestedManyWithoutJobVacancyInput = {
@@ -688,6 +770,8 @@ export type JobApplicationCreateWithoutJobVacancyInput = {
   status?: $Enums.ApplicationStatus
   isRead?: boolean
   ipAddress?: string | null
+  sentEmailTypes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  attemptCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -709,6 +793,8 @@ export type JobApplicationUncheckedCreateWithoutJobVacancyInput = {
   status?: $Enums.ApplicationStatus
   isRead?: boolean
   ipAddress?: string | null
+  sentEmailTypes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  attemptCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -760,6 +846,8 @@ export type JobApplicationScalarWhereInput = {
   status?: Prisma.EnumApplicationStatusFilter<"JobApplication"> | $Enums.ApplicationStatus
   isRead?: Prisma.BoolFilter<"JobApplication"> | boolean
   ipAddress?: Prisma.StringNullableFilter<"JobApplication"> | string | null
+  sentEmailTypes?: Prisma.JsonFilter<"JobApplication">
+  attemptCount?: Prisma.IntFilter<"JobApplication"> | number
   createdAt?: Prisma.DateTimeFilter<"JobApplication"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"JobApplication"> | Date | string
 }
@@ -781,6 +869,8 @@ export type JobApplicationCreateManyJobVacancyInput = {
   status?: $Enums.ApplicationStatus
   isRead?: boolean
   ipAddress?: string | null
+  sentEmailTypes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  attemptCount?: number
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -802,6 +892,8 @@ export type JobApplicationUpdateWithoutJobVacancyInput = {
   status?: Prisma.EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
   isRead?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ipAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sentEmailTypes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -823,6 +915,8 @@ export type JobApplicationUncheckedUpdateWithoutJobVacancyInput = {
   status?: Prisma.EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
   isRead?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ipAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sentEmailTypes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -844,6 +938,8 @@ export type JobApplicationUncheckedUpdateManyWithoutJobVacancyInput = {
   status?: Prisma.EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
   isRead?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ipAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sentEmailTypes?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  attemptCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -868,6 +964,8 @@ export type JobApplicationSelect<ExtArgs extends runtime.Types.Extensions.Intern
   status?: boolean
   isRead?: boolean
   ipAddress?: boolean
+  sentEmailTypes?: boolean
+  attemptCount?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   jobVacancy?: boolean | Prisma.JobVacancyDefaultArgs<ExtArgs>
@@ -891,6 +989,8 @@ export type JobApplicationSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   status?: boolean
   isRead?: boolean
   ipAddress?: boolean
+  sentEmailTypes?: boolean
+  attemptCount?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   jobVacancy?: boolean | Prisma.JobVacancyDefaultArgs<ExtArgs>
@@ -914,6 +1014,8 @@ export type JobApplicationSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   status?: boolean
   isRead?: boolean
   ipAddress?: boolean
+  sentEmailTypes?: boolean
+  attemptCount?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   jobVacancy?: boolean | Prisma.JobVacancyDefaultArgs<ExtArgs>
@@ -937,11 +1039,13 @@ export type JobApplicationSelectScalar = {
   status?: boolean
   isRead?: boolean
   ipAddress?: boolean
+  sentEmailTypes?: boolean
+  attemptCount?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type JobApplicationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "jobVacancyId" | "jobTitle" | "name" | "email" | "phone" | "linkedIn" | "portfolio" | "coverLetter" | "coverLetterFileUrl" | "coverLetterOriginalName" | "resumeUrl" | "resumeOriginalName" | "resumeProvider" | "status" | "isRead" | "ipAddress" | "createdAt" | "updatedAt", ExtArgs["result"]["jobApplication"]>
+export type JobApplicationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "jobVacancyId" | "jobTitle" | "name" | "email" | "phone" | "linkedIn" | "portfolio" | "coverLetter" | "coverLetterFileUrl" | "coverLetterOriginalName" | "resumeUrl" | "resumeOriginalName" | "resumeProvider" | "status" | "isRead" | "ipAddress" | "sentEmailTypes" | "attemptCount" | "createdAt" | "updatedAt", ExtArgs["result"]["jobApplication"]>
 export type JobApplicationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   jobVacancy?: boolean | Prisma.JobVacancyDefaultArgs<ExtArgs>
 }
@@ -975,6 +1079,8 @@ export type $JobApplicationPayload<ExtArgs extends runtime.Types.Extensions.Inte
     status: $Enums.ApplicationStatus
     isRead: boolean
     ipAddress: string | null
+    sentEmailTypes: runtime.JsonValue
+    attemptCount: number
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["jobApplication"]>
@@ -1418,6 +1524,8 @@ export interface JobApplicationFieldRefs {
   readonly status: Prisma.FieldRef<"JobApplication", 'ApplicationStatus'>
   readonly isRead: Prisma.FieldRef<"JobApplication", 'Boolean'>
   readonly ipAddress: Prisma.FieldRef<"JobApplication", 'String'>
+  readonly sentEmailTypes: Prisma.FieldRef<"JobApplication", 'Json'>
+  readonly attemptCount: Prisma.FieldRef<"JobApplication", 'Int'>
   readonly createdAt: Prisma.FieldRef<"JobApplication", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"JobApplication", 'DateTime'>
 }

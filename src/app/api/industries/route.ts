@@ -9,15 +9,19 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 /**
- * Strips Lucide component functions / non-serializable objects before JSON response
+ * Strips non-serializable objects while preserving valid icon string IDs
  */
 function sanitizeIndustriesData(data: any) {
   if (!data) return data;
   const clone = JSON.parse(JSON.stringify(data));
   if (clone.industries && Array.isArray(clone.industries)) {
     clone.industries = clone.industries.map((ind: any) => {
+      const iconString = typeof ind.icon === "string" ? ind.icon : (typeof ind.iconName === "string" ? ind.iconName : undefined);
       const { icon, ...rest } = ind;
-      return rest;
+      return {
+        ...rest,
+        ...(iconString ? { icon: iconString, iconName: iconString } : {}),
+      };
     });
   }
   return clone;

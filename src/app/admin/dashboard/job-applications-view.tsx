@@ -8,7 +8,7 @@ import {
   ChevronDown, CheckCircle2, Clock, XCircle, Star,
   FileText, Mail, Phone, Linkedin, Globe, MessageSquare,
   Calendar, MapPin, ExternalLink, ArrowLeft, User, Filter,
-  MoreVertical, ShieldAlert, SendHorizontal, X, Check, ZoomIn
+  MoreVertical, ShieldAlert, SendHorizontal, X, Check, ZoomIn, Lock
 } from "lucide-react";
 import { toast } from "sonner";
 import { EmailComposerModal, EmailTemplateType } from "@/components/admin/email-composer-modal";
@@ -30,6 +30,8 @@ interface JobApplication {
   status: "PENDING" | "REVIEWING" | "SHORTLISTED" | "REJECTED" | "HIRED";
   isRead: boolean;
   ipAddress?: string;
+  sentEmailTypes?: string[];
+  attemptCount?: number;
   createdAt: string;
   updatedAt: string;
   vacancyType?: string;
@@ -111,9 +113,18 @@ export default function JobApplicationsView({ selectedItemId, onClearSelectedIte
   // Lightbox modal state for full-screen cover letter / resume image viewing
   const [lightboxImage, setLightboxImage] = useState<{ url: string; title: string } | null>(null);
 
-  const openEmailModal = (app: JobApplication, initialType: EmailTemplateType = "APPROVED") => {
+  const getInitialTemplateForStatus = (status: string): EmailTemplateType => {
+    if (status === "HIRED") return "HIRED";
+    if (status === "SHORTLISTED") return "APPROVED";
+    if (status === "REJECTED") return "REJECTED";
+    if (status === "REVIEWING") return "REVIEWING";
+    return "APPROVED";
+  };
+
+  const openEmailModal = (app: JobApplication, initialType?: EmailTemplateType) => {
+    const templateType = initialType || getInitialTemplateForStatus(app.status);
     setEmailModalApp(app);
-    setEmailModalType(initialType);
+    setEmailModalType(templateType);
   };
 
   const parseCoverLetter = (app: any) => {
@@ -302,16 +313,43 @@ export default function JobApplicationsView({ selectedItemId, onClearSelectedIte
 
   const renderEmailModal = () => (
     <EmailComposerModal
+      key={`${emailModalApp?.id}-${emailModalType}`}
       app={emailModalApp}
       initialType={emailModalType}
       onClose={() => setEmailModalApp(null)}
-      onSuccess={(newStatus) => {
-        if (newStatus && emailModalApp) {
+      onSuccess={(newStatus, sentType) => {
+        if (emailModalApp) {
           setApplications((prev) =>
-            prev.map((a) => (a.id === emailModalApp.id ? { ...a, status: newStatus as any } : a))
+            prev.map((a) => {
+              if (a.id === emailModalApp.id) {
+                const existingTypes = a.sentEmailTypes || [];
+                const updatedTypes =
+                  sentType && !existingTypes.includes(sentType)
+                    ? [...existingTypes, sentType]
+                    : existingTypes;
+                return {
+                  ...a,
+                  status: (newStatus as any) || a.status,
+                  sentEmailTypes: updatedTypes,
+                };
+              }
+              return a;
+            })
           );
           if (selectedApp?.id === emailModalApp.id) {
-            setSelectedApp((prev) => (prev ? { ...prev, status: newStatus as any } : null));
+            setSelectedApp((prev) => {
+              if (!prev) return null;
+              const existingTypes = prev.sentEmailTypes || [];
+              const updatedTypes =
+                sentType && !existingTypes.includes(sentType)
+                  ? [...existingTypes, sentType]
+                  : existingTypes;
+              return {
+                ...prev,
+                status: (newStatus as any) || prev.status,
+                sentEmailTypes: updatedTypes,
+              };
+            });
           }
         }
       }}
@@ -380,6 +418,11 @@ export default function JobApplicationsView({ selectedItemId, onClearSelectedIte
                 {!selectedApp.isRead && (
                   <span className="px-2 py-0.5 text-[10px] font-bold bg-emerald-500 text-white rounded-full">
                     NEW
+                  </span>
+                )}
+                {selectedApp.attemptCount && selectedApp.attemptCount > 1 && (
+                  <span className="px-2 py-0.5 text-[10px] font-extrabold bg-blue-100 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300 rounded-full border border-blue-200 dark:border-blue-800">
+                    Attempt {selectedApp.attemptCount}/3
                   </span>
                 )}
               </div>
@@ -455,20 +498,31 @@ export default function JobApplicationsView({ selectedItemId, onClearSelectedIte
                     Application Status
                   </h3>
                   <div className="grid grid-cols-2 gap-2">
-                    {Object.entries(STATUS_CONFIG).map(([s, { label }]) => (
-                      <button
-                        key={s}
-                        disabled={updatingId === selectedApp.id}
-                        onClick={() => updateStatus(selectedApp.id, s)}
-                        className={`text-xs font-medium px-3 py-2 rounded-lg border text-left transition-all ${
-                          selectedApp.status === s
-                            ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-transparent shadow-sm"
-                            : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
-                        }`}
-                      >
-                        {label}
-                      </button>
-                    ))}
+                    {Object.entries(STATUS_CONFIG).map(([s, { label }]) => {
+                      const isHiredLocked = selectedApp.status === "REJECTED" && s === "HIRED";
+                      const isDisabled = updatingId === selectedApp.id || isHiredLocked;
+
+                      return (
+                        <button
+                          key={s}
+                          disabled={isDisabled}
+                          title={isHiredLocked ? "Cannot hire an applicant who is currently in Rejected status" : undefined}
+                          onClick={() => updateStatus(selectedApp.id, s)}
+                          className={`text-xs font-medium px-3 py-2 rounded-lg border text-left transition-all ${
+                            isHiredLocked
+                              ? "opacity-40 bg-slate-100 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed"
+                              : selectedApp.status === s
+                              ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-transparent shadow-sm"
+                              : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span>{label}</span>
+                            {isHiredLocked && <Lock className="h-3 w-3 text-slate-400" />}
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -476,29 +530,115 @@ export default function JobApplicationsView({ selectedItemId, onClearSelectedIte
                   <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">
                     Quick Email Actions
                   </h3>
-                  <div className="space-y-1.5">
-                    <button
-                      onClick={() => openEmailModal(selectedApp, "APPROVED")}
-                      className="w-full text-left px-3 py-2 text-xs font-semibold rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 hover:bg-emerald-100 transition-colors flex items-center justify-between"
-                    >
-                      <span>Shortlist & Notify Candidate</span>
-                      <Mail className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      onClick={() => openEmailModal(selectedApp, "REJECTED")}
-                      className="w-full text-left px-3 py-2 text-xs font-semibold rounded-lg bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60 hover:bg-rose-100 transition-colors flex items-center justify-between"
-                    >
-                      <span>Send Rejection Email</span>
-                      <Mail className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      onClick={() => openEmailModal(selectedApp, "INTERVIEW")}
-                      className="w-full text-left px-3 py-2 text-xs font-semibold rounded-lg bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/60 hover:bg-purple-100 transition-colors flex items-center justify-between"
-                    >
-                      <span>Send Interview Invitation</span>
-                      <Mail className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
+                  {(() => {
+                    const sent = selectedApp.sentEmailTypes || [];
+                    const isHired = selectedApp.status === "HIRED" || sent.includes("HIRED");
+                    const isRejected = selectedApp.status === "REJECTED";
+                    const hasSentHired = sent.includes("HIRED");
+                    const hasSentShortlist = sent.includes("APPROVED");
+                    const hasSentRejection = sent.includes("REJECTED");
+                    const hasSentInterview = sent.includes("INTERVIEW");
+
+                    return (
+                      <div className="space-y-1.5">
+                        {/* 1. Job Offer / Hired */}
+                        <button
+                          disabled={hasSentHired || isRejected}
+                          onClick={() => !hasSentHired && !isRejected && openEmailModal(selectedApp, "HIRED")}
+                          className={`w-full text-left px-3 py-2 text-xs font-semibold rounded-lg border transition-colors flex items-center justify-between ${
+                            isRejected
+                              ? "bg-slate-100 dark:bg-slate-800/40 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800 cursor-not-allowed opacity-50"
+                              : hasSentHired
+                              ? "bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800 cursor-not-allowed opacity-60"
+                              : "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-200 border-emerald-300 dark:border-emerald-800 hover:bg-emerald-200 shadow-sm"
+                          }`}
+                        >
+                          <span className="font-bold flex items-center gap-1.5">
+                            {isRejected ? (
+                              <>Job Offer Disabled (Candidate Rejected)</>
+                            ) : hasSentHired ? (
+                              <>Job Offer Email Sent ✓</>
+                            ) : (
+                              <>Congratulate & Send Job Offer (Hired)</>
+                            )}
+                          </span>
+                          {hasSentHired ? (
+                            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                          ) : isRejected ? (
+                            <Lock className="h-3.5 w-3.5 text-slate-400" />
+                          ) : (
+                            <Mail className="h-3.5 w-3.5" />
+                          )}
+                        </button>
+
+                        {/* 2. Shortlist */}
+                        <button
+                          disabled={hasSentShortlist || isHired}
+                          onClick={() => !hasSentShortlist && !isHired && openEmailModal(selectedApp, "APPROVED")}
+                          className={`w-full text-left px-3 py-2 text-xs font-semibold rounded-lg border transition-colors flex items-center justify-between ${
+                            isHired
+                              ? "bg-slate-100 dark:bg-slate-800/40 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800 cursor-not-allowed opacity-50"
+                              : hasSentShortlist
+                              ? "bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800 cursor-not-allowed opacity-60"
+                              : "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 hover:bg-emerald-100"
+                          }`}
+                        >
+                          <span>
+                            {isHired
+                              ? "Shortlist Disabled (Candidate Hired)"
+                              : hasSentShortlist
+                              ? "Shortlist Email Sent ✓"
+                              : "Shortlist & Notify Candidate"}
+                          </span>
+                          {hasSentShortlist ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> : <Mail className="h-3.5 w-3.5" />}
+                        </button>
+
+                        {/* 3. Rejection */}
+                        <button
+                          disabled={hasSentRejection || isHired}
+                          onClick={() => !hasSentRejection && !isHired && openEmailModal(selectedApp, "REJECTED")}
+                          className={`w-full text-left px-3 py-2 text-xs font-semibold rounded-lg border transition-colors flex items-center justify-between ${
+                            isHired
+                              ? "bg-slate-100 dark:bg-slate-800/40 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800 cursor-not-allowed opacity-50"
+                              : hasSentRejection
+                              ? "bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800 cursor-not-allowed opacity-60"
+                              : "bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60 hover:bg-rose-100"
+                          }`}
+                        >
+                          <span>
+                            {isHired
+                              ? "Rejection Disabled (Candidate Hired)"
+                              : hasSentRejection
+                              ? "Rejection Email Sent ✓"
+                              : "Send Rejection Email"}
+                          </span>
+                          {hasSentRejection ? <CheckCircle2 className="h-3.5 w-3.5 text-rose-600" /> : <Mail className="h-3.5 w-3.5" />}
+                        </button>
+
+                        {/* 4. Interview */}
+                        <button
+                          disabled={hasSentInterview || isHired}
+                          onClick={() => !hasSentInterview && !isHired && openEmailModal(selectedApp, "INTERVIEW")}
+                          className={`w-full text-left px-3 py-2 text-xs font-semibold rounded-lg border transition-colors flex items-center justify-between ${
+                            isHired
+                              ? "bg-slate-100 dark:bg-slate-800/40 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800 cursor-not-allowed opacity-50"
+                              : hasSentInterview
+                              ? "bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800 cursor-not-allowed opacity-60"
+                              : "bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/60 hover:bg-purple-100"
+                          }`}
+                        >
+                          <span>
+                            {isHired
+                              ? "Interview Disabled (Candidate Hired)"
+                              : hasSentInterview
+                              ? "Interview Invite Sent ✓"
+                              : "Send Interview Invitation"}
+                          </span>
+                          {hasSentInterview ? <CheckCircle2 className="h-3.5 w-3.5 text-purple-600" /> : <Mail className="h-3.5 w-3.5" />}
+                        </button>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
             </div>
@@ -825,7 +965,14 @@ export default function JobApplicationsView({ selectedItemId, onClearSelectedIte
 
                       {/* Applicant */}
                       <td className="py-3.5 px-4">
-                        <div className="font-semibold text-slate-900 dark:text-white">{app.name}</div>
+                        <div className="font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
+                          <span>{app.name}</span>
+                          {app.attemptCount && app.attemptCount > 1 && (
+                            <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                              Attempt {app.attemptCount}/3
+                            </span>
+                          )}
+                        </div>
                         <div className="text-[11px] text-slate-400 dark:text-slate-500">{app.email}</div>
                       </td>
 
@@ -864,7 +1011,7 @@ export default function JobApplicationsView({ selectedItemId, onClearSelectedIte
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              openEmailModal(app, "APPROVED");
+                              openEmailModal(app);
                             }}
                             className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors"
                             title="Send Email to Applicant"

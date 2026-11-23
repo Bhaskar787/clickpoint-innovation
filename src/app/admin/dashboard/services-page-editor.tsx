@@ -45,6 +45,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { SectionNavSidebar, SectionNavItem } from "@/components/admin/dashboard/section-nav-sidebar";
+import { ServiceIcon, ServiceIconPicker } from "@/components/ui/industry-icon";
 
 interface FileUploadControlProps {
   label: string;
@@ -250,6 +251,8 @@ export const DEFAULT_SERVICES_CONTENT = {
       fullOverview:
         "Clickpoint Innovation specializes in building LLM-native applications that go far beyond standard API integrations. We design production-grade autonomous agent pods, vector database knowledge bases, and fine-tuned domain models.",
       heroBadge: "AI & Autonomous Systems",
+      icon: "BsRobot",
+      iconName: "BsRobot",
       imageUrl: "",
       keyMetrics: [
         { label: "Execution Latency", value: "< 250ms" },
@@ -295,6 +298,8 @@ export const DEFAULT_SERVICES_CONTENT = {
       fullOverview:
         "Our full-stack engineering pods build mission-critical web applications, enterprise portals, and mobile apps using Next.js App Router, React Native, and serverless edge computing architectures.",
       heroBadge: "Full-Stack Web & Mobile",
+      icon: "BsCodeSlash",
+      iconName: "BsCodeSlash",
       imageUrl: "",
       keyMetrics: [
         { label: "Lighthouse Score", value: "98/100" },
@@ -340,6 +345,8 @@ export const DEFAULT_SERVICES_CONTENT = {
       fullOverview:
         "We craft conversion-focused design systems, interactive prototypes, and accessible UI component libraries tailored for B2B SaaS and complex web applications.",
       heroBadge: "Design Systems & UX",
+      icon: "BsPalette",
+      iconName: "BsPalette",
       imageUrl: "",
       keyMetrics: [
         { label: "Conversion Lift", value: "+38%" },
@@ -384,6 +391,8 @@ export const DEFAULT_SERVICES_CONTENT = {
       fullOverview:
         "Our growth specialists combine technical SEO, CRO A/B testing frameworks, and automated email lifecycle sequences to scale monthly recurring revenue.",
       heroBadge: "Growth & Conversion",
+      icon: "BsGraphUpArrow",
+      iconName: "BsGraphUpArrow",
       imageUrl: "",
       keyMetrics: [
         { label: "Organic Traffic", value: "+210%" },
@@ -469,7 +478,7 @@ export default function ServicesPageEditor({
   const [selectedDetailId, setSelectedDetailId] = useState<string>("ai-eng");
   const [catalogSearchQuery, setCatalogSearchQuery] = useState("");
   const [editingCatalogService, setEditingCatalogService] = useState<{
-    service: (typeof DEFAULT_SERVICES_CONTENT.services)[0];
+    service: any;
     index?: number;
     isNew: boolean;
   } | null>(null);
@@ -638,6 +647,8 @@ export default function ServicesPageEditor({
       subtitle: "",
       buttonText: "Explore Capabilities",
       desc: "",
+      icon: "BsCodeSlash",
+      iconName: "BsCodeSlash",
       fullOverview: "Detailed overview narrative explaining how we deliver this discipline for enterprise clients.",
       heroBadge: "Custom Engineering Pod",
       imageUrl: "",
@@ -677,9 +688,13 @@ export default function ServicesPageEditor({
     });
   }
 
-  function handleOpenEditCatalogService(svc: (typeof DEFAULT_SERVICES_CONTENT.services)[0], index: number) {
+  function handleOpenEditCatalogService(svc: any, index: number) {
     setEditingCatalogService({
-      service: { ...svc },
+      service: {
+        ...svc,
+        icon: typeof svc.icon === "string" ? svc.icon : (svc.iconName || ""),
+        iconName: typeof svc.iconName === "string" ? svc.iconName : (typeof svc.icon === "string" ? svc.icon : ""),
+      },
       index,
       isNew: false,
     });
@@ -1030,21 +1045,33 @@ export default function ServicesPageEditor({
                           </div>
                         </td>
 
-                        {/* Title & Slug */}
+                        {/* Title, Icon & Slug */}
                         <td className="py-3 px-3 align-middle">
-                          <div className="font-bold text-slate-900 dark:text-white line-clamp-1">
-                            {svc.title || "Untitled Service"}
-                          </div>
-                          <div className="flex items-center gap-1 mt-0.5">
-                            <a
-                              href={`/services/${svc.id}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="inline-flex items-center gap-1 font-mono text-[11px] text-blue-600 dark:text-blue-400 hover:underline"
-                            >
-                              <span>/services/{svc.id}</span>
-                              <ExternalLink className="h-2.5 w-2.5" />
-                            </a>
+                          <div className="flex items-center gap-2.5">
+                            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-100/80 dark:bg-slate-800 text-violet-600 dark:text-violet-300 border border-violet-200/60 dark:border-slate-700 shrink-0 shadow-xs">
+                              <ServiceIcon
+                                icon={(svc as any).icon}
+                                iconName={(svc as any).iconName}
+                                serviceId={svc.id}
+                                className="h-4 w-4"
+                              />
+                            </span>
+                            <div className="min-w-0">
+                              <div className="font-bold text-slate-900 dark:text-white line-clamp-1">
+                                {svc.title || "Untitled Service"}
+                              </div>
+                              <div className="flex items-center gap-1 mt-0.5">
+                                <a
+                                  href={`/services/${svc.id}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="inline-flex items-center gap-1 font-mono text-[11px] text-blue-600 dark:text-blue-400 hover:underline"
+                                >
+                                  <span>/services/{svc.id}</span>
+                                  <ExternalLink className="h-2.5 w-2.5" />
+                                </a>
+                              </div>
+                            </div>
                           </div>
                         </td>
 
@@ -2127,15 +2154,46 @@ export default function ServicesPageEditor({
             />
           </div>
 
+          {/* Dynamic Service Capability Icon Picker */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+              Service Capability Icon (React / Bootstrap Icons)
+            </label>
+            <ServiceIconPicker
+              value={editingCatalogService.service.icon || editingCatalogService.service.iconName || ""}
+              onChange={(iconId) =>
+                setEditingCatalogService({
+                  ...editingCatalogService,
+                  service: {
+                    ...editingCatalogService.service,
+                    icon: iconId,
+                    iconName: iconId,
+                  },
+                })
+              }
+              serviceId={editingCatalogService.service.id}
+            />
+          </div>
+
           {/* Live Preview Card */}
-          <div className="p-3.5 rounded-xl border border-dashed border-blue-300 dark:border-blue-900/60 bg-blue-50/30 dark:bg-blue-950/20 space-y-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 block">
+          <div className="p-3.5 rounded-xl border border-dashed border-violet-300 dark:border-violet-900/60 bg-violet-50/30 dark:bg-violet-950/20 space-y-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-violet-600 block">
               Catalog Card Live Preview
             </span>
-            <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0b0f19] space-y-2 shadow-xs">
-              <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/10 text-blue-600">
-                {editingCatalogService.service.subtitle || "Service Subtitle"}
-              </span>
+            <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0b0f19] space-y-3 shadow-xs">
+              <div className="flex items-center justify-between">
+                <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-violet-500/10 text-violet-600">
+                  {editingCatalogService.service.subtitle || "Service Subtitle"}
+                </span>
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-100/80 dark:bg-slate-800 text-violet-600 dark:text-violet-300 border border-violet-100/50 dark:border-slate-700 shadow-xs">
+                  <ServiceIcon
+                    icon={editingCatalogService.service.icon}
+                    iconName={editingCatalogService.service.iconName}
+                    serviceId={editingCatalogService.service.id}
+                    className="h-4 w-4 text-violet-600 dark:text-violet-300"
+                  />
+                </span>
+              </div>
               <h4 className="text-sm font-bold text-slate-900 dark:text-white">
                 {editingCatalogService.service.title || "Service Title Preview"}
               </h4>
@@ -2143,7 +2201,7 @@ export default function ServicesPageEditor({
                 {editingCatalogService.service.desc || "Service description preview will appear here..."}
               </p>
               <div className="pt-2">
-                <span className="inline-flex items-center gap-1 text-xs font-bold text-blue-600">
+                <span className="inline-flex items-center gap-1 text-xs font-bold text-violet-600">
                   {editingCatalogService.service.buttonText || "Explore Capabilities"} →
                 </span>
               </div>
