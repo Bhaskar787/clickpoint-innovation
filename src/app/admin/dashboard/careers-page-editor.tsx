@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import React from 'react';
 import { toast } from "sonner";
+import { useConfirm } from "@/components/admin/confirm-dialog";
 import {
   Save,
   RotateCcw,
@@ -1225,6 +1226,7 @@ function DedicatedVacancyEditor({
 // ---------------------------------------------------------------------------
 
 export default function CareersPageEditor({ sectionId, onCloseSection }: CareersPageEditorProps) {
+  const { confirm } = useConfirm();
   const [activeSectionId, setActiveSectionId] = useState<string>(
     sectionId === "careers-jobs" ? "careers-vacancies" : (sectionId || "careers-hero")
   );
@@ -1325,7 +1327,14 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
   }
 
   async function handleResetContent() {
-    if (!confirm("Reset all careers page content to defaults?")) return;
+    const ok = await confirm({
+      title: "Reset Careers Page Content",
+      message: "Are you sure you want to reset all careers page content to defaults? This will reset hero, company culture, employee benefits, and hiring pipeline configurations.",
+      confirmText: "Reset to Defaults",
+      variant: "warning",
+      icon: "refresh",
+    });
+    if (!ok) return;
     setFormData(DEFAULT_CONTENT);
     await fetch("/api/careers", {
       method: "PUT",
@@ -1400,7 +1409,13 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
       toast.error(`Cannot delete — ${count} vacancies still use this category. Reassign or delete them first.`);
       return;
     }
-    if (!confirm(`Delete category "${cat.name}"? This cannot be undone.`)) return;
+    const ok = await confirm({
+      title: "Delete Job Category",
+      message: `Delete category "${cat.name}"? This cannot be undone.`,
+      confirmText: "Delete Category",
+      variant: "danger",
+    });
+    if (!ok) return;
     const toastId = toast.loading("Deleting category...");
     try {
       const res = await fetch(`/api/careers/categories?id=${cat.id}`, { method: "DELETE" });
@@ -1500,7 +1515,13 @@ export default function CareersPageEditor({ sectionId, onCloseSection }: Careers
   }
 
   async function handleDeleteVacancy(v: JobVacancy) {
-    if (!confirm(`Delete vacancy "${v.title}"? This cannot be undone.`)) return;
+    const ok = await confirm({
+      title: "Delete Job Vacancy",
+      message: `Delete vacancy "${v.title}"? This cannot be undone.`,
+      confirmText: "Delete Vacancy",
+      variant: "danger",
+    });
+    if (!ok) return;
     const toastId = toast.loading("Deleting vacancy...");
     try {
       const res = await fetch(`/api/careers/vacancies?id=${v.id}`, { method: "DELETE" });

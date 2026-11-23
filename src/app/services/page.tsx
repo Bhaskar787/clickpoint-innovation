@@ -1,9 +1,8 @@
-import { prisma } from "@/lib/prisma";
+import { getServicesPage } from "@/server/actions/services";
 import ServicesCatalogClient from "./services-catalog-client";
 import { SERVICES_DATA } from "@/data/landing-data";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 60;
 
 const DEFAULT_SERVICES_CONTENT = {
   hero: {
@@ -60,19 +59,8 @@ const DEFAULT_SERVICES_CONTENT = {
 };
 
 export default async function ServicesPage() {
-  let content = DEFAULT_SERVICES_CONTENT;
-
-  try {
-    const dbRecord = await prisma.servicesPage.findUnique({
-      where: { id: "default" },
-    });
-
-    if (dbRecord && dbRecord.content) {
-      content = (dbRecord.content as unknown) as typeof DEFAULT_SERVICES_CONTENT;
-    }
-  } catch (error) {
-    console.error("Failed to query services content from Prisma DB:", error);
-  }
+  const dbContent = await getServicesPage();
+  const content = (dbContent as unknown as typeof DEFAULT_SERVICES_CONTENT) || DEFAULT_SERVICES_CONTENT;
 
   return <ServicesCatalogClient initialContent={content} />;
 }

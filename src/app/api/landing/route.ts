@@ -23,7 +23,23 @@ export async function GET() {
     }
 
     const content = (landingRecord?.content || {}) as any;
-    const navbar = content.navbar || DEFAULT_NAVBAR_DATA;
+    const rawNavbar = content.navbar || {};
+    const navbar = {
+      ...DEFAULT_NAVBAR_DATA,
+      ...rawNavbar,
+      services: {
+        ...DEFAULT_NAVBAR_DATA.services,
+        ...(rawNavbar.services || {}),
+        featuredCard: {
+          ...DEFAULT_NAVBAR_DATA.services?.featuredCard,
+          ...(rawNavbar.services?.featuredCard || {}),
+        },
+      },
+      industries: {
+        ...DEFAULT_NAVBAR_DATA.industries,
+        ...(rawNavbar.industries || {}),
+      },
+    };
     const systemSettings = {
       ...DEFAULT_SYSTEM_SETTINGS,
       ...(content.systemSettings || {}),

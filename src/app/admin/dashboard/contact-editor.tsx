@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { createPortal } from "react-dom";
+import { useConfirm } from "@/components/admin/confirm-dialog";
 import {
   Save,
   RotateCcw,
@@ -23,7 +24,6 @@ import {
   X,
   User,
   Building2,
-  DollarSign,
   Briefcase,
   Calendar,
   Plus,
@@ -75,6 +75,7 @@ interface ContactEditorProps {
 }
 
 export default function ContactEditor({ sectionId, onCloseSection, selectedItemId, onClearSelectedItem, onMarkItemRead }: ContactEditorProps) {
+  const { confirm } = useConfirm();
   const [formData, setFormData] = useState<ContactPageContent>(DEFAULT_CONTACT_PAGE_DATA);
   const [inquiries, setInquiries] = useState<ContactInquiryItem[]>([]);
   const [filterTab, setFilterTab] = useState<"ALL" | "UNREAD" | "READ">("ALL");
@@ -138,6 +139,8 @@ export default function ContactEditor({ sectionId, onCloseSection, selectedItemI
             formFields: {
               serviceOptions: loadedFields.serviceOptions?.length ? loadedFields.serviceOptions : DEFAULT_CONTACT_PAGE_DATA.formFields.serviceOptions,
               budgetOptions: loadedFields.budgetOptions?.length ? loadedFields.budgetOptions : DEFAULT_CONTACT_PAGE_DATA.formFields.budgetOptions,
+              budgetTitle: loadedFields.budgetTitle || DEFAULT_CONTACT_PAGE_DATA.formFields.budgetTitle || "2. Target Investment / Budget Range *",
+              defaultCurrency: loadedFields.defaultCurrency || DEFAULT_CONTACT_PAGE_DATA.formFields.defaultCurrency || "USD",
             },
           });
         }
@@ -232,7 +235,12 @@ export default function ContactEditor({ sectionId, onCloseSection, selectedItemI
         locationLabel: formData.quickEnquiryModal?.locationLabel || DEFAULT_CONTACT_PAGE_DATA.quickEnquiryModal?.locationLabel,
         footerSlaText: formData.quickEnquiryModal?.footerSlaText || DEFAULT_CONTACT_PAGE_DATA.quickEnquiryModal?.footerSlaText,
       },
-      formFields: formData.formFields || DEFAULT_CONTACT_PAGE_DATA.formFields,
+      formFields: {
+        serviceOptions: formData.formFields?.serviceOptions || DEFAULT_CONTACT_PAGE_DATA.formFields.serviceOptions,
+        budgetOptions: formData.formFields?.budgetOptions || DEFAULT_CONTACT_PAGE_DATA.formFields.budgetOptions,
+        budgetTitle: formData.formFields?.budgetTitle || DEFAULT_CONTACT_PAGE_DATA.formFields.budgetTitle || "2. Target Investment / Budget Range *",
+        defaultCurrency: formData.formFields?.defaultCurrency || DEFAULT_CONTACT_PAGE_DATA.formFields.defaultCurrency || "USD",
+      },
     };
 
     try {
@@ -272,7 +280,13 @@ export default function ContactEditor({ sectionId, onCloseSection, selectedItemI
   }
 
   async function handleDeleteInquiry(item: ContactInquiryItem) {
-    if (!confirm(`Are you sure you want to delete inquiry from "${item.name}"?`)) return;
+    const ok = await confirm({
+      title: "Delete Inquiry",
+      message: `Are you sure you want to delete inquiry from "${item.name}"? This message and its metadata will be permanently removed.`,
+      confirmText: "Delete Inquiry",
+      variant: "danger",
+    });
+    if (!ok) return;
 
     const toastId = toast.loading("Deleting inquiry...");
     try {
@@ -346,56 +360,6 @@ export default function ContactEditor({ sectionId, onCloseSection, selectedItemI
     });
   }
 
-  // Helper handlers for Target Investment / Budget Range (budgetOptions)
-  function handleUpdateBudgetOption(index: number, value: string) {
-    const list = [...(formData.formFields?.budgetOptions || DEFAULT_CONTACT_PAGE_DATA.formFields.budgetOptions)];
-    list[index] = value;
-    setFormData({
-      ...formData,
-      formFields: {
-        serviceOptions: formData.formFields?.serviceOptions || DEFAULT_CONTACT_PAGE_DATA.formFields.serviceOptions,
-        budgetOptions: list,
-      },
-    });
-  }
-
-  function handleAddBudgetOption() {
-    const list = [...(formData.formFields?.budgetOptions || DEFAULT_CONTACT_PAGE_DATA.formFields.budgetOptions), "$150,000+"];
-    setFormData({
-      ...formData,
-      formFields: {
-        serviceOptions: formData.formFields?.serviceOptions || DEFAULT_CONTACT_PAGE_DATA.formFields.serviceOptions,
-        budgetOptions: list,
-      },
-    });
-  }
-
-  function handleRemoveBudgetOption(index: number) {
-    const list = (formData.formFields?.budgetOptions || DEFAULT_CONTACT_PAGE_DATA.formFields.budgetOptions).filter((_, i) => i !== index);
-    setFormData({
-      ...formData,
-      formFields: {
-        serviceOptions: formData.formFields?.serviceOptions || DEFAULT_CONTACT_PAGE_DATA.formFields.serviceOptions,
-        budgetOptions: list,
-      },
-    });
-  }
-
-  function handleMoveBudgetOption(index: number, direction: "UP" | "DOWN") {
-    const list = [...(formData.formFields?.budgetOptions || DEFAULT_CONTACT_PAGE_DATA.formFields.budgetOptions)];
-    const targetIdx = direction === "UP" ? index - 1 : index + 1;
-    if (targetIdx < 0 || targetIdx >= list.length) return;
-    const temp = list[index];
-    list[index] = list[targetIdx];
-    list[targetIdx] = temp;
-    setFormData({
-      ...formData,
-      formFields: {
-        serviceOptions: formData.formFields?.serviceOptions || DEFAULT_CONTACT_PAGE_DATA.formFields.serviceOptions,
-        budgetOptions: list,
-      },
-    });
-  }
 
   // Filtered dataset
   const filteredInquiries = inquiries.filter((item) => {
@@ -1036,70 +1000,83 @@ export default function ContactEditor({ sectionId, onCloseSection, selectedItemI
                 </div>
               </div>
 
-              {/* 2. Target Investment / Budget Ranges */}
-              <div>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-                  <h4 className="text-[10px] sm:text-xs font-extrabold text-blue-600 dark:text-blue-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <DollarSign className="h-4 w-4 text-blue-500 shrink-0" />
-                    2. Target Investment / Budget Range Choices (Sequence & Options)
-                  </h4>
-                  <button
-                    type="button"
-                    onClick={handleAddBudgetOption}
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 text-xs font-bold hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors border border-blue-200 dark:border-blue-800 cursor-pointer"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    <span>Add New Budget Choice</span>
-                  </button>
-                </div>
-
-                <div className="grid gap-2 grid-cols-1 sm:grid-cols-2">
-                  {(formData.formFields?.budgetOptions || DEFAULT_CONTACT_PAGE_DATA.formFields.budgetOptions).map((opt, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 dark:bg-[#0b0f19] border border-slate-200 dark:border-slate-800"
-                    >
-                      <span className="font-mono text-[10px] font-extrabold text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-950 px-2 py-1 rounded shrink-0">
-                        #{idx + 1}
-                      </span>
-                      <input
-                        type="text"
-                        value={opt}
-                        onChange={(e) => handleUpdateBudgetOption(idx, e.target.value)}
-                        placeholder="Budget range placeholder..."
-                        className="flex-1 min-w-0 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-900 dark:text-white font-semibold focus:border-blue-600 focus:outline-none"
-                      />
-                      <div className="flex items-center gap-1 shrink-0">
+              {/* 2. Target Investment / Budget Range */}
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0b0f19] border border-slate-200 dark:border-slate-800 space-y-3">
+                <div className="space-y-1.5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <label className="block text-[10px] sm:text-xs font-extrabold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                      2. Target Investment / Budget Range (Section Title)
+                    </label>
+                    {/* Default Selective Currency Switcher */}
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase">Default Currency:</span>
+                      <div className="inline-flex items-center rounded-lg bg-slate-200/80 dark:bg-slate-800 p-0.5 border border-slate-300 dark:border-slate-700">
                         <button
                           type="button"
-                          disabled={idx === 0}
-                          onClick={() => handleMoveBudgetOption(idx, "UP")}
-                          title="Move Up in Sequence"
-                          className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                          onClick={() =>
+                            setFormData({
+                              ...formData,
+                              formFields: {
+                                serviceOptions: formData.formFields?.serviceOptions || DEFAULT_CONTACT_PAGE_DATA.formFields.serviceOptions,
+                                budgetOptions: formData.formFields?.budgetOptions || DEFAULT_CONTACT_PAGE_DATA.formFields.budgetOptions,
+                                budgetTitle: formData.formFields?.budgetTitle || DEFAULT_CONTACT_PAGE_DATA.formFields.budgetTitle || "2. Target Investment / Budget Range *",
+                                defaultCurrency: "USD",
+                              },
+                            })
+                          }
+                          className={`px-2 py-0.5 text-[10px] font-bold rounded cursor-pointer transition-all ${
+                            (formData.formFields?.defaultCurrency || "USD") === "USD"
+                              ? "bg-blue-600 text-white shadow-xs"
+                              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                          }`}
                         >
-                          <ArrowUp className="h-3.5 w-3.5" />
+                          USD ($)
                         </button>
                         <button
                           type="button"
-                          disabled={idx === (formData.formFields?.budgetOptions || DEFAULT_CONTACT_PAGE_DATA.formFields.budgetOptions).length - 1}
-                          onClick={() => handleMoveBudgetOption(idx, "DOWN")}
-                          title="Move Down in Sequence"
-                          className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                          onClick={() =>
+                            setFormData({
+                              ...formData,
+                              formFields: {
+                                serviceOptions: formData.formFields?.serviceOptions || DEFAULT_CONTACT_PAGE_DATA.formFields.serviceOptions,
+                                budgetOptions: formData.formFields?.budgetOptions || DEFAULT_CONTACT_PAGE_DATA.formFields.budgetOptions,
+                                budgetTitle: formData.formFields?.budgetTitle || DEFAULT_CONTACT_PAGE_DATA.formFields.budgetTitle || "2. Target Investment / Budget Range *",
+                                defaultCurrency: "NPR",
+                              },
+                            })
+                          }
+                          className={`px-2 py-0.5 text-[10px] font-bold rounded cursor-pointer transition-all ${
+                            formData.formFields?.defaultCurrency === "NPR"
+                              ? "bg-blue-600 text-white shadow-xs"
+                              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                          }`}
                         >
-                          <ArrowDown className="h-3.5 w-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveBudgetOption(idx)}
-                          title="Delete Option"
-                          className="p-1.5 rounded-lg bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900 transition-colors ml-0.5 sm:ml-1"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
+                          NPR (NP)
                         </button>
                       </div>
                     </div>
-                  ))}
+                  </div>
+                  <input
+                    type="text"
+                    value={formData.formFields?.budgetTitle ?? "2. Target Investment / Budget Range *"}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        formFields: {
+                          serviceOptions: formData.formFields?.serviceOptions || DEFAULT_CONTACT_PAGE_DATA.formFields.serviceOptions,
+                          budgetOptions: formData.formFields?.budgetOptions || DEFAULT_CONTACT_PAGE_DATA.formFields.budgetOptions,
+                          budgetTitle: e.target.value,
+                          defaultCurrency: formData.formFields?.defaultCurrency || DEFAULT_CONTACT_PAGE_DATA.formFields.defaultCurrency || "USD",
+                        },
+                      })
+                    }
+                    placeholder="2. Target Investment / Budget Range *"
+                    className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2 text-xs text-slate-900 dark:text-white font-semibold focus:border-blue-600 focus:outline-none"
+                  />
                 </div>
+                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                  The client-facing contact form features a currency selector (USD $ or NPR) and direct input for clients to enter their project investment. When clients submit, their chosen currency is clearly displayed in the Admin Client Contact List.
+                </p>
               </div>
             </div>
           </div>
@@ -1507,8 +1484,17 @@ export default function ContactEditor({ sectionId, onCloseSection, selectedItemI
                               <span className="text-slate-400 text-[11px]">General Inquiry</span>
                             )}
                             {item.budget && (
-                              <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-extrabold">
-                                {item.budget}
+                              <span
+                                className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold inline-flex items-center gap-1 ${
+                                  item.budget.startsWith("$") || item.budget.toUpperCase().includes("USD")
+                                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                                    : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
+                                }`}
+                              >
+                                <span className="text-[9px] uppercase px-1 py-0.2 rounded bg-black/5 dark:bg-white/10 font-bold">
+                                  {item.budget.startsWith("$") || item.budget.toUpperCase().includes("USD") ? "USD" : "NPR"}
+                                </span>
+                                <span>{item.budget}</span>
                               </span>
                             )}
                           </div>
@@ -1693,9 +1679,24 @@ export default function ContactEditor({ sectionId, onCloseSection, selectedItemI
                 </div>
                 <div>
                   <span className="text-slate-400 text-[10px] uppercase font-bold block">Estimated Budget</span>
-                  <span className="font-bold text-emerald-600 dark:text-emerald-400 truncate block">
-                    {selectedInquiry.budget || "Not specified"}
-                  </span>
+                  {selectedInquiry.budget ? (
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <span
+                        className={`px-2.5 py-1 rounded-lg text-xs font-extrabold inline-flex items-center gap-1.5 ${
+                          selectedInquiry.budget.startsWith("$") || selectedInquiry.budget.toUpperCase().includes("USD")
+                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                            : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
+                        }`}
+                      >
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/10 uppercase">
+                          {selectedInquiry.budget.startsWith("$") || selectedInquiry.budget.toUpperCase().includes("USD") ? "USD" : "NPR"}
+                        </span>
+                        <span>{selectedInquiry.budget}</span>
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="font-bold text-slate-400 text-xs">Not specified</span>
+                  )}
                 </div>
                 <div>
                   <span className="text-slate-400 text-[10px] uppercase font-bold block">Submission Time</span>

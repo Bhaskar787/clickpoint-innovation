@@ -13,6 +13,7 @@ import {
 import { toast } from "sonner";
 import { EmailComposerModal, EmailTemplateType } from "@/components/admin/email-composer-modal";
 import { subscribeRealtimeNotifications } from "@/lib/realtime-notifications";
+import { useConfirm } from "@/components/admin/confirm-dialog";
 
 interface JobApplication {
   id: string;
@@ -94,6 +95,7 @@ interface JobApplicationsViewProps {
 }
 
 export default function JobApplicationsView({ selectedItemId, onClearSelectedItem, onMarkItemRead }: JobApplicationsViewProps = {}) {
+  const { confirm } = useConfirm();
   const [mounted, setMounted] = useState(false);
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [loading, setLoading] = useState(true);
@@ -275,7 +277,13 @@ export default function JobApplicationsView({ selectedItemId, onClearSelectedIte
   };
 
   const deleteApp = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this application permanently?")) return;
+    const ok = await confirm({
+      title: "Delete Application",
+      message: "Are you sure you want to delete this application permanently? This cannot be undone.",
+      confirmText: "Delete",
+      variant: "danger",
+    });
+    if (!ok) return;
     try {
       const res = await fetch("/api/jobs/applications", {
         method: "PUT",

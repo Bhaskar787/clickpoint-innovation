@@ -8,8 +8,7 @@ export const metadata: Metadata = {
     "Explore the milestone timeline, breakthroughs, and company events that defined Clickpoint Innovation’s journey over the past decade.",
 };
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 60;
 
 export default async function EventsPage() {
   const initialContent = await getJourneyPage();

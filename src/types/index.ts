@@ -417,6 +417,8 @@ export interface ContactPageContent {
   formFields: {
     serviceOptions: string[];
     budgetOptions: string[];
+    budgetTitle?: string;
+    defaultCurrency?: "USD" | "NPR";
   };
 }
 

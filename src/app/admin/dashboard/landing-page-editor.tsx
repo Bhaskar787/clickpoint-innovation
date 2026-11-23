@@ -46,7 +46,13 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SectionNavSidebar } from "@/components/admin/dashboard/section-nav-sidebar";
-import { DEFAULT_NAVBAR_DATA, DEFAULT_COMPANY_NAV_LINKS, CompanyNavItem } from "@/data/default-navbar-data";
+import {
+  DEFAULT_NAVBAR_DATA,
+  DEFAULT_NAVBAR_SERVICES_CONFIG,
+  DEFAULT_NAVBAR_INDUSTRIES_CONFIG,
+  DEFAULT_COMPANY_NAV_LINKS,
+  CompanyNavItem,
+} from "@/data/default-navbar-data";
 import {
   DEFAULT_LANDING_DATA,
   DEFAULT_TECH_CATEGORIES,
@@ -345,7 +351,7 @@ export default function LandingPageEditor({ sectionId, onCloseSection }: Landing
       loadFaqsForSelector();
     }
 
-    if (activeSectionId === "services") {
+    if (activeSectionId === "services" || activeSectionId === "navbar") {
       async function loadServicesForSelector() {
         try {
           const res = await fetch("/api/services");
@@ -362,7 +368,7 @@ export default function LandingPageEditor({ sectionId, onCloseSection }: Landing
       loadServicesForSelector();
     }
 
-    if (activeSectionId === "industries") {
+    if (activeSectionId === "industries" || activeSectionId === "navbar") {
       async function loadIndustriesForSelector() {
         try {
           const res = await fetch("/api/industries");
@@ -435,6 +441,18 @@ export default function LandingPageEditor({ sectionId, onCloseSection }: Landing
           navbar: {
             ...DEFAULT_NAVBAR_DATA,
             ...(json.data.navbar || {}),
+            services: {
+              ...DEFAULT_NAVBAR_SERVICES_CONFIG,
+              ...(json.data.navbar?.services || {}),
+              featuredCard: {
+                ...DEFAULT_NAVBAR_SERVICES_CONFIG.featuredCard,
+                ...(json.data.navbar?.services?.featuredCard || {}),
+              },
+            },
+            industries: {
+              ...DEFAULT_NAVBAR_INDUSTRIES_CONFIG,
+              ...(json.data.navbar?.industries || {}),
+            },
           },
         });
       }
@@ -1553,6 +1571,799 @@ export default function LandingPageEditor({ sectionId, onCloseSection }: Landing
                     )}
                   </div>
 
+                </div>
+              </div>
+            </div>
+
+            {/* 01.E: SERVICES MEGA MENU SHOWCASE & AI SPRINT CARD */}
+            <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-6">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">
+                    01.E
+                  </span>
+                  <h3 className="text-sm font-bold">Services Mega Menu & AI Sprint Featured Card</h3>
+                </div>
+                <span className="text-[11px] font-semibold text-slate-400">
+                  Header Navigation Dropdown
+                </span>
+              </div>
+
+              {/* Sub-section 1: Featured Services Checkbox Selector */}
+              <div className="space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <h4 className="text-xs font-black uppercase tracking-wider text-violet-600 dark:text-violet-400 flex items-center gap-2">
+                      <Boxes className="h-4 w-4" />
+                      Showcase Services in Navbar (Max 6 to Fit Dropdown)
+                    </h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      Select up to 6 services to fit the 2-column × 3-row mega menu layout cleanly. If none are selected, the first 6 services are displayed by default.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const top6Ids = availableServices.slice(0, 6).map((s) => s.id);
+                        setLandingData({
+                          ...landingData,
+                          navbar: {
+                            ...navbarData,
+                            services: {
+                              ...DEFAULT_NAVBAR_SERVICES_CONFIG,
+                              ...(navbarData.services || {}),
+                              selectedServiceIds: top6Ids,
+                            },
+                          },
+                        });
+                        toast.success("Selected first 6 services for navbar dropdown");
+                      }}
+                      className="px-2.5 py-1 text-[11px] font-bold rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                    >
+                      Select Top 6
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setLandingData({
+                          ...landingData,
+                          navbar: {
+                            ...navbarData,
+                            services: {
+                              ...DEFAULT_NAVBAR_SERVICES_CONFIG,
+                              ...(navbarData.services || {}),
+                              selectedServiceIds: [],
+                            },
+                          },
+                        });
+                        toast.info("Cleared services selection (will default to top 6)");
+                      }}
+                      className="px-2.5 py-1 text-[11px] font-bold rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 cursor-pointer"
+                    >
+                      Clear Selection
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-300">
+                  <span>Currently Selected:</span>
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-[11px] font-extrabold ${
+                      (navbarData.services?.selectedServiceIds || []).length === 6
+                        ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-300/60 dark:border-emerald-800"
+                        : (navbarData.services?.selectedServiceIds || []).length > 0
+                        ? "bg-violet-100 text-violet-700 dark:bg-violet-950/40 dark:text-violet-400 border border-violet-300/60 dark:border-violet-800"
+                        : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                    }`}
+                  >
+                    {(navbarData.services?.selectedServiceIds || []).length} / 6{" "}
+                    {(navbarData.services?.selectedServiceIds || []).length === 6
+                      ? "(Max Limit Reached)"
+                      : "Selected"}
+                  </span>
+                  {(navbarData.services?.selectedServiceIds || []).length === 0 && (
+                    <span className="text-slate-400 font-normal">
+                      (Defaulting to top 6 services in dropdown)
+                    </span>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-1">
+                  {availableServices.map((srv) => {
+                    const selectedIds: string[] = navbarData.services?.selectedServiceIds || [];
+                    const isChecked = selectedIds.includes(srv.id);
+                    const isLimitReached = !isChecked && selectedIds.length >= 6;
+
+                    return (
+                      <label
+                        key={srv.id}
+                        className={`flex items-start gap-3 p-3 rounded-xl border transition-all ${
+                          isLimitReached
+                            ? "opacity-50 cursor-not-allowed border-slate-200 dark:border-slate-800/60 bg-slate-100/40 dark:bg-[#0b0f19]/40"
+                            : isChecked
+                            ? "border-violet-500/60 bg-violet-50/50 dark:bg-violet-950/20 cursor-pointer"
+                            : "border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#0b0f19] cursor-pointer hover:border-slate-300 dark:hover:border-slate-700"
+                        }`}
+                        title={
+                          isLimitReached
+                            ? "Maximum 6 services already selected. Uncheck another service first to select this."
+                            : undefined
+                        }
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          disabled={isLimitReached}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              if (selectedIds.length >= 6) {
+                                toast.info("Maximum 6 services allowed in the navbar dropdown to preserve the layout.");
+                                return;
+                              }
+                              const nextIds = [...selectedIds, srv.id];
+                              setLandingData({
+                                ...landingData,
+                                navbar: {
+                                  ...navbarData,
+                                  services: {
+                                    ...DEFAULT_NAVBAR_SERVICES_CONFIG,
+                                    ...(navbarData.services || {}),
+                                    selectedServiceIds: nextIds,
+                                  },
+                                },
+                              });
+                            } else {
+                              const nextIds = selectedIds.filter((id) => id !== srv.id);
+                              setLandingData({
+                                ...landingData,
+                                navbar: {
+                                  ...navbarData,
+                                  services: {
+                                    ...DEFAULT_NAVBAR_SERVICES_CONFIG,
+                                    ...(navbarData.services || {}),
+                                    selectedServiceIds: nextIds,
+                                  },
+                                },
+                              });
+                            }
+                          }}
+                          className={`mt-0.5 rounded border-slate-300 text-violet-600 focus:ring-violet-500 shrink-0 ${
+                            isLimitReached ? "cursor-not-allowed opacity-50" : ""
+                          }`}
+                        />
+                        <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                          <div className="h-8 w-8 rounded-lg bg-violet-100/80 dark:bg-slate-800 text-violet-600 dark:text-violet-300 flex items-center justify-center shrink-0 border border-violet-200/60 dark:border-slate-700 mt-0.5">
+                            <ServiceIcon
+                              icon={srv.icon}
+                              iconName={srv.iconName}
+                              serviceId={srv.id}
+                              className="h-4 w-4"
+                            />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <span className="inline-block px-2 py-0.5 text-[10px] font-bold rounded bg-violet-100 dark:bg-slate-800 text-violet-600 dark:text-violet-300 mb-1">
+                              {srv.badge || srv.heroBadge || srv.subtitle || srv.category || "Capability"}
+                            </span>
+                            <p className="text-xs font-bold text-slate-900 dark:text-white leading-snug line-clamp-1">
+                              {srv.title}
+                            </p>
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">
+                              {srv.desc || srv.description || srv.subtitle}
+                            </p>
+                          </div>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Sub-section 2: Dynamic Featured AI Card Editor */}
+              <div className="pt-5 border-t border-slate-200 dark:border-slate-800 space-y-4">
+                <div className="flex items-center gap-2">
+                  <Zap className="h-4 w-4 text-amber-500" />
+                  <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">
+                    Featured Right Card Configuration (e.g. AI Acceleration Sprint)
+                  </h4>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Card Pill Badge
+                    </label>
+                    <input
+                      type="text"
+                      value={navbarData.services?.featuredCard?.badge ?? DEFAULT_NAVBAR_SERVICES_CONFIG.featuredCard.badge}
+                      onChange={(e) =>
+                        setLandingData({
+                          ...landingData,
+                          navbar: {
+                            ...navbarData,
+                            services: {
+                              ...DEFAULT_NAVBAR_SERVICES_CONFIG,
+                              ...(navbarData.services || {}),
+                              featuredCard: {
+                                ...DEFAULT_NAVBAR_SERVICES_CONFIG.featuredCard,
+                                ...(navbarData.services?.featuredCard || {}),
+                                badge: e.target.value,
+                              },
+                            },
+                          },
+                        })
+                      }
+                      placeholder="AI ACCELERATION SPRINT"
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-bold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Headline Title
+                    </label>
+                    <input
+                      type="text"
+                      value={navbarData.services?.featuredCard?.title ?? DEFAULT_NAVBAR_SERVICES_CONFIG.featuredCard.title}
+                      onChange={(e) =>
+                        setLandingData({
+                          ...landingData,
+                          navbar: {
+                            ...navbarData,
+                            services: {
+                              ...DEFAULT_NAVBAR_SERVICES_CONFIG,
+                              ...(navbarData.services || {}),
+                              featuredCard: {
+                                ...DEFAULT_NAVBAR_SERVICES_CONFIG.featuredCard,
+                                ...(navbarData.services?.featuredCard || {}),
+                                title: e.target.value,
+                              },
+                            },
+                          },
+                        })
+                      }
+                      placeholder="Enterprise AI Copilot & Autonomous Pods"
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-bold"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Card Subtitle / Description
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={navbarData.services?.featuredCard?.description ?? navbarData.services?.featuredCard?.subtitle ?? DEFAULT_NAVBAR_SERVICES_CONFIG.featuredCard.description}
+                      onChange={(e) =>
+                        setLandingData({
+                          ...landingData,
+                          navbar: {
+                            ...navbarData,
+                            services: {
+                              ...DEFAULT_NAVBAR_SERVICES_CONFIG,
+                              ...(navbarData.services || {}),
+                              featuredCard: {
+                                ...DEFAULT_NAVBAR_SERVICES_CONFIG.featuredCard,
+                                ...(navbarData.services?.featuredCard || {}),
+                                subtitle: e.target.value,
+                                description: e.target.value,
+                              },
+                            },
+                          },
+                        })
+                      }
+                      placeholder="Dedicated senior engineering pods building production LLM apps..."
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] p-3 text-xs text-slate-900 dark:text-white"
+                    />
+                  </div>
+
+                  {/* Bullet Points */}
+                  <div className="md:col-span-2 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                        Checklist Bullet Points
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const currentBullets = navbarData.services?.featuredCard?.bullets ?? navbarData.services?.featuredCard?.highlights ?? DEFAULT_NAVBAR_SERVICES_CONFIG.featuredCard.bullets ?? [];
+                          setLandingData({
+                            ...landingData,
+                            navbar: {
+                              ...navbarData,
+                              services: {
+                                ...DEFAULT_NAVBAR_SERVICES_CONFIG,
+                                ...(navbarData.services || {}),
+                                featuredCard: {
+                                  ...DEFAULT_NAVBAR_SERVICES_CONFIG.featuredCard,
+                                  ...(navbarData.services?.featuredCard || {}),
+                                  bullets: [...currentBullets, "New bullet point"],
+                                  highlights: [...currentBullets, "New bullet point"],
+                                },
+                              },
+                            },
+                          });
+                        }}
+                        className="inline-flex items-center gap-1 text-[11px] font-bold text-violet-600 dark:text-violet-400 hover:underline cursor-pointer"
+                      >
+                        <Plus className="h-3 w-3" /> Add Bullet Point
+                      </button>
+                    </div>
+
+                    {(navbarData.services?.featuredCard?.bullets ?? navbarData.services?.featuredCard?.highlights ?? DEFAULT_NAVBAR_SERVICES_CONFIG.featuredCard.bullets ?? []).map((bullet: string, bIdx: number) => (
+                      <div key={bIdx} className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                        <input
+                          type="text"
+                          value={bullet}
+                          onChange={(e) => {
+                            const currentBullets = [...(navbarData.services?.featuredCard?.bullets ?? navbarData.services?.featuredCard?.highlights ?? DEFAULT_NAVBAR_SERVICES_CONFIG.featuredCard.bullets ?? [])];
+                            currentBullets[bIdx] = e.target.value;
+                            setLandingData({
+                              ...landingData,
+                              navbar: {
+                                ...navbarData,
+                                services: {
+                                  ...DEFAULT_NAVBAR_SERVICES_CONFIG,
+                                  ...(navbarData.services || {}),
+                                  featuredCard: {
+                                    ...DEFAULT_NAVBAR_SERVICES_CONFIG.featuredCard,
+                                    ...(navbarData.services?.featuredCard || {}),
+                                    bullets: currentBullets,
+                                    highlights: currentBullets,
+                                  },
+                                },
+                              },
+                            });
+                          }}
+                          className="flex-1 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3 py-1.5 text-xs text-slate-900 dark:text-white"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const currentBullets = [...(navbarData.services?.featuredCard?.bullets ?? navbarData.services?.featuredCard?.highlights ?? DEFAULT_NAVBAR_SERVICES_CONFIG.featuredCard.bullets ?? [])];
+                            currentBullets.splice(bIdx, 1);
+                            setLandingData({
+                              ...landingData,
+                              navbar: {
+                                ...navbarData,
+                                services: {
+                                  ...DEFAULT_NAVBAR_SERVICES_CONFIG,
+                                  ...(navbarData.services || {}),
+                                  featuredCard: {
+                                    ...DEFAULT_NAVBAR_SERVICES_CONFIG.featuredCard,
+                                    ...(navbarData.services?.featuredCard || {}),
+                                    bullets: currentBullets,
+                                    highlights: currentBullets,
+                                  },
+                                },
+                              },
+                            });
+                          }}
+                          className="text-red-500 hover:text-red-700 p-1"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Primary Action Button */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Primary Button Text
+                    </label>
+                    <input
+                      type="text"
+                      value={navbarData.services?.featuredCard?.primaryBtnText ?? DEFAULT_NAVBAR_SERVICES_CONFIG.featuredCard.primaryBtnText}
+                      onChange={(e) =>
+                        setLandingData({
+                          ...landingData,
+                          navbar: {
+                            ...navbarData,
+                            services: {
+                              ...DEFAULT_NAVBAR_SERVICES_CONFIG,
+                              ...(navbarData.services || {}),
+                              featuredCard: {
+                                ...DEFAULT_NAVBAR_SERVICES_CONFIG.featuredCard,
+                                ...(navbarData.services?.featuredCard || {}),
+                                primaryBtnText: e.target.value,
+                              },
+                            },
+                          },
+                        })
+                      }
+                      placeholder="Schedule Consultation"
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-bold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Primary Button Action Type
+                    </label>
+                    <select
+                      value={navbarData.services?.featuredCard?.primaryBtnAction ?? DEFAULT_NAVBAR_SERVICES_CONFIG.featuredCard.primaryBtnAction ?? "modal"}
+                      onChange={(e) =>
+                        setLandingData({
+                          ...landingData,
+                          navbar: {
+                            ...navbarData,
+                            services: {
+                              ...DEFAULT_NAVBAR_SERVICES_CONFIG,
+                              ...(navbarData.services || {}),
+                              featuredCard: {
+                                ...DEFAULT_NAVBAR_SERVICES_CONFIG.featuredCard,
+                                ...(navbarData.services?.featuredCard || {}),
+                                primaryBtnAction: e.target.value as "modal" | "link",
+                              },
+                            },
+                          },
+                        })
+                      }
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-bold"
+                    >
+                      <option value="modal">Open Quick Enquiry Modal</option>
+                      <option value="link">Direct URL Navigation</option>
+                    </select>
+                  </div>
+
+                  {navbarData.services?.featuredCard?.primaryBtnAction === "link" && (
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        Primary Button Destination Link
+                      </label>
+                      <input
+                        type="text"
+                        value={navbarData.services?.featuredCard?.primaryBtnLink ?? DEFAULT_NAVBAR_SERVICES_CONFIG.featuredCard.primaryBtnLink}
+                        onChange={(e) =>
+                          setLandingData({
+                            ...landingData,
+                            navbar: {
+                              ...navbarData,
+                              services: {
+                                ...DEFAULT_NAVBAR_SERVICES_CONFIG,
+                                ...(navbarData.services || {}),
+                                featuredCard: {
+                                  ...DEFAULT_NAVBAR_SERVICES_CONFIG.featuredCard,
+                                  ...(navbarData.services?.featuredCard || {}),
+                                  primaryBtnLink: e.target.value,
+                                },
+                              },
+                            },
+                          })
+                        }
+                        placeholder="/contact"
+                        className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs font-mono text-violet-600 dark:text-violet-400"
+                      />
+                    </div>
+                  )}
+
+                  {/* Secondary Link */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Secondary Link Text
+                    </label>
+                    <input
+                      type="text"
+                      value={navbarData.services?.featuredCard?.secondaryLinkText ?? navbarData.services?.featuredCard?.secondaryBtnText ?? DEFAULT_NAVBAR_SERVICES_CONFIG.featuredCard.secondaryLinkText}
+                      onChange={(e) =>
+                        setLandingData({
+                          ...landingData,
+                          navbar: {
+                            ...navbarData,
+                            services: {
+                              ...DEFAULT_NAVBAR_SERVICES_CONFIG,
+                              ...(navbarData.services || {}),
+                              featuredCard: {
+                                ...DEFAULT_NAVBAR_SERVICES_CONFIG.featuredCard,
+                                ...(navbarData.services?.featuredCard || {}),
+                                secondaryLinkText: e.target.value,
+                                secondaryBtnText: e.target.value,
+                              },
+                            },
+                          },
+                        })
+                      }
+                      placeholder="Explore All Services →"
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Secondary Link Destination URL
+                    </label>
+                    <input
+                      type="text"
+                      value={navbarData.services?.featuredCard?.secondaryLinkHref ?? navbarData.services?.featuredCard?.secondaryBtnLink ?? DEFAULT_NAVBAR_SERVICES_CONFIG.featuredCard.secondaryLinkHref}
+                      onChange={(e) =>
+                        setLandingData({
+                          ...landingData,
+                          navbar: {
+                            ...navbarData,
+                            services: {
+                              ...DEFAULT_NAVBAR_SERVICES_CONFIG,
+                              ...(navbarData.services || {}),
+                              featuredCard: {
+                                ...DEFAULT_NAVBAR_SERVICES_CONFIG.featuredCard,
+                                ...(navbarData.services?.featuredCard || {}),
+                                secondaryLinkHref: e.target.value,
+                                secondaryBtnLink: e.target.value,
+                              },
+                            },
+                          },
+                        })
+                      }
+                      placeholder="/services"
+                      className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs font-mono text-violet-600 dark:text-violet-400"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 01.F: PORTFOLIO / INDUSTRIES SHOWCASE & SUBHEADER */}
+            <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131927] p-6 space-y-6">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-xs font-extrabold text-violet-600 bg-violet-500/10 px-2 py-0.5 rounded">
+                    01.F
+                  </span>
+                  <h3 className="text-sm font-bold">Portfolio / Industries Mega Menu Showcase</h3>
+                </div>
+                <span className="text-[11px] font-semibold text-slate-400">
+                  Header Navigation Dropdown
+                </span>
+              </div>
+
+              {/* Subheader Configuration */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Dropdown Subheader Title
+                  </label>
+                  <input
+                    type="text"
+                    value={navbarData.industries?.subheaderTitle ?? DEFAULT_NAVBAR_INDUSTRIES_CONFIG.subheaderTitle}
+                    onChange={(e) =>
+                      setLandingData({
+                        ...landingData,
+                        navbar: {
+                          ...navbarData,
+                          industries: {
+                            ...DEFAULT_NAVBAR_INDUSTRIES_CONFIG,
+                            ...(navbarData.industries || {}),
+                            subheaderTitle: e.target.value,
+                          },
+                        },
+                      })
+                    }
+                    placeholder="PROVEN INDUSTRY PORTFOLIO & SECTOR EXPERTISE"
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white font-bold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Subheader Right Action Text
+                  </label>
+                  <input
+                    type="text"
+                    value={navbarData.industries?.subheaderLinkText ?? DEFAULT_NAVBAR_INDUSTRIES_CONFIG.subheaderLinkText}
+                    onChange={(e) =>
+                      setLandingData({
+                        ...landingData,
+                        navbar: {
+                          ...navbarData,
+                          industries: {
+                            ...DEFAULT_NAVBAR_INDUSTRIES_CONFIG,
+                            ...(navbarData.industries || {}),
+                            subheaderLinkText: e.target.value,
+                          },
+                        },
+                      })
+                    }
+                    placeholder="View All Case Studies"
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs text-slate-900 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Subheader Action Link
+                  </label>
+                  <input
+                    type="text"
+                    value={navbarData.industries?.subheaderLinkHref ?? DEFAULT_NAVBAR_INDUSTRIES_CONFIG.subheaderLinkHref}
+                    onChange={(e) =>
+                      setLandingData({
+                        ...landingData,
+                        navbar: {
+                          ...navbarData,
+                          industries: {
+                            ...DEFAULT_NAVBAR_INDUSTRIES_CONFIG,
+                            ...(navbarData.industries || {}),
+                            subheaderLinkHref: e.target.value,
+                          },
+                        },
+                      })
+                    }
+                    placeholder="/case-studies"
+                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0b0f19] px-3.5 py-2 text-xs font-mono text-violet-600 dark:text-violet-400"
+                  />
+                </div>
+              </div>
+
+              {/* Showcase Industries Checkbox List */}
+              <div className="space-y-3 pt-3 border-t border-slate-200 dark:border-slate-800">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <h4 className="text-xs font-black uppercase tracking-wider text-violet-600 dark:text-violet-400 flex items-center gap-2">
+                      <Building className="h-4 w-4" />
+                      Showcase Industries in Navbar (Max 6 to Fit Dropdown)
+                    </h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      Select up to 6 industries to fit the 3-column × 2-row mega menu layout cleanly. If none are selected, the first 6 industries are displayed by default.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const top6Ids = availableIndustries.slice(0, 6).map((ind) => ind.id);
+                        setLandingData({
+                          ...landingData,
+                          navbar: {
+                            ...navbarData,
+                            industries: {
+                              ...DEFAULT_NAVBAR_INDUSTRIES_CONFIG,
+                              ...(navbarData.industries || {}),
+                              selectedIndustryIds: top6Ids,
+                            },
+                          },
+                        });
+                        toast.success("Selected first 6 industries for navbar dropdown");
+                      }}
+                      className="px-2.5 py-1 text-[11px] font-bold rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                    >
+                      Select Top 6
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setLandingData({
+                          ...landingData,
+                          navbar: {
+                            ...navbarData,
+                            industries: {
+                              ...DEFAULT_NAVBAR_INDUSTRIES_CONFIG,
+                              ...(navbarData.industries || {}),
+                              selectedIndustryIds: [],
+                            },
+                          },
+                        });
+                        toast.info("Cleared industries selection (will default to top 6)");
+                      }}
+                      className="px-2.5 py-1 text-[11px] font-bold rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 cursor-pointer"
+                    >
+                      Clear Selection
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-300">
+                  <span>Currently Selected:</span>
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-[11px] font-extrabold ${
+                      (navbarData.industries?.selectedIndustryIds || []).length === 6
+                        ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-300/60 dark:border-emerald-800"
+                        : (navbarData.industries?.selectedIndustryIds || []).length > 0
+                        ? "bg-violet-100 text-violet-700 dark:bg-violet-950/40 dark:text-violet-400 border border-violet-300/60 dark:border-violet-800"
+                        : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                    }`}
+                  >
+                    {(navbarData.industries?.selectedIndustryIds || []).length} / 6{" "}
+                    {(navbarData.industries?.selectedIndustryIds || []).length === 6
+                      ? "(Max Limit Reached)"
+                      : "Selected"}
+                  </span>
+                  {(navbarData.industries?.selectedIndustryIds || []).length === 0 && (
+                    <span className="text-slate-400 font-normal">
+                      (Defaulting to top 6 industries in dropdown)
+                    </span>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[300px] overflow-y-auto pr-1">
+                  {availableIndustries.map((ind) => {
+                    const selectedIds: string[] = navbarData.industries?.selectedIndustryIds || [];
+                    const isChecked = selectedIds.includes(ind.id);
+                    const isLimitReached = !isChecked && selectedIds.length >= 6;
+
+                    return (
+                      <label
+                        key={ind.id}
+                        className={`flex items-start gap-3 p-3 rounded-xl border transition-all ${
+                          isLimitReached
+                            ? "opacity-50 cursor-not-allowed border-slate-200 dark:border-slate-800/60 bg-slate-100/40 dark:bg-[#0b0f19]/40"
+                            : isChecked
+                            ? "border-violet-500/60 bg-violet-50/50 dark:bg-violet-950/20 cursor-pointer"
+                            : "border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#0b0f19] cursor-pointer hover:border-slate-300 dark:hover:border-slate-700"
+                        }`}
+                        title={
+                          isLimitReached
+                            ? "Maximum 6 industries already selected. Uncheck another industry first to select this."
+                            : undefined
+                        }
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          disabled={isLimitReached}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              if (selectedIds.length >= 6) {
+                                toast.info("Maximum 6 industries allowed in the navbar dropdown to preserve the layout.");
+                                return;
+                              }
+                              const nextIds = [...selectedIds, ind.id];
+                              setLandingData({
+                                ...landingData,
+                                navbar: {
+                                  ...navbarData,
+                                  industries: {
+                                    ...DEFAULT_NAVBAR_INDUSTRIES_CONFIG,
+                                    ...(navbarData.industries || {}),
+                                    selectedIndustryIds: nextIds,
+                                  },
+                                },
+                              });
+                            } else {
+                              const nextIds = selectedIds.filter((id) => id !== ind.id);
+                              setLandingData({
+                                ...landingData,
+                                navbar: {
+                                  ...navbarData,
+                                  industries: {
+                                    ...DEFAULT_NAVBAR_INDUSTRIES_CONFIG,
+                                    ...(navbarData.industries || {}),
+                                    selectedIndustryIds: nextIds,
+                                  },
+                                },
+                              });
+                            }
+                          }}
+                          className={`mt-0.5 rounded border-slate-300 text-violet-600 focus:ring-violet-500 shrink-0 ${
+                            isLimitReached ? "cursor-not-allowed opacity-50" : ""
+                          }`}
+                        />
+                        <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                          <div className="h-8 w-8 rounded-lg bg-violet-100/80 dark:bg-slate-800 text-violet-600 dark:text-violet-300 flex items-center justify-center shrink-0 border border-violet-200/60 dark:border-slate-700 mt-0.5">
+                            <IndustryIcon
+                              icon={ind.icon}
+                              iconName={ind.iconName}
+                              industryId={ind.id}
+                              className="h-4 w-4"
+                            />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <span className="inline-block px-1.5 py-0.5 text-[10px] font-bold rounded bg-violet-100 dark:bg-slate-800 text-violet-600 dark:text-violet-300 mb-0.5">
+                              {ind.badge || "Domain"}
+                            </span>
+                            <p className="text-xs font-bold text-slate-900 dark:text-white leading-snug line-clamp-1">
+                              {ind.title}
+                            </p>
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">
+                              {ind.desc || ind.description || ind.subtitle}
+                            </p>
+                          </div>
+                        </div>
+                      </label>
+                    );
+                  })}
                 </div>
               </div>
             </div>

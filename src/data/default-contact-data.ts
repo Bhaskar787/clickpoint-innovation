@@ -48,5 +48,7 @@ export const DEFAULT_CONTACT_PAGE_DATA: ContactPageContent = {
       "Cloud Infrastructure & DevOps",
     ],
     budgetOptions: ["$10,000 – $25,000", "$25,000 – $50,000", "$50,000 – $100,000", "$100,000+"],
+    budgetTitle: "2. Target Investment / Budget Range *",
+    defaultCurrency: "USD",
   },
 };

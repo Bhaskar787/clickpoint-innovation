@@ -537,8 +537,23 @@ export function OverviewTab({
                     <td className="py-3.5 px-4 font-medium text-slate-700 dark:text-slate-300">
                       {item.service || "General Inquiry"}
                     </td>
-                    <td className="py-3.5 px-4 font-black text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
-                      {item.budget || "Custom Project"}
+                    <td className="py-3.5 px-4 font-black whitespace-nowrap">
+                      {item.budget ? (
+                        <span
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold ${
+                            item.budget.startsWith("$") || item.budget.toUpperCase().includes("USD")
+                              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                              : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
+                          }`}
+                        >
+                          <span className="text-[9px] uppercase px-1 py-0.2 rounded bg-black/5 dark:bg-white/10 font-bold">
+                            {item.budget.startsWith("$") || item.budget.toUpperCase().includes("USD") ? "USD" : "NPR"}
+                          </span>
+                          <span>{item.budget}</span>
+                        </span>
+                      ) : (
+                        <span className="text-slate-400 font-normal text-xs">Custom Project</span>
+                      )}
                     </td>
                     <td className="py-3.5 px-4 whitespace-nowrap">
                       <span

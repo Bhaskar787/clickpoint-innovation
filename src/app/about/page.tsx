@@ -1,10 +1,9 @@
-import { prisma } from "@/lib/prisma";
+import { getAboutUs } from "@/server/actions/about";
 import AboutClientView from "./about-client-view";
 import { STATS_DATA } from "@/data/landing-data";
 import { getJourneyPage } from "@/server/actions/journey";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 60;
 
 const DEFAULT_ABOUT_CONTENT = {
   hero: {
@@ -125,20 +124,12 @@ const DEFAULT_ABOUT_CONTENT = {
 };
 
 export default async function AboutPage() {
-  let content = DEFAULT_ABOUT_CONTENT;
-  const journeyContent = await getJourneyPage();
+  const [dbContent, journeyContent] = await Promise.all([
+    getAboutUs(),
+    getJourneyPage(),
+  ]);
 
-  try {
-    const dbRecord = await prisma.aboutPage.findUnique({
-      where: { id: "default" },
-    });
-
-    if (dbRecord && dbRecord.content) {
-      content = (dbRecord.content as unknown) as typeof DEFAULT_ABOUT_CONTENT;
-    }
-  } catch (error) {
-    console.error("Failed to query about content from Prisma DB:", error);
-  }
+  const content = (dbContent as unknown as typeof DEFAULT_ABOUT_CONTENT) || DEFAULT_ABOUT_CONTENT;
 
   return <AboutClientView initialContent={content} journeyContent={journeyContent} />;
 }

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import { toast } from "sonner";
+import { useConfirm } from "@/components/admin/confirm-dialog";
 import {
   Save,
   RotateCcw,
@@ -190,6 +191,7 @@ interface CaseStudiesEditorProps {
 }
 
 export default function CaseStudiesEditor({ sectionId, onCloseSection }: CaseStudiesEditorProps = {}) {
+  const { confirm } = useConfirm();
   const [activeSectionId, setActiveSectionId] = useState<string>(sectionId || "cs-hero");
   const [pageContent, setPageContent] = useState<any>(DEFAULT_CASE_STUDIES_PAGE_DATA);
   const [categories, setCategories] = useState<any[]>(DEFAULT_CASE_STUDY_CATEGORIES);
@@ -631,8 +633,14 @@ export default function CaseStudiesEditor({ sectionId, onCloseSection }: CaseStu
     }
   };
 
-  const handleRemoveCaseStudy = (realIndex: number, title: string) => {
-    if (!confirm(`Are you sure you want to delete case study "${title}"?`)) return;
+  const handleRemoveCaseStudy = async (realIndex: number, title: string) => {
+    const ok = await confirm({
+      title: "Delete Case Study",
+      message: `Are you sure you want to delete case study "${title}"? This cannot be undone.`,
+      confirmText: "Delete Case Study",
+      variant: "danger",
+    });
+    if (!ok) return;
     const updated = caseStudies.filter((_, idx) => idx !== realIndex);
     setCaseStudies(updated);
     toast.success(`Case study "${title}" removed!`);
@@ -724,8 +732,15 @@ export default function CaseStudiesEditor({ sectionId, onCloseSection }: CaseStu
             <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
               <button
                 type="button"
-                onClick={() => {
-                  if (!confirm("Are you sure you want to reset all Case Studies content to defaults?")) return;
+                onClick={async () => {
+                  const ok = await confirm({
+                    title: "Reset Case Studies Content",
+                    message: "Are you sure you want to reset all Case Studies content to defaults? This will restore default hero, categories, and case study items.",
+                    confirmText: "Reset to Defaults",
+                    variant: "warning",
+                    icon: "refresh",
+                  });
+                  if (!ok) return;
                   setPageContent(DEFAULT_CASE_STUDIES_PAGE_DATA);
                   setCategories(DEFAULT_CASE_STUDY_CATEGORIES);
                   setCaseStudies(DEFAULT_CASE_STUDIES_ITEMS);

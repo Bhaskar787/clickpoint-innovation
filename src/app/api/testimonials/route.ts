@@ -117,14 +117,17 @@ export async function POST(request: Request) {
     });
 
     if (existingRecentSubmission) {
-      const minutesLeft = Math.ceil(
-        (existingRecentSubmission.createdAt.getTime() + ONE_HOUR_MS - Date.now()) / (60 * 1000)
+      const minutesLeft = Math.max(
+        1,
+        Math.ceil(
+          (existingRecentSubmission.createdAt.getTime() + ONE_HOUR_MS - Date.now()) / (60 * 1000)
+        )
       );
 
       return NextResponse.json(
         {
           success: false,
-          error: `Rate limit active: A review has already been submitted using this email address (${normalizedEmail}) recently. Please wait ${minutesLeft} minute(s) before submitting another review.`,
+          error: `Thank you for your feedback! A client review from this email address (${normalizedEmail}) was recently received and is currently being processed. Please allow ${minutesLeft} minute${minutesLeft === 1 ? "" : "s"} before submitting another review.`,
           rateLimited: true,
         },
         { status: 429 }

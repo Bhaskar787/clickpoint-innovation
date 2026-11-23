@@ -34,6 +34,56 @@ export interface NavbarCtaConfig {
   openInNewTab?: boolean;
 }
 
+export interface NavbarServicesFeaturedCard {
+  badge: string;
+  title: string;
+  description?: string;
+  subtitle?: string;
+  highlights?: string[];
+  bullets?: string[];
+  primaryBtnText: string;
+  primaryBtnLink?: string;
+  primaryBtnAction?: "modal" | "link";
+  secondaryBtnText?: string;
+  secondaryLinkText?: string;
+  secondaryBtnLink?: string;
+  secondaryLinkHref?: string;
+}
+
+export const DEFAULT_NAVBAR_FEATURED_CARD: NavbarServicesFeaturedCard = {
+  badge: "AI ACCELERATION SPRINT",
+  title: "Enterprise AI Copilot & Autonomous Pods",
+  description: "Dedicated senior engineering pods building production LLM apps, custom agents, and high-scale cloud platforms with 3x velocity.",
+  subtitle: "Dedicated senior engineering pods building production LLM apps, custom agents, and high-scale cloud platforms with 3x velocity.",
+  highlights: [
+    "2–4 Week MVP delivery & SOC-2 compliance",
+    "Production LLM orchestration & 99.99% SLA",
+  ],
+  bullets: [
+    "2–4 Week MVP delivery & SOC-2 compliance",
+    "Production LLM orchestration & 99.99% SLA",
+  ],
+  primaryBtnText: "Schedule Consultation",
+  primaryBtnLink: "/contact",
+  primaryBtnAction: "modal",
+  secondaryBtnText: "Explore All Services →",
+  secondaryLinkText: "Explore All Services →",
+  secondaryBtnLink: "/services",
+  secondaryLinkHref: "/services",
+};
+
+export interface NavbarServicesConfig {
+  selectedServiceIds: string[];
+  featuredCard: NavbarServicesFeaturedCard;
+}
+
+export interface NavbarIndustriesConfig {
+  selectedIndustryIds: string[];
+  subheaderTitle?: string;
+  subheaderLinkText?: string;
+  subheaderLinkHref?: string;
+}
+
 export interface NavbarConfig {
   logo: {
     brandName: string;
@@ -45,7 +95,23 @@ export interface NavbarConfig {
   contactLink?: string;
   companyLinks: CompanyNavItem[];
   cta: NavbarCtaConfig;
+  services?: NavbarServicesConfig;
+  industries?: NavbarIndustriesConfig;
+  allServices?: any[];
+  allIndustries?: any[];
 }
+
+export const DEFAULT_NAVBAR_SERVICES_CONFIG: NavbarServicesConfig = {
+  selectedServiceIds: [],
+  featuredCard: DEFAULT_NAVBAR_FEATURED_CARD,
+};
+
+export const DEFAULT_NAVBAR_INDUSTRIES_CONFIG: NavbarIndustriesConfig = {
+  selectedIndustryIds: [],
+  subheaderTitle: "Specialized Vertical Expertise",
+  subheaderLinkText: "Explore All Verticals →",
+  subheaderLinkHref: "/portfolio",
+};
 
 export const DEFAULT_NAVBAR_DATA: NavbarConfig = {
   logo: {
@@ -69,6 +135,8 @@ export const DEFAULT_NAVBAR_DATA: NavbarConfig = {
     openModalOnClick: true,
     openInNewTab: false,
   },
+  services: DEFAULT_NAVBAR_SERVICES_CONFIG,
+  industries: DEFAULT_NAVBAR_INDUSTRIES_CONFIG,
 };
 
 export const DEFAULT_SYSTEM_SETTINGS = {

@@ -325,7 +325,7 @@ export default function Timeline({
             {/* Active Violet Beam that smoothly flows down to reading line */}
             <div
               ref={spineLineRef}
-              className="w-full rounded-full bg-gradient-to-b from-violet-600 to-indigo-500 dark:from-violet-500 dark:to-purple-400 shadow-[0_0_12px_rgba(83,64,214,0.45)] dark:shadow-[0_0_14px_rgba(167,139,250,0.85)] will-change-[height]"
+              className="w-full rounded-full bg-gradient-to-b from-violet-600 to-indigo-500 dark:from-violet-500 dark:to-purple-400 will-change-[height]"
               style={{ height: "0px" }}
             />
           </div>
@@ -337,7 +337,7 @@ export default function Timeline({
           >
             <div
               ref={mobileSpineLineRef}
-              className="w-full bg-gradient-to-b from-violet-600 to-indigo-500 dark:from-violet-500 dark:to-purple-400 rounded-full shadow-[0_0_12px_rgba(83,64,214,0.45)] dark:shadow-[0_0_14px_rgba(167,139,250,0.85)] will-change-[height]"
+              className="w-full bg-gradient-to-b from-violet-600 to-indigo-500 dark:from-violet-500 dark:to-purple-400 rounded-full will-change-[height]"
               style={{ height: "0px" }}
             />
           </div>

@@ -374,9 +374,9 @@ export default function JourneyClientView({ initialContent }: JourneyClientViewP
                     {/* Inactive Base Line */}
                     <div className="h-full w-full bg-violet-200/70 dark:bg-slate-700/80 rounded-full" />
 
-                    {/* Active Filled Progress Line (Glowing & 100% visible in Night Mode) */}
+                    {/* Active Filled Progress Line (Clean solid line, no glow) */}
                     <div
-                      className="absolute top-0 left-0 h-full bg-gradient-to-r from-violet-600 via-indigo-500 to-violet-500 dark:from-violet-500 dark:via-purple-400 dark:to-violet-400 rounded-full transition-[width] duration-500 ease-out shadow-[0_0_10px_rgba(124,58,237,0.5)] dark:shadow-[0_0_16px_rgba(167,139,250,0.95),0_0_6px_rgba(192,132,252,0.9)] z-1"
+                      className="absolute top-0 left-0 h-full bg-gradient-to-r from-violet-600 via-indigo-500 to-violet-500 dark:from-violet-500 dark:via-purple-400 dark:to-violet-400 rounded-full transition-[width] duration-500 ease-out z-1"
                       style={{
                         width: `${(activeEraIndex / Math.max(1, eras.length - 1)) * 100}%`,
                       }}

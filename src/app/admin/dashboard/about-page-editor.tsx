@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import { toast } from "sonner";
+import { useConfirm } from "@/components/admin/confirm-dialog";
 import {
   Save,
   RotateCcw,
@@ -561,6 +562,7 @@ interface AboutPageEditorProps {
 }
 
 export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPageEditorProps) {
+  const { confirm } = useConfirm();
   const [formData, setFormData] = useState<AboutPageFormData>(DEFAULT_ABOUT_DATA);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -645,8 +647,14 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
     setEditingMember(null);
   }
 
-  function handleDeleteMember(memberToDelete: TeamMember) {
-    if (!confirm(`Are you sure you want to delete "${memberToDelete.name}" from the leadership team?`)) return;
+  async function handleDeleteMember(memberToDelete: TeamMember) {
+    const ok = await confirm({
+      title: "Delete Leadership Member",
+      message: `Are you sure you want to delete "${memberToDelete.name}" from the leadership team? Any associated cloud photo will also be removed.`,
+      confirmText: "Delete Member",
+      variant: "danger",
+    });
+    if (!ok) return;
 
     if (memberToDelete.imageUrl) {
       fetch("/api/upload", {
@@ -730,7 +738,14 @@ export default function AboutPageEditor({ sectionId, onCloseSection }: AboutPage
   }
 
   async function handleReset() {
-    if (!confirm("Are you sure you want to reset all About Page content to defaults?")) return;
+    const ok = await confirm({
+      title: "Reset About Page Content",
+      message: "Are you sure you want to reset all About Page content to defaults? This will restore default mission, stats, core values, and executive leadership members.",
+      confirmText: "Reset to Defaults",
+      variant: "warning",
+      icon: "refresh",
+    });
+    if (!ok) return;
 
     setFormData(DEFAULT_ABOUT_DATA);
     const toastId = toast.loading("Resetting content in database...");

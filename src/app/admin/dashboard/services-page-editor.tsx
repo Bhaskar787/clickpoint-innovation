@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
+import { useConfirm } from "@/components/admin/confirm-dialog";
 import {
   Save,
   RotateCcw,
@@ -469,6 +470,7 @@ export default function ServicesPageEditor({
   onCloseSection,
   onNavigateToDetailSection,
 }: ServicesPageEditorProps) {
+  const { confirm } = useConfirm();
   const [activeSectionId, setActiveSectionId] = useState<string>(
     sectionId === "services-catalog" ? "services-list" : sectionId === "service-detail" ? "services-details" : (sectionId || "services-hero")
   );
@@ -618,7 +620,14 @@ export default function ServicesPageEditor({
   }
 
   async function handleReset() {
-    if (!confirm("Are you sure you want to reset all Services data to defaults?")) return;
+    const ok = await confirm({
+      title: "Reset Services Content",
+      message: "Are you sure you want to reset all Services data to defaults? This will overwrite all custom catalog items and configurations.",
+      confirmText: "Reset to Defaults",
+      variant: "warning",
+      icon: "refresh",
+    });
+    if (!ok) return;
 
     setFormData(DEFAULT_SERVICES_CONTENT);
     setSelectedDetailId(DEFAULT_SERVICES_CONTENT.services[0].id);
@@ -731,12 +740,18 @@ export default function ServicesPageEditor({
     setEditingCatalogService(null);
   }
 
-  function handleDeleteService(svc: (typeof DEFAULT_SERVICES_CONTENT.services)[0], index: number) {
+  async function handleDeleteService(svc: (typeof DEFAULT_SERVICES_CONTENT.services)[0], index: number) {
     if (formData.services.length <= 1) {
       toast.error("Cannot delete the only service in the catalog.");
       return;
     }
-    if (confirm(`Are you sure you want to delete service "${svc.title}" (/services/${svc.id})?`)) {
+    const ok = await confirm({
+      title: "Delete Service",
+      message: `Are you sure you want to delete service "${svc.title}" (/services/${svc.id})? This will remove all associated capabilities, metrics, and details.`,
+      confirmText: "Delete Service",
+      variant: "danger",
+    });
+    if (ok) {
       const updated = formData.services.filter((_, i) => i !== index);
       setFormData({ ...formData, services: updated });
       if (selectedDetailId === svc.id) {

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import { toast } from "sonner";
+import { useConfirm } from "@/components/admin/confirm-dialog";
 import {
   Save,
   RotateCcw,
@@ -183,6 +184,7 @@ interface IndustriesPageEditorProps {
 }
 
 export default function IndustriesPageEditor({ sectionId, onCloseSection }: IndustriesPageEditorProps) {
+  const { confirm } = useConfirm();
   const [activeSectionId, setActiveSectionId] = useState<string>(sectionId || "ind-hero");
   const [formData, setFormData] = useState<any>(DEFAULT_INDUSTRIES_PAGE_DATA);
   const [selectedIndustryId, setSelectedIndustryId] = useState<string>("fintech");
@@ -288,7 +290,14 @@ export default function IndustriesPageEditor({ sectionId, onCloseSection }: Indu
   }
 
   async function handleReset() {
-    if (!confirm("Are you sure you want to reset all Industries content to defaults?")) return;
+    const ok = await confirm({
+      title: "Reset Industries Content",
+      message: "Are you sure you want to reset all Industries content to defaults? This will restore default hero, catalog, and detailed industry pages.",
+      confirmText: "Reset to Defaults",
+      variant: "warning",
+      icon: "refresh",
+    });
+    if (!ok) return;
     setFormData(DEFAULT_INDUSTRIES_PAGE_DATA);
     if (DEFAULT_INDUSTRIES_PAGE_DATA.industries && DEFAULT_INDUSTRIES_PAGE_DATA.industries.length > 0) {
       setSelectedIndustryId(DEFAULT_INDUSTRIES_PAGE_DATA.industries[0].id);

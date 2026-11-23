@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
+import { useConfirm } from "@/components/admin/confirm-dialog";
 import {
   Save,
   RotateCcw,
@@ -75,6 +76,7 @@ interface NotFoundPageEditorProps {
 }
 
 export default function NotFoundPageEditor({ sectionId, onCloseSection }: NotFoundPageEditorProps) {
+  const { confirm } = useConfirm();
   const [formData, setFormData] = useState<NotFoundPageContent>(DEFAULT_NOT_FOUND_DATA);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -125,7 +127,14 @@ export default function NotFoundPageEditor({ sectionId, onCloseSection }: NotFou
   }
 
   async function handleReset() {
-    if (!confirm("Are you sure you want to reset all 404 page content to defaults?")) return;
+    const ok = await confirm({
+      title: "Reset 404 Page Content",
+      message: "Are you sure you want to reset all 404 page content to defaults? This will restore the default error messages, visual badges, and action navigation links.",
+      confirmText: "Reset to Defaults",
+      variant: "warning",
+      icon: "refresh",
+    });
+    if (!ok) return;
 
     setFormData(DEFAULT_NOT_FOUND_DATA);
     const toastId = toast.loading("Resetting content in database...");

@@ -215,7 +215,7 @@ export default function FaqSection({
                 >
                   <div
                     ref={(el) => { cardRefs.current[i] = el; }}
-                    className={`relative rounded-2xl border transition-[border-color,box-shadow,background-color] duration-200 ${
+                    className={`relative rounded-xl border transition-[border-color,box-shadow,background-color] duration-200 ${
                       isOpen
                         ? "border-violet-400 dark:border-violet-500 bg-white dark:bg-[#131c31] shadow-xl shadow-violet-950/10"
                         : "border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] shadow-xs hover:border-violet-300 dark:hover:border-slate-700"
@@ -228,7 +228,7 @@ export default function FaqSection({
                     {dim > 0 && (
                       <div
                         aria-hidden
-                        className="absolute inset-0 rounded-2xl bg-slate-900 pointer-events-none transition-opacity duration-300"
+                        className="absolute inset-0 rounded-xl bg-slate-900 pointer-events-none transition-opacity duration-300"
                         style={{ opacity: dim }}
                       />
                     )}
@@ -243,7 +243,7 @@ export default function FaqSection({
                           setOpenIndex(i);
                         }
                       }}
-                      className="w-full flex items-center justify-between p-5 text-left font-display text-fluid-base font-bold text-ink dark:text-white hover:text-violet-600 dark:hover:text-violet-300 transition-colors cursor-pointer"
+                      className={`w-full flex items-center justify-between p-5 ${isOpen ? "pb-2.5" : ""} text-left font-display text-fluid-base font-bold text-ink dark:text-white hover:text-violet-600 dark:hover:text-violet-300 transition-colors cursor-pointer`}
                     >
                       <div className="flex items-center gap-3 pr-2">
                         <span className="rounded-full bg-violet-100 dark:bg-slate-800 px-2.5 py-0.5 text-fluid-2xs font-bold text-violet-700 dark:text-violet-300 shrink-0 border border-violet-200 dark:border-slate-700">
@@ -264,7 +264,7 @@ export default function FaqSection({
                       }`}
                     >
                       <div className="overflow-hidden">
-                        <div className="p-5 pt-0 card-body text-ink/75 dark:text-slate-300 border-t border-violet-100/60 dark:border-slate-800">
+                        <div className="px-5 pb-5 pt-0 card-body text-ink/75 dark:text-slate-300">
                           {faq.answer}
                         </div>
                       </div>

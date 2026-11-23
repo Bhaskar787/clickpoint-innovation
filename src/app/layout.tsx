@@ -4,6 +4,7 @@ import { ThemeProvider, SiteDataProvider } from "@/components/common/theme-provi
 import { ChatbotWidget } from "@/components/common/chatbot-widget";
 import { Toaster } from "sonner";
 import { getChatbotServerData, getLandingPageData } from "@/server/actions/landing";
+import TopLoader from "@/components/common/top-loader";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -69,6 +70,7 @@ export default async function RootLayout({
         />
       </head>
       <body className="font-poppins font-sans antialiased">
+        <TopLoader />
         <SiteDataProvider
           navbar={landingData?.navbar}
           footer={landingData?.footer || landingData?.footerData}

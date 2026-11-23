@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { toast } from "sonner";
 import { createPortal } from "react-dom";
+import { useConfirm } from "@/components/admin/confirm-dialog";
 import {
   Save,
   RotateCcw,
@@ -71,6 +72,7 @@ interface TestimonialsEditorProps {
 }
 
 export default function TestimonialsEditor({ sectionId, onCloseSection, selectedItemId, onClearSelectedItem, onMarkItemRead }: TestimonialsEditorProps) {
+  const { confirm } = useConfirm();
   const [formData, setFormData] = useState<TestimonialsPageContent>(DEFAULT_TESTIMONIALS_PAGE_DATA);
   const [testimonials, setTestimonials] = useState<TestimonialItem[]>([]);
   const [filterTab, setFilterTab] = useState<"ALL" | "UNREAD" | "APPROVED">("ALL");
@@ -248,7 +250,13 @@ export default function TestimonialsEditor({ sectionId, onCloseSection, selected
   }
 
   async function handleDelete(item: TestimonialItem) {
-    if (!confirm(`Are you sure you want to delete review from "${item.clientName}"?`)) return;
+    const ok = await confirm({
+      title: "Delete Review",
+      message: `Are you sure you want to delete review from "${item.clientName}"? Any uploaded avatar photo will also be removed.`,
+      confirmText: "Delete Review",
+      variant: "danger",
+    });
+    if (!ok) return;
 
     const toastId = toast.loading("Deleting review...");
     try {

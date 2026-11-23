@@ -103,14 +103,24 @@ export async function POST(request: Request) {
     });
 
     if (existingRecentSubmission) {
-      const minutesLeft = Math.ceil(
-        (existingRecentSubmission.createdAt.getTime() + ONE_HOUR_MS - Date.now()) / (60 * 1000)
+      const minutesLeft = Math.max(
+        1,
+        Math.ceil(
+          (existingRecentSubmission.createdAt.getTime() + ONE_HOUR_MS - Date.now()) / (60 * 1000)
+        )
       );
+
+      const contactIdentifier =
+        existingRecentSubmission.email === normalizedEmail && existingRecentSubmission.phone === normalizedPhone
+          ? `email (${normalizedEmail}) and phone number (${normalizedPhone})`
+          : existingRecentSubmission.email === normalizedEmail
+          ? `email (${normalizedEmail})`
+          : `phone number (${normalizedPhone})`;
 
       return NextResponse.json(
         {
           success: false,
-          error: `Rate limit active: A contact inquiry has already been submitted using this email (${normalizedEmail}) or phone number (${normalizedPhone}). Please wait ${minutesLeft} minute(s) before sending another message.`,
+          error: `We have already received an inquiry associated with this ${contactIdentifier}. Our engineering team is currently reviewing your request. Please allow ${minutesLeft} minute${minutesLeft === 1 ? "" : "s"} before submitting another message.`,
           rateLimited: true,
         },
         { status: 429 }

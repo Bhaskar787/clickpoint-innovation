@@ -10,9 +10,9 @@ import {
   Clock,
   Send,
   CheckCircle2,
-  Sparkles,
   Loader2,
   ChevronRight,
+  ChevronDown,
 } from "lucide-react";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
@@ -33,18 +33,33 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
   const contactInfo = content.contactInfo || DEFAULT_CONTACT_PAGE_DATA.contactInfo;
   const formFields = content.formFields || DEFAULT_CONTACT_PAGE_DATA.formFields;
 
-  const OBJECTIVES =
+  // Clean objectives from database or fallback, filtering out any raw placeholder
+  const rawObjectives =
     formFields.serviceOptions && formFields.serviceOptions.length > 0
       ? formFields.serviceOptions
       : DEFAULT_CONTACT_PAGE_DATA.formFields.serviceOptions;
 
-  const BUDGET_RANGES =
-    formFields.budgetOptions && formFields.budgetOptions.length > 0
-      ? formFields.budgetOptions
-      : DEFAULT_CONTACT_PAGE_DATA.formFields.budgetOptions;
+  const OBJECTIVES = Array.from(
+    new Set(
+      rawObjectives.filter((o) => Boolean(o && o.trim() && o.trim() !== "New Primary Objective"))
+    )
+  );
+  if (OBJECTIVES.length === 0) {
+    OBJECTIVES.push(
+      "AI Copilot & Autonomous Pods",
+      "Headless Next.js Web Platform",
+      "Cross-Platform iOS & Android App",
+      "UI/UX Design System",
+      "Cloud Infrastructure & DevOps"
+    );
+  }
 
-  const [selectedObjective, setSelectedObjective] = useState<string>(OBJECTIVES[0]);
-  const [selectedBudget, setSelectedBudget] = useState<string>(BUDGET_RANGES[0]);
+  const [selectedObjective, setSelectedObjective] = useState<string>(OBJECTIVES[0] || "AI Copilot & Autonomous Pods");
+  const [customConcept, setCustomConcept] = useState<string>("");
+  const [currency, setCurrency] = useState<"USD" | "NPR">(formFields.defaultCurrency || "USD");
+  const [budget, setBudget] = useState<string>("");
+  const [submittedDetails, setSubmittedDetails] = useState<{ service: string; budget: string } | null>(null);
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -64,7 +79,34 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
       return;
     }
 
+    // 1. Resolve final service / objective
+    let finalService = selectedObjective;
+    if (selectedObjective === "CUSTOM" || !selectedObjective) {
+      if (!customConcept.trim()) {
+        toast.error("Please enter your custom project objective or concept.");
+        return;
+      }
+      finalService = customConcept.trim();
+    } else if (customConcept.trim()) {
+      finalService = `${selectedObjective}: ${customConcept.trim()}`;
+    }
 
+    // 2. Resolve final budget (in selective USD $ or NPR)
+    let finalBudget = budget.trim();
+    if (!finalBudget) {
+      toast.error(`Please enter your target budget or investment (in ${currency}).`);
+      return;
+    }
+
+    if (currency === "USD") {
+      if (!finalBudget.startsWith("$") && !finalBudget.toUpperCase().startsWith("USD")) {
+        finalBudget = `$${finalBudget}`;
+      }
+    } else {
+      if (!finalBudget.toUpperCase().startsWith("NPR") && !finalBudget.startsWith("रू")) {
+        finalBudget = `NPR ${finalBudget}`;
+      }
+    }
 
     setIsSubmitting(true);
     const toastId = toast.loading("Sending your message to engineering team...");
@@ -78,8 +120,8 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
           email,
           phone,
           company,
-          service: selectedObjective,
-          budget: selectedBudget,
+          service: finalService,
+          budget: finalBudget,
           message,
         }),
       });
@@ -92,6 +134,7 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
           json.message || "Message Sent Successfully! Our engineering team will contact you shortly.",
           { id: toastId, duration: 6000 }
         );
+        setSubmittedDetails({ service: finalService, budget: finalBudget });
         setFormSubmitted(true);
 
         broadcastNotification({
@@ -101,7 +144,7 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
           title: "Contact Lead Inquiry",
           clientName: name.trim(),
           email: email.trim(),
-          subtext: selectedObjective ? `${selectedObjective} (${selectedBudget || ""})` : email.trim(),
+          subtext: finalService ? `${finalService} (${finalBudget || ""})` : email.trim(),
           content: message.trim(),
           createdAt: new Date().toISOString(),
           targetTab: "contact-page",
@@ -186,55 +229,118 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
                     </p>
                   </div>
 
-                  {/* Objective Selector */}
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-ink/60 dark:text-slate-400 mb-3">
-                      1. Select Primary Objective *
-                    </label>
-                    <div className="grid grid-cols-1 min-[400px]:grid-cols-2 sm:grid-cols-3 gap-2.5">
-                      {OBJECTIVES.map((obj) => {
-                        const isSelected = selectedObjective === obj;
-                        return (
-                          <button
-                            type="button"
-                            key={obj}
-                            onClick={() => setSelectedObjective(obj)}
-                            className={`rounded-xl p-3 text-xs font-bold text-left transition-all duration-200 border break-words cursor-pointer ${
-                              isSelected
-                                ? "bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-600/25"
-                                : "bg-cloud-100/60 text-ink/75 border-violet-100 hover:bg-violet-50 hover:text-violet-700 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-700 dark:hover:text-white"
-                            }`}
-                          >
-                            {obj}
-                          </button>
-                        );
-                      })}
+                  {/* 1. Select Primary Objective */}
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap items-center justify-between gap-1">
+                      <label className="block text-xs font-bold uppercase tracking-wider text-ink/70 dark:text-slate-300">
+                        1. Select Primary Objective *
+                      </label>
+                      <span className="text-[11px] font-medium text-violet-600 dark:text-violet-400">
+                        Select an option or write your own concept
+                      </span>
+                    </div>
+
+                    <div className="space-y-2.5">
+                      {/* Objective Selective Dropdown */}
+                      <div className="relative">
+                        <select
+                          value={selectedObjective}
+                          onChange={(e) => setSelectedObjective(e.target.value)}
+                          className="w-full appearance-none rounded-xl border border-violet-200 dark:border-slate-700 bg-cloud-100/50 dark:bg-slate-800/80 px-3.5 py-3.5 pr-10 text-xs font-semibold text-ink dark:text-white focus:border-violet-600 focus:outline-hidden focus:ring-2 focus:ring-violet-600/20 cursor-pointer shadow-xs transition-colors"
+                        >
+                          {OBJECTIVES.map((obj) => (
+                            <option key={obj} value={obj} className="dark:bg-slate-800 dark:text-white">
+                              {obj}
+                            </option>
+                          ))}
+                          <option value="CUSTOM" className="dark:bg-slate-800 dark:text-violet-300 font-bold">
+                            Write Own Concept / Custom Objective
+                          </option>
+                        </select>
+                        <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink/40 dark:text-slate-400" />
+                      </div>
+
+                      {/* Write Own Concept Input - Auto-selects custom mode on typing */}
+                      <div>
+                        <input
+                          type="text"
+                          value={customConcept}
+                          onChange={(e) => {
+                            setCustomConcept(e.target.value);
+                            if (e.target.value.trim() && selectedObjective !== "CUSTOM") {
+                              setSelectedObjective("CUSTOM");
+                            }
+                          }}
+                          required={selectedObjective === "CUSTOM"}
+                          placeholder={
+                            selectedObjective === "CUSTOM"
+                              ? "Write your own project concept or objective in detail"
+                              : "Write your own concept or specific project focus"
+                          }
+                          className={`w-full rounded-xl border px-3.5 py-3 text-xs font-medium text-ink dark:text-white placeholder:text-ink/40 dark:placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-violet-600/20 transition-all ${
+                            selectedObjective === "CUSTOM"
+                              ? "border-violet-500 bg-violet-50/50 dark:bg-violet-950/30 ring-2 ring-violet-500/20"
+                              : "border-violet-200 dark:border-slate-700 bg-cloud-100/50 dark:bg-slate-800/80 focus:border-violet-600"
+                          }`}
+                        />
+                      </div>
                     </div>
                   </div>
 
-                  {/* Budget Selector */}
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-ink/60 dark:text-slate-400 mb-3">
-                      2. Target Investment / Budget Range *
-                    </label>
-                    <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-2.5">
-                      {BUDGET_RANGES.map((b) => {
-                        const isSelected = selectedBudget === b;
-                        return (
-                          <button
-                            type="button"
-                            key={b}
-                            onClick={() => setSelectedBudget(b)}
-                            className={`rounded-xl p-3 text-xs font-bold text-center transition-all duration-200 border break-words cursor-pointer ${
-                              isSelected
-                                ? "bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-600/25"
-                                : "bg-cloud-100/60 text-ink/75 border-violet-100 hover:bg-violet-50 hover:text-violet-700 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-700 dark:hover:text-white"
-                            }`}
-                          >
-                            {b}
-                          </button>
-                        );
-                      })}
+                  {/* 2. Target Investment / Budget Range */}
+                  <div className="space-y-2.5">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <label className="block text-xs font-bold uppercase tracking-wider text-ink/70 dark:text-slate-300">
+                        {formFields.budgetTitle || "2. Target Investment / Budget Range *"}
+                      </label>
+
+                      {/* Selective Currency Switcher: USD ($) vs NPR */}
+                      <div className="inline-flex items-center rounded-xl bg-cloud-100/90 dark:bg-slate-800 p-0.5 border border-violet-200 dark:border-slate-700 shadow-2xs">
+                        <button
+                          type="button"
+                          onClick={() => setCurrency("USD")}
+                          className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                            currency === "USD"
+                              ? "bg-violet-600 text-white shadow-xs"
+                              : "text-ink/65 dark:text-slate-400 hover:text-ink dark:hover:text-white"
+                          }`}
+                        >
+                          USD ($)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setCurrency("NPR")}
+                          className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                            currency === "NPR"
+                              ? "bg-violet-600 text-white shadow-xs"
+                              : "text-ink/65 dark:text-slate-400 hover:text-ink dark:hover:text-white"
+                          }`}
+                        >
+                          NPR (NP)
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="relative flex items-center">
+                      <div className="pointer-events-none absolute left-3.5 flex items-center select-none">
+                        <span className="text-xs font-extrabold text-violet-600 dark:text-violet-400">
+                          {currency === "USD" ? "$" : "NPR"}
+                        </span>
+                      </div>
+                      <input
+                        type="text"
+                        required
+                        value={budget}
+                        onChange={(e) => setBudget(e.target.value)}
+                        placeholder={
+                          currency === "USD"
+                            ? "e.g. 10,000 – 25,000 or 50,000"
+                            : "e.g. 500,000 – 1,500,000 or 2,500,000"
+                        }
+                        className={`w-full rounded-xl border border-violet-200 dark:border-slate-700 bg-cloud-100/50 dark:bg-slate-800/80 py-3.5 pr-3.5 text-xs font-medium text-ink dark:text-white placeholder:text-ink/40 dark:placeholder:text-slate-400 focus:border-violet-600 focus:outline-hidden focus:ring-2 focus:ring-violet-600/20 transition-colors ${
+                          currency === "USD" ? "pl-9" : "pl-14"
+                        }`}
+                      />
                     </div>
                   </div>
 
@@ -315,7 +421,16 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
                     Inquiry Received!
                   </h3>
                   <p className="text-sm max-w-md mx-auto text-ink/75 dark:text-slate-300 leading-relaxed break-words">
-                    Thank you for reaching out. Our principal engineering architect has received your RFP for <span className="font-bold text-violet-700 dark:text-violet-300">{selectedObjective}</span> and will respond to your email within <span className="font-bold text-violet-700 dark:text-violet-300">2 hours</span>.
+                    Thank you for reaching out. Our principal engineering architect has received your inquiry for{" "}
+                    <span className="font-bold text-violet-700 dark:text-violet-300">
+                      {submittedDetails?.service || selectedObjective}
+                    </span>{" "}
+                    with estimated investment of{" "}
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                      {submittedDetails?.budget || budget}
+                    </span>{" "}
+                    and will respond to your email within{" "}
+                    <span className="font-bold text-violet-700 dark:text-violet-300">2 hours</span>.
                   </p>
                   <Button
                     variant="outline"
@@ -326,6 +441,10 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
                       setPhone("");
                       setCompany("");
                       setMessage("");
+                      setCustomConcept("");
+                      setBudget("");
+                      setCurrency(formFields.defaultCurrency || "USD");
+                      setSubmittedDetails(null);
                       setFormSubmitted(false);
                     }}
                     className="mt-4 border-violet-200 dark:border-slate-700 text-ink dark:text-slate-200 cursor-pointer"

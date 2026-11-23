@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
+import { useConfirm } from "@/components/admin/confirm-dialog";
 import {
   Save,
   RotateCcw,
@@ -103,6 +104,7 @@ interface JourneyEditorProps {
 }
 
 export default function JourneyEditor({ sectionId, onCloseSection }: JourneyEditorProps) {
+  const { confirm } = useConfirm();
   const [formData, setFormData] = useState<JourneyPageContent>(DEFAULT_JOURNEY_PAGE_DATA);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSaving, setIsSaving] = useState<boolean>(false);
@@ -236,9 +238,15 @@ export default function JourneyEditor({ sectionId, onCloseSection }: JourneyEdit
     }
   }
 
-  function handleDeleteFolderById(folderId: string) {
+  async function handleDeleteFolderById(folderId: string) {
     const target = formData.events.find((e) => e.id === folderId);
-    if (!confirm(`Delete Gallery Folder "${target?.title || "this folder"}" and all its photos?`)) return;
+    const ok = await confirm({
+      title: "Delete Gallery Folder",
+      message: `Delete Gallery Folder "${target?.title || "this folder"}" and all its photos? This cannot be undone.`,
+      confirmText: "Delete Folder",
+      variant: "danger",
+    });
+    if (!ok) return;
 
     if (target?.imageUrl) {
       triggerCloudinaryDelete(target.imageUrl);
@@ -448,8 +456,15 @@ export default function JourneyEditor({ sectionId, onCloseSection }: JourneyEdit
     }
   }
 
-  function handleResetToDefaults() {
-    if (confirm("Are you sure you want to reset all Journey Page content to defaults?")) {
+  async function handleResetToDefaults() {
+    const ok = await confirm({
+      title: "Reset Journey Page Content",
+      message: "Are you sure you want to reset all Journey Page content to defaults? This will restore initial eras, milestones, and gallery events.",
+      confirmText: "Reset to Defaults",
+      variant: "warning",
+      icon: "refresh",
+    });
+    if (ok) {
       setFormData(DEFAULT_JOURNEY_PAGE_DATA);
       toast.info("Reset to default journey data. Click Save to persist changes.");
     }
@@ -603,8 +618,14 @@ export default function JourneyEditor({ sectionId, onCloseSection }: JourneyEdit
     autoSaveToDatabase(nextFormData);
   }
 
-  function handleDeleteEraItem(eraToDelete: TimelineEra, index: number) {
-    if (confirm(`Are you sure you want to delete Era "${eraToDelete.title || eraToDelete.displayYear}"?`)) {
+  async function handleDeleteEraItem(eraToDelete: TimelineEra, index: number) {
+    const ok = await confirm({
+      title: "Delete Timeline Era",
+      message: `Are you sure you want to delete Era "${eraToDelete.title || eraToDelete.displayYear}"? Any associated cloud photo will also be removed.`,
+      confirmText: "Delete Era",
+      variant: "danger",
+    });
+    if (ok) {
       if (eraToDelete.imageUrl) {
         triggerCloudinaryDelete(eraToDelete.imageUrl);
       }

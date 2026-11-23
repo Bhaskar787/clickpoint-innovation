@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
+import { useConfirm } from "@/components/admin/confirm-dialog";
 import {
   Save,
   Plus,
@@ -67,6 +68,7 @@ export const FAQ_SECTIONS_CATALOG: SectionNavSidebarItem[] = [
 const EMPTY_FORM = { id: "", question: "", answer: "", categoryId: "" };
 
 export default function FaqEditor({ sectionId, onCloseSection }: FaqEditorProps) {
+  const { confirm } = useConfirm();
   const [faqs, setFaqs] = useState<FaqItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -251,7 +253,13 @@ export default function FaqEditor({ sectionId, onCloseSection }: FaqEditorProps)
   }
 
   async function handleDelete(faq: FaqItem) {
-    if (!confirm(`Delete "${faq.question}"? This cannot be undone.`)) return;
+    const ok = await confirm({
+      title: "Delete FAQ",
+      message: `Delete "${faq.question}"? This question and its answered content will be permanently removed.`,
+      confirmText: "Delete FAQ",
+      variant: "danger",
+    });
+    if (!ok) return;
 
     const toastId = toast.loading("Deleting FAQ...");
     try {
@@ -371,7 +379,13 @@ export default function FaqEditor({ sectionId, onCloseSection }: FaqEditorProps)
       toast.error(`Cannot delete — ${count} FAQ${count > 1 ? "s" : ""} still use this category. Reassign or delete them first.`);
       return;
     }
-    if (!confirm(`Delete category "${cat.name}"? This cannot be undone.`)) return;
+    const ok = await confirm({
+      title: "Delete FAQ Category",
+      message: `Delete category "${cat.name}"? This cannot be undone.`,
+      confirmText: "Delete Category",
+      variant: "danger",
+    });
+    if (!ok) return;
     const toastId = toast.loading("Deleting category...");
     try {
       const res = await fetch(`/api/faq-categories?id=${cat.id}`, { method: "DELETE" });

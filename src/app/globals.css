@@ -169,15 +169,14 @@ html.dark .bg-violet-100:not(button):not(a) {
 html.dark .hover\:bg-violet-50:hover,
 html.dark .hover\:bg-violet-100:hover,
 html.dark .hover\:bg-cloud-100:hover,
-html.dark nav a:hover,
 html.dark .NavigationMenuContent a:hover {
   background-color: #253557 !important;
 }
 
-/* Border overrides for dark mode */
-html.dark [class*="border-violet-100"],
-html.dark [class*="border-violet-200"],
-html.dark [class*="border-violet-300"] {
+/* Border overrides for dark mode - only for exact whole-class matches, not hover variants */
+html.dark [class~="border-violet-100"],
+html.dark [class~="border-violet-200"],
+html.dark [class~="border-violet-300"] {
   border-color: rgba(255, 255, 255, 0.14) !important;
 }
 
@@ -292,7 +291,6 @@ html.dark .fixed .bg-white {
 
 html.dark header.bg-white\/90 {
   background-color: rgba(11, 17, 32, 0.95) !important;
-  border-bottom-color: rgba(255, 255, 255, 0.12) !important;
 }
 
 /* -------------------------------------------------------------

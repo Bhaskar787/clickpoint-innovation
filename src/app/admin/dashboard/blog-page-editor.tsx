@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { toast } from "sonner";
+import { useConfirm } from "@/components/admin/confirm-dialog";
 import {
   Save,
   RotateCcw,
@@ -261,6 +262,7 @@ interface BlogPageEditorProps {
 }
 
 export default function BlogPageEditor({ sectionId, onCloseSection }: BlogPageEditorProps) {
+  const { confirm } = useConfirm();
   const [activeSectionId, setActiveSectionId] = useState<string>(
     sectionId === "01" ? "blog-hero" : sectionId === "02" ? "blog-categories" : sectionId === "03" ? "blog-posts" : (sectionId === "04" || sectionId === "post-detail") ? "blog-newsletter" : (sectionId || "blog-hero")
   );
@@ -368,7 +370,14 @@ export default function BlogPageEditor({ sectionId, onCloseSection }: BlogPageEd
   }
 
   async function handleReset() {
-    if (!confirm("Are you sure you want to reset all Blog page configurations to defaults?")) return;
+    const ok = await confirm({
+      title: "Reset Blog Settings",
+      message: "Are you sure you want to reset all Blog page configurations to defaults? This will restore default hero, newsletter, and layout settings.",
+      confirmText: "Reset to Defaults",
+      variant: "warning",
+      icon: "refresh",
+    });
+    if (!ok) return;
     setFormData(DEFAULT_BLOG_PAGE_DATA);
     const toastId = toast.loading("Resetting Blog configuration in database...");
     try {
@@ -436,7 +445,13 @@ export default function BlogPageEditor({ sectionId, onCloseSection }: BlogPageEd
   }
 
   async function handleDeleteCategory(cat: BlogCategoryItem) {
-    if (!confirm(`Are you sure you want to delete category "${cat.name}"?`)) return;
+    const ok = await confirm({
+      title: "Delete Category",
+      message: `Are you sure you want to delete category "${cat.name}"? Articles linked to this category may need re-assigning.`,
+      confirmText: "Delete Category",
+      variant: "danger",
+    });
+    if (!ok) return;
 
     const toastId = toast.loading(`Deleting category "${cat.name}"...`);
     try {
@@ -557,7 +572,13 @@ export default function BlogPageEditor({ sectionId, onCloseSection }: BlogPageEd
   }
 
   async function handleDeletePost(post: BlogPostItem) {
-    if (!confirm(`Are you sure you want to delete post "${post.title}"? Image assets on Cloudinary will be cleaned.`)) return;
+    const ok = await confirm({
+      title: "Delete Blog Post",
+      message: `Are you sure you want to delete post "${post.title}"? Associated image assets on Cloudinary will also be permanently removed.`,
+      confirmText: "Delete Post",
+      variant: "danger",
+    });
+    if (!ok) return;
 
     const toastId = toast.loading(`Deleting post and cleaning Cloudinary images...`);
     try {

@@ -3,8 +3,7 @@ import { getFaqCategories } from "@/server/actions/faq-categories";
 import { getContactPage } from "@/server/actions/contact";
 import { getLandingPageData } from "@/server/actions/landing";
 import FaqsClientView from "./faqs-client-view";
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 60;
 
 export default async function FaqsPage() {
   const [landingData, faqs, categories, contactContent] = await Promise.all([

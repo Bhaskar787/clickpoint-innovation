@@ -9,8 +9,33 @@ export const revalidate = 0;
 export async function GET() {
   try {
     const landingRecord = await prisma.landingPage.findFirst();
+    const servicesRecord = await prisma.servicesPage.findFirst().catch(() => null);
+    const industriesRecord = await prisma.industriesPage.findFirst().catch(() => null);
+
+    const allServices = (servicesRecord?.content as any)?.services || [];
+    const allIndustries = (industriesRecord?.content as any)?.industries || [];
+
     const content = (landingRecord?.content || {}) as any;
-    const navbar = content.navbar || DEFAULT_NAVBAR_DATA;
+    const rawNavbar = content.navbar || {};
+
+    const navbar = {
+      ...DEFAULT_NAVBAR_DATA,
+      ...rawNavbar,
+      services: {
+        ...DEFAULT_NAVBAR_DATA.services,
+        ...(rawNavbar.services || {}),
+        featuredCard: {
+          ...DEFAULT_NAVBAR_DATA.services?.featuredCard,
+          ...(rawNavbar.services?.featuredCard || {}),
+        },
+      },
+      industries: {
+        ...DEFAULT_NAVBAR_DATA.industries,
+        ...(rawNavbar.industries || {}),
+      },
+      allServices,
+      allIndustries,
+    };
 
     return NextResponse.json(
       { success: true, navbar },
@@ -38,10 +63,27 @@ export async function PUT(req: Request) {
 
     if (existing) {
       const existingContent = (existing.content as any) || {};
+      const existingNavbar = existingContent.navbar || {};
+
       const mergedNavbar = {
         ...DEFAULT_NAVBAR_DATA,
-        ...(existingContent.navbar || {}),
+        ...existingNavbar,
         ...navbar,
+        services: {
+          ...DEFAULT_NAVBAR_DATA.services,
+          ...(existingNavbar.services || {}),
+          ...(navbar.services || {}),
+          featuredCard: {
+            ...DEFAULT_NAVBAR_DATA.services?.featuredCard,
+            ...(existingNavbar.services?.featuredCard || {}),
+            ...(navbar.services?.featuredCard || {}),
+          },
+        },
+        industries: {
+          ...DEFAULT_NAVBAR_DATA.industries,
+          ...(existingNavbar.industries || {}),
+          ...(navbar.industries || {}),
+        },
       };
       const mergedContent = {
         ...existingContent,

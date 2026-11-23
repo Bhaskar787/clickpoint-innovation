@@ -12,21 +12,51 @@ import {
 } from "@/data/chatbot-data";
 import { unstable_cache } from "next/cache";
 
-export async function getLandingPageData() {
-  try {
+const getLandingPageDataCached = unstable_cache(
+  async () => {
     let landingRecord = await prisma.landingPage.findFirst();
+    const servicesRecord = await prisma.servicesPage.findFirst().catch(() => null);
+    const industriesRecord = await prisma.industriesPage.findFirst().catch(() => null);
+
+    const allServices = (servicesRecord?.content as any)?.services || [];
+    const allIndustries = (industriesRecord?.content as any)?.industries || [];
+
     if (!landingRecord || !landingRecord.content) {
       return {
         ...DEFAULT_LANDING_DATA,
-        navbar: DEFAULT_NAVBAR_DATA,
+        navbar: {
+          ...DEFAULT_NAVBAR_DATA,
+          allServices,
+          allIndustries,
+        },
         systemSettings: DEFAULT_SYSTEM_SETTINGS,
       };
     }
     const content = (landingRecord.content || {}) as any;
+    const rawNavbar = content.navbar || {};
+    const mergedNavbar = {
+      ...DEFAULT_NAVBAR_DATA,
+      ...rawNavbar,
+      services: {
+        ...DEFAULT_NAVBAR_DATA.services,
+        ...(rawNavbar.services || {}),
+        featuredCard: {
+          ...DEFAULT_NAVBAR_DATA.services?.featuredCard,
+          ...(rawNavbar.services?.featuredCard || {}),
+        },
+      },
+      industries: {
+        ...DEFAULT_NAVBAR_DATA.industries,
+        ...(rawNavbar.industries || {}),
+      },
+      allServices,
+      allIndustries,
+    };
+
     return {
       ...DEFAULT_LANDING_DATA,
       ...content,
-      navbar: content.navbar || DEFAULT_NAVBAR_DATA,
+      navbar: mergedNavbar,
       systemSettings: { ...DEFAULT_SYSTEM_SETTINGS, ...(content.systemSettings || {}) },
       hero: { ...DEFAULT_LANDING_DATA.hero, ...(content.hero || {}) },
       statsHeader: { ...DEFAULT_LANDING_DATA.statsHeader, ...(content.statsHeader || {}) },
@@ -47,6 +77,14 @@ export async function getLandingPageData() {
       footerData: { ...DEFAULT_LANDING_DATA.footerData, ...(content.footerData || content.footer || {}) },
       ctaBanner: { ...DEFAULT_LANDING_DATA.ctaBanner, ...(content.ctaBanner || {}) },
     };
+  },
+  ["landing-data-public"],
+  { revalidate: 300, tags: ["landing-page", "landing-data"] }
+);
+
+export async function getLandingPageData() {
+  try {
+    return await getLandingPageDataCached();
   } catch (error) {
     console.error("Failed to fetch landing page content:", error);
     return {
@@ -125,8 +163,8 @@ const DEFAULT_CHATBOT_CONFIG = {
   },
 };
 
-export async function getChatbotServerData() {
-  try {
+const getChatbotServerDataCached = unstable_cache(
+  async () => {
     let chatbotRecord = await prisma.chatbotPage.findFirst();
     if (!chatbotRecord) {
       chatbotRecord = await prisma.chatbotPage.create({
@@ -193,6 +231,14 @@ export async function getChatbotServerData() {
         packages: pricingPackages,
       },
     };
+  },
+  ["chatbot-data-public"],
+  { revalidate: 300, tags: ["chatbot-page", "chatbot-data"] }
+);
+
+export async function getChatbotServerData() {
+  try {
+    return await getChatbotServerDataCached();
   } catch (error) {
     console.warn("getChatbotServerData fallback:", error);
     return DEFAULT_CHATBOT_CONFIG;
