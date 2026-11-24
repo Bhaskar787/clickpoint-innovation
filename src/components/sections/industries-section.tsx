@@ -65,7 +65,7 @@ export default function IndustriesSection({ initialHeader, initialIndustries }: 
   ).slice(0, HOMEPAGE_INDUSTRIES_PREVIEW_COUNT);
 
   return (
-    <section id="industries" className="relative py-20 lg:py-28 bg-cloud-100/70 border-y border-violet-100/80">
+    <section id="industries" className="relative py-20 lg:py-28 bg-cloud-100/70 dark:bg-[#0f172a]/50 transition-colors duration-300">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}

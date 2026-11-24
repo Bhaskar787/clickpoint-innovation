@@ -124,7 +124,7 @@ export default function TechStackSection({
       : techItems.filter((item) => item.category === activeCategory || item.category === activeCategory.toLowerCase());
 
   return (
-    <section className="relative py-20 lg:py-28 overflow-hidden bg-white dark:bg-[#070814] text-slate-900 dark:text-slate-100 transition-colors duration-300 border-b border-slate-100 dark:border-slate-800/80">
+    <section className="relative py-20 lg:py-28 overflow-hidden bg-white dark:bg-[#070814] text-slate-900 dark:text-slate-100 transition-colors duration-300 border-b border-slate-200/60 dark:border-slate-800/40">
       
       {/* Ambient Grid Background */}
       <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_60%_50%_at_0%_0%,rgba(124,58,237,0.08),transparent)]" />

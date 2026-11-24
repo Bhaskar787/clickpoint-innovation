@@ -52,7 +52,7 @@ export default function BlogSection({ initialHeader, initialBlogs }: BlogSection
   const featuredBlogs = initialBlogs && initialBlogs.length > 0 ? blogs : blogs.slice(0, 3);
 
   return (
-    <section id="blog" className="relative py-20 lg:py-28 bg-white dark:bg-[#0b0f19] border-t border-violet-100 dark:border-slate-800">
+    <section id="blog" className="relative py-20 lg:py-28 bg-white dark:bg-[#0b0f19] border-t border-slate-200/60 dark:border-slate-800/40 transition-colors duration-300">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}

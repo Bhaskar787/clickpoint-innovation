@@ -76,7 +76,7 @@ export default function StatsSection({ initialHeader, initialStats }: StatsSecti
   }, [initialHeader, initialStats]);
 
   return (
-    <section className="relative py-20 lg:py-28 bg-cloud-100/60 dark:bg-[#0f172a]/50 border-y border-violet-100/70 dark:border-slate-800">
+    <section className="relative py-20 lg:py-28 bg-cloud-100/60 dark:bg-[#0f172a]/50 border-y border-slate-200/60 dark:border-slate-800/40 transition-colors duration-300">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}

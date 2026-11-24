@@ -173,11 +173,11 @@ html.dark .NavigationMenuContent a:hover {
   background-color: #253557 !important;
 }
 
-/* Border overrides for dark mode - only for exact whole-class matches, not hover variants */
-html.dark [class~="border-violet-100"],
-html.dark [class~="border-violet-200"],
-html.dark [class~="border-violet-300"] {
-  border-color: rgba(255, 255, 255, 0.14) !important;
+/* Border overrides for dark mode - protect any un-themed violet borders from appearing bright in dark mode */
+html.dark [class*="border-violet-100"]:not([class*="dark:border-"]):not([class*="hover:border-"]),
+html.dark [class*="border-violet-200"]:not([class*="dark:border-"]):not([class*="hover:border-"]),
+html.dark [class*="border-violet-300"]:not([class*="dark:border-"]):not([class*="hover:border-"]) {
+  border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
 /* -------------------------------------------------------------
