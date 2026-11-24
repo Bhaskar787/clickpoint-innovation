@@ -77,10 +77,10 @@ export default function BlogSection({ initialHeader, initialBlogs }: BlogSection
 
           <Link
             href="/blog"
-            className="inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-violet-50 dark:bg-slate-800 px-5 py-2.5 text-fluid-sm font-bold text-violet-600 dark:text-[#5340d6] transition-all hover:bg-violet-600 hover:text-white hover:shadow-lg hover:shadow-violet-600/25 shrink-0"
+            className="group inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-white dark:bg-slate-800/90 px-5 py-2.5 text-fluid-sm font-bold text-violet-600 dark:text-violet-300 transition-all hover:bg-violet-600 hover:text-white hover:border-violet-600 dark:hover:border-violet-500 hover:shadow-lg hover:shadow-violet-600/25 shrink-0"
           >
             <span>Explore All Articles</span>
-            <ArrowRight className="h-4 w-4 text-violet-600 dark:text-[#5340d6] group-hover:text-white" />
+            <ArrowRight className="h-4 w-4 text-violet-600 dark:text-violet-300 group-hover:text-white group-hover:translate-x-0.5 transition-all" />
           </Link>
         </div>
 
@@ -129,16 +129,16 @@ export default function BlogSection({ initialHeader, initialBlogs }: BlogSection
                   </div>
 
                   <div className="mt-5 space-y-2.5">
-                    <div className="flex items-center gap-3 text-fluid-xs text-ink/50 dark:text-slate-400 font-medium">
+                    <div className="flex items-center gap-3 text-fluid-xs text-ink/60 dark:text-slate-400 font-medium">
                       <span>{postDate}</span>
-                      <span>•</span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-3 w-3 text-violet-600 dark:text-[#5340d6]" />
-                        {postReadTime}
+                      <span className="text-slate-300 dark:text-slate-600">•</span>
+                      <span className="flex items-center gap-1.5 text-ink/70 dark:text-slate-300">
+                        <Clock className="h-3.5 w-3.5 text-violet-500 dark:text-violet-400 shrink-0" />
+                        <span>{postReadTime}</span>
                       </span>
                     </div>
 
-                    <h3 className="font-display text-fluid-lg font-bold text-ink dark:text-white group-hover:text-violet-600 dark:group-hover:text-[#5340d6] transition-colors line-clamp-2">
+                    <h3 className="font-display text-fluid-lg font-bold text-ink dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-300 transition-colors line-clamp-2">
                       <Link href={`/blog/${post.slug}`}>{post.title}</Link>
                     </h3>
 
@@ -150,7 +150,7 @@ export default function BlogSection({ initialHeader, initialBlogs }: BlogSection
 
                 <div className="mt-6 pt-4 border-t border-violet-100 dark:border-slate-800 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-violet-100 dark:bg-slate-800 text-fluid-2xs font-bold text-violet-600 dark:text-[#5340d6] border border-violet-200 dark:border-slate-700">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-violet-100 dark:bg-slate-800 text-fluid-2xs font-bold text-violet-600 dark:text-violet-300 border border-violet-200 dark:border-slate-700">
                       {authorAvatar}
                     </div>
                     <span className="text-fluid-xs font-semibold text-ink/80 dark:text-slate-200">{authorName}</span>
@@ -158,10 +158,10 @@ export default function BlogSection({ initialHeader, initialBlogs }: BlogSection
 
                   <Link
                     href={`/blog/${post.slug}`}
-                    className="inline-flex items-center gap-1 text-fluid-xs font-bold text-violet-600 dark:text-[#5340d6] hover:text-violet-800 dark:hover:text-violet-200 group-hover:translate-x-0.5 transition-transform"
+                    className="group/link inline-flex items-center gap-1.5 text-fluid-xs font-bold text-violet-600 dark:text-violet-300 hover:text-violet-800 dark:hover:text-violet-100 transition-colors"
                   >
                     <span>Read Article</span>
-                    <ChevronRight className="h-3.5 w-3.5 text-violet-600 dark:text-[#5340d6]" />
+                    <ChevronRight className="h-4 w-4 text-violet-600 dark:text-violet-300 group-hover/link:translate-x-0.5 transition-transform" />
                   </Link>
                 </div>
               </div>

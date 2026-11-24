@@ -183,6 +183,11 @@ export interface IndustryItem {
     status?: string;
   }[];
   solutions: (string | { title: string; desc: string })[];
+  cardLinkType?: "detail" | "project" | "custom";
+  selectedProjectId?: string;
+  cardCustomUrl?: string;
+  cardCustomLabel?: string;
+  cardTags?: string[];
 }
 
 export interface IndustriesPageContent {

@@ -4402,6 +4402,22 @@ export default function LandingPageEditor({ sectionId, onCloseSection }: Landing
                               <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
                                 {ind.description || ind.subtitle}
                               </p>
+
+                              {/* Card Pills & Selective Link Status */}
+                              <div className="mt-2 pt-2 border-t border-slate-200/60 dark:border-slate-800/60 flex items-center justify-between text-[10px]">
+                                <span className="font-mono text-violet-600 dark:text-violet-400 truncate max-w-[150px]">
+                                  {ind.cardLinkType === "custom"
+                                    ? (ind.cardCustomUrl || "Custom URL")
+                                    : ind.cardLinkType === "project"
+                                    ? `Live: ${ind.selectedProjectId || "First Project"}`
+                                    : `/portfolio/${ind.id}`}
+                                </span>
+                                <span className="text-slate-400 shrink-0">
+                                  {((ind.solutions?.length || 0) || (ind.projects?.length || 0)) > 2
+                                    ? `2 pills +${Math.max(0, ((ind.solutions?.length || 0) || (ind.projects?.length || 0)) - 2)}`
+                                    : "2 pills"}
+                                </span>
+                              </div>
                             </div>
                           </div>
                         </label>

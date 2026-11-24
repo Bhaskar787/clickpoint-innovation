@@ -5,7 +5,6 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   ArrowUpRight,
-  ExternalLink,
   Building2,
 } from "lucide-react";
 import { DEFAULT_LANDING_DATA } from "@/data/default-landing-data";
@@ -123,49 +122,98 @@ export default function IndustriesSection({ initialHeader, initialIndustries }: 
                     {ind.desc}
                   </p>
 
-                  {/* Featured Projects Preview Links */}
-                  {ind.projects && ind.projects.length > 0 && (
-                    <div className="mt-6 pt-4 border-t border-violet-100 dark:border-slate-800 space-y-2">
-                      <p className="text-label text-ink/40 dark:text-slate-400">
-                        Featured Case Studies & Live Work
-                      </p>
-                      {ind.projects.map((proj: any, projIdx: number) => (
-                        <div key={proj.id || projIdx} className="flex items-center justify-between text-fluid-xs py-1 gap-2">
-                          <span className="font-semibold text-ink/80 dark:text-slate-200 group-hover:text-ink dark:group-hover:text-white truncate">
-                            {proj.title}
-                          </span>
-                          {proj.impact && (
-                            <span className="text-fluid-2xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 shrink-0">
-                              {proj.impact}
+                  {/* Capability / Solution Pills (Image 2 Match: Clean subtle pills, 2 items + count, no green text) */}
+                  {(() => {
+                    const rawTags: string[] = (
+                      ind.cardTags && ind.cardTags.length > 0
+                        ? ind.cardTags
+                        : ind.solutions && ind.solutions.length > 0
+                        ? ind.solutions.map((s: any) => (typeof s === "string" ? s : s.title))
+                        : (ind.projects || []).map((p: any) => p.title)
+                    ).filter(Boolean);
+
+                    const displayTags = rawTags.slice(0, 2);
+                    const remainingCount = Math.max(0, rawTags.length - 2);
+
+                    if (displayTags.length === 0) return null;
+
+                    return (
+                      <div className="mt-5 space-y-2">
+                        {displayTags[0] && (
+                          <div>
+                            <span className="inline-flex items-center rounded-full border border-slate-200/90 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/60 px-3 py-1 text-xs font-medium text-slate-600 dark:text-slate-300 shadow-2xs">
+                              {displayTags[0]}
                             </span>
-                          )}
-                          {proj.liveUrl && (
-                            <a
-                              href={proj.liveUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-fluid-2xs font-semibold text-violet-600 dark:text-violet-300 hover:text-violet-800 dark:hover:text-violet-200 transition-colors shrink-0"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              Live <ExternalLink className="h-3 w-3 text-violet-600 dark:text-violet-300" />
-                            </a>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                          </div>
+                        )}
+                        {displayTags[1] && (
+                          <div className="flex items-center gap-2">
+                            <span className="inline-flex items-center rounded-full border border-slate-200/90 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/60 px-3 py-1 text-xs font-medium text-slate-600 dark:text-slate-300 shadow-2xs">
+                              {displayTags[1]}
+                            </span>
+                            {remainingCount > 0 && (
+                              <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
+                                +{remainingCount}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
 
-                {/* Bottom Action Link */}
-                <div className="mt-8 pt-4 border-t border-violet-100 dark:border-slate-800">
-                  <Link
-                    href={`/portfolio/${ind.id}`}
-                    className="inline-flex items-center gap-1.5 text-fluid-xs font-bold text-violet-600 dark:text-violet-300 hover:text-violet-800 dark:hover:text-violet-200 transition-colors group/link"
-                  >
-                    Explore Sector Solutions
-                    <ArrowUpRight className="h-4 w-4 text-violet-600 dark:text-violet-300 transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
-                  </Link>
-                </div>
+                {/* Bottom Action Link (Single Selective URL) */}
+                {(() => {
+                  let targetUrl = `/portfolio/${ind.id}`;
+                  let linkLabel = ind.cardCustomLabel || "Explore Sector Solutions";
+
+                  if (ind.cardLinkType === "custom" && ind.cardCustomUrl) {
+                    targetUrl = ind.cardCustomUrl;
+                  } else if (ind.cardLinkType === "project") {
+                    const selectedProj =
+                      ind.projects?.find(
+                        (p: any) => p.id === ind.selectedProjectId || p.title === ind.selectedProjectId
+                      ) || ind.projects?.find((p: any) => p.liveUrl);
+
+                    if (selectedProj?.liveUrl) {
+                      targetUrl = selectedProj.liveUrl;
+                      if (!ind.cardCustomLabel) {
+                        linkLabel = `View ${selectedProj.title || "Project"}`;
+                      }
+                    }
+                  } else if (ind.cardCustomUrl) {
+                    targetUrl = ind.cardCustomUrl;
+                  } else if (ind.href) {
+                    targetUrl = ind.href;
+                  }
+
+                  const isExternal = targetUrl.startsWith("http://") || targetUrl.startsWith("https://");
+
+                  return (
+                    <div className="mt-8 pt-4 border-t border-violet-100 dark:border-slate-800">
+                      {isExternal ? (
+                        <a
+                          href={targetUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-fluid-xs font-bold text-violet-600 dark:text-violet-300 hover:text-violet-800 dark:hover:text-violet-200 transition-colors group/link"
+                        >
+                          <span>{linkLabel}</span>
+                          <ArrowUpRight className="h-4 w-4 text-violet-600 dark:text-violet-300 transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
+                        </a>
+                      ) : (
+                        <Link
+                          href={targetUrl}
+                          className="inline-flex items-center gap-1.5 text-fluid-xs font-bold text-violet-600 dark:text-violet-300 hover:text-violet-800 dark:hover:text-violet-200 transition-colors group/link"
+                        >
+                          <span>{linkLabel}</span>
+                          <ArrowUpRight className="h-4 w-4 text-violet-600 dark:text-violet-300 transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
+                        </Link>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             </motion.div>
             );
