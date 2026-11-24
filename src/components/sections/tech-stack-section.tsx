@@ -123,43 +123,41 @@ export default function TechStackSection({
       ? techItems
       : techItems.filter((item) => item.category === activeCategory || item.category === activeCategory.toLowerCase());
 
-  return (
-    <section className="relative py-20 lg:py-28 overflow-hidden bg-white dark:bg-[#070814] text-slate-900 dark:text-slate-100 transition-colors duration-300 border-b border-slate-200/60 dark:border-slate-800/40">
-      
-      {/* Ambient Grid Background */}
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_60%_50%_at_0%_0%,rgba(124,58,237,0.08),transparent)]" />
+  if (!techItems || techItems.length < 8) return null;
 
+  return (
+    <section className="relative py-20 lg:py-28 overflow-hidden bg-white dark:bg-[#070814] text-slate-900 dark:text-slate-100 transition-colors duration-300 border-b border-slate-200/60 dark:border-white/[0.08]">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* LEFT-ALIGNED SECTION HEADER */}
         <div className="text-left max-w-3xl space-y-3">
-          <span className="text-[11px] font-extrabold uppercase tracking-widest text-violet-600 dark:text-violet-400">
+          <span className="section-badge text-violet-600 dark:text-violet-400">
             {techHeader.badge || "Tech Stack & Architecture"}
           </span>
 
-       <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.15]">
-  {techHeader.title || "Built with Modern"}{" "}
-  <span className="text-violet-600 dark:text-orange-500">
-    {techHeader.titleHighlight || "Battle-Tested Technologies"}
-  </span>
-</h2>
+          <h2 className="section-title text-ink dark:text-white">
+            {techHeader.title || "Built with Modern"}{" "}
+            <span className="text-violet-600 dark:text-[#f58220]">
+              {techHeader.titleHighlight || "Battle-Tested Technologies"}
+            </span>
+          </h2>
 
-          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 max-w-2xl font-medium pt-1">
+          <p className="section-subtitle">
             {techHeader.subtitle || "We leverage cutting-edge frameworks, cloud platforms, and AI SDKs to build enterprise-grade software."}
           </p>
         </div>
 
-        {/* LEFT-ALIGNED CATEGORY TABS SELECTOR */}
+        {/* LEFT-ALIGNED CATEGORY TABS SELECTOR (6px radius) */}
         <div className="mt-8 flex flex-wrap items-center justify-start gap-2 max-w-5xl">
           <button
             onClick={() => setActiveCategory("ALL")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-sm text-[13px] font-medium transition-all cursor-pointer ${
               activeCategory === "ALL" || activeCategory === "all"
-                ? "bg-violet-600 text-white shadow-md shadow-violet-600/20 scale-105"
-                : "bg-slate-100 dark:bg-slate-900/80 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-slate-200/80 dark:border-slate-800"
+                ? "bg-violet-600 text-white shadow-sm"
+                : "bg-slate-100 dark:bg-white/[0.06] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/[0.1] hover:text-slate-900 dark:hover:text-white border border-slate-200/80 dark:border-white/[0.08]"
             }`}
           >
-            <Layers className="h-4 w-4 shrink-0" />
+            <Layers className="h-3.5 w-3.5 shrink-0" />
             <span>All Technologies</span>
           </button>
 
@@ -167,10 +165,10 @@ export default function TechStackSection({
             <button
               key={cat.id || cat.name}
               onClick={() => setActiveCategory(cat.name)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-sm text-[13px] font-medium transition-all cursor-pointer ${
                 activeCategory === cat.name
-                  ? "bg-violet-600 text-white shadow-md shadow-violet-600/20 scale-105"
-                  : "bg-slate-100 dark:bg-slate-900/80 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-slate-200/80 dark:border-slate-800"
+                  ? "bg-violet-600 text-white shadow-sm"
+                  : "bg-slate-100 dark:bg-white/[0.06] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/[0.1] hover:text-slate-900 dark:hover:text-white border border-slate-200/80 dark:border-white/[0.08]"
               }`}
             >
               <span>{cat.name}</span>
@@ -178,8 +176,8 @@ export default function TechStackSection({
           ))}
         </div>
 
-        {/* DYNAMIC TECH STACK CARDS GRID */}
-        <motion.div layout className="mt-10 grid grid-cols-2 min-[480px]:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-5">
+        {/* DYNAMIC TECH STACK TILES (112px square, 6px radius, 16px gap, 32px logo, 14px name) */}
+        <motion.div layout className="mt-10 flex flex-wrap gap-4">
           <AnimatePresence mode="popLayout">
             {filteredTech.map((item) => {
               const BuiltinIcon = BUILTIN_ICONS[item.id] || BUILTIN_ICONS[item.name.toLowerCase().replace(/[^a-z0-9]+/g, "")];
@@ -188,39 +186,31 @@ export default function TechStackSection({
                 <motion.div
                   key={item.id || item.name}
                   layout
-                  initial={{ opacity: 0, scale: 0.9 }}
+                  initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.25 }}
-                  className="h-full"
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                  className="w-[112px] h-[112px] shrink-0"
                 >
-                  <div className="h-full group relative flex flex-col items-center justify-between rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-[#0c0e22] p-4 text-center shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-violet-500/50 hover:shadow-xl hover:shadow-violet-600/10">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-900/90 group-hover:bg-violet-50 dark:group-hover:bg-violet-950/50 transition-colors p-2 shrink-0">
-                    {item.iconUrl ? (
-                      <img src={item.iconUrl} alt={item.name} className="h-8 w-8 object-contain" />
-                    ) : BuiltinIcon ? (
-                      <BuiltinIcon className="h-8 w-8 text-slate-700 dark:text-slate-300 group-hover:scale-110 transition-transform" />
-                    ) : (
-                      <Code2 className="h-6 w-6 text-violet-600" />
-                    )}
-                  </div>
+                  <div
+                    title={`${item.name} (${item.category})`}
+                    className="group relative flex h-[112px] w-[112px] flex-col items-center justify-center rounded-sm border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#0c0e22] p-2 text-center shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 dark:hover:border-white/[0.16]"
+                  >
+                    <div className="flex h-8 w-8 items-center justify-center shrink-0">
+                      {item.iconUrl ? (
+                        <img src={item.iconUrl} alt={item.name} className="h-8 w-8 object-contain" />
+                      ) : BuiltinIcon ? (
+                        <BuiltinIcon className="h-8 w-8 text-slate-700 dark:text-slate-300 transition-transform group-hover:scale-105" />
+                      ) : (
+                        <Code2 className="h-6 w-6 text-violet-600" />
+                      )}
+                    </div>
 
-                  <div className="mt-3 w-full">
-                    <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white truncate">
+                    <h3 className="mt-2 text-[14px] font-semibold text-slate-900 dark:text-white truncate max-w-full px-1">
                       {item.name}
                     </h3>
-                    <p className="mt-1 text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-medium line-clamp-2 leading-tight">
-                      {item.tagline || item.description || item.category}
-                    </p>
                   </div>
-
-                  <div className="mt-3 w-full border-t border-slate-100 dark:border-slate-800/60 pt-2 flex items-center justify-center">
-                    <span className="text-[10px] font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/60 px-2 py-0.5 rounded-full border border-violet-100 dark:border-violet-800/50 truncate max-w-full">
-                      {item.category}
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
+                </motion.div>
               );
             })}
           </AnimatePresence>

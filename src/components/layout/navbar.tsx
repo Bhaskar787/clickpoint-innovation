@@ -102,14 +102,16 @@ function getCachedNavbarData() {
 
 interface NavbarProps {
   initialData?: any;
+  transparentOnTop?: boolean;
 }
 
-export default function Navbar({ initialData }: NavbarProps = {}) {
+export default function Navbar({ initialData, transparentOnTop }: NavbarProps = {}) {
   const { navbar: contextNavbar } = useSiteData();
   const effectiveInitial = initialData || contextNavbar;
 
   const pathname = usePathname();
   const isHomePage = pathname === "/";
+  const isAboutPage = pathname === "/about" || pathname?.startsWith("/about") || !!transparentOnTop;
   const scrolled = useScrollHeader(16);
   const { isOpen: mobileOpen, toggle: toggleMobile, close: closeMobile } = useMobileMenu();
   const [quickEnquiryOpen, setQuickEnquiryOpen] = useState(false);
@@ -180,27 +182,43 @@ export default function Navbar({ initialData }: NavbarProps = {}) {
   }, []);
 
   const [activeMegaMenu, setActiveMegaMenu] = useState<"services" | "industries" | "company" | null>(null);
+  const [isHeaderHovered, setIsHeaderHovered] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const openMenu = (menu: "services" | "industries" | "company") => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    setActiveMegaMenu(menu);
+  const cancelClose = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
   };
 
-  const closeMenuWithDelay = () => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+  const handleHeaderEnter = () => {
+    cancelClose();
+    setIsHeaderHovered(true);
+  };
+
+  const handleHeaderLeave = () => {
+    cancelClose();
     timeoutRef.current = setTimeout(() => {
+      setIsHeaderHovered(false);
       setActiveMegaMenu(null);
     }, 220);
   };
 
-  const cancelClose = () => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+  const openMenu = (menu: "services" | "industries" | "company") => {
+    cancelClose();
+    setIsHeaderHovered(true);
+    setActiveMegaMenu(menu);
+  };
+
+  const closeMenuWithDelay = () => {
+    handleHeaderLeave();
   };
 
   // Close mega menu on route change
   useEffect(() => {
     setActiveMegaMenu(null);
+    setIsHeaderHovered(false);
   }, [pathname]);
 
   // Close on Escape key
@@ -208,6 +226,7 @@ export default function Navbar({ initialData }: NavbarProps = {}) {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
         setActiveMegaMenu(null);
+        setIsHeaderHovered(false);
       }
     }
     window.addEventListener("keydown", handleKeyDown);
@@ -215,7 +234,8 @@ export default function Navbar({ initialData }: NavbarProps = {}) {
   }, []);
 
   const isMegaMenuOpen = activeMegaMenu !== null;
-  const isSolidHeader = !isHomePage || scrolled || isMegaMenuOpen;
+  const isSolid = scrolled || isMegaMenuOpen || isHeaderHovered;
+  const isTransparentMode = isAboutPage && !isSolid && !mobileOpen;
 
   const logo = navData.logo || DEFAULT_NAVBAR_DATA.logo;
   const titles = navData.menuTitles || DEFAULT_NAVBAR_DATA.menuTitles;
@@ -277,41 +297,44 @@ export default function Navbar({ initialData }: NavbarProps = {}) {
   return (
     <>
       <header
-        onMouseEnter={() => {
-          if (activeMegaMenu) cancelClose();
-        }}
+        onMouseEnter={handleHeaderEnter}
+        onMouseLeave={handleHeaderLeave}
         className={cn(
-          "fixed inset-x-0 top-0 z-[100] w-full py-3.5 backdrop-blur-xl",
-          isMegaMenuOpen
-            ? "bg-white dark:bg-[#0c1120] border-b-0 shadow-md"
-            : isSolidHeader
-            ? isHomePage
-              ? "bg-white/95 dark:bg-[#0c1120]/95 border-b-0 shadow-md transition-colors duration-200"
-              : "bg-white/95 dark:bg-[#0c1120]/95 border-b border-slate-200/80 dark:border-slate-800/80 shadow-xs transition-colors duration-200"
-            : "bg-transparent border-b-0 transition-colors duration-200"
+          "fixed inset-x-0 top-0 z-[100] w-full h-[72px] flex items-center transition-all duration-300 ease-in-out",
+          isSolid
+            ? "bg-white dark:bg-[#0c1120] shadow-md backdrop-blur-xl"
+            : "bg-transparent border-b-0 shadow-none",
+          scrolled && !isMegaMenuOpen
+            ? "border-b border-slate-200/60 dark:border-b-0 dark:border-transparent dark:shadow-none shadow-xs"
+            : "border-b-0 shadow-none"
         )}
       >
-        <div className="container mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8">
-          {/* Brand Logo */}
+        <div className="container mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 h-full">
+          {/* Brand Logo - Preserves authentic brand colors at all times */}
           <Link href="/" prefetch={true} className="flex items-center gap-2 group">
             {logo.logoUrl ? (
               <img
                 src={logo.logoUrl}
                 alt={logo.brandName || "Click Point Innovations"}
-                className="h-8 sm:h-9 w-auto group-hover:scale-105 transition-transform"
+                className="h-8 sm:h-9 w-auto group-hover:scale-105 transition-transform duration-200"
               />
             ) : (
-              <span className="font-poppins text-lg sm:text-xl font-extrabold text-ink dark:text-white">
+              <span
+                className={cn(
+                  "font-sans text-lg sm:text-xl font-bold",
+                  isTransparentMode ? "text-white" : "text-ink dark:text-white"
+                )}
+              >
                 {logo.brandName || "Click Point Innovations"}
               </span>
             )}
           </Link>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-1.5" aria-label="Main Navigation">
+          {/* Desktop Navigation Links (32px gap, 14px font-medium) */}
+          <nav className="hidden lg:flex items-center gap-8 h-full" aria-label="Main Navigation">
             {/* 1. Services Dropdown Trigger */}
             <div
-              className="relative"
+              className="relative h-full flex items-center"
               onMouseEnter={() => openMenu("services")}
               onMouseLeave={closeMenuWithDelay}
             >
@@ -322,17 +345,23 @@ export default function Navbar({ initialData }: NavbarProps = {}) {
                   setActiveMegaMenu((prev) => (prev === "services" ? null : "services"));
                 }}
                 className={cn(
-                  "flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-all cursor-pointer",
-                  activeMegaMenu === "services"
-                    ? "bg-violet-50 text-violet-700 dark:bg-[#1a2035] dark:text-[#a093f7] shadow-2xs"
-                    : "text-ink/80 dark:text-slate-200 hover:bg-violet-50 dark:hover:bg-[#1a2035] hover:text-violet-700 dark:hover:text-[#a093f7]"
+                  "flex items-center gap-1.5 rounded-sm px-2.5 py-1.5 text-[14px] font-medium transition-all cursor-pointer",
+                  isTransparentMode
+                    ? "text-white/90 hover:text-white hover:bg-white/10"
+                    : activeMegaMenu === "services"
+                    ? "bg-slate-100 text-violet-700 dark:bg-white/[0.08] dark:text-violet-300"
+                    : "text-ink/80 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/[0.06] hover:text-violet-700 dark:hover:text-white"
                 )}
               >
                 <span>{titles.services || "Services"}</span>
                 <ChevronDown
                   className={cn(
-                    "h-3.5 w-3.5 transition-transform duration-200 text-ink/70 dark:text-slate-400",
-                    activeMegaMenu === "services" && "rotate-180 text-violet-700 dark:text-[#a093f7]"
+                    "h-3.5 w-3.5 transition-transform duration-200",
+                    isTransparentMode
+                      ? "text-white/80"
+                      : activeMegaMenu === "services"
+                      ? "rotate-180 text-violet-700 dark:text-violet-300"
+                      : "text-ink/70 dark:text-slate-400"
                   )}
                 />
               </button>
@@ -340,7 +369,7 @@ export default function Navbar({ initialData }: NavbarProps = {}) {
 
             {/* 2. Portfolio / Industries Dropdown Trigger */}
             <div
-              className="relative"
+              className="relative h-full flex items-center"
               onMouseEnter={() => openMenu("industries")}
               onMouseLeave={closeMenuWithDelay}
             >
@@ -351,17 +380,23 @@ export default function Navbar({ initialData }: NavbarProps = {}) {
                   setActiveMegaMenu((prev) => (prev === "industries" ? null : "industries"));
                 }}
                 className={cn(
-                  "flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-all cursor-pointer",
-                  activeMegaMenu === "industries"
-                    ? "bg-violet-50 text-violet-700 dark:bg-[#1a2035] dark:text-[#a093f7] shadow-2xs"
-                    : "text-ink/80 dark:text-slate-200 hover:bg-violet-50 dark:hover:bg-[#1a2035] hover:text-violet-700 dark:hover:text-[#a093f7]"
+                  "flex items-center gap-1.5 rounded-sm px-2.5 py-1.5 text-[14px] font-medium transition-all cursor-pointer",
+                  isTransparentMode
+                    ? "text-white/90 hover:text-white hover:bg-white/10"
+                    : activeMegaMenu === "industries"
+                    ? "bg-slate-100 text-violet-700 dark:bg-white/[0.08] dark:text-violet-300"
+                    : "text-ink/80 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/[0.06] hover:text-violet-700 dark:hover:text-white"
                 )}
               >
                 <span>{titles.industries || "Portfolio"}</span>
                 <ChevronDown
                   className={cn(
-                    "h-3.5 w-3.5 transition-transform duration-200 text-ink/70 dark:text-slate-400",
-                    activeMegaMenu === "industries" && "rotate-180 text-violet-700 dark:text-[#a093f7]"
+                    "h-3.5 w-3.5 transition-transform duration-200",
+                    isTransparentMode
+                      ? "text-white/80"
+                      : activeMegaMenu === "industries"
+                      ? "rotate-180 text-violet-700 dark:text-violet-300"
+                      : "text-ink/70 dark:text-slate-400"
                   )}
                 />
               </button>
@@ -369,7 +404,7 @@ export default function Navbar({ initialData }: NavbarProps = {}) {
 
             {/* 3. Company Dropdown Trigger */}
             <div
-              className="relative"
+              className="relative h-full flex items-center"
               onMouseEnter={() => openMenu("company")}
               onMouseLeave={closeMenuWithDelay}
             >
@@ -380,67 +415,109 @@ export default function Navbar({ initialData }: NavbarProps = {}) {
                   setActiveMegaMenu((prev) => (prev === "company" ? null : "company"));
                 }}
                 className={cn(
-                  "flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-all cursor-pointer",
-                  activeMegaMenu === "company"
-                    ? "bg-violet-50 text-violet-700 dark:bg-[#1a2035] dark:text-[#a093f7] shadow-2xs"
-                    : "text-ink/80 dark:text-slate-200 hover:bg-violet-50 dark:hover:bg-[#1a2035] hover:text-violet-700 dark:hover:text-[#a093f7]"
+                  "flex items-center gap-1.5 rounded-sm px-2.5 py-1.5 text-[14px] font-medium transition-all cursor-pointer",
+                  isTransparentMode
+                    ? "text-white/90 hover:text-white hover:bg-white/10"
+                    : activeMegaMenu === "company"
+                    ? "bg-slate-100 text-violet-700 dark:bg-white/[0.08] dark:text-violet-300"
+                    : "text-ink/80 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/[0.06] hover:text-violet-700 dark:hover:text-white"
                 )}
               >
                 <span>{titles.company || "Company"}</span>
                 <ChevronDown
                   className={cn(
-                    "h-3.5 w-3.5 transition-transform duration-200 text-ink/70 dark:text-slate-400",
-                    activeMegaMenu === "company" && "rotate-180 text-violet-700 dark:text-[#a093f7]"
+                    "h-3.5 w-3.5 transition-transform duration-200",
+                    isTransparentMode
+                      ? "text-white/80"
+                      : activeMegaMenu === "company"
+                      ? "rotate-180 text-violet-700 dark:text-violet-300"
+                      : "text-ink/70 dark:text-slate-400"
                   )}
                 />
               </button>
             </div>
 
             {/* 4. Standalone Events Link */}
-            <Link
-              href={journeyHref}
-              prefetch={true}
-              onMouseEnter={closeMenuWithDelay}
-              className="flex items-center rounded-full px-4 py-2 text-sm font-semibold text-ink/80 dark:text-slate-200 hover:bg-violet-50 dark:hover:bg-[#1a2035] hover:text-violet-700 dark:hover:text-[#a093f7] transition-colors"
-            >
-              {titles.journey || "Events"}
-            </Link>
+            <div className="relative h-full flex items-center">
+              <Link
+                href={journeyHref}
+                prefetch={true}
+                onMouseEnter={() => {
+                  cancelClose();
+                  setActiveMegaMenu(null);
+                  setIsHeaderHovered(true);
+                }}
+                className={cn(
+                  "flex items-center rounded-sm px-2.5 py-1.5 text-[14px] font-medium transition-colors",
+                  isTransparentMode
+                    ? "text-white/90 hover:text-white hover:bg-white/10"
+                    : "text-ink/80 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/[0.06] hover:text-violet-700 dark:hover:text-white"
+                )}
+              >
+                {titles.journey || "Events"}
+              </Link>
+            </div>
 
             {/* 5. Standalone Contact Link */}
-            <Link
-              href={contactHref}
-              prefetch={true}
-              onMouseEnter={closeMenuWithDelay}
-              className="flex items-center rounded-full px-4 py-2 text-sm font-semibold text-ink/80 dark:text-slate-200 hover:bg-violet-50 dark:hover:bg-[#1a2035] hover:text-violet-700 dark:hover:text-[#a093f7] transition-colors"
-            >
-              {titles.contact || "Contact"}
-            </Link>
+            <div className="relative h-full flex items-center">
+              <Link
+                href={contactHref}
+                prefetch={true}
+                onMouseEnter={() => {
+                  cancelClose();
+                  setActiveMegaMenu(null);
+                  setIsHeaderHovered(true);
+                }}
+                className={cn(
+                  "flex items-center rounded-sm px-2.5 py-1.5 text-[14px] font-medium transition-colors",
+                  isTransparentMode
+                    ? "text-white/90 hover:text-white hover:bg-white/10"
+                    : "text-ink/80 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/[0.06] hover:text-violet-700 dark:hover:text-white"
+                )}
+              >
+                {titles.contact || "Contact"}
+              </Link>
+            </div>
           </nav>
 
           {/* Theme Toggle & Action Button */}
-          <div className="hidden lg:flex items-center gap-3">
-            <ThemeToggle />
+          <div className="hidden lg:flex items-center gap-4">
+            <ThemeToggle
+              className={cn(
+                "transition-all duration-300",
+                isTransparentMode && "bg-white/10 hover:bg-white/20 border-white/25 text-white"
+              )}
+            />
 
-            <Button
-              variant="primary"
-              size="sm"
+            <button
+              type="button"
               onClick={handleCtaClick}
-              className="shadow-md shadow-violet-600/25 font-bold cursor-pointer"
+              className={cn(
+                "h-10 px-4 rounded-sm text-[14px] font-semibold transition-all duration-300 shadow-xs cursor-pointer whitespace-nowrap",
+                isTransparentMode
+                  ? "border border-white/80 bg-transparent text-white hover:bg-white hover:text-slate-950"
+                  : "bg-violet-600 hover:bg-violet-700 text-white border border-transparent hover:shadow-md"
+              )}
             >
               {cta.buttonText || "Quick Enquiry"}
-            </Button>
+            </button>
           </div>
 
           {/* Mobile Toggle Button */}
           <button
-            className="lg:hidden flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50/80 dark:bg-slate-800/80 text-ink dark:text-amber-400 hover:bg-violet-100 dark:hover:bg-slate-700 border border-violet-100 dark:border-slate-700 transition-colors cursor-pointer"
+            className={cn(
+              "lg:hidden flex h-10 w-10 items-center justify-center rounded-sm transition-colors cursor-pointer",
+              isTransparentMode
+                ? "bg-white/10 text-white hover:bg-white/20 border border-white/25"
+                : "bg-slate-100 dark:bg-white/[0.06] text-ink dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-white/[0.1] border border-slate-200 dark:border-white/[0.08]"
+            )}
             onClick={toggleMobile}
             aria-label="Toggle menu"
           >
             {mobileOpen ? (
-              <X className="h-5 w-5 text-violet-700 dark:text-amber-400" />
+              <X className={cn("h-5 w-5", isTransparentMode ? "text-white" : "text-violet-700 dark:text-amber-400")} />
             ) : (
-              <Menu className="h-5 w-5 text-violet-700 dark:text-amber-400" />
+              <Menu className={cn("h-5 w-5", isTransparentMode ? "text-white" : "text-violet-700 dark:text-amber-400")} />
             )}
           </button>
         </div>
@@ -453,9 +530,9 @@ export default function Navbar({ initialData }: NavbarProps = {}) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.12, ease: "easeOut" }}
-              className="hidden lg:block absolute top-full left-0 right-0 w-full bg-white dark:bg-[#0c1120] border-b border-slate-200 dark:border-slate-800/80 shadow-2xl z-[95]"
-              onMouseEnter={cancelClose}
-              onMouseLeave={closeMenuWithDelay}
+              className="hidden lg:block absolute top-full left-0 right-0 w-full bg-white dark:bg-[#0c1120] border-b border-slate-200 dark:border-slate-800/80 shadow-xl shadow-slate-900/5 dark:shadow-2xl dark:shadow-black/60 z-[95] before:absolute before:-top-3 before:left-0 before:right-0 before:h-3 before:content-['']"
+              onMouseEnter={handleHeaderEnter}
+              onMouseLeave={handleHeaderLeave}
             >
               <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-3.5 sm:py-4">
                 {/* 1. SERVICES MEGA MENU CONTENT */}
@@ -516,7 +593,7 @@ export default function Navbar({ initialData }: NavbarProps = {}) {
                         })}
                       </div>
 
-                      {/* Right: Featured AI Acceleration Sprint Card (Fully Dynamic & Admin Configurable) */}
+                      {/* Right: Featured AI Acceleration Sprint Card (Original Dark Style) */}
                       <div className="rounded-xl bg-[#090d18] dark:bg-[#080c16] p-4 text-white border border-slate-800 shadow-xl flex flex-col justify-between relative overflow-hidden">
                         <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-violet-600/20 blur-3xl" />
                         <div className="pointer-events-none absolute -left-10 -bottom-10 h-28 w-28 rounded-full bg-[#a093f7]/15 blur-3xl" />
@@ -551,7 +628,7 @@ export default function Navbar({ initialData }: NavbarProps = {}) {
                             <Link
                               href={featuredCard.primaryBtnLink || "/contact"}
                               onClick={() => setActiveMegaMenu(null)}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-[11px] font-bold transition-all shadow-md shadow-violet-600/25 cursor-pointer whitespace-nowrap"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm bg-violet-600 hover:bg-violet-700 text-white text-[11px] font-semibold transition-all shadow-xs cursor-pointer whitespace-nowrap"
                             >
                               <span>{featuredCard.primaryBtnText || "Schedule Consultation"}</span>
                               <ArrowRight className="h-3 w-3" />
@@ -563,7 +640,7 @@ export default function Navbar({ initialData }: NavbarProps = {}) {
                                 setActiveMegaMenu(null);
                                 setQuickEnquiryOpen(true);
                               }}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-[11px] font-bold transition-all shadow-md shadow-violet-600/25 cursor-pointer whitespace-nowrap"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm bg-violet-600 hover:bg-violet-700 text-white text-[11px] font-semibold transition-all shadow-xs cursor-pointer whitespace-nowrap"
                             >
                               <span>{featuredCard.primaryBtnText || "Schedule Consultation"}</span>
                               <ArrowRight className="h-3 w-3" />
@@ -707,19 +784,13 @@ export default function Navbar({ initialData }: NavbarProps = {}) {
         </AnimatePresence>
       </header>
 
-      {/* Background Dimming Backdrop when Desktop Mega Menu is open */}
-      <AnimatePresence>
-        {activeMegaMenu && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.12 }}
-            className="hidden lg:block fixed inset-0 top-0 z-[90] bg-black/40"
-            onClick={() => setActiveMegaMenu(null)}
-          />
-        )}
-      </AnimatePresence>
+      {/* Click-away backdrop to close Desktop Mega Menu without any dark flashing veil */}
+      {activeMegaMenu && (
+        <div
+          className="hidden lg:block fixed inset-0 top-0 z-[90] bg-transparent"
+          onClick={() => setActiveMegaMenu(null)}
+        />
+      )}
 
       {/* IMPROVED RESPONSIVE MOBILE SIDEBAR DRAWER */}
       <AnimatePresence>
@@ -758,10 +829,10 @@ export default function Navbar({ initialData }: NavbarProps = {}) {
                   </Link>
 
                   <div className="flex items-center gap-1.5">
-                    <ThemeToggle size="sm" className="rounded-lg h-8 w-8" />
+                    <ThemeToggle size="sm" className="rounded-sm h-8 w-8" />
                     <button
                       onClick={closeMobile}
-                      className="p-2 rounded-lg bg-slate-100 dark:bg-[#1a2035] text-slate-500 hover:text-slate-900 dark:hover:text-[#a093f7] transition-colors"
+                      className="p-2 rounded-sm bg-slate-100 dark:bg-[#1a2035] text-slate-500 hover:text-slate-900 dark:hover:text-[#a093f7] transition-colors"
                       aria-label="Close menu"
                     >
                       <X className="h-4 w-4" />

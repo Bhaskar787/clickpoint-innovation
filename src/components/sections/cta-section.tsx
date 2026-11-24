@@ -70,24 +70,23 @@ export default function CtaSection({ initialData }: CtaSectionProps = {}) {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-          className="relative overflow-hidden rounded-[2.5rem] bg-slate-950 border border-slate-800 px-6 py-16 text-center sm:px-16 shadow-2xl"
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="relative overflow-hidden rounded-lg bg-slate-950 border border-white/[0.10] px-8 py-16 text-center shadow-lg"
         >
           {/* Ambient Glowing Spotlights */}
           <div className="pointer-events-none absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-violet-600/40 blur-[100px]" />
           <div className="pointer-events-none absolute -bottom-24 right-0 h-64 w-64 rounded-full bg-orange-500/30 blur-[100px]" />
 
-          <div className="relative z-10">
-            {/* Dynamic Pill Badge */}
+          <div className="relative z-10 max-w-[640px] mx-auto">
+            {/* Dynamic Badge */}
             {ctaData.badge && (
-              <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-violet-500/30 bg-violet-500/10 text-violet-300 text-xs font-bold mb-6">
-               
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xs border border-white/[0.10] bg-white/[0.04] text-violet-300 text-[12px] font-semibold uppercase tracking-[0.06em] mb-6">
                 <span>{ctaData.badge}</span>
               </div>
             )}
 
-            {/* Dynamic Main Title */}
-            <h2 className="mx-auto max-w-3xl text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">
+            {/* Main Title with Gradient Highlight */}
+            <h2 className="text-3xl sm:text-4xl lg:text-[40px] font-bold tracking-tight text-white leading-[1.2]">
               {ctaData.title || "Let's Build Your Next"}{" "}
               <span className="bg-gradient-to-r from-orange-400 via-amber-400 to-violet-400 bg-clip-text text-transparent">
                 {ctaData.titleHighlight || "Breakthrough Product"}
@@ -95,14 +94,14 @@ export default function CtaSection({ initialData }: CtaSectionProps = {}) {
             </h2>
 
             {/* Dynamic Subtitle */}
-            <p className="mx-auto mt-5 max-w-xl text-base sm:text-lg text-slate-300 font-medium leading-relaxed">
+            <p className="mt-4 text-[16px] sm:text-[18px] text-slate-300 font-normal leading-relaxed">
               {ctaData.subtitle || "Partner with our engineering team to design, build, and launch software systems that outperform."}
             </p>
 
-            {/* Dynamic Action Buttons */}
-            <div className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-4">
+            {/* Dynamic Action Buttons (44px height, 6px radius, 12px gap) */}
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
               <a href={ctaData.buttonLink || "/contact"} className="w-full sm:w-auto">
-                <Button size="lg" className="group w-full sm:w-auto bg-violet-600 hover:bg-violet-500 text-white font-bold px-7 py-3.5 rounded-xl shadow-lg shadow-violet-600/30 transition-all">
+                <Button size="default" className="group w-full sm:w-auto h-11 px-6 rounded-sm font-semibold shadow-sm transition-all">
                   <span>{ctaData.buttonText || "Schedule Technical Consultation"}</span>
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Button>
@@ -111,8 +110,8 @@ export default function CtaSection({ initialData }: CtaSectionProps = {}) {
               <a href={ctaData.secondaryButtonLink || "/case-studies"} className="w-full sm:w-auto">
                 <Button
                   variant="outline"
-                  size="lg"
-                  className="w-full sm:w-auto border-slate-700 text-slate-200 hover:bg-slate-900 hover:border-slate-600 font-semibold px-7 py-3.5 rounded-xl"
+                  size="default"
+                  className="w-full sm:w-auto h-11 px-6 rounded-sm font-semibold border-white/[0.18] text-slate-200 hover:bg-white/[0.06]"
                 >
                   <span>{ctaData.secondaryButtonText || "Explore Case Studies"}</span>
                 </Button>

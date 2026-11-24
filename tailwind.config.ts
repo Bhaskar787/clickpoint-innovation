@@ -10,8 +10,11 @@ const config: Config = {
   theme: {
     container: {
       center: true,
-      padding: "1.5rem",
-      screens: { "2xl": "1280px" },
+      padding: {
+        DEFAULT: "1.5rem",
+        lg: "2rem",
+      },
+      screens: { "2xl": "1200px" },
     },
     extend: {
       colors: {
@@ -54,26 +57,35 @@ const config: Config = {
         },
       },
       fontFamily: {
-        display: ["var(--font-display)", "sans-serif"],
-        body: ["var(--font-body)", "sans-serif"],
+        sans: ["var(--font-inter)", "Inter", "sans-serif"],
+        display: ["var(--font-inter)", "Inter", "sans-serif"],
+        body: ["var(--font-inter)", "Inter", "sans-serif"],
       },
       fontSize: {
-        "fluid-2xs": ["clamp(0.5625rem, 0.25vw + 0.4rem, 0.6875rem)", { lineHeight: "1.4" }],
-        "fluid-xs": ["clamp(0.625rem, 0.35vw + 0.35rem, 0.75rem)", { lineHeight: "1.4" }],
-        "fluid-sm": ["clamp(0.75rem, 0.4vw + 0.45rem, 0.875rem)", { lineHeight: "1.5" }],
-        "fluid-base": ["clamp(0.8125rem, 0.5vw + 0.5rem, 1rem)", { lineHeight: "1.6" }],
-        "fluid-lg": ["clamp(0.9375rem, 0.75vw + 0.5rem, 1.125rem)", { lineHeight: "1.6" }],
-        "fluid-xl": ["clamp(1rem, 1vw + 0.5rem, 1.25rem)", { lineHeight: "1.5" }],
-        "fluid-2xl": ["clamp(1.125rem, 1.5vw + 0.5rem, 1.5rem)", { lineHeight: "1.4" }],
-        "fluid-3xl": ["clamp(1.25rem, 2vw + 0.5rem, 1.875rem)", { lineHeight: "1.3" }],
-        "fluid-4xl": ["clamp(1.5rem, 2.5vw + 0.5rem, 2.25rem)", { lineHeight: "1.2" }],
-        "fluid-5xl": ["clamp(1.75rem, 3vw + 0.5rem, 3rem)", { lineHeight: "1.15" }],
-        "fluid-6xl": ["clamp(1.65rem, 4vw + 0.5rem, 3.75rem)", { lineHeight: "1.1" }],
-        "fluid-stat": ["clamp(1.25rem, 3vw + 0.5rem, 3rem)", { lineHeight: "1.1" }],
+        "fluid-2xs": ["clamp(0.6875rem, 0.2vw + 0.65rem, 0.75rem)", { lineHeight: "1.4" }], // 11-12px
+        "fluid-xs": ["clamp(0.75rem, 0.25vw + 0.7rem, 0.8125rem)", { lineHeight: "1.4" }], // 12-13px
+        "fluid-sm": ["clamp(0.875rem, 0.25vw + 0.8rem, 0.9375rem)", { lineHeight: "1.5" }], // 14-15px
+        "fluid-base": ["clamp(0.9375rem, 0.35vw + 0.85rem, 1rem)", { lineHeight: "1.6" }], // 15-16px
+        "fluid-lg": ["clamp(1rem, 0.5vw + 0.9rem, 1.125rem)", { lineHeight: "1.6" }], // 16-18px
+        "fluid-xl": ["clamp(1.125rem, 0.75vw + 0.95rem, 1.25rem)", { lineHeight: "1.4" }], // 18-20px
+        "fluid-2xl": ["clamp(1.25rem, 1vw + 1rem, 1.5rem)", { lineHeight: "1.3" }], // 20-24px
+        "fluid-3xl": ["clamp(1.375rem, 1.5vw + 1rem, 1.625rem)", { lineHeight: "1.3" }], // 22-26px
+        "fluid-4xl": ["clamp(1.75rem, 2vw + 1.2rem, 2.5rem)", { lineHeight: "1.2" }], // 28-40px
+        "fluid-5xl": ["clamp(1.75rem, 2.5vw + 1.25rem, 2.625rem)", { lineHeight: "1.2" }], // 28-42px
+        "fluid-6xl": ["clamp(2.25rem, 3.5vw + 1.5rem, 3.5rem)", { lineHeight: "1.1" }], // 36-56px
+        "fluid-stat": ["40px", { lineHeight: "1.1" }],
       },
       borderRadius: {
-        xl: "1.25rem",
-        "2xl": "1.75rem",
+        xs: "4px",
+        sm: "6px",
+        md: "8px",
+        lg: "12px",
+        full: "9999px",
+      },
+      boxShadow: {
+        sm: "0 1px 2px rgba(0, 0, 0, 0.3)",
+        md: "0 8px 24px rgba(0, 0, 0, 0.25)",
+        lg: "0 24px 60px rgba(0, 0, 0, 0.35)",
       },
       keyframes: {
         "accordion-down": {

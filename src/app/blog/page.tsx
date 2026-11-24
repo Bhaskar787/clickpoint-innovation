@@ -133,7 +133,7 @@ export default function BlogListingPage() {
                 {hero.badge && (
                   <div
                     suppressHydrationWarning
-                    className="mb-3 inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-violet-50 dark:bg-slate-800 px-3.5 py-1 text-xs font-bold uppercase tracking-widest text-violet-700 dark:text-violet-300"
+                    className="mb-3 inline-flex items-center gap-2 rounded-xs border border-violet-200/80 dark:border-white/[0.08] bg-violet-50/80 dark:bg-white/[0.04] px-3 py-1 text-[12px] font-semibold uppercase tracking-[0.06em] text-violet-700 dark:text-violet-300"
                   >
                     <Newspaper className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
                     <span>{hero.badge}</span>
@@ -161,9 +161,9 @@ export default function BlogListingPage() {
                       setSearchQuery(e.target.value);
                       setCurrentPage(1);
                     }}
-                    className="w-full rounded-2xl border border-violet-200 dark:border-slate-700 bg-white dark:bg-slate-800/80 py-3.5 pl-11 pr-4 text-sm font-medium text-ink dark:text-white placeholder:text-ink/40 dark:placeholder:text-slate-400 shadow-sm transition-all focus:border-violet-600 focus:outline-hidden focus:ring-2 focus:ring-violet-600/20"
+                    className="w-full rounded-sm border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#131c31] py-3 pl-11 pr-4 text-sm font-normal text-ink dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 shadow-xs transition-all focus:border-violet-600 focus:outline-hidden focus:ring-1 focus:ring-violet-600/30"
                   />
-                  <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ink/40 dark:text-slate-400" />
+                  <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                 </div>
               </>
             )}
@@ -186,10 +186,10 @@ export default function BlogListingPage() {
                     setActiveCategory(cat);
                     setCurrentPage(1);
                   }}
-                  className={`rounded-full px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
+                  className={`rounded-xs px-3.5 py-1.5 text-xs font-semibold transition-all cursor-pointer border ${
                     isActive
-                      ? "bg-violet-600 text-white shadow-md shadow-violet-600/20"
-                      : "bg-cloud-100 dark:bg-slate-800 text-ink/70 dark:text-slate-300 hover:bg-violet-50 dark:hover:bg-slate-700"
+                      ? "bg-violet-600 text-white border-violet-600 shadow-xs"
+                      : "bg-white dark:bg-[#131c31] text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-white/[0.08] hover:border-slate-300 dark:hover:border-white/[0.16]"
                   }`}
                 >
                   {cat === "ALL" ? "All Stories" : cat}
@@ -207,7 +207,7 @@ export default function BlogListingPage() {
             <>
               {/* FEATURED HEADLINE LEAD ARTICLE */}
               {featuredPost && currentPage === 1 && (
-                <div className="mb-16 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131c31] overflow-hidden shadow-lg grid grid-cols-1 lg:grid-cols-12 gap-0">
+                <div className="mb-16 rounded-lg border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#131c31] overflow-hidden shadow-md grid grid-cols-1 lg:grid-cols-12 gap-0">
                   <div className="lg:col-span-7 relative h-72 lg:h-auto min-h-[340px] bg-slate-900 overflow-hidden">
                     <img
                       src={featuredPost.imageUrl || "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80"}
@@ -215,7 +215,7 @@ export default function BlogListingPage() {
                       className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
                     />
                     <div className="absolute top-4 left-4">
-                      <span className="rounded-full bg-violet-600 text-white px-3.5 py-1 text-xs font-extrabold uppercase tracking-wider shadow-md">
+                      <span className="rounded-xs bg-violet-600 text-white px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider shadow-xs">
                         Featured Lead Story
                       </span>
                     </div>
@@ -268,7 +268,7 @@ export default function BlogListingPage() {
                     className="h-full"
                   >
                     <article
-                      className="h-full group relative flex flex-col justify-between rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131c31] overflow-hidden shadow-xs transition-all duration-300 hover:-translate-y-1.5 hover:border-violet-300 hover:shadow-2xl hover:shadow-violet-500/10"
+                      className="h-full group relative flex flex-col justify-between rounded-md border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#131c31] overflow-hidden shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 dark:hover:border-white/[0.16] hover:shadow-md"
                     >
                     <div>
                       {/* Image Thumbnail */}
@@ -278,8 +278,8 @@ export default function BlogListingPage() {
                           alt={post.title}
                           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                         />
-                        <div className="absolute top-4 left-4">
-                          <span className="rounded-full bg-slate-950/80 px-3 py-1 text-[11px] font-bold text-white backdrop-blur-md border border-white/10 uppercase">
+                        <div className="absolute top-3.5 left-3.5">
+                          <span className="rounded-xs bg-slate-950/80 px-2.5 py-0.5 text-[10px] font-semibold text-white backdrop-blur-md border border-white/10 uppercase">
                             {post.category}
                           </span>
                         </div>
@@ -335,7 +335,7 @@ export default function BlogListingPage() {
                   <button
                     disabled={currentPage === 1}
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 text-ink dark:text-white disabled:opacity-30 hover:border-violet-600 transition-colors cursor-pointer"
+                    className="flex h-9 w-9 items-center justify-center rounded-sm border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#131c31] text-ink dark:text-white disabled:opacity-30 hover:border-violet-600 transition-colors cursor-pointer shadow-xs"
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </button>
@@ -347,7 +347,7 @@ export default function BlogListingPage() {
                   <button
                     disabled={currentPage === totalPages}
                     onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                    className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 text-ink dark:text-white disabled:opacity-30 hover:border-violet-600 transition-colors cursor-pointer"
+                    className="flex h-9 w-9 items-center justify-center rounded-sm border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#131c31] text-ink dark:text-white disabled:opacity-30 hover:border-violet-600 transition-colors cursor-pointer shadow-xs"
                   >
                     <ChevronRight className="h-4 w-4" />
                   </button>

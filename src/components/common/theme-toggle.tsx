@@ -39,7 +39,7 @@ export function ThemeToggle({
     return (
       <div
         className={cn(
-          "rounded-full shrink-0 flex items-center justify-center border border-transparent opacity-0 pointer-events-none",
+          "rounded-sm shrink-0 flex items-center justify-center border border-transparent opacity-0 pointer-events-none",
           sizeClasses,
           className
         )}
@@ -65,8 +65,8 @@ export function ThemeToggle({
     if (btnRef.current) {
       gsap.fromTo(
         btnRef.current,
-        { scale: 0.88 },
-        { scale: 1, duration: 0.6, ease: "elastic.out(1.2, 0.4)" }
+        { scale: 0.92 },
+        { scale: 1, duration: 0.5, ease: "back.out(2)" }
       );
     }
 
@@ -74,12 +74,12 @@ export function ThemeToggle({
     if (iconRef.current) {
       gsap.fromTo(
         iconRef.current,
-        { rotate: isDark ? -180 : 180, scale: 0.4, opacity: 0 },
+        { rotate: isDark ? -180 : 180, scale: 0.5, opacity: 0 },
         {
           rotate: 0,
           scale: 1,
           opacity: 1,
-          duration: 0.65,
+          duration: 0.55,
           ease: "back.out(1.8)",
         }
       );
@@ -97,23 +97,23 @@ export function ThemeToggle({
       aria-label={isDark ? "Switch to light mode" : "Switch to night mode"}
       title={isDark ? "Switch to Light Mode" : "Switch to Night Mode"}
       className={cn(
-        "relative flex items-center justify-center rounded-full shrink-0 cursor-pointer overflow-hidden",
-        "bg-violet-50 dark:bg-slate-800 text-ink dark:text-amber-400",
-        "hover:bg-violet-100 dark:hover:bg-slate-700",
-        "border border-violet-100 dark:border-slate-700",
-        "transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/40",
+        "relative flex items-center justify-center rounded-sm shrink-0 cursor-pointer overflow-hidden transition-all duration-200",
+        "bg-slate-100 hover:bg-slate-200/80 dark:bg-white/[0.06] dark:hover:bg-white/[0.10]",
+        "border border-slate-200/80 dark:border-white/[0.10]",
+        "text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white",
+        "shadow-2xs focus:outline-none focus-visible:ring-1 focus-visible:ring-violet-500/50",
         sizeClasses,
         className
       )}
     >
       <span
         ref={iconRef}
-        className="inline-flex items-center justify-center pointer-events-none select-none"
+        className="inline-flex items-center justify-center pointer-events-none select-none transition-transform"
       >
         {isDark ? (
-          <Sun className={cn(iconSizes, "text-[#f58220]", iconClassName)} />
+          <Sun className={cn(iconSizes, "text-amber-400 fill-amber-400/20", iconClassName)} />
         ) : (
-          <Moon className={cn(iconSizes, "text-violet-700", iconClassName)} />
+          <Moon className={cn(iconSizes, "text-slate-700 dark:text-slate-200", iconClassName)} />
         )}
       </span>
     </button>

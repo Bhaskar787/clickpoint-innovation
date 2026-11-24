@@ -97,7 +97,7 @@ export default function TestimonialsSection({ initialHeader, initialTestimonials
           <div className="flex flex-wrap items-center gap-3 shrink-0">
             <button
               onClick={() => setIsModalOpen(true)}
-              className="inline-flex items-center gap-2 rounded-full bg-violet-600 hover:bg-violet-700 text-white px-5 py-2.5 text-fluid-sm font-bold shadow-lg shadow-violet-600/25 transition-all hover:scale-105 cursor-pointer"
+              className="inline-flex items-center gap-2 rounded-sm bg-violet-600 hover:bg-violet-700 active:bg-violet-800 text-white px-5 py-2.5 text-xs font-semibold shadow-xs transition-all cursor-pointer"
             >
               <MessageSquarePlus className="h-4 w-4" />
               <span>{headerContent.reviewModalButtonText || "Give Review / Feedback"}</span>
@@ -105,7 +105,7 @@ export default function TestimonialsSection({ initialHeader, initialTestimonials
 
             <Link
               href="/testimonials"
-              className="inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-white dark:bg-slate-800 px-5 py-2.5 text-fluid-sm font-bold text-violet-600 dark:text-violet-300 transition-all hover:bg-violet-600 hover:text-white hover:shadow-lg hover:shadow-violet-600/25"
+              className="inline-flex items-center gap-2 rounded-sm border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#131c31] px-5 py-2.5 text-xs font-semibold text-violet-600 dark:text-violet-300 hover:border-violet-600 transition-all shadow-xs"
             >
               <span>{headerContent.ctaButtonText || "Explore All Testimonials"}</span>
               <ArrowRight className="h-4 w-4" />
@@ -115,7 +115,7 @@ export default function TestimonialsSection({ initialHeader, initialTestimonials
 
         {/* Dynamic Rating Stats & Trust Metrics Bar */}
         {metrics.length > 0 && (
-          <div className="mb-14 grid grid-cols-1 sm:grid-cols-3 gap-4 border-y border-violet-200/60 dark:border-slate-800 py-6 bg-white/40 dark:bg-slate-900/40 rounded-2xl backdrop-blur-xs">
+          <div className="mb-14 grid grid-cols-1 sm:grid-cols-3 gap-4 border border-slate-200/80 dark:border-white/[0.08] py-6 bg-white/40 dark:bg-slate-900/40 rounded-md backdrop-blur-xs shadow-xs">
             {metrics.map((m, idx) => (
               <div key={idx} className="text-center px-4">
                 <p className="stat-number text-violet-600 dark:text-violet-400">
@@ -130,57 +130,57 @@ export default function TestimonialsSection({ initialHeader, initialTestimonials
         )}
 
         {/* Testimonials 3-Column Grid */}
-        <div className="grid gap-8 md:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-3">
           {displayItems.map((item, idx) => (
             <motion.div
               key={item.id}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: idx * 0.06, duration: 0.4, ease: "easeOut" }}
+              transition={{ delay: idx * 0.05, duration: 0.35, ease: "easeOut" }}
               className="h-full"
             >
-              <div className="h-full group flex flex-col justify-between rounded-3xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-7 shadow-md transition-all duration-300 hover:border-violet-300 dark:hover:border-slate-700 hover:shadow-xl hover:shadow-violet-500/10 hover:-translate-y-1.5">
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-1 text-amber-500">
-                    {Array.from({ length: item.rating || 5 }).map((_, i) => (
-                      <Star key={i} className="h-4 w-4 fill-current" />
-                    ))}
-                  </div>
-                  <span className="rounded-full bg-violet-50 dark:bg-slate-800 px-2.5 py-0.5 text-fluid-2xs font-bold text-violet-600 dark:text-violet-300 border border-violet-100 dark:border-slate-700">
-                    Verified Review
-                  </span>
-                </div>
-
-                <Quote className="h-8 w-8 text-violet-200 dark:text-slate-700 mb-2" />
-
-                <p className="card-body text-ink/80 dark:text-slate-300 font-medium italic">
-                  "{item.content}"
-                </p>
-              </div>
-
-              <div className="mt-6 pt-5 border-t border-violet-100 dark:border-slate-800 flex items-center gap-3">
-                <div className="relative shrink-0 h-10 w-10 rounded-xl overflow-hidden bg-gradient-to-tr from-violet-600 to-indigo-800 text-white font-bold text-fluid-xs flex items-center justify-center shadow-xs">
-                  {item.avatarUrl ? (
-                    <Image src={item.avatarUrl} alt={item.clientName} fill className="object-cover" />
-                  ) : (
-                    <span>{getInitials(item.clientName)}</span>
-                  )}
-                </div>
-
+              <div className="h-full group flex flex-col justify-between rounded-md border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#131c31] p-6 shadow-sm transition-all duration-200 hover:border-slate-300 dark:hover:border-white/[0.16] hover:-translate-y-0.5">
                 <div>
-                  <h4 className="font-display text-fluid-sm font-bold text-ink dark:text-white flex items-center gap-1">
-                    {item.clientName}
-                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-                  </h4>
-                  <p className="text-fluid-2xs font-semibold text-violet-600 dark:text-violet-300">
-                    {item.clientRole}, {item.company}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-1 text-amber-500">
+                      {Array.from({ length: item.rating || 5 }).map((_, i) => (
+                        <Star key={i} className="h-3.5 w-3.5 fill-current" />
+                      ))}
+                    </div>
+                    <span className="rounded-xs bg-violet-50 dark:bg-white/[0.04] px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-violet-600 dark:text-violet-300 border border-violet-100 dark:border-white/[0.08]">
+                      Verified Review
+                    </span>
+                  </div>
+
+                  <Quote className="h-6 w-6 text-violet-300 dark:text-slate-600 mb-3" />
+
+                  <p className="text-[16px] text-ink/80 dark:text-slate-300 font-normal leading-relaxed">
+                    "{item.content}"
                   </p>
                 </div>
+
+                <div className="mt-6 pt-4 border-t border-slate-100 dark:border-white/[0.08] flex items-center gap-3">
+                  <div className="relative shrink-0 h-10 w-10 rounded-full overflow-hidden bg-slate-800 text-white font-semibold text-xs flex items-center justify-center">
+                    {item.avatarUrl ? (
+                      <Image src={item.avatarUrl} alt={item.clientName} fill className="object-cover" />
+                    ) : (
+                      <span>{getInitials(item.clientName)}</span>
+                    )}
+                  </div>
+
+                  <div>
+                    <h4 className="text-[15px] font-semibold text-ink dark:text-white flex items-center gap-1">
+                      {item.clientName}
+                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                    </h4>
+                    <p className="text-[14px] text-slate-500 dark:text-slate-400 font-normal">
+                      {item.clientRole}, {item.company}
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
           ))}
         </div>
 

@@ -165,15 +165,15 @@ export default function QuickEnquiryModal({ isOpen, onClose }: QuickEnquiryModal
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.94, y: 20 }}
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="relative w-full max-w-4xl overflow-hidden rounded-3xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] shadow-2xl z-10 my-6"
+            className="relative w-full max-w-4xl overflow-hidden rounded-lg border border-slate-200/80 dark:border-white/[0.12] bg-white dark:bg-[#131c31] shadow-2xl z-10 my-6"
           >
             {/* Close X Button */}
             <button
               onClick={handleResetAndClose}
-              className="absolute right-4 top-4 z-30 flex h-9 w-9 items-center justify-center rounded-full bg-cloud-100 dark:bg-slate-800 text-ink/70 dark:text-slate-200 hover:bg-violet-100 dark:hover:bg-slate-700 hover:text-violet-700 dark:hover:text-white transition-colors shadow-xs border border-violet-100 dark:border-slate-700"
+              className="absolute right-4 top-4 z-30 flex h-8 w-8 items-center justify-center rounded-sm bg-cloud-100 dark:bg-slate-800 text-ink/70 dark:text-slate-200 hover:bg-violet-100 dark:hover:bg-slate-700 hover:text-violet-700 dark:hover:text-white transition-colors shadow-xs border border-violet-100 dark:border-slate-700 cursor-pointer"
               aria-label="Close modal"
             >
-              <X className="h-5 w-5" />
+              <X className="h-4 w-4" />
             </button>
 
             {!submitted ? (
@@ -197,7 +197,7 @@ export default function QuickEnquiryModal({ isOpen, onClose }: QuickEnquiryModal
                           value={name}
                           onChange={(e) => setName(e.target.value)}
                           placeholder="Name *"
-                          className="w-full rounded-xl border border-violet-200 dark:border-slate-700 bg-cloud-100/50 dark:bg-slate-800/80 p-3 text-xs font-medium text-ink dark:text-white placeholder:text-ink/40 dark:placeholder:text-slate-400 focus:border-violet-600 focus:outline-hidden focus:ring-2 focus:ring-violet-600/20"
+                          className="w-full rounded-sm border border-violet-200 dark:border-slate-700 bg-cloud-100/50 dark:bg-slate-800/80 p-3 text-xs font-medium text-ink dark:text-white placeholder:text-ink/40 dark:placeholder:text-slate-400 focus:border-violet-600 focus:outline-hidden focus:ring-2 focus:ring-violet-600/20"
                         />
                       </div>
                       <div>
@@ -207,14 +207,14 @@ export default function QuickEnquiryModal({ isOpen, onClose }: QuickEnquiryModal
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           placeholder="Email *"
-                          className="w-full rounded-xl border border-violet-200 dark:border-slate-700 bg-cloud-100/50 dark:bg-slate-800/80 p-3 text-xs font-medium text-ink dark:text-white placeholder:text-ink/40 dark:placeholder:text-slate-400 focus:border-violet-600 focus:outline-hidden focus:ring-2 focus:ring-violet-600/20"
+                          className="w-full rounded-sm border border-violet-200 dark:border-slate-700 bg-cloud-100/50 dark:bg-slate-800/80 p-3 text-xs font-medium text-ink dark:text-white placeholder:text-ink/40 dark:placeholder:text-slate-400 focus:border-violet-600 focus:outline-hidden focus:ring-2 focus:ring-violet-600/20"
                         />
                       </div>
                     </div>
 
                     <div className="grid gap-3.5 sm:grid-cols-2">
                       {/* Phone with Country Code Badge */}
-                      <div className="flex items-center rounded-xl border border-violet-200 dark:border-slate-700 bg-cloud-100/50 dark:bg-slate-800/80 overflow-hidden focus-within:border-violet-600 focus-within:ring-2 focus-within:ring-violet-600/20">
+                      <div className="flex items-center rounded-sm border border-violet-200 dark:border-slate-700 bg-cloud-100/50 dark:bg-slate-800/80 overflow-hidden focus-within:border-violet-600 focus-within:ring-2 focus-within:ring-violet-600/20">
                         <span className="bg-violet-50 dark:bg-slate-700 px-2.5 py-3 text-xs font-bold text-violet-700 dark:text-violet-300 border-r border-violet-200 dark:border-slate-600 shrink-0">
                           {modalConfig?.countryCode || "+977"}
                         </span>
@@ -232,7 +232,7 @@ export default function QuickEnquiryModal({ isOpen, onClose }: QuickEnquiryModal
                         <select
                           value={selectedService}
                           onChange={(e) => setSelectedService(e.target.value)}
-                          className="w-full appearance-none rounded-xl border border-violet-200 dark:border-slate-700 bg-cloud-100/50 dark:bg-slate-800/80 p-3 pr-8 text-xs font-medium text-ink dark:text-white focus:border-violet-600 focus:outline-hidden focus:ring-2 focus:ring-violet-600/20 cursor-pointer"
+                          className="w-full appearance-none rounded-sm border border-violet-200 dark:border-slate-700 bg-cloud-100/50 dark:bg-slate-800/80 p-3 pr-8 text-xs font-medium text-ink dark:text-white focus:border-violet-600 focus:outline-hidden focus:ring-2 focus:ring-violet-600/20 cursor-pointer"
                         >
                           <option value="" className="dark:bg-slate-800 dark:text-slate-400">
                             {modalConfig?.selectServicePlaceholder || "--- Select Service ---"}
@@ -253,14 +253,14 @@ export default function QuickEnquiryModal({ isOpen, onClose }: QuickEnquiryModal
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         placeholder="Write a Message *"
-                        className="w-full rounded-xl border border-violet-200 dark:border-slate-700 bg-cloud-100/50 dark:bg-slate-800/80 p-3 text-xs font-medium text-ink dark:text-white placeholder:text-ink/40 dark:placeholder:text-slate-400 focus:border-violet-600 focus:outline-hidden focus:ring-2 focus:ring-violet-600/20"
+                        className="w-full rounded-sm border border-violet-200 dark:border-slate-700 bg-cloud-100/50 dark:bg-slate-800/80 p-3 text-xs font-medium text-ink dark:text-white placeholder:text-ink/40 dark:placeholder:text-slate-400 focus:border-violet-600 focus:outline-hidden focus:ring-2 focus:ring-violet-600/20"
                       />
                     </div>
 
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#1b4397] via-[#2153b8] to-[#1b4397] px-6 py-3.5 text-xs font-bold text-white shadow-lg shadow-[#1b4397]/30 hover:shadow-xl hover:shadow-[#1b4397]/40 transition-all hover:scale-[1.01] disabled:opacity-50 cursor-pointer"
+                      className="w-full inline-flex items-center justify-center gap-2 rounded-sm bg-gradient-to-r from-[#1b4397] via-[#2153b8] to-[#1b4397] px-6 py-3 text-xs font-semibold text-white shadow-xs transition-all disabled:opacity-50 cursor-pointer"
                     >
                       {isSubmitting ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -288,7 +288,7 @@ export default function QuickEnquiryModal({ isOpen, onClose }: QuickEnquiryModal
                     <div className="mt-8 space-y-6">
                       {/* Phone */}
                       <div className="flex items-start gap-3.5">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#f58220]/20 text-[#f58220] border border-[#f58220]/30 backdrop-blur-md">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-[#f58220]/20 text-[#f58220] border border-[#f58220]/30 backdrop-blur-md">
                           <Phone className="h-5 w-5" />
                         </div>
                         <div>
@@ -301,7 +301,7 @@ export default function QuickEnquiryModal({ isOpen, onClose }: QuickEnquiryModal
 
                       {/* Email */}
                       <div className="flex items-start gap-3.5">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#f58220]/20 text-[#f58220] border border-[#f58220]/30 backdrop-blur-md">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-[#f58220]/20 text-[#f58220] border border-[#f58220]/30 backdrop-blur-md">
                           <Mail className="h-5 w-5" />
                         </div>
                         <div>
@@ -314,7 +314,7 @@ export default function QuickEnquiryModal({ isOpen, onClose }: QuickEnquiryModal
 
                       {/* Office Address */}
                       <div className="flex items-start gap-3.5">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#f58220]/20 text-[#f58220] border border-[#f58220]/30 backdrop-blur-md">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-[#f58220]/20 text-[#f58220] border border-[#f58220]/30 backdrop-blur-md">
                           <MapPin className="h-5 w-5" />
                         </div>
                         <div>

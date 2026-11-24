@@ -171,7 +171,7 @@ export default function JourneyClientView({ initialContent }: JourneyClientViewP
 
           {/* CENTER-ALIGNED HERO CONTENT */}
           <div className="mx-auto max-w-4xl text-center space-y-4">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-violet-50 dark:bg-violet-950/60 border border-violet-200 dark:border-violet-800/60 text-violet-600 dark:text-violet-300 text-xs font-extrabold uppercase tracking-widest shadow-xs">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xs bg-violet-50 dark:bg-white/[0.04] border border-violet-200/80 dark:border-white/[0.08] text-violet-600 dark:text-violet-300 text-[12px] font-semibold uppercase tracking-[0.06em]">
               <Milestone className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
               <span>{hero.badge || "Our Journey & Milestones"}</span>
             </div>
@@ -200,13 +200,13 @@ export default function JourneyClientView({ initialContent }: JourneyClientViewP
 
             {/* Metrics Counter Bar */}
             {metricsBar && metricsBar.length > 0 && (
-              <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-2xl bg-white/70 dark:bg-[#131c31]/80 backdrop-blur-md border border-violet-100 dark:border-slate-800 shadow-lg">
+              <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4 p-5 rounded-md bg-white/70 dark:bg-[#131c31]/80 backdrop-blur-md border border-slate-200/80 dark:border-white/[0.08] shadow-sm">
                 {metricsBar.map((mb, idx) => (
                   <div key={idx} className="text-center p-2">
                     <p className="font-display text-2xl sm:text-3xl font-extrabold text-violet-600 dark:text-violet-400">
                       {mb.value}
                     </p>
-                    <p className="text-xs font-bold text-ink dark:text-white mt-0.5">{mb.label}</p>
+                    <p className="text-xs font-semibold text-ink dark:text-white mt-1">{mb.label}</p>
                     {mb.sublabel && (
                       <p className="text-[10px] text-ink/60 dark:text-slate-400 font-medium">{mb.sublabel}</p>
                     )}
@@ -274,42 +274,40 @@ export default function JourneyClientView({ initialContent }: JourneyClientViewP
                       )}
                     </div>
 
-                    {/* RIGHT COLUMN: HIGH-RES ERA PHOTO CARD */}
+                    {/* RIGHT COLUMN: CLEAN ERA PHOTO FRAME (12px Radius, 1px Border, Shadow MD) */}
                     <div className="lg:col-span-5">
-                      <div className="relative overflow-hidden rounded-[28px] sm:rounded-[36px] border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-3 sm:p-4 shadow-xl shadow-violet-950/5">
-                        <div className="relative h-[340px] sm:h-[400px] w-full overflow-hidden rounded-2xl sm:rounded-[24px]">
-                          <Image
-                            src={activeEra.imageUrl}
-                            alt={activeEra.title}
-                            fill
-                            sizes="(max-width: 1024px) 100vw, 42vw"
-                            priority
-                            className="object-cover object-center"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
-                          
-                          {/* Top-Left Floating Badge */}
-                          <div className="absolute top-4 left-4 z-10">
-                            <span className="font-poppins rounded-full bg-violet-600/90 text-white px-3.5 py-1 text-xs font-bold backdrop-blur-md shadow-xs">
-                              {activeEra.displayYear} Era
-                            </span>
-                          </div>
-
-                          {/* Bottom Caption Overlay */}
-                          {activeEra.quoteText && (
-                            <div className="absolute bottom-4 left-4 right-4 z-10 rounded-2xl bg-[#0c1020]/90 text-white p-4 sm:p-5 backdrop-blur-md border border-white/10 shadow-lg">
-                              <Quote className="h-4 w-4 text-violet-400 mb-1.5" />
-                              <p className="font-poppins italic text-xs sm:text-sm text-slate-200 leading-relaxed">
-                                "{activeEra.quoteText}"
-                              </p>
-                              {activeEra.quoteAuthor && (
-                                <p className="font-poppins text-[10px] sm:text-xs font-bold uppercase tracking-wider text-violet-400 mt-2 block">
-                                  — {activeEra.quoteAuthor}
-                                </p>
-                              )}
-                            </div>
-                          )}
+                      <div className="relative aspect-[4/3] sm:h-[400px] w-full overflow-hidden rounded-lg border border-slate-200/80 dark:border-white/[0.10] bg-slate-950 shadow-md group">
+                        <Image
+                          src={activeEra.imageUrl}
+                          alt={activeEra.title}
+                          fill
+                          sizes="(max-width: 1024px) 100vw, 42vw"
+                          priority
+                          className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
+                        
+                        {/* Top-Left Floating Badge */}
+                        <div className="absolute top-3.5 left-3.5 z-10">
+                          <span className="rounded-xs bg-violet-600/90 text-white px-2.5 py-1 text-[11px] font-semibold backdrop-blur-md shadow-xs">
+                            {activeEra.displayYear} Era
+                          </span>
                         </div>
+
+                        {/* Bottom Caption Overlay */}
+                        {activeEra.quoteText && (
+                          <div className="absolute bottom-3.5 left-3.5 right-3.5 z-10 rounded-md bg-[#0c1020]/90 text-white p-3.5 sm:p-4 backdrop-blur-md border border-white/10 shadow-sm">
+                            <Quote className="h-3.5 w-3.5 text-violet-400 mb-1" />
+                            <p className="italic text-xs text-slate-200 leading-relaxed">
+                              "{activeEra.quoteText}"
+                            </p>
+                            {activeEra.quoteAuthor && (
+                              <p className="text-[10px] font-semibold uppercase tracking-wider text-violet-400 mt-1.5 block">
+                                — {activeEra.quoteAuthor}
+                              </p>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </motion.div>
@@ -335,7 +333,7 @@ export default function JourneyClientView({ initialContent }: JourneyClientViewP
                     onClick={() => setActiveEraIndex((prev) => Math.max(0, prev - 1))}
                     disabled={activeEraIndex === 0}
                     aria-label="Previous Era"
-                    className="p-1.5 sm:px-2.5 sm:py-1 rounded-lg border border-violet-200 dark:border-slate-800 bg-white dark:bg-[#131c31] text-slate-600 dark:text-slate-300 hover:text-violet-600 hover:border-violet-400 dark:hover:text-violet-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center gap-1 font-poppins text-xs font-semibold"
+                    className="p-1.5 sm:px-2.5 sm:py-1 rounded-sm border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#131c31] text-slate-600 dark:text-slate-300 hover:text-violet-600 hover:border-violet-400 dark:hover:text-violet-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center gap-1 font-poppins text-xs font-semibold shadow-xs"
                   >
                     <ChevronLeft className="h-4 w-4" />
                     <span className="hidden sm:inline">Prev</span>
@@ -345,7 +343,7 @@ export default function JourneyClientView({ initialContent }: JourneyClientViewP
                     onClick={() => setActiveEraIndex((prev) => Math.min(eras.length - 1, prev + 1))}
                     disabled={activeEraIndex === eras.length - 1}
                     aria-label="Next Era"
-                    className="p-1.5 sm:px-2.5 sm:py-1 rounded-lg border border-violet-200 dark:border-slate-800 bg-white dark:bg-[#131c31] text-slate-600 dark:text-slate-300 hover:text-violet-600 hover:border-violet-400 dark:hover:text-violet-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center gap-1 font-poppins text-xs font-semibold"
+                    className="p-1.5 sm:px-2.5 sm:py-1 rounded-sm border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#131c31] text-slate-600 dark:text-slate-300 hover:text-violet-600 hover:border-violet-400 dark:hover:text-violet-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer flex items-center gap-1 font-poppins text-xs font-semibold shadow-xs"
                   >
                     <span className="hidden sm:inline">Next</span>
                     <ChevronRight className="h-4 w-4" />
@@ -500,7 +498,7 @@ export default function JourneyClientView({ initialContent }: JourneyClientViewP
                       id={`event-card-${event.id}`}
                       key={event.id}
                       onClick={(e) => handleOpenEvent(e, event)}
-                      className="group relative cursor-pointer overflow-hidden rounded-[4px] bg-white dark:bg-[#131c31] border border-slate-200/80 dark:border-slate-800 shadow-xs hover:border-violet-300 dark:hover:border-slate-700 transition-all flex flex-col justify-between"
+                      className="group relative cursor-pointer overflow-hidden rounded-md bg-white dark:bg-[#131c31] border border-slate-200/80 dark:border-white/[0.08] shadow-sm hover:border-slate-300 dark:hover:border-white/[0.16] hover:-translate-y-0.5 transition-all flex flex-col justify-between"
                     >
                       {/* Cover Photo Frame with subtle hover zoom only on image */}
                       <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-950">
@@ -513,7 +511,7 @@ export default function JourneyClientView({ initialContent }: JourneyClientViewP
 
                         {/* Photo Count Badge (Bottom-Left, Broadway Infosys Reference Style) */}
                         <div className="absolute bottom-2.5 left-2.5 z-10">
-                          <span className="inline-flex items-center gap-1 rounded-[3px] bg-black/75 backdrop-blur-md px-2 py-0.5 text-[11px] font-bold text-white border border-white/10 shadow-xs">
+                          <span className="inline-flex items-center gap-1 rounded-xs bg-black/75 backdrop-blur-md px-2 py-0.5 text-[11px] font-semibold text-white border border-white/10 shadow-xs">
                             <Camera className="h-3 w-3 text-amber-400" />
                             <span>{photos.length} Photos</span>
                           </span>
@@ -522,7 +520,7 @@ export default function JourneyClientView({ initialContent }: JourneyClientViewP
                         {/* Key Metric Badge (Top-Right if present) */}
                         {event.keyMetric && (
                           <div className="absolute top-2.5 right-2.5 z-10">
-                            <span className="rounded-[3px] bg-amber-500/95 text-slate-950 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide backdrop-blur-md">
+                            <span className="rounded-xs bg-amber-500/95 text-slate-950 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide backdrop-blur-md">
                               {event.keyMetric}
                             </span>
                           </div>
@@ -584,7 +582,7 @@ export default function JourneyClientView({ initialContent }: JourneyClientViewP
                 stiffness: 280,
                 mass: 0.85,
               }}
-              className="relative w-[95vw] max-w-6xl h-[88vh] max-h-[820px] bg-slate-950 rounded-[4px] border border-slate-700/80 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col md:flex-row my-auto"
+              className="relative w-[95vw] max-w-6xl h-[88vh] max-h-[820px] bg-slate-950 rounded-lg border border-slate-700/80 dark:border-white/[0.12] shadow-2xl overflow-hidden flex flex-col md:flex-row my-auto"
               onClick={(e) => e.stopPropagation()}
             >
               {(() => {
@@ -616,7 +614,7 @@ export default function JourneyClientView({ initialContent }: JourneyClientViewP
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0.4 }}
                             transition={{ duration: 0.2 }}
-                            className="max-h-full max-w-full object-contain rounded-[4px] drop-shadow-2xl"
+                            className="max-h-full max-w-full object-contain rounded-xs drop-shadow-2xl"
                           />
                         </AnimatePresence>
                       </div>
@@ -625,7 +623,7 @@ export default function JourneyClientView({ initialContent }: JourneyClientViewP
                       <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-slate-950 via-slate-950/70 to-transparent p-4 sm:p-6 text-left pointer-events-none">
                         <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                           {activeEventModal.keyMetric && (
-                            <span className="inline-block px-2 py-0.5 rounded-[3px] text-[9px] font-black uppercase tracking-wider bg-amber-500 text-slate-950 shadow-xs">
+                            <span className="inline-block px-2 py-0.5 rounded-xs text-[9px] font-semibold uppercase tracking-wider bg-amber-500 text-slate-950 shadow-xs">
                               {activeEventModal.keyMetric}
                             </span>
                           )}
@@ -674,7 +672,7 @@ export default function JourneyClientView({ initialContent }: JourneyClientViewP
                         <button
                           onClick={handleCloseEvent}
                           aria-label="Close modal"
-                          className="absolute top-4 sm:top-5 right-4 sm:right-5 flex h-8 w-8 items-center justify-center rounded-[4px] bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
+                          className="absolute top-4 sm:top-5 right-4 sm:right-5 flex h-8 w-8 items-center justify-center rounded-sm bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
                         >
                           <X className="h-4 w-4" />
                         </button>
@@ -707,9 +705,9 @@ export default function JourneyClientView({ initialContent }: JourneyClientViewP
                                 type="button"
                                 onClick={() => setActivePhotoIndex(pIdx)}
                                 title={`View image ${pIdx + 1}`}
-                                className={`group/thumb relative aspect-[4/3] overflow-hidden rounded-[4px] border transition-all text-left cursor-pointer ${
+                                className={`group/thumb relative aspect-[4/3] overflow-hidden rounded-xs border transition-all text-left cursor-pointer ${
                                   isCurrent
-                                    ? "border-2 border-blue-600 ring-2 ring-blue-500/30 scale-[1.01]"
+                                    ? "border-2 border-violet-600 ring-2 ring-violet-500/30 scale-[1.01]"
                                     : "border-slate-200 dark:border-slate-700/80 opacity-80 hover:opacity-100 hover:border-slate-400"
                                 }`}
                               >
@@ -771,7 +769,7 @@ export default function JourneyClientView({ initialContent }: JourneyClientViewP
 
                         <button
                           onClick={handleCloseEvent}
-                          className="px-5 py-2 text-xs font-bold rounded-[4px] border border-slate-200 dark:border-slate-700 bg-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors shadow-2xs cursor-pointer"
+                          className="px-5 py-2 text-xs font-semibold rounded-sm border border-slate-200 dark:border-slate-700 bg-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors shadow-2xs cursor-pointer"
                         >
                           Close
                         </button>
@@ -805,11 +803,11 @@ export default function JourneyClientView({ initialContent }: JourneyClientViewP
             {(content.ethosSection?.pillars || DEFAULT_JOURNEY_PAGE_DATA.ethosSection?.pillars || []).map((pillar, idx) => {
               const EthosIcon = [Zap, Code2, Users, Bot][idx % 4] || Zap;
               return (
-                <div key={pillar.id || idx} className="rounded-3xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-7 shadow-md">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-50 dark:bg-slate-800 text-violet-600 dark:text-violet-300 mb-5 border border-violet-100 dark:border-slate-700">
-                    <EthosIcon className="h-6 w-6" />
+                <div key={pillar.id || idx} className="rounded-md border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#131c31] p-6 shadow-xs">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-sm bg-violet-50 dark:bg-white/[0.04] text-violet-600 dark:text-violet-300 mb-5 border border-violet-100 dark:border-white/[0.08]">
+                    <EthosIcon className="h-5 w-5" />
                   </div>
-                  <h3 className="font-display text-xl font-bold text-ink dark:text-white">{pillar.title}</h3>
+                  <h3 className="font-display text-lg font-bold text-ink dark:text-white">{pillar.title}</h3>
                   <p className="mt-2 text-xs leading-relaxed text-ink/70 dark:text-slate-300">
                     {pillar.description}
                   </p>

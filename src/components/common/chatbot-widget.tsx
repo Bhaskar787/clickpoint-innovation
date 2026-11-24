@@ -584,11 +584,10 @@ export function ChatbotWidget({ initialData }: ChatbotWidgetProps = {}) {
         onClick={toggleOpen}
         aria-label={open ? "Close chat" : "Open chat"}
         className={cn(
-          "fixed bottom-5 right-5 z-[70] flex h-14 w-14 items-center justify-center rounded-full",
-          "bg-violet-600 text-white shadow-xl shadow-violet-600/30",
-          "hover:bg-violet-700 active:scale-95 transition-all duration-300",
-          "dark:bg-violet-600 dark:hover:bg-violet-500",
-          "sm:h-16 sm:w-16"
+          "fixed bottom-6 right-6 z-[70] flex h-14 w-14 items-center justify-center rounded-full",
+          "bg-violet-600 text-white shadow-md",
+          "hover:bg-violet-700 active:scale-95 transition-all duration-200",
+          "dark:bg-violet-600 dark:hover:bg-violet-500 cursor-pointer"
         )}
       >
         <AnimatePresence mode="wait" initial={false}>

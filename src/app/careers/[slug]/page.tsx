@@ -10,6 +10,7 @@ import {
   Clock,
   Send,
   CheckCircle2,
+  ChevronRight,
   ArrowLeft,
   Loader2,
   Share2,
@@ -233,11 +234,11 @@ export default function CareerDetailPage() {
             <Link href="/" className="hover:text-slate-900 dark:hover:text-white transition-colors">
               Home
             </Link>
-            <span>/</span>
+            <ChevronRight className="h-3.5 w-3.5 text-slate-400 dark:text-slate-600 shrink-0" />
             <Link href="/careers" className="hover:text-slate-900 dark:hover:text-white transition-colors">
               Careers
             </Link>
-            <span>/</span>
+            <ChevronRight className="h-3.5 w-3.5 text-slate-400 dark:text-slate-600 shrink-0" />
             <span className="font-semibold text-slate-900 dark:text-white truncate max-w-[200px] sm:max-w-md">
               {job.title}
             </span>
@@ -247,7 +248,7 @@ export default function CareerDetailPage() {
             <button
               type="button"
               onClick={handleShare}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131c31] text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm border border-slate-200 dark:border-white/[0.12] bg-white dark:bg-[#131c31] text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/[0.04] transition-colors cursor-pointer"
             >
               <Share2 className="h-3.5 w-3.5" />
               <span>Share</span>
@@ -263,7 +264,7 @@ export default function CareerDetailPage() {
         </div>
 
         {/* TOP JOB HEADER CARD */}
-        <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131c31] p-6 sm:p-8 shadow-xs">
+        <div className="rounded-md border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#131c31] p-6 sm:p-8 shadow-xs">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div className="space-y-3 min-w-0 flex-1">
               {/* Company Subtext */}
@@ -296,17 +297,17 @@ export default function CareerDetailPage() {
 
               {/* Tag Pills */}
               <div className="flex flex-wrap items-center gap-2 pt-1">
-                <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                <span className="px-2.5 py-0.5 rounded-xs text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                   {job.type || "Full Time"}
                 </span>
-                <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                <span className="px-2.5 py-0.5 rounded-xs text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                   {job.experience || "Mid Level"}
                 </span>
-                <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                <span className="px-2.5 py-0.5 rounded-xs text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                   {job.category?.name || "Engineering"}
                 </span>
                 {job.featured && (
-                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-800">
+                  <span className="px-2.5 py-0.5 rounded-xs text-[11px] font-semibold bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-800">
                     Featured Priority
                   </span>
                 )}
@@ -318,9 +319,9 @@ export default function CareerDetailPage() {
               <button
                 type="button"
                 onClick={() => setIsApplyModalOpen(true)}
-                className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-violet-600 hover:bg-violet-700 active:bg-violet-800 text-white font-extrabold text-sm uppercase tracking-wide transition-all shadow-md shadow-violet-600/20 flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full sm:w-auto px-6 py-2.5 rounded-sm bg-violet-600 hover:bg-violet-700 active:bg-violet-800 text-white font-semibold text-xs uppercase tracking-wide transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
               >
-                <Send className="h-4 w-4" />
+                <Send className="h-3.5 w-3.5" />
                 <span>Apply Now</span>
               </button>
             </div>
@@ -335,7 +336,7 @@ export default function CareerDetailPage() {
             {getJobSections(job).map((section, idx) => (
               <div
                 key={section.id || idx}
-                className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131c31] p-6 sm:p-8 space-y-4 shadow-xs"
+                className="rounded-md border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#131c31] p-6 sm:p-8 space-y-4 shadow-xs"
               >
                 <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
                   {section.title}
@@ -366,7 +367,7 @@ export default function CareerDetailPage() {
             ))}
 
             {/* 4. HOW TO APPLY SECTION */}
-            <div className="rounded-3xl border border-violet-100 dark:border-slate-800 bg-violet-50/40 dark:bg-slate-900/40 p-6 sm:p-8 space-y-4 shadow-xs">
+            <div className="rounded-md border border-slate-200/80 dark:border-white/[0.08] bg-violet-50/40 dark:bg-slate-900/40 p-6 sm:p-8 space-y-4 shadow-xs">
               <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
                 How to apply?
               </h2>
@@ -378,9 +379,9 @@ export default function CareerDetailPage() {
                 <button
                   type="button"
                   onClick={() => setIsApplyModalOpen(true)}
-                  className="px-8 py-3.5 rounded-xl bg-violet-600 hover:bg-violet-700 active:bg-violet-800 text-white font-extrabold text-sm uppercase tracking-wide transition-all shadow-md shadow-violet-600/20 inline-flex items-center gap-2 cursor-pointer"
+                  className="px-6 py-2.5 rounded-sm bg-violet-600 hover:bg-violet-700 active:bg-violet-800 text-white font-semibold text-xs uppercase tracking-wide transition-all shadow-xs inline-flex items-center gap-2 cursor-pointer"
                 >
-                  <Send className="h-4 w-4" />
+                  <Send className="h-3.5 w-3.5" />
                   <span>Apply Now</span>
                 </button>
               </div>
@@ -390,7 +391,7 @@ export default function CareerDetailPage() {
           {/* RIGHT COLUMN: STICKY SIDEBAR (4 COLS) */}
           <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-24">
             {/* JOB OVERVIEW CARD */}
-            <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131c31] p-6 space-y-4 shadow-xs">
+            <div className="rounded-md border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#131c31] p-6 space-y-4 shadow-xs">
               <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white pb-3 border-b border-slate-100 dark:border-slate-800">
                 Job Overview
               </h3>
@@ -446,7 +447,7 @@ export default function CareerDetailPage() {
 
               {/* Note / Disclaimer Box */}
               <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed bg-slate-50 dark:bg-slate-900/40 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed bg-slate-50 dark:bg-slate-900/40 p-3 rounded-xs border border-slate-100 dark:border-slate-800">
                   <strong>Note:</strong> Due to the high volume of applications, only shortlisted
                   candidates will be contacted via email or phone. If you do not hear from us within 30
                   days of applying, please consider the application not shortlisted at this time. We

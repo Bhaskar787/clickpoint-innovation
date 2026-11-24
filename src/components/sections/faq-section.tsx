@@ -215,10 +215,10 @@ export default function FaqSection({
                 >
                   <div
                     ref={(el) => { cardRefs.current[i] = el; }}
-                    className={`relative rounded-xl border transition-[border-color,box-shadow,background-color] duration-200 ${
+                    className={`relative rounded-sm border transition-[border-color,box-shadow,background-color] duration-200 ${
                       isOpen
-                        ? "border-violet-400 dark:border-violet-500 bg-white dark:bg-[#131c31] shadow-xl shadow-violet-950/10"
-                        : "border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] shadow-xs hover:border-violet-300 dark:hover:border-slate-700"
+                        ? "border-violet-500 dark:border-violet-400 bg-white dark:bg-[#131c31] shadow-sm"
+                        : "border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#131c31] hover:border-slate-300 dark:hover:border-white/[0.16]"
                     }`}
                     style={{
                       transform: `translateY(${liftY}px) scale(${scale})`,
@@ -228,7 +228,7 @@ export default function FaqSection({
                     {dim > 0 && (
                       <div
                         aria-hidden
-                        className="absolute inset-0 rounded-xl bg-slate-900 pointer-events-none transition-opacity duration-300"
+                        className="absolute inset-0 rounded-sm bg-slate-900 pointer-events-none transition-opacity duration-300"
                         style={{ opacity: dim }}
                       />
                     )}
@@ -243,10 +243,10 @@ export default function FaqSection({
                           setOpenIndex(i);
                         }
                       }}
-                      className={`w-full flex items-center justify-between p-5 ${isOpen ? "pb-2.5" : ""} text-left font-display text-fluid-base font-bold text-ink dark:text-white hover:text-violet-600 dark:hover:text-violet-300 transition-colors cursor-pointer`}
+                      className={`w-full flex items-center justify-between p-5 ${isOpen ? "pb-2.5" : ""} text-left font-sans text-[16px] font-semibold text-ink dark:text-white hover:text-violet-600 dark:hover:text-violet-300 transition-colors cursor-pointer`}
                     >
                       <div className="flex items-center gap-3 pr-2">
-                        <span className="rounded-full bg-violet-100 dark:bg-slate-800 px-2.5 py-0.5 text-fluid-2xs font-bold text-violet-700 dark:text-violet-300 shrink-0 border border-violet-200 dark:border-slate-700">
+                        <span className="rounded-xs bg-violet-100 dark:bg-white/[0.06] px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-violet-700 dark:text-violet-300 shrink-0 border border-violet-200 dark:border-white/[0.08]">
                           {faq.category}
                         </span>
                         <span className="text-ink dark:text-white">{faq.question}</span>
@@ -264,7 +264,7 @@ export default function FaqSection({
                       }`}
                     >
                       <div className="overflow-hidden">
-                        <div className="px-5 pb-5 pt-0 card-body text-ink/75 dark:text-slate-300">
+                        <div className="px-5 pb-5 pt-0 text-[14px] text-ink/75 dark:text-slate-300 leading-relaxed">
                           {faq.answer}
                         </div>
                       </div>
@@ -278,36 +278,36 @@ export default function FaqSection({
             <div aria-hidden style={{ height: `${faqsList.length * STACK_OFFSET + 30}px` }} />
           </div>
 
-          {/* Right Column: Sticky Guidance Box */}
+          {/* Right Column: Sticky Guidance Box (8px radius, 24px padding) */}
           <aside className="sticky top-28 self-start">
-            <div className="rounded-3xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-6 shadow-md space-y-5">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-600 text-white shadow-md shadow-violet-600/30">
+            <div className="rounded-md border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#131c31] p-6 shadow-sm space-y-5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-violet-600 text-white shadow-sm">
                 <MessageSquare className="h-5 w-5" />
               </div>
 
               <div>
-                <h3 className="font-display text-fluid-lg font-bold text-ink dark:text-white">Need personal guidance?</h3>
-                <p className="mt-1 card-body text-ink/70 dark:text-slate-300">
+                <h3 className="text-[18px] font-semibold text-ink dark:text-white">Need personal guidance?</h3>
+                <p className="mt-1 text-[14px] text-ink/70 dark:text-slate-300 leading-relaxed">
                   Our principal engineering architects are ready to evaluate your software architecture and project scope.
                 </p>
               </div>
 
-              <div className="pt-4 border-t border-violet-100 dark:border-slate-800 space-y-2 text-fluid-xs">
-                <a href={telHref} className="flex items-center gap-2 font-bold text-ink dark:text-white hover:text-violet-600 dark:hover:text-violet-300 transition-colors">
+              <div className="pt-4 border-t border-slate-100 dark:border-white/[0.08] space-y-2 text-[13px]">
+                <a href={telHref} className="flex items-center gap-2 font-semibold text-ink dark:text-white hover:text-violet-600 dark:hover:text-violet-300 transition-colors">
                   <Phone className="h-3.5 w-3.5 text-violet-600" />
                   <span>{phone}</span>
                 </a>
-                <p className="text-label text-ink/50">
+                <p className="text-[12px] text-ink/50 dark:text-slate-400">
                   {phoneSubtext}
                 </p>
               </div>
 
               <button
                 onClick={() => setQuickEnquiryOpen(true)}
-                className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-violet-600 px-4 py-3 text-fluid-xs font-bold text-white shadow-md shadow-violet-600/25 hover:bg-violet-700 transition-colors"
+                className="w-full inline-flex items-center justify-center gap-2 rounded-sm bg-violet-600 h-11 px-4 text-[14px] font-semibold text-white shadow-sm hover:bg-violet-700 transition-colors cursor-pointer"
               >
                 <span>Submit Quick Enquiry</span>
-                <ArrowRight className="h-3.5 w-3.5" />
+                <ArrowRight className="h-4 w-4" />
               </button>
             </div>
           </aside>

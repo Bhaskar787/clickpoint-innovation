@@ -3,25 +3,25 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-semibold transition-all duration-300 disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 cursor-pointer",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-[14px] font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 cursor-pointer",
   {
     variants: {
       variant: {
         default:
-          "bg-violet-600 text-white hover:bg-violet-700 shadow-lg shadow-violet-600/20 dark:bg-violet-600 dark:text-white dark:hover:bg-violet-500 dark:shadow-violet-600/30",
+          "bg-violet-600 text-white hover:bg-violet-700 shadow-sm dark:bg-violet-600 dark:text-white dark:hover:bg-violet-500",
         primary:
-          "bg-gradient-to-r from-violet-600 to-violet-500 text-white hover:from-violet-700 hover:to-violet-600 shadow-lg shadow-violet-500/25 dark:from-violet-600 dark:to-violet-500 dark:text-white",
+          "bg-violet-600 text-white hover:bg-violet-700 shadow-sm dark:bg-violet-600 dark:text-white dark:hover:bg-violet-500",
         ember:
-          "bg-[#f58220] text-white hover:bg-[#e07318] shadow-lg shadow-amber-500/25 dark:bg-[#f58220] dark:text-white dark:hover:bg-[#e07318]",
+          "bg-[#f58220] text-white hover:bg-[#e07318] shadow-sm dark:bg-[#f58220] dark:text-white dark:hover:bg-[#e07318]",
         outline:
-          "border border-slate-300 text-slate-800 bg-transparent hover:bg-violet-50 hover:text-violet-700 hover:border-violet-300 dark:border-slate-700 dark:text-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 dark:hover:text-white dark:hover:border-slate-600",
+          "border border-slate-300 dark:border-white/[0.18] text-slate-800 dark:text-slate-200 bg-transparent hover:bg-slate-100/80 dark:hover:bg-white/[0.06] hover:text-slate-900 dark:hover:text-white",
         ghost:
-          "text-slate-800 hover:bg-violet-50 hover:text-violet-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-white",
+          "text-slate-800 dark:text-slate-200 hover:bg-slate-100/80 dark:hover:bg-white/[0.06] hover:text-slate-900 dark:hover:text-white",
       },
       size: {
-        default: "h-11 px-6",
-        sm: "h-9 px-4 text-xs",
-        lg: "h-14 px-8 text-base",
+        default: "h-11 px-5 text-[14px]",
+        sm: "h-10 px-4 text-[14px]",
+        lg: "h-[46px] px-6 text-[15px]",
       },
     },
     defaultVariants: { variant: "default", size: "default" },

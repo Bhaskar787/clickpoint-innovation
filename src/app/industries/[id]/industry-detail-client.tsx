@@ -8,6 +8,7 @@ import {
   ArrowRight,
   Building2,
   CheckCircle2,
+  ChevronRight,
   ExternalLink,
   ShieldCheck,
   Layers,
@@ -40,9 +41,9 @@ export default function IndustryDetailClient({ industry }: IndustryDetailClientP
           {/* Breadcrumb Navigation */}
           <div className="mb-8 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
             <Link href="/" className="hover:text-violet-600 dark:hover:text-white transition-colors">Home</Link>
-            <span>/</span>
+            <ChevronRight className="h-3.5 w-3.5 text-slate-400 dark:text-slate-600 shrink-0" />
             <Link href="/portfolio" className="hover:text-violet-600 dark:hover:text-white transition-colors">Portfolio</Link>
-            <span>/</span>
+            <ChevronRight className="h-3.5 w-3.5 text-slate-400 dark:text-slate-600 shrink-0" />
             <span className="font-semibold text-violet-600 dark:text-violet-400">{industry.title}</span>
           </div>
 
@@ -50,7 +51,7 @@ export default function IndustryDetailClient({ industry }: IndustryDetailClientP
             
             {/* Left Column: Title & Description */}
             <div className="space-y-6">
-              <div className="inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-violet-50/80 dark:bg-slate-800/80 px-4 py-1.5 text-xs font-bold text-violet-700 dark:text-violet-300 backdrop-blur-md">
+              <div className="inline-flex items-center gap-2 rounded-xs border border-violet-200/80 dark:border-white/[0.08] bg-violet-50/80 dark:bg-white/[0.04] px-3 py-1 text-[12px] font-semibold text-violet-700 dark:text-violet-300">
                 <IndustryIcon
                   icon={industry.icon}
                   iconName={industry.iconName}
@@ -68,10 +69,10 @@ export default function IndustryDetailClient({ industry }: IndustryDetailClientP
                 {industry.desc}
               </p>
 
-              <div className="flex flex-wrap items-center gap-4 pt-2">
+              <div className="flex flex-wrap items-center gap-3 pt-2">
                 <Link
                   href="/contact"
-                  className="inline-flex items-center gap-2 rounded-xl bg-violet-600 hover:bg-violet-700 px-6 py-3 text-xs font-extrabold text-white shadow-lg shadow-violet-600/25 transition-all hover:scale-105"
+                  className="inline-flex items-center justify-center gap-2 h-11 px-6 rounded-sm bg-violet-600 hover:bg-violet-700 text-xs font-semibold text-white shadow-xs transition-all"
                 >
                   <span>Book Industry Discovery Call</span>
                   <ArrowRight className="h-4 w-4" />
@@ -79,7 +80,7 @@ export default function IndustryDetailClient({ industry }: IndustryDetailClientP
 
                 <Link
                   href="/portfolio"
-                  className="inline-flex items-center gap-2 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 px-5 py-3 text-xs font-bold text-slate-700 dark:text-slate-300 transition-all"
+                  className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-sm border border-slate-300 dark:border-white/[0.18] hover:bg-slate-50 dark:hover:bg-white/[0.04] text-xs font-semibold text-slate-700 dark:text-slate-300 transition-all"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   <span>All Portfolio Sectors</span>
@@ -87,30 +88,33 @@ export default function IndustryDetailClient({ industry }: IndustryDetailClientP
               </div>
             </div>
 
-            {/* Right Column: Visual Cloudinary Media / Gradient Container */}
+            {/* Right Column: Clean Image Holder Frame (12px Radius, 1px Border, Shadow MD) */}
             <div className="relative mx-auto w-full max-w-lg lg:max-w-none">
-              <div className="relative overflow-hidden rounded-3xl border border-violet-100/90 dark:border-slate-800 bg-white/90 dark:bg-[#131c31] p-6 shadow-2xl shadow-violet-950/10 backdrop-blur-xl space-y-5">
+              <div className="relative aspect-[16/10] w-full rounded-lg border border-slate-200/80 dark:border-white/[0.10] shadow-md overflow-hidden bg-slate-950 group">
                 {industry.imageUrl ? (
-                  <div className="relative h-72 w-full rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700">
-                    <Image src={industry.imageUrl} alt={industry.title} fill className="object-cover" />
-                  </div>
+                  <Image
+                    src={industry.imageUrl}
+                    alt={industry.title}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
                 ) : (
-                  <div className="relative h-72 w-full rounded-2xl bg-gradient-to-br from-violet-600 via-indigo-700 to-slate-900 p-8 text-white flex flex-col justify-between overflow-hidden shadow-inner">
+                  <div className="h-full w-full bg-gradient-to-br from-violet-950 via-slate-900 to-slate-950 p-8 text-white flex flex-col justify-between">
                     <div className="flex items-center justify-between">
-                      <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-bold backdrop-blur-md">
+                      <span className="rounded-xs bg-white/10 px-2.5 py-1 text-xs font-semibold backdrop-blur-md">
                         {industry.title}
                       </span>
-                      <span className="rounded-full bg-emerald-500/30 border border-emerald-400/40 text-emerald-200 px-3 py-1 text-xs font-semibold backdrop-blur-md flex items-center gap-1.5">
+                      <span className="rounded-xs bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 px-2.5 py-1 text-xs font-semibold backdrop-blur-md flex items-center gap-1.5">
                         <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
                         Verified Pod
                       </span>
                     </div>
 
                     <div>
-                      <p className="text-xs font-semibold text-white/70 uppercase tracking-widest">
+                      <p className="text-xs font-medium text-white/70 uppercase tracking-widest">
                         Core Discipline
                       </p>
-                      <p className="font-display text-2xl font-extrabold text-white mt-1">
+                      <p className="font-display text-2xl font-bold text-white mt-1">
                         {industry.subtitle || industry.title}
                       </p>
                     </div>
@@ -138,7 +142,7 @@ export default function IndustryDetailClient({ industry }: IndustryDetailClientP
               {industry.keyMetrics.map((metric: any, idx: number) => (
                 <div
                   key={idx}
-                  className="rounded-2xl border border-violet-200/80 dark:border-slate-800 bg-white dark:bg-[#131c31] p-6 shadow-xs hover:border-violet-400 transition-all text-center"
+                  className="rounded-md border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#131c31] p-6 shadow-xs text-center"
                 >
                   <p className="font-display text-3xl sm:text-4xl font-extrabold text-violet-600 dark:text-violet-300">
                     {metric.value}
@@ -157,7 +161,7 @@ export default function IndustryDetailClient({ industry }: IndustryDetailClientP
       {industry.complianceBadges && industry.complianceBadges.length > 0 && (
         <section className="py-12 border-b border-violet-100 dark:border-slate-800">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="rounded-3xl border border-violet-100 dark:border-slate-800 bg-gradient-to-r from-violet-50/50 via-white to-violet-50/50 dark:from-slate-900/60 dark:via-[#131c31] dark:to-slate-900/60 p-8 space-y-4 shadow-sm">
+            <div className="rounded-md border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#131c31] p-6 space-y-4 shadow-sm">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="h-5 w-5 text-violet-600 dark:text-violet-400" />
                 <h3 className="font-display text-lg font-bold text-ink dark:text-white">
@@ -165,9 +169,9 @@ export default function IndustryDetailClient({ industry }: IndustryDetailClientP
                 </h3>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
                 {industry.complianceBadges.map((badge: string, bIdx: number) => (
-                  <div key={bIdx} className="flex items-center gap-2 rounded-xl bg-white dark:bg-slate-900 p-3 border border-violet-100 dark:border-slate-800 text-xs font-bold text-slate-800 dark:text-slate-200 shadow-2xs">
+                  <div key={bIdx} className="flex items-center gap-2 rounded-xs bg-slate-50 dark:bg-white/[0.04] p-3 border border-slate-200/80 dark:border-white/[0.08] text-xs font-semibold text-slate-800 dark:text-slate-200">
                     <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
                     <span>{badge}</span>
                   </div>
@@ -220,17 +224,17 @@ export default function IndustryDetailClient({ industry }: IndustryDetailClientP
                 {visibleProjects.map((proj: any, pIdx: number) => (
                   <div
                     key={proj.id || pIdx}
-                    className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-8 shadow-sm hover:border-violet-300 dark:hover:border-slate-700 hover:shadow-xl transition-all"
+                    className="group relative flex flex-col justify-between overflow-hidden rounded-md border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#131c31] p-6 sm:p-7 shadow-sm hover:border-slate-300 dark:hover:border-white/[0.16] hover:-translate-y-0.5 transition-all"
                   >
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="rounded-full bg-violet-100 dark:bg-slate-800 px-3 py-1 text-xs font-bold text-violet-700 dark:text-violet-300">
+                          <span className="rounded-xs bg-violet-100 dark:bg-white/[0.06] px-2.5 py-1 text-xs font-semibold text-violet-700 dark:text-violet-300 border border-violet-200/80 dark:border-white/[0.08]">
                             {proj.client}
                           </span>
                           {proj.featured && (
                             <span
-                              className="inline-flex items-center justify-center rounded-full bg-amber-100 dark:bg-amber-950/80 p-1 text-amber-700 dark:text-amber-300 border border-amber-300/80 dark:border-amber-700 shadow-2xs"
+                              className="inline-flex items-center justify-center rounded-xs bg-amber-100 dark:bg-amber-950/80 p-1 text-amber-700 dark:text-amber-300 border border-amber-300/80 dark:border-amber-700"
                               title="Featured"
                             >
                               <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
@@ -238,17 +242,17 @@ export default function IndustryDetailClient({ industry }: IndustryDetailClientP
                           )}
                         </div>
                         {proj.impact && (
-                          <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                          <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-xs border border-emerald-500/20">
                             {proj.impact}
                           </span>
                         )}
                       </div>
 
-                      <h3 className="font-display text-2xl font-bold text-ink dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-300 transition-colors">
+                      <h3 className="card-title text-ink dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-300 transition-colors">
                         {proj.title}
                       </h3>
 
-                      <p className="text-sm text-ink/75 dark:text-slate-300 leading-relaxed">
+                      <p className="card-body text-ink/70 dark:text-slate-300">
                         {proj.desc}
                       </p>
 
@@ -258,7 +262,7 @@ export default function IndustryDetailClient({ industry }: IndustryDetailClientP
                           {proj.techStack.map((tech: string, tIdx: number) => (
                             <span
                               key={tIdx}
-                              className="rounded-md bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-xs font-medium text-slate-700 dark:text-slate-300"
+                              className="rounded-xs bg-slate-100 dark:bg-white/[0.06] px-2.5 py-0.5 text-[11px] font-medium text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-white/[0.08]"
                             >
                               {tech}
                             </span>
@@ -268,12 +272,12 @@ export default function IndustryDetailClient({ industry }: IndustryDetailClientP
                     </div>
 
                     {proj.liveUrl && (
-                      <div className="mt-8 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                      <div className="mt-8 pt-4 border-t border-slate-100 dark:border-white/[0.06] flex items-center justify-between">
                         <a
                           href={proj.liveUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 text-xs font-extrabold text-violet-600 dark:text-violet-400 hover:underline"
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-violet-600 dark:text-violet-400 hover:underline"
                         >
                           <span>View Live Project</span>
                           <ExternalLink className="h-3.5 w-3.5" />
@@ -313,12 +317,12 @@ export default function IndustryDetailClient({ industry }: IndustryDetailClientP
                 return (
                   <div
                     key={sIdx}
-                    className="rounded-2xl border border-violet-100 dark:border-slate-800 bg-violet-50/30 dark:bg-[#131c31] p-6 shadow-xs space-y-3 hover:border-violet-300 dark:hover:border-slate-700 transition-all"
+                    className="rounded-md border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#131c31] p-6 shadow-xs space-y-3 hover:border-slate-300 dark:hover:border-white/[0.16] hover:-translate-y-0.5 transition-all"
                   >
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-600 text-white font-extrabold text-xs shadow-md shadow-violet-600/20">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-xs bg-violet-600 text-white font-bold text-xs">
                       0{sIdx + 1}
                     </div>
-                    <h4 className="font-display text-lg font-bold text-ink dark:text-white">
+                    <h4 className="card-title text-ink dark:text-white">
                       {title}
                     </h4>
                     {desc && (

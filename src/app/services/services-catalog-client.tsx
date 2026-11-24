@@ -53,7 +53,7 @@ export default function ServicesCatalogClient({ initialContent }: ServicesCatalo
 
           {/* CENTER-ALIGNED HERO CONTENT */}
           <div className="mx-auto max-w-4xl text-center space-y-4">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-violet-50 dark:bg-violet-950/60 border border-violet-200 dark:border-violet-800/60 text-violet-600 dark:text-violet-300 text-xs font-extrabold uppercase tracking-widest shadow-xs">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xs bg-violet-50 dark:bg-white/[0.04] border border-violet-200/80 dark:border-white/[0.08] text-violet-600 dark:text-violet-300 text-[12px] font-semibold uppercase tracking-[0.06em]">
               <Zap className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
               <span>{content?.hero?.badge || "Services & Capabilities"}</span>
             </div>
@@ -109,16 +109,16 @@ export default function ServicesCatalogClient({ initialContent }: ServicesCatalo
             </h2>
           </div>
 
-          {/* Dynamic Services Cards */}
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-2">
+          {/* Dynamic Services Cards (3-Column Grid) */}
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {content?.services?.map((service: any) => (
               <div
                 key={service.id}
-                className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-8 shadow-md transition-all duration-500 hover:border-violet-300 dark:hover:border-slate-700 hover:shadow-2xl hover:shadow-violet-500/15 hover:-translate-y-1.5"
+                className="group relative flex flex-col justify-between overflow-hidden rounded-md border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#131c31] p-6 shadow-sm transition-all duration-200 hover:border-slate-300 dark:hover:border-white/[0.16] hover:-translate-y-0.5"
               >
                 <div>
-                  <div className="flex items-center justify-between gap-4 mb-4">
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-200 dark:border-slate-700 bg-violet-50 dark:bg-slate-800 px-3 py-1 text-[11px] font-bold text-violet-700 dark:text-violet-300">
+                  <div className="flex items-center justify-between gap-3 mb-4">
+                    <span className="inline-flex items-center gap-1.5 rounded-xs border border-violet-200/80 dark:border-white/[0.08] bg-violet-50/80 dark:bg-white/[0.04] px-2.5 py-1 text-[11px] font-semibold text-violet-700 dark:text-violet-300">
                       <ServiceIcon
                         icon={service.icon}
                         iconName={service.iconName}
@@ -128,39 +128,39 @@ export default function ServicesCatalogClient({ initialContent }: ServicesCatalo
                       <span>{service.heroBadge || service.subtitle}</span>
                     </span>
 
-                    <span className="font-mono text-xs font-extrabold text-slate-400">
+                    <span className="font-mono text-xs font-semibold text-slate-400">
                       /{service.id}
                     </span>
                   </div>
 
                   {/* Optional Service Media Image */}
                   {service.imageUrl && service.imageUrl.trim() !== "" && (
-                    <div className="relative mb-6 h-48 w-full overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-900">
+                    <div className="relative mb-5 h-44 w-full overflow-hidden rounded-md border border-slate-200/80 dark:border-white/[0.08] bg-slate-100 dark:bg-slate-900">
                       <img
                         src={service.imageUrl}
                         alt={service.title}
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                       />
                     </div>
                   )}
 
-                  <h3 className="font-display text-2xl font-bold text-ink dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-300 transition-colors">
+                  <h3 className="card-title text-ink dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-300 transition-colors">
                     {service.title}
                   </h3>
 
-                  <p className="mt-3 text-sm leading-relaxed text-ink/75 dark:text-slate-300">
+                  <p className="mt-2.5 card-body text-ink/70 dark:text-slate-300 line-clamp-3 min-h-[4.2rem]">
                     {service.desc}
                   </p>
 
                   {/* Metrics Badges */}
                   {service.keyMetrics && service.keyMetrics.length > 0 && (
-                    <div className="mt-6 grid grid-cols-3 gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <div className="mt-5 grid grid-cols-3 gap-1.5 pt-4 border-t border-slate-100 dark:border-white/[0.06]">
                       {service.keyMetrics.map((met: any, idx: number) => (
-                        <div key={idx} className="rounded-xl bg-slate-50 dark:bg-slate-900/60 p-2 text-center">
-                          <p className="font-display text-sm font-extrabold text-violet-600 dark:text-violet-400">
+                        <div key={idx} className="rounded-xs bg-slate-50 dark:bg-slate-900/60 p-2 text-center border border-slate-100 dark:border-white/[0.06]">
+                          <p className="font-display text-sm font-bold text-violet-600 dark:text-violet-400">
                             {met.value}
                           </p>
-                          <p className="text-[9px] font-semibold text-slate-500 dark:text-slate-400 truncate">
+                          <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 truncate mt-0.5">
                             {met.label}
                           </p>
                         </div>
@@ -170,14 +170,14 @@ export default function ServicesCatalogClient({ initialContent }: ServicesCatalo
 
                   {/* Tech Stack Pills */}
                   {service.techStack && service.techStack.length > 0 && (
-                    <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <div className="mt-5 pt-4 border-t border-slate-100 dark:border-white/[0.06]">
                       <div className="flex flex-wrap gap-1.5">
                         {service.techStack.map((tech: string) => (
                           <span
                             key={tech}
-                            className="inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 text-[10px] font-bold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+                            className="inline-flex items-center gap-1 rounded-xs bg-slate-100 dark:bg-white/[0.06] px-2.5 py-0.5 text-[11px] font-medium text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-white/[0.08]"
                           >
-                            <CheckCircle2 className="h-2.5 w-2.5 text-violet-500" />
+                            <CheckCircle2 className="h-3 w-3 text-violet-500 shrink-0" />
                             <span>{tech}</span>
                           </span>
                         ))}
@@ -186,15 +186,15 @@ export default function ServicesCatalogClient({ initialContent }: ServicesCatalo
                   )}
                 </div>
 
-                <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <div className="mt-6 pt-4 border-t border-slate-100 dark:border-white/[0.06] flex items-center justify-between">
                   <Link href={`/services/${service.id}`}>
-                    <Button className="group/btn bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs rounded-xl shadow-md px-5 cursor-pointer">
+                    <Button size="sm" className="group/btn h-10 px-4 rounded-sm font-semibold text-xs shadow-xs cursor-pointer">
                       <span>{service.buttonText || "Explore Capabilities"}</span>
                       <ArrowRight className="ml-2 h-3.5 w-3.5 transition-transform group-hover/btn:translate-x-1" />
                     </Button>
                   </Link>
 
-                  <span className="text-[11px] font-mono font-semibold text-slate-400">
+                  <span className="text-[11px] font-mono font-medium text-slate-400">
                     ID: {service.id}
                   </span>
                 </div>
@@ -237,7 +237,7 @@ export default function ServicesCatalogClient({ initialContent }: ServicesCatalo
             {content?.processSection?.steps?.map((step: any, idx: number) => (
               <div
                 key={idx}
-                className="group rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131c31] p-7 shadow-sm transition-all hover:border-violet-300 dark:hover:border-slate-700 hover:shadow-xl hover:-translate-y-1"
+                className="group rounded-md border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#131c31] p-6 shadow-sm transition-all duration-200 hover:border-slate-300 dark:hover:border-white/[0.16] hover:-translate-y-0.5"
               >
                 <span className="font-mono text-2xl font-black text-violet-600 dark:text-violet-400">
                   {step.step}

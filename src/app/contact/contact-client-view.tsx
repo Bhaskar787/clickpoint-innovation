@@ -178,7 +178,7 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
 
           {/* CENTER-ALIGNED HERO CONTENT */}
           <div className="mx-auto max-w-4xl text-center space-y-4">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-violet-50 dark:bg-violet-950/60 border border-violet-200 dark:border-violet-800/60 text-violet-600 dark:text-violet-300 text-xs font-extrabold uppercase tracking-widest shadow-xs">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xs bg-violet-50 dark:bg-white/[0.04] border border-violet-200/80 dark:border-white/[0.08] text-violet-600 dark:text-violet-300 text-[12px] font-semibold uppercase tracking-[0.06em] shadow-xs">
               <Mail className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
               <span>{hero.badge || "Get In Touch"}</span>
             </div>
@@ -214,7 +214,7 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
           <div className="grid min-w-0 items-start gap-12 lg:grid-cols-[1.2fr_0.8fr] lg:gap-16">
             
             {/* Left Column: Interactive Project Inquiry Form */}
-            <div className="min-w-0 w-full rounded-3xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-5 sm:p-7 lg:p-10 shadow-xl shadow-violet-950/[0.04]">
+            <div className="min-w-0 w-full rounded-md border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#131c31] p-5 sm:p-7 lg:p-10 shadow-xs">
               {!formSubmitted ? (
                 <form
                   onSubmit={handleSubmit}
@@ -246,7 +246,7 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
                         <select
                           value={selectedObjective}
                           onChange={(e) => setSelectedObjective(e.target.value)}
-                          className="w-full appearance-none rounded-xl border border-violet-200 dark:border-slate-700 bg-cloud-100/50 dark:bg-slate-800/80 px-3.5 py-3.5 pr-10 text-xs font-semibold text-ink dark:text-white focus:border-violet-600 focus:outline-hidden focus:ring-2 focus:ring-violet-600/20 cursor-pointer shadow-xs transition-colors"
+                          className="w-full appearance-none rounded-sm border border-slate-200/80 dark:border-white/[0.08] bg-cloud-100/50 dark:bg-slate-800/80 px-3.5 py-3 pr-10 text-xs font-semibold text-ink dark:text-white focus:border-violet-600 focus:outline-hidden focus:ring-1 focus:ring-violet-600/30 cursor-pointer shadow-xs transition-colors"
                         >
                           {OBJECTIVES.map((obj) => (
                             <option key={obj} value={obj} className="dark:bg-slate-800 dark:text-white">
@@ -257,7 +257,7 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
                             Write Own Concept / Custom Objective
                           </option>
                         </select>
-                        <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink/40 dark:text-slate-400" />
+                        <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                       </div>
 
                       {/* Write Own Concept Input - Auto-selects custom mode on typing */}
@@ -277,10 +277,10 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
                               ? "Write your own project concept or objective in detail"
                               : "Write your own concept or specific project focus"
                           }
-                          className={`w-full rounded-xl border px-3.5 py-3 text-xs font-medium text-ink dark:text-white placeholder:text-ink/40 dark:placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-violet-600/20 transition-all ${
+                          className={`w-full rounded-sm border px-3.5 py-2.5 text-xs font-normal text-ink dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-hidden focus:ring-1 focus:ring-violet-600/30 transition-all ${
                             selectedObjective === "CUSTOM"
-                              ? "border-violet-500 bg-violet-50/50 dark:bg-violet-950/30 ring-2 ring-violet-500/20"
-                              : "border-violet-200 dark:border-slate-700 bg-cloud-100/50 dark:bg-slate-800/80 focus:border-violet-600"
+                              ? "border-violet-500 bg-violet-50/50 dark:bg-violet-950/30 ring-1 ring-violet-500/20"
+                              : "border-slate-200/80 dark:border-white/[0.08] bg-cloud-100/50 dark:bg-slate-800/80 focus:border-violet-600"
                           }`}
                         />
                       </div>
@@ -295,11 +295,11 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
                       </label>
 
                       {/* Selective Currency Switcher: USD ($) vs NPR */}
-                      <div className="inline-flex items-center rounded-xl bg-cloud-100/90 dark:bg-slate-800 p-0.5 border border-violet-200 dark:border-slate-700 shadow-2xs">
+                      <div className="inline-flex items-center rounded-xs bg-cloud-100/90 dark:bg-slate-800 p-0.5 border border-slate-200/80 dark:border-white/[0.08] shadow-2xs">
                         <button
                           type="button"
                           onClick={() => setCurrency("USD")}
-                          className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                          className={`px-2.5 py-1 text-xs font-semibold rounded-xs transition-all cursor-pointer ${
                             currency === "USD"
                               ? "bg-violet-600 text-white shadow-xs"
                               : "text-ink/65 dark:text-slate-400 hover:text-ink dark:hover:text-white"
@@ -310,7 +310,7 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
                         <button
                           type="button"
                           onClick={() => setCurrency("NPR")}
-                          className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                          className={`px-2.5 py-1 text-xs font-semibold rounded-xs transition-all cursor-pointer ${
                             currency === "NPR"
                               ? "bg-violet-600 text-white shadow-xs"
                               : "text-ink/65 dark:text-slate-400 hover:text-ink dark:hover:text-white"
@@ -323,7 +323,7 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
 
                     <div className="relative flex items-center">
                       <div className="pointer-events-none absolute left-3.5 flex items-center select-none">
-                        <span className="text-xs font-extrabold text-violet-600 dark:text-violet-400">
+                        <span className="text-xs font-semibold text-violet-600 dark:text-violet-400">
                           {currency === "USD" ? "$" : "NPR"}
                         </span>
                       </div>
@@ -337,7 +337,7 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
                             ? "e.g. 10,000 – 25,000 or 50,000"
                             : "e.g. 500,000 – 1,500,000 or 2,500,000"
                         }
-                        className={`w-full rounded-xl border border-violet-200 dark:border-slate-700 bg-cloud-100/50 dark:bg-slate-800/80 py-3.5 pr-3.5 text-xs font-medium text-ink dark:text-white placeholder:text-ink/40 dark:placeholder:text-slate-400 focus:border-violet-600 focus:outline-hidden focus:ring-2 focus:ring-violet-600/20 transition-colors ${
+                        className={`w-full rounded-sm border border-slate-200/80 dark:border-white/[0.08] bg-cloud-100/50 dark:bg-slate-800/80 py-2.5 pr-3.5 text-xs font-normal text-ink dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-violet-600 focus:outline-hidden focus:ring-1 focus:ring-violet-600/30 transition-colors ${
                           currency === "USD" ? "pl-9" : "pl-14"
                         }`}
                       />
@@ -358,7 +358,7 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
                           value={name}
                           onChange={(e) => setName(e.target.value)}
                           placeholder="Your Full Name *"
-                          className="w-full rounded-xl border border-violet-200 dark:border-slate-700 bg-cloud-100/50 dark:bg-slate-800/80 p-3.5 text-xs font-medium text-ink dark:text-white placeholder:text-ink/40 dark:placeholder:text-slate-400 focus:border-violet-600 focus:outline-hidden focus:ring-2 focus:ring-violet-600/20"
+                          className="w-full rounded-sm border border-slate-200/80 dark:border-white/[0.08] bg-cloud-100/50 dark:bg-slate-800/80 p-3 text-xs font-normal text-ink dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-violet-600 focus:outline-hidden focus:ring-1 focus:ring-violet-600/30"
                         />
                       </div>
                       <div>
@@ -368,7 +368,7 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           placeholder="Work Email Address *"
-                          className="w-full rounded-xl border border-violet-200 dark:border-slate-700 bg-cloud-100/50 dark:bg-slate-800/80 p-3.5 text-xs font-medium text-ink dark:text-white placeholder:text-ink/40 dark:placeholder:text-slate-400 focus:border-violet-600 focus:outline-hidden focus:ring-2 focus:ring-violet-600/20"
+                          className="w-full rounded-sm border border-slate-200/80 dark:border-white/[0.08] bg-cloud-100/50 dark:bg-slate-800/80 p-3 text-xs font-normal text-ink dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-violet-600 focus:outline-hidden focus:ring-1 focus:ring-violet-600/30"
                         />
                       </div>
                     </div>
@@ -381,7 +381,7 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
                           value={phone}
                           onChange={(e) => setPhone(e.target.value)}
                           placeholder="Phone / WhatsApp (+977 / +44 / +1) *"
-                          className="w-full rounded-xl border border-violet-200 dark:border-slate-700 bg-cloud-100/50 dark:bg-slate-800/80 p-3.5 text-xs font-medium text-ink dark:text-white placeholder:text-ink/40 dark:placeholder:text-slate-400 focus:border-violet-600 focus:outline-hidden focus:ring-2 focus:ring-violet-600/20"
+                          className="w-full rounded-sm border border-slate-200/80 dark:border-white/[0.08] bg-cloud-100/50 dark:bg-slate-800/80 p-3 text-xs font-normal text-ink dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-violet-600 focus:outline-hidden focus:ring-1 focus:ring-violet-600/30"
                         />
                       </div>
                       <div>
@@ -390,7 +390,7 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
                           value={company}
                           onChange={(e) => setCompany(e.target.value)}
                           placeholder="Company / Startup Name"
-                          className="w-full rounded-xl border border-violet-200 dark:border-slate-700 bg-cloud-100/50 dark:bg-slate-800/80 p-3.5 text-xs font-medium text-ink dark:text-white placeholder:text-ink/40 dark:placeholder:text-slate-400 focus:border-violet-600 focus:outline-hidden focus:ring-2 focus:ring-violet-600/20"
+                          className="w-full rounded-sm border border-slate-200/80 dark:border-white/[0.08] bg-cloud-100/50 dark:bg-slate-800/80 p-3 text-xs font-normal text-ink dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-violet-600 focus:outline-hidden focus:ring-1 focus:ring-violet-600/30"
                         />
                       </div>
                     </div>
@@ -402,12 +402,12 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         placeholder="Tell us about your project requirements, tech stack preferences, or target launch timeline..."
-                        className="w-full rounded-xl border border-violet-200 dark:border-slate-700 bg-cloud-100/50 dark:bg-slate-800/80 p-3.5 text-xs font-medium text-ink dark:text-white placeholder:text-ink/40 dark:placeholder:text-slate-400 focus:border-violet-600 focus:outline-hidden focus:ring-2 focus:ring-violet-600/20"
+                        className="w-full rounded-sm border border-slate-200/80 dark:border-white/[0.08] bg-cloud-100/50 dark:bg-slate-800/80 p-3 text-xs font-normal text-ink dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-violet-600 focus:outline-hidden focus:ring-1 focus:ring-violet-600/30"
                       />
                     </div>
                   </div>
 
-                  <Button type="submit" disabled={isSubmitting} variant="primary" size="lg" className="w-full shadow-lg shadow-violet-600/30 font-bold cursor-pointer">
+                  <Button type="submit" disabled={isSubmitting} variant="primary" size="lg" className="w-full rounded-sm shadow-xs font-semibold cursor-pointer">
                     {isSubmitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
                     {isSubmitting ? "Sending..." : hero.submitButtonText}
                   </Button>
@@ -459,9 +459,9 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
             <div className="sticky top-24 z-10 min-w-0 self-start space-y-8">
               
               {/* Office / HQ Card */}
-              <div className="rounded-3xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-5 sm:p-7 shadow-md transition-all hover:shadow-xl">
-                <div className="flex items-start gap-3 pb-4 border-b border-violet-100 dark:border-slate-800 mb-5 sm:items-center">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-50 dark:bg-slate-800 text-violet-600 dark:text-violet-300 border border-violet-100 dark:border-slate-700 font-bold shadow-md">
+              <div className="rounded-md border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#131c31] p-5 sm:p-7 shadow-xs transition-all hover:border-slate-300 dark:hover:border-white/[0.16]">
+                <div className="flex items-start gap-3 pb-4 border-b border-slate-100 dark:border-slate-800 mb-5 sm:items-center">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-violet-50 dark:bg-slate-800 text-violet-600 dark:text-violet-300 border border-violet-100 dark:border-slate-700 font-bold shadow-xs">
                     <MapPin className="h-5 w-5 text-violet-600 dark:text-violet-300" />
                   </div>
                   <div className="min-w-0">
@@ -495,7 +495,7 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
               </div>
 
               {/* Direct Channels Box */}
-              <div className="rounded-3xl border border-violet-100 bg-gradient-to-br from-[#1b4397] via-[#153880] to-[#0e2764] p-5 sm:p-7 text-white shadow-xl">
+              <div className="rounded-md border border-slate-200/80 dark:border-white/[0.08] bg-gradient-to-br from-[#1b4397] via-[#153880] to-[#0e2764] p-5 sm:p-7 text-white shadow-xs">
                 <h4 className="font-display text-lg font-bold text-white mb-2 break-words">
                   {contactInfo.directChannelsTitle || "Direct Executive Email Channels"}
                 </h4>
@@ -535,7 +535,7 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
       <section className="overflow-hidden py-16 lg:py-24 bg-cloud-100/70 dark:bg-slate-900/40 border-t border-violet-100 dark:border-slate-800">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl min-w-0 text-center mb-12 space-y-3">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-violet-50 dark:bg-violet-950/60 border border-violet-200 dark:border-violet-800/60 text-violet-600 dark:text-violet-300 text-xs font-extrabold uppercase tracking-widest shadow-xs">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xs bg-violet-50 dark:bg-white/[0.04] border border-violet-200/80 dark:border-white/[0.08] text-violet-600 dark:text-violet-300 text-[12px] font-semibold uppercase tracking-[0.06em] shadow-xs">
               <MapPin className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
               <span>{contactInfo.mapBadge || "Visit Our Headquarters"}</span>
             </div>
@@ -564,7 +564,7 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
           </div>
 
           {/* Landscape Embedded Google Map */}
-          <div className="overflow-hidden rounded-3xl border border-violet-200 dark:border-slate-800 bg-white dark:bg-[#131c31] p-2.5 shadow-2xl shadow-violet-950/[0.06]">
+          <div className="overflow-hidden rounded-lg border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#131c31] p-1.5 shadow-md">
             <iframe
               src={contactInfo.mapUrl || DEFAULT_CONTACT_PAGE_DATA.contactInfo.mapUrl}
               width="100%"
@@ -574,7 +574,7 @@ export default function ContactClientView({ initialContent }: ContactClientViewP
               loading="lazy"
               referrerPolicy="strict-origin-when-cross-origin"
               title="Click Point Innovations Location Map"
-              className="w-full h-[420px] sm:h-[480px] lg:h-[520px] rounded-2xl"
+              className="w-full h-[420px] sm:h-[480px] lg:h-[520px] rounded-md"
             />
           </div>
         </div>

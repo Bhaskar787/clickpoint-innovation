@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
+import { Inter } from "next/font/google";
 import { ThemeProvider, SiteDataProvider } from "@/components/common/theme-provider";
 import { ChatbotWidget } from "@/components/common/chatbot-widget";
 import { Toaster } from "sonner";
@@ -7,10 +7,10 @@ import { getChatbotServerData, getLandingPageData } from "@/server/actions/landi
 import TopLoader from "@/components/common/top-loader";
 import "./globals.css";
 
-const poppins = Poppins({
+const inter = Inter({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
-  variable: "--font-poppins",
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-inter",
   display: "swap",
 });
 
@@ -47,7 +47,7 @@ export default async function RootLayout({
   const faviconUrl = landingData?.systemSettings?.faviconUrl || "/images/fav3.png";
 
   return (
-    <html lang="en" className={poppins.variable} suppressHydrationWarning>
+    <html lang="en" className={inter.variable} suppressHydrationWarning>
       <head>
         <link rel="icon" href={faviconUrl} />
         <link rel="shortcut icon" href={faviconUrl} />

@@ -81,7 +81,7 @@ export default function StatsSection({ initialHeader, initialStats }: StatsSecti
         
         {/* Section Header */}
         <div className="mb-14 max-w-2xl">
-          <span className="section-badge mb-3 inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-violet-50 dark:bg-slate-800 px-3.5 py-1 text-violet-600 dark:text-violet-300">
+          <span className="section-badge mb-3 inline-flex items-center gap-1.5 rounded-xs border border-violet-200/80 dark:border-white/[0.08] bg-violet-50 dark:bg-white/[0.04] px-2.5 py-1 text-violet-600 dark:text-violet-300 text-[12px] font-semibold uppercase tracking-[0.06em]">
             {statsHeader.badge}
           </span>
           <h2 className="section-title text-ink dark:text-white">
@@ -95,31 +95,32 @@ export default function StatsSection({ initialHeader, initialStats }: StatsSecti
           </p>
         </div>
 
-        {/* 6-Card Responsive Grid */}
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-          {statsItems.map((s, idx) => (
-            <motion.div
-              key={s.id || idx}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: idx * 0.05, ease: "easeOut" }}
-              className="h-full"
-            >
-              <div className="h-full group relative flex flex-col justify-between rounded-2xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-6 shadow-sm transition-all duration-300 hover:border-violet-300 dark:hover:border-slate-700 hover:shadow-xl hover:shadow-violet-600/10 hover:-translate-y-1">
-                <div>
-                  <CounterNumber value={Number(s.value) || 0} suffix={s.suffix || ""} />
-                  <p className="mt-2 text-fluid-xs leading-relaxed font-semibold text-ink/75 dark:text-slate-300 group-hover:text-violet-600 dark:group-hover:text-violet-300 transition-colors">
-                    {s.label}
-                  </p>
-                </div>
+        {/* 3 cols x 2 rows Desktop, 2 cols Mobile */}
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+          {statsItems.map((s, idx) => {
+            const rawSuffix = s.suffix || "";
+            const cleanSuffix = (rawSuffix === "-" || rawSuffix === "–" || rawSuffix === "—") ? "+" : rawSuffix;
 
-                <div className="mt-4 h-1 w-full rounded-full bg-violet-50 overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-violet-600 to-indigo-600 rounded-full w-0 group-hover:w-full transition-all duration-500" />
+            return (
+              <motion.div
+                key={s.id || idx}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.35, delay: idx * 0.04, ease: "easeOut" }}
+                className="h-full"
+              >
+                <div className="h-full group flex flex-col justify-between rounded-md border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#131c31] p-6 shadow-sm transition-all duration-200 hover:border-slate-300 dark:hover:border-white/[0.16] hover:-translate-y-0.5">
+                  <div>
+                    <CounterNumber value={Number(s.value) || 0} suffix={cleanSuffix} />
+                    <p className="mt-2 text-[14px] leading-normal font-medium text-ink/75 dark:text-slate-300 group-hover:text-violet-600 dark:group-hover:text-violet-300 transition-colors">
+                      {s.label}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </div>
 
       </div>

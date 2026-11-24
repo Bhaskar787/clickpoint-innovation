@@ -97,7 +97,7 @@ export default function Footer({ initialData }: FooterProps = {}) {
                   className="h-9 w-auto group-hover:scale-105 transition-transform"
                 />
               ) : (
-                <span className="font-display text-xl font-extrabold text-slate-900 dark:text-white">
+                <span className="font-sans text-xl font-bold text-slate-900 dark:text-white">
                   {footerData.logoText || "Clickpoint Innovations"}
                 </span>
               )}
@@ -105,14 +105,14 @@ export default function Footer({ initialData }: FooterProps = {}) {
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink/60 dark:text-slate-300 font-medium">
               {footerData.description || "An AI-first digital partner helping ambitious teams design, build, and scale software that compounds."}
             </p>
-            <div className="mt-6 flex items-center gap-3">
+            <div className="mt-6 flex items-center gap-2.5">
               {socialIcons.map(({ icon: Icon, href }, i) => (
                 <a
                   key={i}
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex h-9 w-9 items-center justify-center rounded-full border border-violet-100 dark:border-slate-800 text-ink/60 dark:text-slate-400 transition-colors hover:border-violet-300 dark:hover:border-slate-700 hover:bg-violet-50 dark:hover:bg-slate-800 hover:text-violet-700 dark:hover:text-white"
+                  className="flex h-9 w-9 items-center justify-center rounded-sm border border-slate-200 dark:border-white/[0.08] text-ink/60 dark:text-slate-400 transition-colors hover:border-slate-300 dark:hover:border-white/[0.16] hover:bg-slate-100 dark:hover:bg-white/[0.05] hover:text-violet-600 dark:hover:text-white"
                 >
                   <Icon className="h-4 w-4" />
                 </a>
@@ -120,7 +120,7 @@ export default function Footer({ initialData }: FooterProps = {}) {
             </div>
           </div>
 
-          {/* Navigation Columns Grid (Supports 4 columns per row without wrapping) */}
+          {/* Navigation Columns Grid */}
           <div
             className={`lg:col-span-8 xl:col-span-9 grid gap-8 ${
               columns.length >= 4
@@ -132,15 +132,15 @@ export default function Footer({ initialData }: FooterProps = {}) {
           >
             {columns.map((col: any, idx: number) => (
               <div key={col.title || idx}>
-                <h4 className="mb-4 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400">
+                <h4 className="mb-4 text-[12px] font-semibold uppercase tracking-[0.06em] text-slate-500 dark:text-slate-400">
                   {col.title}
                 </h4>
-                <ul className="space-y-2.5">
+                <ul className="space-y-3">
                   {Array.isArray(col.links) && col.links.map((link: any, lIdx: number) => (
                     <li key={link.label || lIdx}>
                       <Link
                         href={link.href || "#"}
-                        className="text-sm text-ink/65 dark:text-slate-300 transition-colors hover:text-violet-700 dark:hover:text-white font-medium"
+                        className="text-[14px] text-ink/70 dark:text-slate-300 transition-colors hover:text-violet-600 dark:hover:text-white font-normal"
                       >
                         {link.label}
                       </Link>

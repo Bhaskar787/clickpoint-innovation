@@ -154,10 +154,10 @@ export default function AboutClientView({ initialContent, journeyContent }: Abou
 
   return (
     <main className="relative overflow-x-hidden bg-background text-ink">
-      <Navbar />
+      <Navbar transparentOnTop />
 
-      {/* Hero Section - Direct Text Over Video */}
-      <section className="relative overflow-hidden pt-36 pb-20 lg:pt-44 lg:pb-28">
+      {/* Hero Section - Direct Text Over Video covering 100% full height on desktop */}
+      <section className="relative overflow-hidden min-h-screen w-full flex flex-col justify-center items-center pt-28 pb-16 lg:pt-24 lg:pb-16">
         {/* Background Video */}
         <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
           <video
@@ -197,7 +197,7 @@ export default function AboutClientView({ initialContent, journeyContent }: Abou
           {/* CENTER-ALIGNED HERO CONTENT */}
           <div className="mx-auto max-w-4xl text-center space-y-4">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 rounded-full border border-violet-400/40 bg-slate-900/80 px-4 py-1.5 text-xs font-bold text-violet-200 backdrop-blur-md shadow-lg uppercase tracking-widest">
+            <div className="inline-flex items-center gap-2 rounded-xs border border-violet-400/40 bg-slate-900/80 px-3 py-1 text-[12px] font-semibold text-violet-200 backdrop-blur-md shadow-xs uppercase tracking-[0.06em]">
               <Building2 className="h-3.5 w-3.5 text-violet-400" />
               <span>{content.hero.badge || "About Click Point Innovations"}</span>
             </div>
@@ -227,7 +227,7 @@ export default function AboutClientView({ initialContent, journeyContent }: Abou
             </p>
 
             {/* Glassmorphic Stats Banner */}
-            <div className="mt-12 grid grid-cols-2 gap-4 rounded-3xl border border-white/20 bg-slate-900/70 p-6 sm:grid-cols-4 shadow-2xl backdrop-blur-xl">
+            <div className="mt-12 grid grid-cols-2 gap-4 rounded-md border border-white/10 bg-slate-900/70 p-6 sm:grid-cols-4 shadow-xs backdrop-blur-xl">
               {(content.stats && content.stats.length > 0 ? content.stats : STATS_DATA).map((stat: any) => (
                 <div key={stat.id} className="p-2 text-center">
                   <p className="font-display text-3xl font-black text-white sm:text-4xl drop-shadow-sm">
@@ -304,33 +304,33 @@ export default function AboutClientView({ initialContent, journeyContent }: Abou
 
             {/* Dynamic Global Engineering Pods Visual Card */}
             <div className="relative mx-auto w-full max-w-lg lg:max-w-none">
-              <div className="group relative overflow-hidden rounded-3xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-8 shadow-2xl shadow-violet-950/10">
+              <div className="group relative overflow-hidden rounded-md border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#131c31] p-6 shadow-xs">
                 <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-violet-400/20 blur-3xl transition-all duration-700 group-hover:scale-125" />
                 <div className="relative z-10">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-600 text-white shadow-lg shadow-violet-600/30">
-                    <Globe2 className="h-7 w-7" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-sm bg-violet-600 text-white shadow-xs">
+                    <Globe2 className="h-6 w-6" />
                   </div>
-                  <h3 className="mt-6 font-display text-2xl font-bold text-ink dark:text-white">
+                  <h3 className="mt-5 font-display text-xl font-bold text-ink dark:text-white">
                     {content.mission.cardTitle || "Global Engineering Pods"}
                   </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-ink/70 dark:text-slate-300">
+                  <p className="mt-2 text-xs sm:text-sm leading-relaxed text-ink/70 dark:text-slate-300">
                     {content.mission.cardDesc || "Our distributed engineering pods operate round-the-clock, delivering continuous integration and rapid feature deployments with zero downtime."}
                   </p>
 
-                  <div className="mt-6 grid grid-cols-2 gap-3 pt-6 border-t border-violet-100 dark:border-slate-800">
-                    <div className="rounded-xl bg-violet-50/80 dark:bg-slate-800 p-3">
+                  <div className="mt-6 grid grid-cols-2 gap-3 pt-6 border-t border-slate-100 dark:border-slate-800">
+                    <div className="rounded-xs bg-violet-50/80 dark:bg-slate-800 p-3 border border-violet-200/60 dark:border-white/[0.08]">
                       <p className="text-[10px] font-bold uppercase tracking-wider text-violet-700 dark:text-violet-300">
                         {content.mission.statBox1Label || "Timezones Covered"}
                       </p>
-                      <p className="font-display text-xl font-bold text-ink dark:text-white">
+                      <p className="font-display text-lg font-bold text-ink dark:text-white">
                         {content.mission.statBox1Value || "3 Continents"}
                       </p>
                     </div>
-                    <div className="rounded-xl bg-violet-50/80 dark:bg-slate-800 p-3">
+                    <div className="rounded-xs bg-violet-50/80 dark:bg-slate-800 p-3 border border-violet-200/60 dark:border-white/[0.08]">
                       <p className="text-[10px] font-bold uppercase tracking-wider text-violet-700 dark:text-violet-300">
                         {content.mission.statBox2Label || "Code Reviews"}
                       </p>
-                      <p className="font-display text-xl font-bold text-ink dark:text-white">
+                      <p className="font-display text-lg font-bold text-ink dark:text-white">
                         {content.mission.statBox2Value || "100% Peer Audited"}
                       </p>
                     </div>
@@ -373,10 +373,10 @@ export default function AboutClientView({ initialContent, journeyContent }: Abou
             {content.values.items.map((val: any) => (
               <div
                 key={val.id}
-                className="group rounded-2xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-7 shadow-sm transition-all hover:border-violet-300 dark:hover:border-slate-700 hover:shadow-xl hover:-translate-y-1"
+                className="group rounded-md border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#131c31] p-6 shadow-xs transition-all duration-200 hover:border-slate-300 dark:hover:border-white/[0.16] hover:shadow-md hover:-translate-y-0.5"
               >
-                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-100 dark:bg-slate-800 text-violet-700 dark:text-violet-300 group-hover:bg-violet-600 group-hover:text-white transition-colors">
-                  <Code2 className="h-6 w-6" />
+                <span className="flex h-11 w-11 items-center justify-center rounded-sm bg-violet-100 dark:bg-slate-800 text-violet-700 dark:text-violet-300 group-hover:bg-violet-600 group-hover:text-white transition-colors">
+                  <Code2 className="h-5 w-5" />
                 </span>
                 <h3 className="mt-5 font-display text-lg font-bold text-ink dark:text-white">{val.title}</h3>
                 <p className="mt-2 text-xs leading-relaxed text-ink/65 dark:text-slate-300">
@@ -438,7 +438,7 @@ export default function AboutClientView({ initialContent, journeyContent }: Abou
                     });
                     setSelectedMember(member);
                   }}
-                  className="group relative cursor-pointer overflow-hidden rounded-[4px] bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 shadow-xs h-[390px] sm:h-[430px] lg:h-[450px] w-full flex flex-col justify-end"
+                  className="group relative cursor-pointer overflow-hidden rounded-xs bg-slate-900 border border-slate-200/80 dark:border-white/[0.10] shadow-xs h-[390px] sm:h-[430px] lg:h-[450px] w-full flex flex-col justify-end"
                 >
                   {/* Full-bleed Profile Photo with subtle hover zoom only on image */}
                   {member.imageUrl && member.imageUrl.trim() !== "" ? (
@@ -497,7 +497,7 @@ export default function AboutClientView({ initialContent, journeyContent }: Abou
                     stiffness: 280,
                     mass: 0.85,
                   }}
-                  className="relative w-[95vw] max-w-6xl h-[88vh] max-h-[820px] bg-slate-950 rounded-[4px] border border-slate-700/80 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col md:flex-row my-auto"
+                  className="relative w-[95vw] max-w-6xl h-[88vh] max-h-[820px] bg-slate-950 rounded-lg border border-slate-700/80 dark:border-white/[0.12] shadow-2xl overflow-hidden flex flex-col md:flex-row my-auto"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {/* Left Column: Full Theater Stage with Ambient Backdrop (~68% on Desktop) */}
@@ -522,7 +522,7 @@ export default function AboutClientView({ initialContent, journeyContent }: Abou
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0.4 }}
                             transition={{ duration: 0.2 }}
-                            className="max-h-full max-w-full object-contain rounded-[4px] drop-shadow-2xl"
+                            className="max-h-full max-w-full object-contain rounded-xs border border-white/10 drop-shadow-2xl"
                           />
                         ) : (
                           <motion.div
@@ -530,7 +530,7 @@ export default function AboutClientView({ initialContent, journeyContent }: Abou
                             initial={{ opacity: 0.4 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0.4 }}
-                            className="h-44 w-44 rounded-[4px] bg-gradient-to-tr from-violet-600 via-indigo-600 to-amber-500 flex items-center justify-center text-white"
+                            className="h-44 w-44 rounded-xs bg-gradient-to-tr from-violet-600 via-indigo-600 to-amber-500 flex items-center justify-center text-white"
                           >
                             <span className="font-display text-7xl font-black text-white drop-shadow-md">
                               {getInitials(selectedMember.name)}
@@ -542,7 +542,7 @@ export default function AboutClientView({ initialContent, journeyContent }: Abou
 
                     {/* Bottom Stage Overlay (like Broadway Infosys Title banner) */}
                     <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-slate-950 via-slate-950/70 to-transparent p-4 sm:p-6 text-left pointer-events-none">
-                      <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-violet-600 text-white mb-1.5 shadow-xs">
+                      <span className="inline-block px-2.5 py-0.5 rounded-xs text-[10px] font-extrabold uppercase tracking-wider bg-violet-600 text-white mb-1.5 shadow-xs">
                         {selectedMember.role}
                       </span>
                       <h3 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-white tracking-tight drop-shadow-md">
@@ -562,7 +562,7 @@ export default function AboutClientView({ initialContent, journeyContent }: Abou
                             handleSelectMember(team[newIdx]);
                           }}
                           aria-label="Previous leader"
-                          className="absolute left-3 top-1/2 -translate-y-1/2 z-30 flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-slate-900/80 hover:bg-slate-900 text-white backdrop-blur-md border border-white/20 transition-all hover:scale-110 shadow-lg"
+                          className="absolute left-3 top-1/2 -translate-y-1/2 z-30 flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-sm bg-slate-900/80 hover:bg-slate-900 text-white backdrop-blur-md border border-white/20 transition-all shadow-md"
                         >
                           <ChevronLeft className="h-5 w-5" />
                         </button>
@@ -575,7 +575,7 @@ export default function AboutClientView({ initialContent, journeyContent }: Abou
                             handleSelectMember(team[newIdx]);
                           }}
                           aria-label="Next leader"
-                          className="absolute right-3 top-1/2 -translate-y-1/2 z-30 flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-slate-900/80 hover:bg-slate-900 text-white backdrop-blur-md border border-white/20 transition-all hover:scale-110 shadow-lg"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 z-30 flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-sm bg-slate-900/80 hover:bg-slate-900 text-white backdrop-blur-md border border-white/20 transition-all shadow-md"
                         >
                           <ChevronRight className="h-5 w-5" />
                         </button>
@@ -590,7 +590,7 @@ export default function AboutClientView({ initialContent, journeyContent }: Abou
                       <button
                         onClick={handleClose}
                         aria-label="Close details"
-                        className="absolute top-4 sm:top-5 right-4 sm:right-5 flex h-8 w-8 items-center justify-center rounded-[4px] bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors"
+                        className="absolute top-4 sm:top-5 right-4 sm:right-5 flex h-8 w-8 items-center justify-center rounded-sm bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors"
                       >
                         <X className="h-4 w-4" />
                       </button>
@@ -627,10 +627,10 @@ export default function AboutClientView({ initialContent, journeyContent }: Abou
                                   type="button"
                                   onClick={() => handleSelectMember(m)}
                                   title={m.name}
-                                  className={`group/thumb relative aspect-square overflow-hidden rounded-[4px] border transition-all text-left ${
+                                  className={`group/thumb relative aspect-square overflow-hidden rounded-xs border transition-all text-left ${
                                     isCurrent
                                       ? "border-violet-600 ring-2 ring-violet-600/40 dark:ring-violet-400/50 scale-[1.02]"
-                                      : "border-slate-200 dark:border-slate-700/80 opacity-70 hover:opacity-100 hover:border-violet-400"
+                                      : "border-slate-200/80 dark:border-white/[0.08] opacity-70 hover:opacity-100 hover:border-violet-400"
                                   }`}
                                 >
                                   {m.imageUrl && m.imageUrl.trim() !== "" ? (
@@ -678,7 +678,7 @@ export default function AboutClientView({ initialContent, journeyContent }: Abou
                             {selectedMember.expertise.map((exp: string) => (
                               <span
                                 key={exp}
-                                className="inline-flex items-center gap-1 rounded-full bg-blue-50/90 dark:bg-blue-950/50 px-2.5 py-0.5 text-[10px] font-bold text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800/60"
+                                className="inline-flex items-center gap-1 rounded-xs bg-blue-50/90 dark:bg-blue-950/50 px-2.5 py-0.5 text-[10px] font-bold text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800/60"
                               >
                                 <CheckCircle2 className="h-2.5 w-2.5 text-[#0a66c2]" />
                                 <span>{exp}</span>
@@ -694,14 +694,14 @@ export default function AboutClientView({ initialContent, journeyContent }: Abou
                       <div className="flex items-center gap-2">
                         <a
                           href="#"
-                          className="flex h-8 w-8 items-center justify-center rounded-[4px] border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-950/60 transition-colors"
+                          className="flex h-8 w-8 items-center justify-center rounded-xs border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-950/60 transition-colors"
                           aria-label={`${selectedMember.name} LinkedIn`}
                         >
                           <Linkedin className="h-3.5 w-3.5" />
                         </a>
                         <a
                           href="#"
-                          className="flex h-8 w-8 items-center justify-center rounded-[4px] border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-sky-400 hover:bg-sky-50 hover:text-sky-500 dark:hover:bg-sky-950/60 transition-colors"
+                          className="flex h-8 w-8 items-center justify-center rounded-xs border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-sky-400 hover:bg-sky-50 hover:text-sky-500 dark:hover:bg-sky-950/60 transition-colors"
                           aria-label={`${selectedMember.name} Twitter`}
                         >
                           <Twitter className="h-3.5 w-3.5" />
@@ -710,7 +710,7 @@ export default function AboutClientView({ initialContent, journeyContent }: Abou
 
                       <button
                         onClick={handleClose}
-                        className="px-5 py-2 text-xs font-bold rounded-[4px] border border-slate-200 dark:border-slate-700 bg-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors shadow-2xs"
+                        className="px-5 py-2 text-xs font-semibold rounded-sm border border-slate-200 dark:border-slate-700 bg-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors shadow-2xs"
                       >
                         Close
                       </button>

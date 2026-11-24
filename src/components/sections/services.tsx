@@ -81,7 +81,7 @@ export default function Services({ initialHeader, initialServices }: ServicesPro
           )}
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {displayItems.map((s: any, idx: number) => {
             return (
               <motion.div
@@ -89,16 +89,15 @@ export default function Services({ initialHeader, initialServices }: ServicesPro
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: idx * 0.05, ease: "easeOut" }}
+                transition={{ duration: 0.35, delay: idx * 0.05, ease: "easeOut" }}
                 className="h-full"
               >
                 <Link
                   href={`/services/${s.id}`}
-                  className="group relative block h-full overflow-hidden rounded-2xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-7 shadow-sm shadow-violet-950/[0.03] transition-all duration-300 hover:border-violet-300 dark:hover:border-slate-700 hover:shadow-xl hover:shadow-violet-500/10 hover:-translate-y-1.5"
+                  className="group relative block h-full rounded-md border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#131c31] p-6 shadow-sm transition-all duration-200 hover:border-slate-300 dark:hover:border-white/[0.16] hover:-translate-y-0.5"
                 >
-                  <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-violet-50 dark:bg-slate-800/50 transition-transform duration-500 group-hover:scale-150" />
-                  <div className="relative">
-                    <span className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-violet-100 dark:bg-slate-800 text-violet-600 dark:text-violet-300 transition-colors group-hover:bg-violet-600 group-hover:text-white shadow-sm">
+                  <div>
+                    <span className="mb-4 flex h-10 w-10 items-center justify-center rounded-sm bg-violet-100 dark:bg-white/[0.06] text-violet-600 dark:text-violet-300 transition-colors group-hover:bg-violet-600 group-hover:text-white">
                       <ServiceIcon
                         icon={s.icon}
                         iconName={s.iconName}
@@ -111,8 +110,8 @@ export default function Services({ initialHeader, initialServices }: ServicesPro
                       {s.title}
                       <ArrowUpRight className="h-4 w-4 -translate-y-0.5 opacity-0 transition-all group-hover:translate-y-0 group-hover:opacity-100 text-violet-600 dark:text-violet-300" />
                     </h3>
-                    <p className="card-body text-ink/65 dark:text-slate-300">{s.desc}</p>
-                    <span className="mt-4 inline-flex items-center gap-1 text-fluid-xs font-bold text-violet-600 dark:text-violet-300 group-hover:translate-x-1 transition-transform">
+                    <p className="card-body text-ink/70 dark:text-slate-300">{s.desc}</p>
+                    <span className="mt-4 inline-flex items-center gap-1 text-[14px] font-semibold text-violet-600 dark:text-violet-300 group-hover:translate-x-1 transition-transform">
                       {s.buttonText || "Learn More & Details"} →
                     </span>
                   </div>

@@ -113,7 +113,7 @@ export default function ServiceDetailClient({ initialService, serviceId }: Servi
 
           <div className="mx-auto max-w-4xl text-center">
             {/* Hero Tag Badge */}
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-violet-50 dark:bg-slate-800/90 px-4 py-1.5 text-xs font-bold text-violet-600 dark:text-violet-300 shadow-sm backdrop-blur-md">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-xs border border-violet-200/80 dark:border-white/[0.08] bg-violet-50/80 dark:bg-white/[0.04] px-3 py-1 text-[12px] font-semibold text-violet-600 dark:text-violet-300">
               <ServiceIcon
                 icon={service.icon}
                 iconName={service.iconName}
@@ -135,7 +135,7 @@ export default function ServiceDetailClient({ initialService, serviceId }: Servi
 
             {/* Key Performance Metrics Glass Banner */}
             {service.keyMetrics && service.keyMetrics.length > 0 && (
-              <div className="mt-12 grid grid-cols-2 gap-4 rounded-3xl border border-violet-100 dark:border-slate-800 bg-white/80 dark:bg-[#131c31]/90 p-6 sm:grid-cols-3 shadow-xl backdrop-blur-xl">
+              <div className="mt-12 grid grid-cols-2 gap-4 rounded-md border border-slate-200/80 dark:border-white/[0.08] bg-white/80 dark:bg-[#131c31]/90 p-6 sm:grid-cols-3 shadow-sm backdrop-blur-xl">
                 {service.keyMetrics.map((met: any, idx: number) => (
                   <div key={idx} className="p-2 text-center">
                     <p className="font-display text-3xl font-black text-violet-600 dark:text-violet-400">
@@ -150,15 +150,15 @@ export default function ServiceDetailClient({ initialService, serviceId }: Servi
             )}
 
             {/* Dynamic Action Buttons */}
-            <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
               <Link href={service.ctaPrimaryRoute || "/contact"}>
-                <Button size="lg" className="group bg-violet-600 hover:bg-violet-700 text-white font-bold shadow-lg border-none px-6">
+                <Button className="group h-11 px-6 rounded-sm font-semibold text-xs bg-violet-600 hover:bg-violet-700 text-white shadow-xs">
                   <span>{service.ctaPrimaryText || "Request Service Audit"}</span>
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Button>
               </Link>
               <Link href={service.ctaSecondaryRoute || "/services"}>
-                <Button variant="outline" size="lg" className="border-violet-200 dark:border-slate-700 bg-white dark:bg-[#131c31] text-ink dark:text-white font-bold hover:bg-violet-50 dark:hover:bg-slate-800 px-6">
+                <Button variant="outline" className="h-11 px-6 rounded-sm font-semibold text-xs border border-slate-300 dark:border-white/[0.18] bg-white dark:bg-[#131c31] text-ink dark:text-white hover:bg-slate-50 dark:hover:bg-white/[0.04]">
                   <span>{service.ctaSecondaryText || "All Services"}</span>
                 </Button>
               </Link>
@@ -205,33 +205,33 @@ export default function ServiceDetailClient({ initialService, serviceId }: Servi
               )}
             </div>
 
-            {/* Cloudinary Media Image / Video Card */}
+            {/* Clean Image / Card Holder (12px Radius, 1px Border, Shadow MD) */}
             <div className="relative mx-auto w-full max-w-lg lg:max-w-none">
               {service.imageUrl && service.imageUrl.trim() !== "" ? (
-                <div className="relative overflow-hidden rounded-3xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-3 shadow-2xl">
+                <div className="relative aspect-[16/10] w-full rounded-lg border border-slate-200/80 dark:border-white/[0.10] shadow-md overflow-hidden bg-slate-950 group">
                   <img
                     src={service.imageUrl}
                     alt={service.title}
-                    className="w-full h-80 object-cover rounded-2xl"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 </div>
               ) : (
-                <div className="group relative overflow-hidden rounded-3xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-8 shadow-2xl shadow-violet-950/10">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-600 text-white shadow-lg">
-                    <Cpu className="h-7 w-7" />
+                <div className="group relative overflow-hidden rounded-md border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#131c31] p-6 sm:p-8 shadow-sm">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-violet-100 dark:bg-white/[0.06] text-violet-600 dark:text-violet-300">
+                    <Cpu className="h-5 w-5" />
                   </div>
-                  <h3 className="mt-6 font-display text-2xl font-bold text-ink dark:text-white">
+                  <h3 className="mt-5 card-title text-ink dark:text-white">
                     {service.title}
                   </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-ink/70 dark:text-slate-300">
+                  <p className="mt-2 card-body text-ink/70 dark:text-slate-300">
                     {service.subtitle}
                   </p>
                   {service.techStack && service.techStack.length > 0 && (
-                    <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-wrap gap-1.5">
+                    <div className="mt-6 pt-4 border-t border-slate-100 dark:border-white/[0.06] flex flex-wrap gap-1.5">
                       {service.techStack.map((tech: string) => (
                         <span
                           key={tech}
-                          className="inline-flex items-center gap-1 rounded-full bg-violet-50 dark:bg-slate-800 px-3 py-1 text-xs font-bold text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-slate-700"
+                          className="inline-flex items-center gap-1 rounded-xs bg-slate-100 dark:bg-white/[0.06] px-2.5 py-0.5 text-[11px] font-medium text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-white/[0.08]"
                         >
                           <CheckCircle2 className="h-3 w-3 text-violet-600" />
                           <span>{tech}</span>
@@ -265,13 +265,13 @@ export default function ServiceDetailClient({ initialService, serviceId }: Servi
               {service.features.map((feat: any, idx: number) => (
                 <div
                   key={idx}
-                  className="group rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131c31] p-7 shadow-sm transition-all hover:border-violet-300 dark:hover:border-slate-700 hover:shadow-xl hover:-translate-y-1"
+                  className="group rounded-md border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#131c31] p-6 shadow-sm transition-all duration-200 hover:border-slate-300 dark:hover:border-white/[0.16] hover:-translate-y-0.5"
                 >
-                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-100 dark:bg-slate-800 text-violet-700 dark:text-violet-300 font-bold text-sm">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xs bg-violet-100 dark:bg-white/[0.06] text-violet-700 dark:text-violet-300 font-bold text-xs">
                     {idx + 1 < 10 ? `0${idx + 1}` : `${idx + 1}`}
                   </span>
-                  <h3 className="mt-5 font-display text-lg font-bold text-ink dark:text-white">{feat.title}</h3>
-                  <p className="mt-2 text-xs leading-relaxed text-ink/70 dark:text-slate-300">
+                  <h3 className="mt-4 card-title text-ink dark:text-white">{feat.title}</h3>
+                  <p className="mt-2 card-body text-ink/70 dark:text-slate-300">
                     {feat.desc}
                   </p>
                 </div>
@@ -300,15 +300,15 @@ export default function ServiceDetailClient({ initialService, serviceId }: Servi
               {service.workflow.map((wf: any, idx: number) => (
                 <div
                   key={idx}
-                  className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#131c31] p-7 shadow-sm transition-all hover:border-violet-300 dark:hover:border-slate-700"
+                  className="rounded-md border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#131c31] p-6 shadow-sm transition-all duration-200 hover:border-slate-300 dark:hover:border-white/[0.16]"
                 >
                   <span className="font-mono text-2xl font-black text-violet-600 dark:text-violet-400">
                     {wf.step}
                   </span>
-                  <h3 className="mt-4 font-display text-base font-bold text-ink dark:text-white">
+                  <h3 className="mt-4 card-title text-ink dark:text-white">
                     {wf.title}
                   </h3>
-                  <p className="mt-2 text-xs leading-relaxed text-ink/70 dark:text-slate-300">
+                  <p className="mt-2 card-body text-ink/70 dark:text-slate-300">
                     {wf.desc}
                   </p>
                 </div>
@@ -331,7 +331,7 @@ export default function ServiceDetailClient({ initialService, serviceId }: Servi
               {service.techStack.map((tech: string, tIdx: number) => (
                 <span
                   key={tIdx}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-violet-200 dark:border-slate-700 bg-violet-50/60 dark:bg-slate-800 px-4 py-1.5 text-xs font-bold text-violet-700 dark:text-violet-300 shadow-xs"
+                  className="inline-flex items-center gap-1.5 rounded-xs border border-slate-200/80 dark:border-white/[0.08] bg-slate-100 dark:bg-white/[0.06] px-3 py-1 text-xs font-semibold text-slate-700 dark:text-slate-300 shadow-xs"
                 >
                   <Code2 className="h-3.5 w-3.5 text-violet-500" />
                   <span>{tech}</span>

@@ -69,7 +69,7 @@ export default function IndustriesSection({ initialHeader, initialIndustries }: 
         
         {/* Section Header */}
         <div className="mb-14 max-w-2xl">
-          <div className="section-badge mb-3 inline-flex items-center gap-2 rounded-full border border-violet-200 dark:border-slate-800 bg-violet-50 dark:bg-slate-800 px-3.5 py-1 text-violet-600 dark:text-violet-300">
+          <div className="section-badge mb-3 inline-flex items-center gap-1.5 rounded-xs border border-violet-200/80 dark:border-white/[0.08] bg-violet-50 dark:bg-white/[0.04] px-2.5 py-1 text-violet-600 dark:text-violet-300 text-[12px] font-semibold uppercase tracking-[0.06em]">
             <Building2 className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
             {industriesHeader.badge}
           </div>
@@ -94,21 +94,21 @@ export default function IndustriesSection({ initialHeader, initialIndustries }: 
                 transition={{ duration: 0.4, delay: idx * 0.05, ease: "easeOut" }}
                 className="h-full"
               >
-                <div className="h-full group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-[#131c31] p-7 shadow-sm transition-all duration-300 hover:border-violet-300 dark:hover:border-slate-700 hover:shadow-xl hover:shadow-violet-500/10 hover:-translate-y-1.5">
+                <div className="h-full group relative flex flex-col justify-between overflow-hidden rounded-md border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-[#131c31] p-6 shadow-sm transition-all duration-200 hover:border-slate-300 dark:hover:border-white/[0.16] hover:-translate-y-0.5">
                 <div>
                   {/* Top Header */}
                   <div className="flex items-center justify-between mb-4">
-                    <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-100/80 dark:bg-slate-800 text-violet-600 dark:text-violet-300 border border-violet-100/50 dark:border-slate-700 group-hover:bg-violet-600 group-hover:text-white transition-colors shadow-sm">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-sm bg-violet-100/80 dark:bg-white/[0.06] text-violet-600 dark:text-violet-300 border border-violet-100/50 dark:border-white/[0.08] group-hover:bg-violet-600 group-hover:text-white transition-colors">
                       <IndustryIcon
                         icon={ind.icon}
                         iconName={ind.iconName}
                         industryId={ind.id}
                         fallbackIndex={idx}
-                        className="h-6 w-6 text-violet-600 dark:text-violet-300 group-hover:text-white transition-colors"
+                        className="h-5 w-5 text-violet-600 dark:text-violet-300 group-hover:text-white transition-colors"
                       />
                     </span>
                     {ind.keyMetrics?.[0] && (
-                      <span className="rounded-full bg-violet-50 dark:bg-slate-800 px-2.5 py-1 text-fluid-2xs font-bold text-violet-600 dark:text-violet-300 border border-violet-100 dark:border-slate-700">
+                      <span className="rounded-xs bg-violet-50 dark:bg-white/[0.04] px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.06em] text-violet-600 dark:text-violet-300 border border-violet-100 dark:border-white/[0.08]">
                         {ind.keyMetrics[0].value} {ind.keyMetrics[0].label}
                       </span>
                     )}
@@ -118,11 +118,11 @@ export default function IndustriesSection({ initialHeader, initialIndustries }: 
                     {ind.title}
                   </h3>
 
-                  <p className="mt-2 card-body text-ink/65 dark:text-slate-300">
+                  <p className="mt-2 card-body text-ink/70 dark:text-slate-300">
                     {ind.desc}
                   </p>
 
-                  {/* Capability / Solution Pills (Image 2 Match: Clean subtle pills, 2 items + count, no green text) */}
+                  {/* Capability / Solution Pills (Clean subtle pills, 2 items + count) */}
                   {(() => {
                     const rawTags: string[] = (
                       ind.cardTags && ind.cardTags.length > 0
@@ -141,18 +141,18 @@ export default function IndustriesSection({ initialHeader, initialIndustries }: 
                       <div className="mt-5 space-y-2">
                         {displayTags[0] && (
                           <div>
-                            <span className="inline-flex items-center rounded-full border border-slate-200/90 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/60 px-3 py-1 text-xs font-medium text-slate-600 dark:text-slate-300 shadow-2xs">
+                            <span className="inline-flex items-center rounded-xs border border-slate-200/90 dark:border-white/[0.08] bg-slate-50 dark:bg-white/[0.04] px-2.5 py-1 text-[12px] font-medium text-slate-600 dark:text-slate-300">
                               {displayTags[0]}
                             </span>
                           </div>
                         )}
                         {displayTags[1] && (
                           <div className="flex items-center gap-2">
-                            <span className="inline-flex items-center rounded-full border border-slate-200/90 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/60 px-3 py-1 text-xs font-medium text-slate-600 dark:text-slate-300 shadow-2xs">
+                            <span className="inline-flex items-center rounded-xs border border-slate-200/90 dark:border-white/[0.08] bg-slate-50 dark:bg-white/[0.04] px-2.5 py-1 text-[12px] font-medium text-slate-600 dark:text-slate-300">
                               {displayTags[1]}
                             </span>
                             {remainingCount > 0 && (
-                              <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
+                              <span className="text-[12px] font-semibold text-slate-400 dark:text-slate-500">
                                 +{remainingCount}
                               </span>
                             )}
